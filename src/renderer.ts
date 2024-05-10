@@ -29,7 +29,8 @@
 declare global {
     interface Window {
         ipc: {
-            getStats: any
+            getStats: any,
+            launchModel: any,
         };
     }
 }

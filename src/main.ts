@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
+import { spawn } from 'child_process';
 
 async function getStats () {
   const totalMemory = os.totalmem();
@@ -12,6 +13,36 @@ async function getStats () {
     freeMemory,
     usedMemory
   }
+}
+
+async function launchModel() {
+  return new Promise((resolve, reject) => {
+    let res = spawn("bin/server", ["--cmd", "start_server", "--model", "mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC"]);
+    let collectedData = '';
+
+    res.stdout.on('data', function(msg) {
+      console.log(msg.toString().trim());
+      collectedData += msg.toString().trim();
+    });
+
+    res.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}`));
+      } else {
+        const result = parseInt(collectedData);
+        if (!isNaN(result) && result > 0) {
+          resolve(result.toString());
+        } else {
+          reject(new Error("No valid number found in output"));
+        }
+      }
+    });
+
+    res.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`);
+      reject(new Error(data.toString()));
+    });
+  });
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -45,6 +76,10 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
   ipcMain.handle('getStats', getStats);
+  ipcMain.handle('launchModel', async (event, args) => {
+    const result = await launchModel();
+    return result;
+  });
   createWindow();
 });
 

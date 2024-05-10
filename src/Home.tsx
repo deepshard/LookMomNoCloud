@@ -1,19 +1,27 @@
-import React from 'react';
+import React from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Home() {
-    async function loadModel() {
-        const res = await window.ipc.getStats()
-        console.log(res)
+  async function loadModel() {
+    try {
+      await window.ipc.startServer();
+    } catch (error) {
+      toast.error("Failed to start model");
     }
+  }
 
-    function unloadModel() {
+  async function unloadModel() {
+    try {
+      await window.ipc.killServer();
+    } catch (error) {
+      toast.error("Failed to stop model");
     }
+  }
 
-    return (
-        <div>
-            <button onClick={loadModel}>Load model</button>
-            <button onClick={unloadModel}>Unload</button>
-        </div>
-    )
+  return (
+    <div>
+      <button onClick={loadModel}>Load model</button>
+      <button onClick={unloadModel}>Unload</button>
+    </div>
+  );
 }
-

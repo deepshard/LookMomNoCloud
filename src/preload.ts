@@ -3,5 +3,8 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('ipc', {
-  getStats: () => ipcRenderer.invoke('getStats')
+  getStats: () => ipcRenderer.invoke('getStats'),
+  startServer: () => ipcRenderer.invoke('startServer'),
+  killServer: () => ipcRenderer.invoke('killServer')
 })
+

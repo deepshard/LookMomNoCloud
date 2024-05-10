@@ -6,7 +6,7 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
-    "build:server": "pyinstaller -y -F python/main.py --collect-all tvm --collect-all mlc_llm --distpath dist/server --clean -n",
+    "build:server": "pyinstaller -y -F python/main.py --collect-all tvm --collect-all mlc_llm --distpath bin/ --clean -n server",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

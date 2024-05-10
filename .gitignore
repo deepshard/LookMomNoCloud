@@ -1,3 +1,7 @@
+build
+bin
+*.spec
+
 # Logs
 logs
 *.log

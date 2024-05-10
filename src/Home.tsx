@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Home() {
     async function loadModel() {
-        const res = await window.electronAPI.getStats()
+        const res = await window.ipc.getStats()
         console.log(res)
     }
 

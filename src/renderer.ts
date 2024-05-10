@@ -26,5 +26,13 @@
  * ```
  */
 
+declare global {
+    interface Window {
+        ipc: {
+            getStats: any
+        };
+    }
+}
+
 import './index.css';
 import './app';

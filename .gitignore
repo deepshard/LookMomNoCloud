@@ -1,6 +1,6 @@
 build
 bin
-*.spec
+dist
 
 # Logs
 logs

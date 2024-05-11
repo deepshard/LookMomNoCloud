@@ -5,11 +5,12 @@ import signal
 
 
 def start_server(model_name: str):
-    # Start the server
-    proc = subprocess.Popen(
-        ["mlc_llm", "serve", f"HF://{model_name}"],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return proc.pid
+    with open('server_output.log', 'w') as log_file:
+        # Start the server
+        proc = subprocess.Popen(
+            ["mlc_llm", "serve", f"HF://{model_name}"],
+            stdout=log_file, stderr=subprocess.STDOUT)
+        return proc.pid
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ def start_server(model_name: str):
         # Start the server
         proc = subprocess.Popen(
             ["mlc_llm", "serve", f"HF://{model_name}"],
-            stdout=log_file, stderr=subprocess.STDOUT)
+            stdout=log_file, stderr=log_file)
         return proc.pid
 
 

@@ -32,6 +32,7 @@ declare global {
             getStats: any
             startServer: any
             killServer: any
+            checkForServer: any
         };
     }
 }

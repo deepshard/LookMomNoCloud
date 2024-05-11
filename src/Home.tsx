@@ -1,4 +1,4 @@
-import {ReactDOM, useState} from 'react';
+import {ReactDOM, useState, useEffect} from 'react';
 import toast, { Toaster } from "react-hot-toast";
 
 interface ModelInfo {
@@ -8,6 +8,20 @@ interface ModelInfo {
 
 export default function Home() {
     const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null)
+
+    useEffect(() => {
+        const checkForServer = async () => {
+            const res = await window.ipc.checkForServer();
+            console.log(res);
+
+            if (res) {
+                toast.success(`Model already loaded: ${res.name}`);
+                setModelInfo(res);
+            }
+        }
+
+        checkForServer();
+    }, [])
 
     async function loadModel(modelName: string) {
         try {

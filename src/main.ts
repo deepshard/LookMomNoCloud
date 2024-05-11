@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
+import axios from 'axios';
 
 async function getStats() {
   const totalMemory = os.totalmem();
@@ -13,6 +14,46 @@ async function getStats() {
     freeMemory,
     usedMemory,
   };
+}
+
+async function findPid() {
+  return new Promise((resolve, reject) => {
+    console.log("Finding PID for server");
+    let res = spawn("lsof", ["-i", ":8000"]);
+    let collectedData = '';
+
+    res.stdout.on('data', function(msg) {
+      collectedData += msg.toString().trim();
+    });
+
+    res.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}`));
+      } else {
+        const lines = collectedData.split('\n');
+        // Find the first line with a PID after the header (which is usually the second line)
+        for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim()) {
+            const parts = lines[i].split(/\s+/);
+            const pid = parts[1]; // PID is usually the second column
+            const result = parseInt(pid);
+
+            if (!isNaN(result) && result > 0) {
+              resolve(result);
+              return;
+            } else {
+              reject(new Error("No valid PID found in output"));
+            }
+          }
+        }
+      }
+    });
+
+    res.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`);
+      reject(new Error(data.toString()));
+    });
+  })
 }
 
 async function startServer(modelName: string) {
@@ -59,6 +100,32 @@ async function killServer(pid: number) {
   });
 }
 
+async function checkForServer() {
+  console.log("Checking if a model is already running");
+
+  // Query the v1/models endpoint on localhost to see if the model is already running
+  // If it is, return the PID and the name of the model
+  try {
+    const response = await axios.get('http://localhost:8000/v1/models');
+
+    if (response.status === 200) {
+      console.log("Model is already running");
+      const modelName = response.data.data[0].id;
+      const pid = await findPid();
+      return {
+        pid,
+        name: modelName,
+      };
+    } else {
+      console.log("Model is not running");
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
@@ -98,6 +165,10 @@ app.on('ready', function() {
   });
   ipcMain.handle('killServer', async (event, pid) => {
     const result = await killServer(pid);
+    return result;
+  });
+  ipcMain.handle('checkForServer', async (event) => {
+    const result = await checkForServer();
     return result;
   });
   createWindow();

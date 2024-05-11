@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('ipc', {
   getStats: () => ipcRenderer.invoke('getStats'),
   startServer: (modelName: string) => ipcRenderer.invoke('startServer', modelName),
-  killServer: (pid: number) => ipcRenderer.invoke('killServer', pid)
+  killServer: (pid: number) => ipcRenderer.invoke('killServer', pid),
+  checkForServer: () => ipcRenderer.invoke('checkForServer')
 });
 

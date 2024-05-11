@@ -1,26 +1,10 @@
-import os
-import sys
-import subprocess
-import signal
+from flask import Flask
 
+app = Flask(__name__)
 
-def start_server(model_name: str):
-    with open('server_output.log', 'w') as log_file:
-        # Start the server
-        proc = subprocess.Popen(
-            ["mlc_llm", "serve", f"HF://{model_name}"],
-            stdout=log_file, stderr=log_file)
-        return proc.pid
+@app.route('/')
+def home():
+    return "Welcome to the simple Flask server!"
 
-
-if __name__ == "__main__":
-    # Get args
-    args = sys.argv
-    command = args[2]
-
-    if command == "start_server":
-        model_name = args[4]
-        pid = start_server(model_name)
-        print(pid)
-    else:
-        sys.exit(1)
+if __name__ == '__main__':
+    app.run(debug=False, port=8000, host="0.0.0.0")

@@ -39,10 +39,7 @@ app.on("ready", function () {
     const result = await startServer(modelName);
     return result;
   });
-  ipcMain.handle("killServer", async (event, pid) => {
-    const result = await killServer(pid);
-    return result;
-  });
+  ipcMain.handle("killServer", killServer);
   ipcMain.handle("checkForServer", async (event) => {
     const result = await checkForServer();
     return result;

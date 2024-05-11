@@ -6,7 +6,7 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
-    "build:server": "pyinstaller -y -F python/main.py --collect-all tvm --collect-all mlc_llm --distpath bin/ --clean -n server",
+    "build:server": "pyinstaller server.spec --distpath bin/ --clean",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -41,13 +41,11 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.8",
-    "electron-settings": "^4.0.4",
     "electron-squirrel-startup": "^1.0.0",
-    "install": "^0.13.0",
-    "npm": "^10.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-spinners": "^0.13.8"
   }
 }
+

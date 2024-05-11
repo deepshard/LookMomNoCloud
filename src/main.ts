@@ -15,9 +15,10 @@ async function getStats() {
   };
 }
 
-async function startServer() {
+async function startServer(modelName: string) {
   return new Promise((resolve, reject) => {
-    let res = spawn("bin/server", ["--cmd", "start_server", "--model", "mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC"]);
+    console.log(`Starting server for model ${modelName}`);
+    let res = spawn("bin/server", ["--cmd", "start_server", "--model", modelName]);
     let collectedData = '';
 
     res.stdout.on('data', function(msg) {
@@ -45,8 +46,17 @@ async function startServer() {
   });
 }
 
-async function killServer() {
-  throw new Error("Not implemented");
+async function killServer(pid: number) {
+  return new Promise((resolve, reject) => {
+    console.log(`Killing server with pid ${pid}`);
+    const result = process.kill(pid, 'SIGTERM');
+
+    if (result) {
+      resolve(true);
+    } else {
+      reject(new Error("Failed to kill process"));
+    }
+  });
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -82,11 +92,14 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
   ipcMain.handle('getStats', getStats);
-  ipcMain.handle('startServer', async (event, args) => {
-    const result = await startServer();
+  ipcMain.handle('startServer', async (event, modelName) => {
+    const result = await startServer(modelName);
     return result;
   });
-  ipcMain.handle('killServer', killServer);
+  ipcMain.handle('killServer', async (event, pid) => {
+    const result = await killServer(pid);
+    return result;
+  });
   createWindow();
 });
 

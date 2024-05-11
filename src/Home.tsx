@@ -7,7 +7,9 @@ interface ModelInfo {
 }
 
 export default function Home() {
-    const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null)
+    const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
+    const [userMessage, setUserMessage] = useState<string | null>(null);
+    const [modelResponse, setModelResponse] = useState<string | null>(null);
 
     useEffect(() => {
         const checkForServer = async () => {
@@ -56,6 +58,10 @@ export default function Home() {
         setModelInfo(null);
     }
 
+    async function sendMessage() {
+        console.log("not implemented yet");
+    }
+
     return (
         <div>
             {modelInfo ? (
@@ -63,6 +69,13 @@ export default function Home() {
                     <p>Model: {modelInfo.name}</p>
                     <p>PID: {modelInfo.pid}</p>
                     <button onClick={unloadModel}>Unload</button>
+                    <input
+                        type="text"
+                        onChange={(e) => setUserMessage(e.target.value)}
+                        placeholder="Enter a message"
+                    />
+                    <button onClick={sendMessage}>Send</button>
+                    {modelResponse && <p>Response: {modelResponse}</p>}
                 </div>
             ) : (
                 <button onClick={() => loadModel("mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC")}>Load model</button>

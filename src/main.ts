@@ -1,6 +1,7 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
-import path from "path";
-import os from "os";
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import path from 'path';
+import os from 'os';
+import { spawn } from 'child_process';
 
 async function getStats() {
   const totalMemory = os.totalmem();
@@ -15,7 +16,33 @@ async function getStats() {
 }
 
 async function startServer() {
-  throw new Error("Not implemented");
+  return new Promise((resolve, reject) => {
+    let res = spawn("bin/server", ["--cmd", "start_server", "--model", "mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC"]);
+    let collectedData = '';
+
+    res.stdout.on('data', function(msg) {
+      console.log(msg.toString().trim());
+      collectedData += msg.toString().trim();
+    });
+
+    res.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}`));
+      } else {
+        const result = parseInt(collectedData);
+        if (!isNaN(result) && result > 0) {
+          resolve(result.toString());
+        } else {
+          reject(new Error("No valid number found in output"));
+        }
+      }
+    });
+
+    res.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`);
+      reject(new Error(data.toString()));
+    });
+  });
 }
 
 async function killServer() {
@@ -53,10 +80,13 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", function () {
-  ipcMain.handle("getStats", getStats);
-  ipcMain.handle("startServer", startServer);
-  ipcMain.handle("killServer", killServer);
+app.on('ready', function() {
+  ipcMain.handle('getStats', getStats);
+  ipcMain.handle('startServer', async (event, args) => {
+    const result = await startServer();
+    return result;
+  });
+  ipcMain.handle('killServer', killServer);
   createWindow();
 });
 

@@ -94,3 +94,6 @@ typings/
 
 # Electron-Forge
 out/
+
+.venv/
+bun.lockb

@@ -59,7 +59,54 @@ export default function Home() {
     }
 
     async function sendMessage() {
-        console.log("not implemented yet");
+        if (!modelInfo) {
+            toast.error("No model loaded");
+            return;
+        }
+
+        console.log("Sending message");
+        const response = await fetch("http://127.0.0.1:8000/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "model": modelInfo?.name,
+                "messages": [
+                    {"role": "user", "content": userMessage}
+                ],
+                "stream": true
+            })
+        });
+
+        const reader = response?.body?.getReader();
+        let currentText = "";
+  
+        // Process the stream
+        reader?.read().then(function processText({ done, value }): any {
+            if (done) {
+                console.log("Stream complete");
+                return;
+            }
+        
+            // Decode and handle the chunk and parse the JSON
+            let chunkText = new TextDecoder("utf-8").decode(value);
+            if (chunkText.startsWith('data: ')) {
+                chunkText = chunkText.slice(6);
+            }
+
+            let model_response_delta: any;
+            try {
+                model_response_delta = JSON.parse(chunkText).choices[0].delta.content;
+            } catch (error) {
+                model_response_delta = "";
+            }
+
+            currentText += model_response_delta;
+            setModelResponse(currentText);  // Update the state with the current accumulated text
+        
+            return reader.read().then(processText);
+        });
     }
 
     return (

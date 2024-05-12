@@ -18,7 +18,7 @@ export async function getStats() {
 
 export async function startServer(modelName: string) {
   console.log("starting model server...");
-  let res = spawn("bin/server", [], {
+  let res = spawn("bin/server", ["--cmd", "start_server", "--model_name", modelName], {
     detached: true,
     stdio: ["pipe"],
   });
@@ -92,7 +92,7 @@ export async function checkForServer() {
   if (!config) return null;
 
   try {
-    const response = await axios.get("http://0.0.0.0:8000/");
+    const response = await axios.get("http://127.0.0.1:8000/v1/models");
 
     if (response.status === 200) {
       return config;

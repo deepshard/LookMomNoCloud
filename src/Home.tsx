@@ -33,14 +33,21 @@ export default function Home() {
     try {
       toast.success(`Loading...`);
       await window.ipc.startServer(modelName);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const res = await window.ipc.checkForServer();
-      console.log(res);
-      if (res) {
-        setModelInfo(res);
+
+      let timePassed = 0;
+      let res = null;
+      while (!res && timePassed < 30000) {
+        res = await window.ipc.checkForServer();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        timePassed += 1000
       }
 
-      toast.success(`Loaded ${modelName}`);
+      if (res) {
+        setModelInfo(res);
+        toast.success(`Loaded ${modelName}`);
+      } else {
+        toast.error("Failed to load model");
+      }
     } catch (error) {
       toast.error("Failed to start model");
     }

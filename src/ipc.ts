@@ -41,8 +41,6 @@ export async function startServer(modelName: string) {
     pid: res.pid,
     name: modelName,
   });
-  const config = await settings.get("server");
-  console.log("config: ", config);
 
   return {
     pid: res.pid,

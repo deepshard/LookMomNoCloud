@@ -1,16 +1,27 @@
 import { ReactDOM, useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
+interface DownloadProgress {
+  currentFileNum: number;
+  totalFiles: number;
+  currentProgress: number;
+}
+
 interface ModelInfo {
   pid: number;
   name: string;
 }
 
 export default function Home() {
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
+
+  window.ipc.onDownloadProgress((data: any) => {
+    setDownloadProgress(data);
+  });
 
   const checkForServer = async () => {
     try {
@@ -51,6 +62,10 @@ export default function Home() {
     } catch (error) {
       toast.error("Failed to start model");
     }
+  }
+
+  async function downloadModel() {
+    await window.ipc.downloadModel("https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC");
   }
 
   async function unloadModel() {
@@ -120,6 +135,8 @@ export default function Home() {
 
   return (
     <div>
+    <button onClick={downloadModel}>Download model</button>
+    {downloadProgress && <p>Downloading file {downloadProgress.currentFileNum}/{downloadProgress.totalFiles} - {downloadProgress.currentProgress}% complete</p>}
       {modelInfo ? (
         <div>
           <p>Model: {modelInfo.name}</p>

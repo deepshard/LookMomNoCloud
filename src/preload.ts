@@ -8,4 +8,7 @@ contextBridge.exposeInMainWorld("ipc", {
     ipcRenderer.invoke("startServer", modelName),
   killServer: () => ipcRenderer.invoke("killServer"),
   checkForServer: () => ipcRenderer.invoke("checkForServer"),
+  downloadModel: (modelUrl: string) =>
+    ipcRenderer.invoke("downloadModel", modelUrl),
+  onDownloadProgress: (callback: any) => ipcRenderer.on('download-progress', (_event, value) => callback(value)),
 });

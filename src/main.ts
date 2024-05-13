@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "path";
-import { checkForServer, getStats, killServer, startServer } from "./ipc";
+import { checkForServer, downloadModel, getStats, killServer, startServer } from "./ipc";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -28,6 +28,8 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  return mainWindow;
 };
 
 // This method will be called when Electron has finished
@@ -44,7 +46,10 @@ app.on("ready", function () {
     const result = await checkForServer();
     return result;
   });
-  createWindow();
+  const mainWindow = createWindow();
+  ipcMain.handle("downloadModel", async (event, modelUrl) => {
+    await downloadModel(modelUrl, mainWindow);
+  })
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

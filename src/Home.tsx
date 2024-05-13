@@ -65,7 +65,22 @@ export default function Home() {
   }
 
   async function downloadModel() {
-    await window.ipc.downloadModel("NousResearch/Hermes-2-Pro-Llama-3-8B");
+    await window.ipc.downloadModel("togethercomputer/RedPajama-INCITE-Instruct-3B-v1");
+
+    let timePassed = 0;
+    let res = null;
+    while (!res && timePassed < 10 * 60 * 1000) {
+      res = await window.ipc.checkForServer();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      timePassed += 1000
+    }
+
+    if (res) {
+      setModelInfo(res);
+      toast.success(`Loaded togethercomputer/RedPajama-INCITE-Instruct-3B-v1`);
+    } else {
+      toast.error("Failed to load model");
+    }
   }
 
   async function unloadModel() {

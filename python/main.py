@@ -6,11 +6,13 @@ from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.support.auto_weight import detect_weight
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
+from mlc_llm.interface.gen_config import gen_config
+from pathlib import Path
 
 
-def start_server(model_name: str):
+def start_server(model_path: str):
     serve(
-        model=f"HF://{model_name}",
+        model=model_path,
         device="auto",
         model_lib=None,
         mode="local",
@@ -32,7 +34,7 @@ def start_server(model_name: str):
     )
 
 
-def convert_weight(model_path: str, system_ram: str, model_size: str):
+def convert_weight(model_path: str, conv_template: str, system_ram: str, model_size: str):
     system_ram = int(system_ram)
     model_size = int(model_size)
 
@@ -49,8 +51,6 @@ def convert_weight(model_path: str, system_ram: str, model_size: str):
     quantization_kinds = list(model.quantize.keys())
     quantization_options = [quantization for quantization in QUANTIZATION.values(
     ) if quantization.kind in quantization_kinds]
-    print(quantization_kinds)
-    print(quantization_options)
 
     quantization_compression = {
         "int3": 0.25,
@@ -72,8 +72,6 @@ def convert_weight(model_path: str, system_ram: str, model_size: str):
             best_quantization = quantization
             best_ram_usage = ram_usage
 
-    print(best_quantization)
-
     convert_weight_mlc(
         config=config,
         quantization=best_quantization,
@@ -83,10 +81,23 @@ def convert_weight(model_path: str, system_ram: str, model_size: str):
         source_format=source_format,
         output=f"{model_path}-{best_quantization.name}-MLC",
     )
+    gen_config(
+        config=config,
+        model=model,
+        quantization=best_quantization,
+        conv_template=conv_template,
+        context_window_size=None,
+        sliding_window_size=None,
+        prefill_chunk_size=None,
+        attention_sink_size=None,
+        tensor_parallel_shards=None,
+        max_batch_size=1,
+        output=Path(f"{model_path}-{best_quantization.name}-MLC"),
+    )
 
     # Delete the original model
     shutil.rmtree(model_path)
-    print(f"{model_path}-{best_quantization.name}-MLC")
+    return f"{model_path}-{best_quantization.name}-MLC"
 
 
 if __name__ == "__main__":
@@ -99,8 +110,11 @@ if __name__ == "__main__":
         start_server(model_name)
     elif command == "convert_weight":
         model_path = args[4]
-        system_ram = args[6]
-        model_size = args[8]
-        convert_weight(model_path, system_ram, model_size)
+        conv_template = args[6]
+        system_ram = args[8]
+        model_size = args[10]
+        path = convert_weight(model_path, conv_template,
+                              system_ram, model_size)
+        print(path)
     else:
         sys.exit(1)

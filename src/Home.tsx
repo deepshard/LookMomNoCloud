@@ -152,6 +152,7 @@ export default function Home() {
         </div>
       ) : (
         <button
+        className="text-blue-500"
           onClick={() => loadModel("mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC")}
         >
           Load model

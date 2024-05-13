@@ -446,6 +446,12 @@ video {
   display: none;
 }
 
+body {
+  background: rgba(204, 204, 204, 0.5);
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -562,6 +568,7 @@ video {
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
-  max-width: 38rem;
+  /* max-width: 38rem; */
   padding: 2rem;
+  width: 100%;
 }

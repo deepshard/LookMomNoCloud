@@ -97,3 +97,5 @@ out/
 
 .venv/
 bun.lockb
+
+.tmp

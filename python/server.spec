@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('../mlc-llm/python/mlc_llm', 'mlc_llm')]
+datas = [('./mlc-llm/python/mlc_llm', 'mlc_llm')]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('tvm')

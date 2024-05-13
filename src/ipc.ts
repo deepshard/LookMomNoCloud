@@ -4,7 +4,6 @@ import os from "os";
 import fs from "fs";
 import path from "path";
 import settings from "electron-settings";
-import { ipcMain } from "electron";
 
 export async function getStats() {
   const totalMemory = os.totalmem();

@@ -65,7 +65,7 @@ export default function Home() {
   }
 
   async function downloadModel() {
-    await window.ipc.downloadModel("https://huggingface.co/mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC");
+    await window.ipc.downloadModel("NousResearch/Hermes-2-Pro-Llama-3-8B");
   }
 
   async function unloadModel() {

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "path";
 import { checkForServer, downloadModel, getStats, killServer, startServer } from "./ipc";
+import { loadModel } from "./modelInstallation";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -51,7 +52,7 @@ app.on("ready", function () {
   });
   const mainWindow = createWindow();
   ipcMain.handle("downloadModel", async (event, modelUrl) => {
-    await downloadModel(modelUrl, mainWindow);
+    await loadModel(modelUrl, mainWindow);
   })
 });
 

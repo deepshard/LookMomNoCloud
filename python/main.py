@@ -1,5 +1,10 @@
 import sys
 from mlc_llm.interface.serve import serve
+from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
+from mlc_llm.support.auto_config import detect_config, detect_model_type
+from mlc_llm.support.auto_weight import detect_weight
+from mlc_llm.support.auto_device import detect_device
+from mlc_llm.quantization import QUANTIZATION
 
 
 def start_server(model_name: str):
@@ -26,6 +31,26 @@ def start_server(model_name: str):
     )
 
 
+def convert_weight(model_path: str):
+    config = detect_config(model_path)
+    model = detect_model_type("auto", config)
+    source, source_format = detect_weight(
+        weight_path=config.parent,
+        config_json_path=config,
+        weight_format="auto",
+    )
+    device = detect_device("auto")
+    convert_weight_mlc(
+        config=config,
+        quantization=QUANTIZATION["q0f16"],
+        model=model,
+        device=device,
+        source=source,
+        source_format=source_format,
+        output=f"{model_path}-q0f16-MLC",
+    )
+
+
 if __name__ == "__main__":
     # Get args
     args = sys.argv
@@ -34,5 +59,8 @@ if __name__ == "__main__":
     if command == "start_server":
         model_name = args[4]
         start_server(model_name)
+    elif command == "convert_weight":
+        model_path = args[4]
+        convert_weight(model_path)
     else:
         sys.exit(1)

@@ -20,9 +20,11 @@ export default function Home() {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
 
-  window.ipc.onDownloadProgress((data: any) => {
-    setDownloadProgress(data);
-  });
+  useEffect(() => {
+    window.ipc.onDownloadProgress((data: any) => {
+      setDownloadProgress(data);
+    });
+  }, []);
 
   const checkForServer = async () => {
     try {

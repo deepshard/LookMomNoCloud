@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "path";
-import { checkForServer, downloadModel, getStats, killServer, startServer } from "./ipc";
+import { checkForServer, getStats, killServer, startServer } from "./ipc";
 import { loadModel } from "./modelInstallation";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

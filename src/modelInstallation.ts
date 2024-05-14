@@ -8,6 +8,11 @@ import { spawn } from "child_process";
 import { startServer } from "./ipc";
 import { app } from "electron";
 
+function getConvTemplate(modelPath: string) {
+    // TODO: implement logic
+    return "redpajama_chat";
+}
+
 async function getFreeDiskSpace(): Promise<number> {
     const path = os.platform() === "win32" ? "C:" : "/";
     const { free } = await disk.check(path);
@@ -125,8 +130,22 @@ async function downloadModel(hfRepoId: string, files: any, totalRepoSize: number
 }
 
 async function isMLCFormat(modelPath: string): Promise<boolean> {
-    // TODO: implement
-    return false;
+    // Check that the model path has a proper mlc-chat-config.json file
+    const configPath = path.resolve(modelPath, "mlc-chat-config.json");
+
+    let existsAndValid = false;
+    try {
+        await fs.promises.access(configPath);
+        const fileContents = await fs.promises.readFile(configPath, "utf-8");
+        const config = JSON.parse(fileContents);
+
+        const requiredKeys = ["model_type", "quantization", "model_config", "conv_template"];
+        existsAndValid = requiredKeys.every((key) => key in config);
+    } catch (error) {
+        existsAndValid = false;
+    }
+
+    return existsAndValid;
 }
 
 async function convertModelWeights(modelPath: string, systemRAM: number, modelSize: number): Promise<string> {
@@ -138,14 +157,14 @@ async function convertModelWeights(modelPath: string, systemRAM: number, modelSi
         "--model_path",
         modelPath,
         "--conv_template",
-        "redpajama_chat", // TODO: find a way to determine this dynamically
+        getConvTemplate(modelPath),
         "--system_ram",
         systemRAM.toString(),
         "--model_size",
         modelSize.toString(),
     ]);
 
-    const logStream = fs.createWriteStream("convert_weights.log", { flags: "a" });
+    const logStream = fs.createWriteStream("truffle.log", { flags: "a" });
     res.stdout.pipe(logStream);
     res.stderr.pipe(logStream);
 
@@ -168,7 +187,6 @@ async function convertModelWeights(modelPath: string, systemRAM: number, modelSi
         });
     });
 
-    console.log(stdout);
     return stdout;
 }
 

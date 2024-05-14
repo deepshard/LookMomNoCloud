@@ -1,0 +1,24 @@
+
+export interface IModel {
+    id: string
+    title: string
+    size: number
+    author: string
+    downloads: number
+    likes: number
+    intro: string
+    capabilities: string
+    risks: string
+    hfLink: string
+    evalId?: string
+    eval?: IEval
+}
+
+export interface IEval {
+    id: string
+    MMLU?: number
+    HellaSwag?: number
+    SWEBench?:  number
+    HumanEval?: number
+    model?:    IModel
+}

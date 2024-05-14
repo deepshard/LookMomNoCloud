@@ -44,7 +44,7 @@ const MODEL_LIST = [
     size: 1000000000,
     description: "GPT-3.5 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
-]
+];
 
 export default function Home() {
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
@@ -108,7 +108,7 @@ export default function Home() {
     while (!res && timePassed < 10 * 60 * 1000) {
       res = await window.ipc.checkForServer();
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      timePassed += 1000
+      timePassed += 1000;
     }
 
     if (res) {
@@ -209,13 +209,21 @@ export default function Home() {
 
       <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
       <div className="flex gap-4">
-        {MODEL_LIST.map((i) => (
-          <ModelWidget key={i.name} />
+        {MODEL_LIST.map((model) => (
+          <ModelWidget {...model} key={model.name} />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
-        <div className="col-span-1 flex flex-col gap-4 justify-between bg-red-400 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-          <div className="w-full h-[158px] bg-black"></div>
+        <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
+          <div className="w-full h-[158px] relative border-[#D9D9D94D] rounded-md border-4 overflow-hidden">
+            <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+            <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
+            <div className="absolute top-0 left-0 p-[16px]">
+              <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
+              <h3 className="base-regular">Deep Sak</h3>
+            </div>
+          </div>
+
           <div className="w-full h-[158px] bg-black flex justify-between gap-3">
             <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>
             <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>

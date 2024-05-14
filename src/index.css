@@ -56,6 +56,10 @@ body {
   }
 
   .model-widget {
-    @apply min-h-[73.6px] min-w-[126.56px] cursor-pointer relative !important;
+    @apply min-h-[73.6px] min-w-[126.56px] rounded-lg border-[#D9D9D94D] border-4 cursor-pointer relative !important;
+  }
+
+  .blurred-bg-img {
+    @apply absolute top-0 left-0 w-full h-full blur-md opacity-85 !important;
   }
 }

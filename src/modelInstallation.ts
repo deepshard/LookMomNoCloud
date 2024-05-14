@@ -132,9 +132,6 @@ async function isMLCFormat(modelPath: string): Promise<boolean> {
 async function convertModelWeights(modelPath: string, systemRAM: number, modelSize: number): Promise<string> {
     // The python script will automatically determine the proper quantization level
     console.log("Converting model weights");
-    console.log(`Model path: ${modelPath}`);
-    console.log(`System RAM: ${systemRAM}`);
-    console.log(`Model size: ${modelSize}`);
     let res = spawn("bin/server", [
         "--cmd",
         "convert_weight",

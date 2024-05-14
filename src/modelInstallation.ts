@@ -6,6 +6,7 @@ import path from "path";
 import glob from "glob";
 import { spawn } from "child_process";
 import { startServer } from "./ipc";
+import { app } from "electron";
 
 async function getFreeDiskSpace(): Promise<number> {
     const path = os.platform() === "win32" ? "C:" : "/";
@@ -13,10 +14,11 @@ async function getFreeDiskSpace(): Promise<number> {
     return free;
 }
 
-function checkForModelDownload(modelName: string) {
-    console.log(`Checking for model download for ${modelName}`);
-    const parentDir = path.join(__dirname, '../..');
-    const pattern = path.resolve(parentDir, `.tmp/${modelName}-*-MLC`);
+function checkForModelDownload(hfRepoId: string) {
+    console.log(`Checking for model download for ${hfRepoId}`);
+
+    const parentDir = path.join(app.getPath("userData"), "models");
+    const pattern = path.resolve(parentDir, `${hfRepoId}-*-MLC`);
 
     const matchingPaths = glob.sync(pattern);
 
@@ -68,8 +70,8 @@ async function getModelSize(hfRepoId: string) {
 async function downloadModel(hfRepoId: string, files: any, totalRepoSize: number, mainWindow: any): Promise<string> {
     console.log(`Downloading model ${hfRepoId}`);
 
-    const parentDir = path.join(__dirname, '../..');
-    const baseDir = path.resolve(parentDir, `.tmp/${hfRepoId}`);
+    const parentDir = path.join(app.getPath("userData"), "models");
+    const baseDir = path.resolve(parentDir, `${hfRepoId}`);
     await fs.promises.mkdir(baseDir, { recursive: true });
     console.log(`Created directory ${baseDir}`);
 
@@ -139,7 +141,7 @@ async function convertModelWeights(modelPath: string, systemRAM: number, modelSi
         "--model_path",
         modelPath,
         "--conv_template",
-        "redpajama_chat",
+        "redpajama_chat", // TODO: find a way to determine this dynamically
         "--system_ram",
         systemRAM.toString(),
         "--model_size",

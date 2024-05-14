@@ -140,7 +140,7 @@ async function convertModelWeights(modelPath: string, systemRAM: number, modelSi
         "--model_path",
         modelPath,
         "--conv_template",
-        "redpajama_chat",
+        "redpajama_chat", // TODO: find a way to determine this dynamically
         "--system_ram",
         systemRAM.toString(),
         "--model_size",

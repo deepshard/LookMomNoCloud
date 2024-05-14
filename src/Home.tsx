@@ -172,7 +172,7 @@ export default function Home() {
         </button>
       )} */}
 
-      <h1 className="h1-semibold">Welcome, Peter</h1>
+      <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
       <div className="flex gap-4">
         {[1,2,3,4].map((i) => (
           <ModelWidget key={i} />

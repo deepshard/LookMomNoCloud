@@ -35,6 +35,10 @@ body {
     @apply text-[12.57px] font-medium leading-[15px] !important;
   }
 
+  .base-regular {
+    @apply text-[12px] font-light leading-[14.4px] tracking-tighter !important;
+  }
+
   .small-regular {
     @apply text-[8.73px] font-normal leading-[10.47px] !important;
   }
@@ -52,6 +56,6 @@ body {
   }
 
   .model-widget {
-    @apply h-[73.6px] w-[126.56px] relative !important;
+    @apply min-h-[73.6px] min-w-[126.56px] cursor-pointer relative !important;
   }
 }

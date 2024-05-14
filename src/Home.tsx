@@ -17,17 +17,32 @@ const MODEL_LIST = [
   {
     name: "Llama",
     from: "Meta",
-    size: "3B",
+    size: 3000000000,
+    description: "Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
   {
     name: "Phi",
-    from: "Together",
-    size: "2B",
+    from: "Together Computer",
+    size: 3000000000,
+    description: "Phi is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
   {
     name: "RedPajama",
-    from: "Together",
-    size: "3B",
+    from: "Together Computer",
+    size: 200000000,
+    description: "RedPajama is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+  },
+  {
+    name: "GPT-4",
+    from: "OpenAI",
+    size: 1000000000,
+    description: "GPT-4 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+  },
+  {
+    name: "GPT-3.5",
+    from: "OpenAI",
+    size: 1000000000,
+    description: "GPT-3.5 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
 ]
 

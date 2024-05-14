@@ -16,8 +16,8 @@ async function getFreeDiskSpace(): Promise<number> {
 
 function checkForModelDownload(modelName: string) {
     console.log(`Checking for model download for ${modelName}`);
-    const parentDir = path.join(__dirname, '../..');
-    const pattern = path.resolve(parentDir, `.tmp/${modelName}-*-MLC`);
+    const parentDir = path.join(app.getPath("userData"), "models", `${modelName}-*-MLC`);
+    const pattern = path.resolve(parentDir, `${modelName}-*-MLC`);
 
     const matchingPaths = glob.sync(pattern);
 

@@ -14,10 +14,11 @@ async function getFreeDiskSpace(): Promise<number> {
     return free;
 }
 
-function checkForModelDownload(modelName: string) {
-    console.log(`Checking for model download for ${modelName}`);
-    const parentDir = path.join(__dirname, '../..');
-    const pattern = path.resolve(parentDir, `.tmp/${modelName}-*-MLC`);
+function checkForModelDownload(hfRepoId: string) {
+    console.log(`Checking for model download for ${hfRepoId}`);
+
+    const parentDir = path.join(app.getPath("userData"), "models");
+    const pattern = path.resolve(parentDir, `${hfRepoId}-*-MLC`);
 
     const matchingPaths = glob.sync(pattern);
 

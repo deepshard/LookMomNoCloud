@@ -180,6 +180,16 @@ export default function Home() {
           <ModelWidget key={i} />
         ))}
       </div>
+      <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
+        <div className="col-span-1 flex flex-col gap-4 justify-between bg-red-400 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
+          <div className="w-full h-[158px] bg-black"></div>
+          <div className="w-full h-[158px] bg-black flex justify-between gap-3">
+            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>
+            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>
+          </div>
+        </div>
+        <div className="col-span-1 bg-red-400 min-w-[263px] w-full h-[280px] lg:h-[353.19px]"></div>
+      </div>
     </div>
   );
 }

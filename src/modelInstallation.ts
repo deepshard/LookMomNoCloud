@@ -3,6 +3,7 @@ import os from "os";
 import disk from "diskusage";
 import axios from "axios";
 import path from "path";
+import glob from "glob";
 import { spawn } from "child_process";
 import { startServer } from "./ipc";
 
@@ -12,12 +13,15 @@ async function getFreeDiskSpace(): Promise<number> {
     return free;
 }
 
-function checkForModelDownload(modelName: string): string {
+function checkForModelDownload(modelName: string) {
     console.log(`Checking for model download for ${modelName}`);
     const parentDir = path.join(__dirname, '../..');
-    const baseDir = path.resolve(parentDir, `.tmp/${modelName}`);
-    if (fs.existsSync(baseDir)) {
-        return baseDir;
+    const pattern = path.resolve(parentDir, `.tmp/${modelName}-*-MLC`);
+
+    const matchingPaths = glob.sync(pattern);
+
+    if (matchingPaths.length > 0) {
+        return matchingPaths[0]; // Return the first matching path
     } else {
         return null;
     }
@@ -33,38 +37,46 @@ async function downloadPrecompile(downloadUrl: string, modelName: string): Promi
     return "";
 }
 
-async function getModelSize(hfRepoId: string): Promise<number> {
-    // TODO: implement
-    // for now just return 16gb in bytes
-    return 16 * 1024 * 1024 * 1024;
-}
-
-async function downloadModel(modelUrl: string, mainWindow: any): Promise<string> {
-    // Assert that the model URL abides by the huggingface model URL format
-    const MODEL_PREFIX = "https://huggingface.co/";
-    if (!modelUrl.startsWith(MODEL_PREFIX)) throw new Error("Invalid model URL");
-    console.log(modelUrl.split("/").length);
-    if (modelUrl.split("/").length != 5) throw new Error("Invalid model URL");
-
-    // Parse the user and model name from the URL
-    const [user, modelName] = modelUrl.slice(MODEL_PREFIX.length).split("/");
-    console.log(`Downloading model ${modelName} from user ${user}`);
-
-    const parentDir = path.join(__dirname, '../..');
-    const baseDir = path.resolve(parentDir, `.tmp/${user}/${modelName}`);
-    await fs.promises.mkdir(baseDir, { recursive: true });
-    console.log(`Created directory ${baseDir}`);
-  
+async function getModelSize(hfRepoId: string) {
     // Get the set of files in the model repo
-    const res = await axios.get(`https://huggingface.co/api/models/${user}/${modelName}?`);
-    if (res.status != 200) throw new Error("Failed to fetch model data");
+    const res = await axios.get(`https://huggingface.co/api/models/${hfRepoId}?`);
+    if (res.status !== 200) throw new Error("Failed to fetch model data");
+  
     const files = res.data.siblings;
     console.log(`Found ${files.length} files in the model repo`);
+  
+    // Create an array of promises for HEAD requests
+    const sizePromises = files.map(async (file: any) => {
+      const fileUrl = `https://huggingface.co/${hfRepoId}/resolve/main/${file.rfilename}`;
+      const response = await axios.head(fileUrl);
+      if (response.status !== 200) throw new Error("Failed to fetch file size");
+      return parseInt(response.headers['content-length']);
+    });
+  
+    // Wait for all HEAD requests to complete
+    const sizes = await Promise.all(sizePromises);
+  
+    // Calculate the total size
+    const totalSize = sizes.reduce((acc, size) => acc + size, 0);
+  
+    return {
+      files,
+      totalSize
+    };
+  }
+
+async function downloadModel(hfRepoId: string, files: any, totalRepoSize: number, mainWindow: any): Promise<string> {
+    console.log(`Downloading model ${hfRepoId}`);
+
+    const parentDir = path.join(__dirname, '../..');
+    const baseDir = path.resolve(parentDir, `.tmp/${hfRepoId}`);
+    await fs.promises.mkdir(baseDir, { recursive: true });
+    console.log(`Created directory ${baseDir}`);
 
     let filesDownloaded = 0;
     const totalFiles = files.length;
     for (const file of files) {
-        const fileUrl = `https://huggingface.co/${user}/${modelName}/resolve/main/${file.rfilename}?download=true`;
+        const fileUrl = `https://huggingface.co/${hfRepoId}/resolve/main/${file.rfilename}?download=true`;
         const filePath = path.resolve(baseDir, file.rfilename);
         console.log(`Starting download for file ${filesDownloaded + 1}/${totalFiles}: ${file.rfilename}`);
       
@@ -78,14 +90,20 @@ async function downloadModel(modelUrl: string, mainWindow: any): Promise<string>
         const writer = fs.createWriteStream(filePath);
 
         let bytesDownloaded = 0;
-        const totalFileSize = response.headers['content-length'];
+        let lastProgress = 0;
         response.data.on('data', (chunk: any) => {
             bytesDownloaded += chunk.length;
-            mainWindow.webContents.send('download-progress', {
-                "currentFileNum": filesDownloaded + 1,
-                "totalFiles": totalFiles,
-                "currentProgress": 100 * bytesDownloaded / totalFileSize
-            });
+
+            // Truncate download progress to 0.25% increments
+            if ((100 * bytesDownloaded / totalRepoSize) - lastProgress >= 0.25) {
+                // Set last progress to be the nearest 0.25% increment
+                lastProgress = 0.25 * Math.floor(100 * bytesDownloaded / totalRepoSize / 0.25);
+                mainWindow.webContents.send('download-progress', {
+                    "currentFileNum": filesDownloaded + 1,
+                    "totalFiles": totalFiles,
+                    "currentProgress": lastProgress
+                });
+            }
         });
 
         response.data.pipe(writer);
@@ -94,6 +112,8 @@ async function downloadModel(modelUrl: string, mainWindow: any): Promise<string>
             writer.on('finish', resolve);
             writer.on('error', reject);
         });
+
+        writer.end();
 
         console.log(`Finished downloading file ${filesDownloaded + 1}/${totalFiles}`);
         filesDownloaded++;
@@ -110,21 +130,21 @@ async function isMLCFormat(modelPath: string): Promise<boolean> {
 async function convertModelWeights(modelPath: string, systemRAM: number, modelSize: number): Promise<string> {
     // The python script will automatically determine the proper quantization level
     console.log("Converting model weights");
+    console.log(`Model path: ${modelPath}`);
+    console.log(`System RAM: ${systemRAM}`);
+    console.log(`Model size: ${modelSize}`);
     let res = spawn("bin/server", [
         "--cmd",
-        "convert_weights",
+        "convert_weight",
         "--model_path",
         modelPath,
+        "--conv_template",
+        "redpajama_chat",
         "--system_ram",
         systemRAM.toString(),
         "--model_size",
         modelSize.toString(),
-    ], {
-        detached: true,
-        stdio: ["pipe"],
-    });
-
-    res.unref();
+    ]);
 
     const logStream = fs.createWriteStream("convert_weights.log", { flags: "a" });
     res.stdout.pipe(logStream);
@@ -132,10 +152,24 @@ async function convertModelWeights(modelPath: string, systemRAM: number, modelSi
 
     // Get the stdout of the process
     let stdout = "";
-    for await (const chunk of res.stdout) {
-        stdout += chunk;
-    }
 
+    res.stdout.on("data", (chunk) => {
+        const output = chunk.toString();
+        stdout += output;
+    });
+
+    // Wait for the process to finish
+    await new Promise((resolve, reject) => {
+        res.on("close", (code) => {
+            if (code === 0) {
+                resolve(null);
+            } else {
+                reject(new Error(`Failed to convert model weights. Exit code: ${code}`));
+            }
+        });
+    });
+
+    console.log(stdout);
     return stdout;
 }
 
@@ -143,6 +177,7 @@ export async function loadModel(hfRepoId: string, mainWindow: any) {
     let modelPath = checkForModelDownload(hfRepoId);
     if (modelPath) {
         console.log(`Model ${hfRepoId} already downloaded`);
+        console.log(`Model path: ${modelPath}`);
         const processInfo = await startServer(modelPath);
         return processInfo;
     }
@@ -156,13 +191,13 @@ export async function loadModel(hfRepoId: string, mainWindow: any) {
     }
 
     const diskSpaceAvailable = await getFreeDiskSpace();
-    const modelSize = await getModelSize(hfRepoId);
-    if (modelSize > diskSpaceAvailable) {
-        throw new Error(`Not enough disk space to download model. Model size: ${modelSize}, available space: ${diskSpaceAvailable}`);
+    const { files, totalSize } = await getModelSize(hfRepoId);
+    console.log(`Model size: ${totalSize}, available space: ${diskSpaceAvailable}`);
+    if (totalSize > diskSpaceAvailable) {
+        throw new Error(`Not enough disk space to download model. Model size: ${totalSize}, available space: ${diskSpaceAvailable}`);
     }
 
-    const modelUrl = `https://huggingface.co/${hfRepoId}`;
-    modelPath = await downloadModel(modelUrl, mainWindow);
+    modelPath = await downloadModel(hfRepoId, files, totalSize, mainWindow);
 
     const isMLC = await isMLCFormat(modelPath);
     if (isMLC) {
@@ -172,7 +207,9 @@ export async function loadModel(hfRepoId: string, mainWindow: any) {
     }
 
     const systemRAM = os.totalmem();
-    const convertedWeightsPath = await convertModelWeights(modelPath, systemRAM, modelSize);
+    await convertModelWeights(modelPath, systemRAM, totalSize);
+    const convertedWeightsPath = await checkForModelDownload(hfRepoId);
+    console.log(`Converted weights path: ${convertedWeightsPath}`);
     const processInfo = await startServer(convertedWeightsPath); // this does JIT compilation
     return processInfo;
 }

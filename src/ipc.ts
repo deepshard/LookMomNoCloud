@@ -101,7 +101,6 @@ export async function checkForServer() {
       return null;
     }
   } catch (error) {
-    console.error("error checking for server", error);
     return null;
   }
 }

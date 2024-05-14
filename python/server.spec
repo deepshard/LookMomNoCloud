@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('./mlc-llm/python/mlc_llm', 'mlc_llm')]
+datas = [('../../mlc-llm/python/mlc_llm', 'mlc_llm')]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('tvm')
@@ -27,7 +27,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('openai')
 
 a = Analysis(
-    ['python/main.py'],
+    ['main.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,

@@ -6,6 +6,7 @@ import path from "path";
 import glob from "glob";
 import { spawn } from "child_process";
 import { startServer } from "./ipc";
+import { app } from "electron";
 
 async function getFreeDiskSpace(): Promise<number> {
     const path = os.platform() === "win32" ? "C:" : "/";
@@ -68,8 +69,8 @@ async function getModelSize(hfRepoId: string) {
 async function downloadModel(hfRepoId: string, files: any, totalRepoSize: number, mainWindow: any): Promise<string> {
     console.log(`Downloading model ${hfRepoId}`);
 
-    const parentDir = path.join(__dirname, '../..');
-    const baseDir = path.resolve(parentDir, `.tmp/${hfRepoId}`);
+    const parentDir = path.join(app.getPath("userData"), "models");
+    const baseDir = path.resolve(parentDir, `${hfRepoId}`);
     await fs.promises.mkdir(baseDir, { recursive: true });
     console.log(`Created directory ${baseDir}`);
 

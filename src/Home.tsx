@@ -13,6 +13,24 @@ interface ModelInfo {
   name: string;
 }
 
+const MODEL_LIST = [
+  {
+    name: "Llama",
+    from: "Meta",
+    size: "3B",
+  },
+  {
+    name: "Phi",
+    from: "Together",
+    size: "2B",
+  },
+  {
+    name: "RedPajama",
+    from: "Together",
+    size: "3B",
+  },
+]
+
 export default function Home() {
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
@@ -176,8 +194,8 @@ export default function Home() {
 
       <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
       <div className="flex gap-4">
-        {[1,2,3,4].map((i) => (
-          <ModelWidget key={i} />
+        {MODEL_LIST.map((i) => (
+          <ModelWidget key={i.name} />
         ))}
       </div>
     </div>

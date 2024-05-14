@@ -1,5 +1,6 @@
 import { ReactDOM, useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import ModelWidget from "./component/ModelWidget";
 
 interface DownloadProgress {
   currentFileNum: number;
@@ -19,9 +20,11 @@ export default function Home() {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
 
-  window.ipc.onDownloadProgress((data: any) => {
-    setDownloadProgress(data);
-  });
+  useEffect(() => {
+    window.ipc.onDownloadProgress((data: any) => {
+      setDownloadProgress(data);
+    });
+  }, []);
 
   const checkForServer = async () => {
     try {
@@ -50,7 +53,7 @@ export default function Home() {
       while (!res && timePassed < 30000) {
         res = await window.ipc.checkForServer();
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        timePassed += 1000
+        timePassed += 1000;
       }
 
       if (res) {
@@ -150,29 +153,33 @@ export default function Home() {
 
   return (
     <div>
-    <button onClick={downloadModel}>Download model</button>
-    {downloadProgress && <p>Downloading file {downloadProgress.currentFileNum}/{downloadProgress.totalFiles} - {downloadProgress.currentProgress}% complete</p>}
+      {/* <button onClick={downloadModel}>Download model</button>
+      {downloadProgress && (
+        <p>
+          Downloading file {downloadProgress.currentFileNum}/{downloadProgress.totalFiles} - {downloadProgress.currentProgress}% complete
+        </p>
+      )}
       {modelInfo ? (
         <div>
           <p>Model: {modelInfo.name}</p>
           <p>PID: {modelInfo.pid}</p>
           <button onClick={unloadModel}>Unload</button>
-          <input
-            type="text"
-            onChange={(e) => setUserMessage(e.target.value)}
-            placeholder="Enter a message"
-          />
+          <input type="text" onChange={(e) => setUserMessage(e.target.value)} placeholder="Enter a message" />
           <button onClick={sendMessage}>Send</button>
           {modelResponse && <p>Response: {modelResponse}</p>}
         </div>
       ) : (
-        <button
-        className="text-blue-500"
-          onClick={() => loadModel("mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC")}
-        >
+        <button className="text-blue-500" onClick={() => loadModel("mlc-ai/Llama-3-8B-Instruct-q4f16_1-MLC")}>
           Load model
         </button>
-      )}
+      )} */}
+
+      <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
+      <div className="flex gap-4">
+        {[1,2,3,4].map((i) => (
+          <ModelWidget key={i} />
+        ))}
+      </div>
     </div>
   );
 }

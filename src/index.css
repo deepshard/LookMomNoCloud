@@ -3,16 +3,59 @@
 @tailwind utilities;
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
   /* max-width: 38rem; */
-  padding: 2rem;
+  padding: 15px 25px;
   width: 100%;
 }
 
 @layer base {
   body {
-    background: rgba(204, 204, 204, 0.5);
+    background: rgba(39, 21, 57, 0.3);
     @apply text-white; 
+  }
+}
+
+@layer utilities {
+  .navbar {
+    /* @apply grid grid-cols-4 items-center; */
+    @apply flex justify-between items-center;
+  }
+
+  .h1-semibold {
+    @apply text-[30.52px] leading-[36.62px] tracking-tighter !important;
+  }
+
+  .h3-bold {
+    @apply text-[21px] font-normal leading-[25.33px] tracking-tighter !important;
+  }
+
+  .base-medium {
+    @apply text-[12.57px] font-medium leading-[15px] !important;
+  }
+
+  .base-regular {
+    @apply text-[12px] font-light leading-[14.4px] tracking-tighter !important;
+  }
+
+  .small-regular {
+    @apply text-[8.73px] font-normal leading-[10.47px] !important;
+  }
+
+  .flex-center {
+    @apply flex justify-center items-center !important;
+  }
+
+  .flex-center-y {
+    @apply flex items-center !important;
+  }
+
+  .flex-center-x {
+    @apply flex justify-center !important;
+  }
+
+  .model-widget {
+    @apply min-h-[73.6px] min-w-[126.56px] cursor-pointer relative !important;
   }
 }

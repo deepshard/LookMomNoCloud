@@ -10,6 +10,33 @@ from mlc_llm.interface.gen_config import gen_config
 from pathlib import Path
 
 
+def determine_quantization(model, system_ram, model_size):
+    quantization_compression_table = {
+        "int3": 0.25,
+        "int4": 0.33,
+        "int8": 0.55
+    }
+    target_ram_usage = 0.66 * system_ram
+
+    quantization_kinds = list(model.quantize.keys())
+    quantization_options = [quantization for quantization in QUANTIZATION.values(
+    ) if quantization.kind in quantization_kinds]
+
+    best_quantization = None
+    best_ram_usage = 0
+    for quantization in quantization_options:
+        if quantization.kind == "no-quant":
+            ram_usage = model_size
+        else:
+            ram_usage = quantization_compression_table[quantization.quantize_dtype] * model_size
+
+        if ram_usage <= target_ram_usage and ram_usage > best_ram_usage:
+            best_quantization = quantization
+            best_ram_usage = ram_usage
+
+    return best_quantization
+
+
 def start_server(model_path: str):
     serve(
         model=model_path,
@@ -48,29 +75,7 @@ def convert_weight(model_path: str, conv_template: str, system_ram: str, model_s
     device = detect_device("auto")
 
     # Get available quantization options from the model
-    quantization_kinds = list(model.quantize.keys())
-    quantization_options = [quantization for quantization in QUANTIZATION.values(
-    ) if quantization.kind in quantization_kinds]
-
-    quantization_compression = {
-        "int3": 0.25,
-        "int4": 0.33,
-        "int8": 0.55
-    }
-    target_ram_usage = 0.66 * system_ram
-
-    # Find the quantization option that is closest to the target RAM usage
-    best_quantization = None
-    best_ram_usage = 0
-    for quantization in quantization_options:
-        if quantization.kind == "no-quant":
-            ram_usage = model_size
-        else:
-            ram_usage = quantization_compression[quantization.quantize_dtype] * model_size
-
-        if ram_usage <= target_ram_usage and ram_usage > best_ram_usage:
-            best_quantization = quantization
-            best_ram_usage = ram_usage
+    best_quantization = determine_quantization(model, system_ram, model_size)
 
     convert_weight_mlc(
         config=config,

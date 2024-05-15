@@ -36,6 +36,7 @@ const useStore = create<State>()(
     }),
     {
       name: "store",
+      partialize: (state) => ({ memoryUsage: state.memoryUsage }),
     }
   )
 );

@@ -1,46 +1,71 @@
 import { ReactDOM, useState, useEffect, useLayoutEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import ModelWidget from "./component/ModelWidget";
+import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import useStore from "./store";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
-import { IModelServerInfo } from "./types";
+import { IModel, IModelServerInfo } from "./types";
 
-const MODEL_LIST = [
+const MODEL_LIST: IModel[] = [
   {
-    name: "Llama",
-    from: "Meta",
+    id: "0",
+    title: "Llama",
+    author: "Meta",
     size: 3000000000,
-    description:
-      "Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    downloads: 120,
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    likes: 70,
   },
   {
-    name: "Phi",
-    from: "Together Computer",
+    id: "1",
+    title: "Llama",
+    author: "Meta",
     size: 3000000000,
-    description:
-      "Phi is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    downloads: 120,
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    likes: 70,
   },
   {
-    name: "RedPajama",
-    from: "Together Computer",
-    size: 200000000,
-    description:
-      "RedPajama is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    id: "2",
+    title: "Llama",
+    author: "Meta",
+    size: 3000000000,
+    downloads: 120,
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    likes: 70,
   },
   {
-    name: "GPT-4",
-    from: "OpenAI",
-    size: 1000000000,
-    description:
-      "GPT-4 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    id: "3",
+    title: "Llama",
+    author: "Meta",
+    size: 3000000000,
+    downloads: 120,
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    likes: 70,
   },
   {
-    name: "GPT-3.5",
-    from: "OpenAI",
-    size: 1000000000,
-    description:
-      "GPT-3.5 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    id: "4",
+    title: "Llama",
+    author: "Meta",
+    size: 3000000000,
+    downloads: 120,
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    likes: 70,
   },
 ];
 
@@ -49,6 +74,7 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
+  const { downloadProgress } = useStore((state) => state);
 
   const checkForServer = async () => {
     try {
@@ -91,24 +117,36 @@ export default function Home() {
     }
   }
 
-  async function downloadModel() {
-    await window.ipc.downloadModel(
-      "togethercomputer/RedPajama-INCITE-Instruct-3B-v1"
-    );
+  async function downloadModel(model: IModel) {
+    try {
+      console.log("Downloading model - 1");
+      const modelPathName = model.hfLink.split("/").slice(3).join("/");
 
-    let timePassed = 0;
-    let res = null;
-    while (!res && timePassed < 10 * 60 * 1000) {
-      res = await window.ipc.checkForServer();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      timePassed += 1000;
-    }
+      // await window.ipc.downloadModel("togethercomputer/RedPajama-INCITE-Instruct-3B-v1");
+      await window.ipc.downloadModel(modelPathName);
+      console.log("Downloading model - 2");
 
-    if (res) {
-      setModelInfo(res);
-      toast.success(`Loaded togethercomputer/RedPajama-INCITE-Instruct-3B-v1`);
-    } else {
-      toast.error("Failed to load model");
+      let timePassed = 0;
+      let res = null;
+      while (!res && timePassed < 10 * 60 * 1000) {
+        console.log("Downloading model - 3");
+        res = await window.ipc.checkForServer();
+        if (res) break;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        timePassed += 1000;
+      }
+      console.log("Downloading model - 4");
+
+      if (res) {
+        setModelInfo(res);
+        console.log("Successfully downloaded model");
+        toast.success(`Loaded togethercomputer/RedPajama-INCITE-Instruct-3B-v1`);
+      } else {
+        console.log("Failed to download model");
+        toast.error("Failed to load model");
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
   }
 
@@ -173,6 +211,14 @@ export default function Home() {
     });
   }
 
+  const getWidgetState = (model: IModel): ModelWidgetState => {
+    const modelPathName = model.hfLink.split("/").slice(3).join("/");
+    if(downloadProgress[modelPathName] > 0 && downloadProgress[modelPathName] < 100) {
+      return 'downloading';
+    }
+    return 'not-downloaded';
+  }
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -201,77 +247,31 @@ export default function Home() {
       )} */}
 
       <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
-      <button onClick={downloadModel}>Download model</button>
+      {/* <button onClick={downloadModel}>Download model</button> */}
       <div className="flex gap-4">
         {MODEL_LIST.map((model) => (
-          <ModelWidget {...model} key={model.name} />
+            <ModelWidget model={model} key={model.id} widgetState={getWidgetState(model)}  downloadModel={downloadModel}/>
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
         <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-          <Carousel
-            infiniteLoop
-            showStatus={false}
-            showThumbs={false}
-            showArrows={false}
-            autoPlay
-            interval={3000}
-            className="border-[#D9D9D94D] border-4 rounded-md"
-          >
+          <Carousel infiniteLoop showStatus={false} showThumbs={false} showArrows={false} autoPlay interval={3000} className="border-[#D9D9D94D] border-4 rounded-md">
             <div className="w-full h-[158px] relative overflow-hidden ">
-              <img
-                src="/assets/images/llama1.png"
-                alt=""
-                className="blurred-bg-img backdrop-blur-md"
-              />
+              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
               <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
               <div className="absolute top-0 left-0 p-[16px]">
-                <img
-                  src="/assets/images/llama1.png"
-                  alt=""
-                  className="w-[44px] h-[44px] rounded-md"
-                />
+                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
                 <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
-                <p className="break-words line-clamp-2 base-regular">
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam
-                  consectetur elementum mattis aliquam vulputate consectetur
-                  etiam consectetur lorem ipsum dolor sit amet consectetur
-                  adipiscing elit etiam consectetur elementum mattis aliquam
-                  vulputate consectetur etiam consectetur lorem ipsum dolor sit
-                  amet consectetur adipiscing elit etiam consectetur elementum
-                  mattis aliquam vulputate consectetur etiam consectetur lorem
-                  ipsum dolor sit amet consectetur adipiscing elit etiam
-                  consectetur elementum mattis aliquam vulputate consectetur
-                  etiam consectetur
-                </p>
+                <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
               </div>
             </div>
             <div className="w-full h-[158px] relative overflow-hidden ">
-              <img
-                src="/assets/images/llama1.png"
-                alt=""
-                className="blurred-bg-img backdrop-blur-md"
-              />
+              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
               <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
               <div className="absolute top-0 left-0 p-[16px]">
-                <img
-                  src="/assets/images/llama1.png"
-                  alt=""
-                  className="w-[44px] h-[44px] rounded-md"
-                />
+                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
                 <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
-                <p className="break-words line-clamp-2 base-regular">
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam
-                  consectetur elementum mattis aliquam vulputate consectetur
-                  etiam consectetur lorem ipsum dolor sit amet consectetur
-                  adipiscing elit etiam consectetur elementum mattis aliquam
-                  vulputate consectetur etiam consectetur lorem ipsum dolor sit
-                  amet consectetur adipiscing elit etiam consectetur elementum
-                  mattis aliquam vulputate consectetur etiam consectetur lorem
-                  ipsum dolor sit amet consectetur adipiscing elit etiam
-                  consectetur elementum mattis aliquam vulputate consectetur
-                  etiam consectetur
-                </p>
+                <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
               </div>
             </div>
           </Carousel>

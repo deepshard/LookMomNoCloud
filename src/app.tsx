@@ -11,7 +11,7 @@ const root = createRoot(document.getElementById("root"));
 root.render(<App />);
 
 function App() {
-  const { setDownloadProgress, setMemoryUsage } = useStore((state) => state);
+  const { setDownloadProgress, downloadProgress, setMemoryUsage } = useStore((state) => state);
 
   useEffect(() => {
     console.log(
@@ -19,12 +19,14 @@ function App() {
     );
     window.ipc.onDownloadProgress((data) => {
       setDownloadProgress(data);
+      // console.log(data);
     });
     window.ipc.onMemoryUsageUpdate((data) => {
       setMemoryUsage(data);
     });
   }, []);
 
+  console.log(downloadProgress)
   return (
     <div>
       <Toaster />

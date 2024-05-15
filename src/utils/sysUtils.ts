@@ -2,10 +2,14 @@ import os from "os";
 import pidusage from "pidusage";
 import diskusage from "diskusage";
 
-export async function getPidMemoryUsage(pids: number[]) {
+interface PidStats {
+    memory: number;
+}
+
+export async function getPidMemoryUsage(pids: number[]): Promise<(number | null)[]> {
     const memoryChecks = pids.map((pid) => {
-        return new Promise((resolve) => {
-            pidusage(pid, (err, stats) => {
+        return new Promise<number | null>((resolve) => {
+            pidusage(pid, (err, stats: PidStats) => {
                 if (err) {
                     resolve(null);
                 } else {
@@ -18,7 +22,12 @@ export async function getPidMemoryUsage(pids: number[]) {
     return await Promise.all(memoryChecks);
 }
 
-export async function getDiskUsage() {
+interface DiskUsageStats {
+    used: number;
+    total: number;
+}
+
+export async function getDiskUsage(): Promise<DiskUsageStats> {
     const { free, total } = await diskusage.check(os.platform() === "win32" ? "C:" : "/");
     const used = total - free;
 

@@ -60,7 +60,7 @@ app.on("ready", function () {
     await modelManager.downloadModel(modelUrl);
   });
 
-  // Background task for clearing install queue (runs every 30 seconds)
+  // Background task for clearing install queue (runs every 60 seconds)
   setInterval(async () => {
     await modelManager.installModel();
 

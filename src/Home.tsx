@@ -75,7 +75,7 @@ export default function Home() {
   async function loadModel(modelName: string) {
     try {
       toast.success(`Loading...`);
-      await window.ipc.startServer(modelName);
+      await window.ipc.startModel(modelName);
 
       let timePassed = 0;
       let res = null;
@@ -117,7 +117,7 @@ export default function Home() {
 
   async function unloadModel() {
     try {
-      await window.ipc.killServer();
+      await window.ipc.killModel();
     } catch (error) {
       toast.error("Failed to unload model");
       return;

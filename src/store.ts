@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
-
+import { persist } from 'zustand/middleware'
 interface DownloadProgress {
     [key: string]: number
 }
@@ -22,11 +21,9 @@ const useStore = create<State>()(
             downloadProgress: {},
             memoryUsage: {},
             setDownloadProgress: (data) => {
-                console.log(`Setting download progress for model ${data.model}: ${data.progress}%`);
                 set((s) => ({ downloadProgress: {...s.downloadProgress, [data.model]: data.progress }}));
             },
             setMemoryUsage: (data) => {
-                console.log(`Setting memory usage for pid ${data.pid}: ${data.usage}`);
                 set((s) => ({ memoryUsage: {...s.memoryUsage, [data.pid]: data.usage }}));
             },
         }),

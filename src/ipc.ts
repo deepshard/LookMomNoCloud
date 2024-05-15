@@ -10,20 +10,26 @@ import { IModelServerInfo } from "./types";
 
 declare global {
   interface Window {
-      ipc: {
-          startModel: (modelName: string) => Promise<{ pid: string, name: string }>,
-          killModel: (pid: string) => Promise<void>,
-          startApp: (appName: string) => Promise<void>,
-          killApp: (appName: string) => Promise<void>,
-          checkForServer: () => Promise<IModelServerInfo | undefined>,
-          downloadModel: (modelName: string) => Promise<void>,
-          onDownloadProgress: (callback: (data: { model: string, progress: number }) => void) => void,
-          onMemoryUsageUpdate: (callback: (data: { pid: number, usage: number }) => void) => void
-      };
+    ipc: {
+      startModel: (modelName: string) => Promise<{ pid: string; name: string }>;
+      killModel: (pid: string) => Promise<void>;
+      startApp: (appName: string) => Promise<void>;
+      killApp: (appName: string) => Promise<void>;
+      checkForServer: () => Promise<IModelServerInfo | undefined>;
+      downloadModel: (modelName: string) => Promise<void>;
+      onDownloadProgress: (
+        callback: (data: { model: string; progress: number }) => void
+      ) => void;
+      onMemoryUsageUpdate: (
+        callback: (data: { pid: number; usage: number }) => void
+      ) => void;
+    };
   }
 }
 
-export async function startModel(modelName: string): Promise<{ pid: string, name: string }> {
+export async function startModel(
+  modelName: string
+): Promise<{ pid: string; name: string }> {
   // Check that model server is not already running
   let servers = (await settings.get("servers")) as IModelServerInfo | undefined;
 
@@ -33,16 +39,23 @@ export async function startModel(modelName: string): Promise<{ pid: string, name
 
   // Start the model server
   logger.info(`Starting model server for ${modelName}`);
-  const res = spawn("bin/server", ["--cmd", "start_server", "--model_name", modelName], {
-    detached: true,
-    stdio: ["pipe"],
-  });
+  const res = spawn(
+    "bin/server",
+    ["--cmd", "start_server", "--model_name", modelName],
+    {
+      detached: true,
+      stdio: ["pipe"],
+    }
+  );
 
   res.unref();
 
   // Log stdout and stderr
-  const logStream = fs.createWriteStream(path.join(app.getPath("logs"), "server.log"), { flags: "a" });
-  
+  const logStream = fs.createWriteStream(
+    path.join(app.getPath("logs"), "server.log"),
+    { flags: "a" }
+  );
+
   res.stdout.pipe(logStream);
   res.stderr.pipe(logStream);
 
@@ -70,7 +83,9 @@ export async function startModel(modelName: string): Promise<{ pid: string, name
 }
 
 export async function killModel(pid: string): Promise<void> {
-  const servers = (await settings.get("servers")) as IModelServerInfo | undefined;
+  const servers = (await settings.get("servers")) as
+    | IModelServerInfo
+    | undefined;
   if (!servers) throw new Error("No servers found");
 
   // Kill the server

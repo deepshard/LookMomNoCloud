@@ -1,6 +1,12 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "path";
-import { checkForServer, killApp, killModel, startApp, startModel } from "./ipc";
+import {
+  checkForServer,
+  killApp,
+  killModel,
+  startApp,
+  startModel,
+} from "./ipc";
 import { ModelManager } from "./ModelManager";
 import { getPidMemoryUsage, getDiskUsage } from "./utils/sysUtils";
 
@@ -46,7 +52,10 @@ app.on("ready", function () {
   const mainWindow = createWindow();
   const modelManager = new ModelManager(mainWindow);
 
-  ipcMain.handle("startModel", async (event, modelName) => await startModel(modelName));
+  ipcMain.handle(
+    "startModel",
+    async (event, modelName) => await startModel(modelName)
+  );
   ipcMain.handle("killModel", async (event, pid) => await killModel(pid));
 
   ipcMain.handle("startApp", async (event, appName) => await startApp(appName));
@@ -65,7 +74,7 @@ app.on("ready", function () {
     await modelManager.installModel();
 
     // TODO: Add memory and disk usage updates
-  }, 60000); 
+  }, 60000);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

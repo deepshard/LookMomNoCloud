@@ -1,8 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "path";
-import { checkForServer, killApp, killModel, killServer, startApp, startModel, startServer } from "./ipc";
+import { checkForServer, killApp, killModel, startApp, startModel } from "./ipc";
 import { ModelManager } from "./ModelManager";
-import { getPidMemoryUsage } from "./utils/sysUtils";
+import { getPidMemoryUsage, getDiskUsage } from "./utils/sysUtils";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {

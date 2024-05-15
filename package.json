@@ -54,9 +54,11 @@
     "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
+    "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.23.1",
     "react-spinners": "^0.13.8",
     "uuid": "^9.0.1",
+    "winston": "^3.13.0",
     "zustand": "^4.5.2"
   }
 }

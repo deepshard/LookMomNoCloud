@@ -3,17 +3,42 @@
 @tailwind utilities;
 
 body {
-  font-family:  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
   /* max-width: 38rem; */
   padding: 15px 25px;
   width: 100%;
 }
 
+.carousel .slide {
+  text-align: left !important;
+}
+
+img.w-\[44px\].h-\[44px\].rounded-md {
+  width: 44px;
+  height: 44px;
+}
+
+.control-dots {
+  margin: 0px 0 !important;
+}
+
+.carousel .control-dots .dot {
+  box-shadow: none !important;
+  width: 6.28px !important;
+  height: 6.28px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  margin-bottom: 15px !important;
+}
+
+.carousel .control-dots .dot.selected {
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+
 @layer base {
   body {
     background: rgba(39, 21, 57, 0.3);
-    @apply text-white; 
+    @apply text-white;
   }
 }
 

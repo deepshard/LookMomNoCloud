@@ -1,7 +1,9 @@
-import { ReactDOM, useState, useEffect } from "react";
+import { ReactDOM, useState, useEffect, useLayoutEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import ModelWidget from "./component/ModelWidget";
 import useStore from "./store";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import { Carousel } from "react-responsive-carousel";
 
 interface DownloadProgress {
   currentFileNum: number;
@@ -53,8 +55,6 @@ export default function Home() {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
 
-
-  
   const checkForServer = async () => {
     try {
       const res = await window.ipc.checkForServer();
@@ -212,14 +212,36 @@ export default function Home() {
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
         <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-          <div className="w-full h-[158px] relative border-[#D9D9D94D] rounded-md border-4 overflow-hidden">
-            <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
-            <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
-            <div className="absolute top-0 left-0 p-[16px]">
-              <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
-              <h3 className="base-regular">Deep Sak</h3>
+          <Carousel infiniteLoop showStatus={false} showThumbs={false} showArrows={false} autoPlay interval={2000}>
+            <div className="w-full h-[158px] relative border-[#D9D9D94D] rounded-md border-4 overflow-hidden ">
+              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+              <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
+              <div className="absolute top-0 left-0 p-[16px]">
+                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
+                <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
+                <p className="break-words line-clamp-2 base-regular">
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                </p>
+              </div>
             </div>
-          </div>
+            <div className="w-full h-[158px] relative border-[#D9D9D94D] rounded-md border-4 overflow-hidden ">
+              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+              <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
+              <div className="absolute top-0 left-0 p-[16px]">
+                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
+                <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
+                <p className="break-words line-clamp-2 base-regular">
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                </p>
+              </div>
+            </div>
+          </Carousel>
 
           <div className="w-full h-[158px] bg-black flex justify-between gap-3">
             <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>

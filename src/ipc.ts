@@ -114,10 +114,10 @@ export async function checkForServer(): Promise<IModelServerInfo | undefined> {
   // and update the config accordingly
   try {
     await axios.get("http://127.0.0.1:8899/v1/models");
-    console.log("Server found");
+    logger.info("Server found");
     return config;
   } catch (error) {
-    console.log("No server found");
+    logger.info("No server found");
     await settings.set("server", null);
     return null;
   }

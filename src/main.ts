@@ -1,7 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "path";
-import { checkForServer, getStats, killServer, startServer } from "./ipc";
-import { loadModel } from "./modelInstallation";
+import { checkForServer, killApp, killModel, killServer, startApp, startModel, startServer } from "./ipc";
+import { ModelManager } from "./ModelManager";
+import { getPidMemoryUsage } from "./utils/sysUtils";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -42,20 +43,29 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", function () {
-  ipcMain.handle("getStats", getStats);
-  ipcMain.handle("startServer", async (event, modelName) => {
-    const result = await startServer(modelName);
-    return result;
-  });
-  ipcMain.handle("killServer", killServer);
+  const mainWindow = createWindow();
+  const modelManager = new ModelManager(mainWindow);
+
+  ipcMain.handle("startModel", async (event, modelName) => await startModel(modelName));
+  ipcMain.handle("killModel", async (event, pid) => await killModel(pid));
+
+  ipcMain.handle("startApp", async (event, appName) => await startApp(appName));
+  ipcMain.handle("killApp", async (event, pid) => await killApp(pid));
+
   ipcMain.handle("checkForServer", async (event) => {
     const result = await checkForServer();
     return result;
   });
-  const mainWindow = createWindow();
   ipcMain.handle("downloadModel", async (event, modelUrl) => {
-    await loadModel(modelUrl, mainWindow);
-  })
+    await modelManager.downloadModel(modelUrl);
+  });
+
+  // Background task for clearing install queue (runs every 30 seconds)
+  setInterval(async () => {
+    await modelManager.installModel();
+
+    // TODO: Add memory and disk usage updates
+  }, 60000); 
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

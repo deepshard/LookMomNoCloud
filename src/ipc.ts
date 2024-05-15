@@ -5,43 +5,60 @@ import fs from "fs";
 import path from "path";
 import settings from "electron-settings";
 
-export async function getStats() {
-  const totalMemory = os.totalmem();
-  const freeMemory = os.freemem();
-  const usedMemory = totalMemory - freeMemory;
-
-  return {
-    totalMemory,
-    freeMemory,
-    usedMemory,
-  };
+declare global {
+  interface Window {
+      ipc: {
+          startModel: any,
+          killModel: any,
+          startApp: any,
+          killApp: any,
+          checkForServer: any,
+          downloadModel: any,
+          onDownloadProgress: any
+          onMemoryUsageUpdate: any
+      };
+  }
 }
 
-export async function startServer(modelName: string) {
-  console.log("starting model server...");
-  let res = spawn("bin/server", ["--cmd", "start_server", "--model_name", modelName], {
+export async function startModel(modelName: string) {
+  // Check that model server is not already running
+  const servers = await settings.get("servers");
+  if (servers && Object.values(servers).includes(modelName)) {
+    throw new Error("Model server already running");
+  }
+
+  // Start the model server
+  console.log(`Starting model server for ${modelName}`);
+  const res = spawn("bin/server", ["--cmd", "start_server", "--model_name", modelName], {
     detached: true,
     stdio: ["pipe"],
   });
 
   res.unref();
 
+  // Log stdout and stderr to truffle.log
   const logStream = fs.createWriteStream(`truffle.log`, {
     flags: "a",
   });
   res.stdout.pipe(logStream);
   res.stderr.pipe(logStream);
 
+  // Check that the server started successfully
   if (!res.pid) {
     throw new Error("Failed to start server");
   }
 
-  console.log("server started with pid: ", res.pid);
+  console.log(`Server started with pid: ${res.pid}`);
 
-  await settings.set("server", {
-    pid: res.pid,
-    name: modelName,
-  });
+  // Update the server config
+  if (servers) {
+    servers[res.pid] = modelName;
+  } else {
+    servers = {
+      [res.pid]: modelName,
+    };
+  }
+  await settings.set("servers", servers);
 
   return {
     pid: res.pid,
@@ -49,14 +66,25 @@ export async function startServer(modelName: string) {
   };
 }
 
-export async function killServer() {
-  const config = await settings.get("server");
+export async function killModel(pid: number) {
+  const servers = await settings.get("servers");
+  if (!servers) throw new Error("No servers found");
 
-  if (!config) throw new Error("No config found");
-  console.log("killing server with pid: ", config.pid);
-
-  const res = process.kill(Number(config.pid));
+  // Kill the server
+  const res = process.kill(pid);
   if (!res) throw new Error("Failed to kill process");
+
+  // Update the server config
+  delete servers[pid];
+  await settings.set("servers", servers);
+}
+
+export async function startApp(appName: string) {
+  // TODO: implement
+}
+
+export async function killApp(appName: string) {
+  // TODO: implement
 }
 
 export async function checkForServer() {
@@ -65,7 +93,7 @@ export async function checkForServer() {
   if (!config) return null;
 
   try {
-    const response = await axios.get("http://127.0.0.1:8000/v1/models");
+    const response = await axios.get("http://127.0.0.1:8899/v1/models");
 
     if (response.status === 200) {
       return config;

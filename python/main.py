@@ -6,11 +6,12 @@ from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.support.auto_weight import detect_weight
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
-from mlc_llm.interface.gen_config import gen_config
+from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from pathlib import Path
 
 
 def determine_quantization(model, system_ram, model_size):
+    # todo: improve this hueristic?
     quantization_compression_table = {
         "int3": 0.25,
         "int4": 0.33,
@@ -53,7 +54,7 @@ def start_server(model_path: str):
         spec_draft_length=4,
         enable_tracing=False,
         host="127.0.0.1",
-        port=8000,
+        port=8899,
         allow_credentials=["*"],
         allow_origins=["*"],
         allow_methods=["*"],
@@ -84,9 +85,9 @@ def convert_weight(model_path: str, conv_template: str, system_ram: str, model_s
         device=device,
         source=source,
         source_format=source_format,
-        output=f"{model_path}-{best_quantization.name}-MLC",
+        output=f"{model_path}-{best_quantization.name}-truffle",
     )
-    gen_config(
+    gen_config_mlc(
         config=config,
         model=model,
         quantization=best_quantization,
@@ -97,16 +98,43 @@ def convert_weight(model_path: str, conv_template: str, system_ram: str, model_s
         attention_sink_size=None,
         tensor_parallel_shards=None,
         max_batch_size=1,
-        output=Path(f"{model_path}-{best_quantization.name}-MLC"),
+        output=Path(f"{model_path}-{best_quantization.name}-truffle"),
     )
 
     # Delete the original model
     shutil.rmtree(model_path)
-    return f"{model_path}-{best_quantization.name}-MLC"
+    return f"{model_path}-{best_quantization.name}-truffle"
+
+
+def gen_config(model_path: str, conv_template: str, system_ram: str, model_size: str):
+    system_ram = int(system_ram)
+    model_size = int(model_size)
+
+    config = detect_config(model_path)
+    model = detect_model_type("auto", config)
+    device = detect_device("auto")
+
+    # Get available quantization options from the model
+    best_quantization = determine_quantization(model, system_ram, model_size)
+
+    gen_config_mlc(
+        config=config,
+        model=model,
+        quantization=best_quantization,
+        conv_template=conv_template,
+        context_window_size=None,
+        sliding_window_size=None,
+        prefill_chunk_size=None,
+        attention_sink_size=None,
+        tensor_parallel_shards=None,
+        max_batch_size=1,
+        output=Path(f"{model_path}-{best_quantization.name}-truffle"),
+    )
 
 
 if __name__ == "__main__":
     # Get args
+    # todo: replace this with argparser
     args = sys.argv
     command = args[2]
 
@@ -120,6 +148,12 @@ if __name__ == "__main__":
         model_size = args[10]
         path = convert_weight(model_path, conv_template,
                               system_ram, model_size)
-        print(path)
+    elif command == "gen_chat_config":
+        model_path = args[4]
+        conv_template = args[6]
+        system_ram = args[8]
+        model_size = args[10]
+        gen_config(model_path, conv_template, system_ram, model_size)
     else:
+        print(f"Invalid command: {command}; exiting")
         sys.exit(1)

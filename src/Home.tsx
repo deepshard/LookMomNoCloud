@@ -1,6 +1,7 @@
 import { ReactDOM, useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import ModelWidget from "./component/ModelWidget";
+import useStore from "./store";
 
 interface DownloadProgress {
   currentFileNum: number;
@@ -47,18 +48,13 @@ const MODEL_LIST = [
 ];
 
 export default function Home() {
-  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
 
-  useEffect(() => {
-    window.ipc.onDownloadProgress((data: any) => {
-      setDownloadProgress(data);
-    });
-  }, []);
 
+  
   const checkForServer = async () => {
     try {
       const res = await window.ipc.checkForServer();
@@ -138,7 +134,7 @@ export default function Home() {
     }
 
     console.log("Sending message");
-    const response = await fetch("http://127.0.0.1:8000/v1/chat/completions", {
+    const response = await fetch("http://127.0.0.1:8899/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -208,6 +204,7 @@ export default function Home() {
       )} */}
 
       <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
+      <button onClick={downloadModel}>Download model</button>
       <div className="flex gap-4">
         {MODEL_LIST.map((model) => (
           <ModelWidget {...model} key={model.name} />

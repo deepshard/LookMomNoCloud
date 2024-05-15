@@ -17,7 +17,7 @@ declare global {
           killApp: any,
           checkForServer: any,
           downloadModel: any,
-          onDownloadProgress: any
+          onDownloadProgress: any,
           onMemoryUsageUpdate: any
       };
   }

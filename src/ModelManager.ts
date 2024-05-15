@@ -33,9 +33,9 @@ export class ModelManager {
     }
 
     canInstall(modelSize: number): boolean {
-        // Check if there's enough free memory to install the model
-        const freeMemory = os.freemem();
-        return freeMemory > modelSize;
+        // Check if there's enough memory to install the model
+        const systemMemory = os.totalmem();
+        return systemMemory > modelSize;
     }
 
     async getRepoInfo(hfRepoId: string): Promise<any> {

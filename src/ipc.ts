@@ -8,15 +8,14 @@ import { app } from "electron";
 import logger from "./logger";
 
 declare global {
-  // todo: add types for ipc
   interface Window {
       ipc: {
-          startModel: any,
-          killModel: any,
-          startApp: any,
-          killApp: any,
-          checkForServer: any,
-          downloadModel: any,
+          startModel: (modelName: string) => Promise<{ pid: string, name: string }>,
+          killModel: (pid: string) => Promise<void>,
+          startApp: (appName: string) => Promise<void>,
+          killApp: (appName: string) => Promise<void>,
+          checkForServer: () => Promise<Servers | undefined>,
+          downloadModel: (modelName: string) => Promise<void>,
           onDownloadProgress: (callback: (data: { model: string, progress: number }) => void) => void,
           onMemoryUsageUpdate: (callback: (data: { pid: number, usage: number }) => void) => void
       };
@@ -27,7 +26,7 @@ interface Servers {
   [key: string]: string;
 }
 
-export async function startModel(modelName: string) {
+export async function startModel(modelName: string): Promise<{ pid: string, name: string }> {
   // Check that model server is not already running
   let servers = (await settings.get("servers")) as Servers | undefined;
 
@@ -73,7 +72,7 @@ export async function startModel(modelName: string) {
   };
 }
 
-export async function killModel(pid: string) {
+export async function killModel(pid: string): Promise<void> {
   const servers = (await settings.get("servers")) as Servers | undefined;
   if (!servers) throw new Error("No servers found");
 
@@ -86,15 +85,15 @@ export async function killModel(pid: string) {
   await settings.set("servers", servers);
 }
 
-export async function startApp(appName: string) {
+export async function startApp(appName: string): Promise<void> {
   // TODO: implement
 }
 
-export async function killApp(appName: string) {
+export async function killApp(appName: string): Promise<void> {
   // TODO: implement
 }
 
-export async function checkForServer() {
+export async function checkForServer(): Promise<Servers | undefined> {
   const config = (await settings.get("server")) as Servers | undefined;
 
   if (!config) return null;

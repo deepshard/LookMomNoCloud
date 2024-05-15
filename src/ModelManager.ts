@@ -12,6 +12,7 @@ import {
 } from "./utils/installUtils";
 import { v4 as uuidv4 } from "uuid";
 import diskusage from "diskusage";
+import logger from "./logger";
 
 interface Model {
   name: string;
@@ -52,7 +53,7 @@ export class ModelManager {
     if (res.status !== 200) throw new Error("Failed to fetch model data");
 
     const files = res.data.siblings;
-    console.log(`Found ${files.length} files in the model repo`);
+    logger.info(`Found ${files.length} files in the model repo`);
 
     // Create an array of promises for HEAD requests
     const sizePromises = files.map(async (file: any) => {
@@ -77,7 +78,7 @@ export class ModelManager {
   async downloadModel(hfRepoId: string) {
     // TODO: check if model is already downloaded or partially downloaded
 
-    console.log(`Downloading model ${hfRepoId}`);
+    logger.info(`Downloading model ${hfRepoId}`);
 
     const uuid = uuidv4();
     const baseUrl = `https://huggingface.co/${hfRepoId}`;
@@ -93,7 +94,7 @@ export class ModelManager {
     const parentDir = path.join(app.getPath("userData"), "models");
     const baseDir = path.resolve(parentDir, `${hfRepoId}`);
     await fs.promises.mkdir(baseDir, { recursive: true });
-    console.log(`Created directory ${baseDir}`);
+    logger.info(`Created directory ${baseDir}`);
 
     this.downloads[uuid] = {
       url: baseUrl,
@@ -108,7 +109,7 @@ export class ModelManager {
     for (const file of files) {
       const fileUrl = `${baseUrl}/resolve/main/${file.rfilename}?download=true`;
       const filePath = path.resolve(baseDir, file.rfilename);
-      console.log(`Starting download for file ${file.rfilename}`);
+      logger.info(`Starting download for file ${file.rfilename}`);
 
       const response = await axios({
         url: fileUrl,
@@ -144,7 +145,7 @@ export class ModelManager {
       });
 
       writer.end();
-      console.log(`Downloaded file ${file.rfilename}`);
+      logger.info(`Downloaded file ${file.rfilename}`);
     }
 
     this.installQueue.push(this.downloads[uuid].model);
@@ -161,18 +162,18 @@ export class ModelManager {
 
     // Check if there's enough free memory to install the model
     if (!this.canInstall(model.size)) {
-      console.log("Not enough free memory to install model");
+      logger.info("Not enough free memory to install model");
       return;
     }
 
     // Install the model
-    console.log(`Installing model ${model.name}`);
+    logger.info(`Installing model ${model.name}`);
     this.installInProgress = true;
     this.installQueue.shift();
 
     const isTruffle = await isTruffleFormat(model.path);
     if (isTruffle) {
-      console.log("Model is already in Truffle format");
+      logger.info("Model is already in Truffle format");
       this.installInProgress = false;
       return;
     }
@@ -182,17 +183,17 @@ export class ModelManager {
     const hasNdArrayCache = truffleChatConfigExistsAndIsValid(model.path);
 
     if (!convertableWeightFormat && !hasChatConfig && hasNdArrayCache) {
-      console.log("Model is in correct format but lacks chat config");
+      logger.info("Model is in correct format but lacks chat config");
       await genChatConfig(model.path, os.totalmem(), model.size);
       this.installInProgress = false;
       return;
     }
 
     if (convertableWeightFormat) {
-      console.log("Model is in convertable weight format");
+      logger.info("Model is in convertable weight format");
       const systemRam = os.totalmem();
       await convertModelWeights(model.path, systemRam, model.size);
-      console.log("Converted model weights");
+      logger.info("Converted model weights");
       this.installInProgress = false;
       return;
     }

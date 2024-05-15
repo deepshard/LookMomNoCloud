@@ -210,11 +210,11 @@ export default function Home() {
 
   const getWidgetState = (model: IModel): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    if(downloadProgress[modelPathName] > 0 && downloadProgress[modelPathName] < 100) {
-      return 'downloading';
+    if (downloadProgress[modelPathName] > 0 && downloadProgress[modelPathName] < 100) {
+      return "downloading";
     }
-    return 'not-downloaded';
-  }
+    return "not-downloaded";
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -247,7 +247,7 @@ export default function Home() {
       {/* <button onClick={downloadModel}>Download model</button> */}
       <div className="flex gap-4">
         {MODEL_LIST.map((model) => (
-            <ModelWidget model={model} key={model.id} widgetState={getWidgetState(model)}  downloadModel={downloadModel}/>
+          <ModelWidget model={model} key={model.id} widgetState={getWidgetState(model)} downloadModel={downloadModel} />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
@@ -278,7 +278,12 @@ export default function Home() {
             <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md"></div>
           </div>
         </div>
-        <div className="col-span-1 bg-red-400 min-w-[263px] w-full h-[280px] lg:h-[353.19px]"></div>
+        <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
+          <div className="flex flex-col w-full h-full">
+            <div className="w-full h-full flex-1 bg-[#D9D9D94D]"></div>
+            <div className="w-full h-[45%] border-t-[0.9px] border-t-white/10 radial-gradient from from-[#d9d9d9a6] to-[#D9D9D94D]"></div>
+          </div>
+        </div>
       </div>
     </div>
   );

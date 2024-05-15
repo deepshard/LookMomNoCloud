@@ -88,4 +88,8 @@ img.w-\[44px\].h-\[44px\].rounded-md {
   .blurred-bg-img {
     @apply absolute top-0 left-0 w-full h-full blur-md opacity-85 !important;
   }
+
+  .radial-gradient {
+    @apply bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] !important;
+  }
 }

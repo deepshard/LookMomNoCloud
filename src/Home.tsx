@@ -212,8 +212,8 @@ export default function Home() {
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
         <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-          <Carousel infiniteLoop showStatus={false} showThumbs={false} showArrows={false} autoPlay interval={2000}>
-            <div className="w-full h-[158px] relative border-[#D9D9D94D] rounded-md border-4 overflow-hidden ">
+          <Carousel infiniteLoop showStatus={false} showThumbs={false} showArrows={false} autoPlay interval={3000} className="border-[#D9D9D94D] border-4 rounded-md">
+            <div className="w-full h-[158px] relative overflow-hidden ">
               <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
               <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
               <div className="absolute top-0 left-0 p-[16px]">
@@ -227,7 +227,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="w-full h-[158px] relative border-[#D9D9D94D] rounded-md border-4 overflow-hidden ">
+            <div className="w-full h-[158px] relative overflow-hidden ">
               <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
               <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
               <div className="absolute top-0 left-0 p-[16px]">

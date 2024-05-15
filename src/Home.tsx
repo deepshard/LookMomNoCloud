@@ -11,31 +11,36 @@ const MODEL_LIST = [
     name: "Llama",
     from: "Meta",
     size: 3000000000,
-    description: "Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    description:
+      "Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
   {
     name: "Phi",
     from: "Together Computer",
     size: 3000000000,
-    description: "Phi is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    description:
+      "Phi is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
   {
     name: "RedPajama",
     from: "Together Computer",
     size: 200000000,
-    description: "RedPajama is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    description:
+      "RedPajama is a model designed by Together Computer. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
   {
     name: "GPT-4",
     from: "OpenAI",
     size: 1000000000,
-    description: "GPT-4 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    description:
+      "GPT-4 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
   {
     name: "GPT-3.5",
     from: "OpenAI",
     size: 1000000000,
-    description: "GPT-3.5 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    description:
+      "GPT-3.5 is a model designed by OpenAI. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
   },
 ];
 
@@ -87,7 +92,9 @@ export default function Home() {
   }
 
   async function downloadModel() {
-    await window.ipc.downloadModel("togethercomputer/RedPajama-INCITE-Instruct-3B-v1");
+    await window.ipc.downloadModel(
+      "togethercomputer/RedPajama-INCITE-Instruct-3B-v1"
+    );
 
     let timePassed = 0;
     let res = null;
@@ -202,32 +209,68 @@ export default function Home() {
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
         <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-          <Carousel infiniteLoop showStatus={false} showThumbs={false} showArrows={false} autoPlay interval={3000} className="border-[#D9D9D94D] border-4 rounded-md">
+          <Carousel
+            infiniteLoop
+            showStatus={false}
+            showThumbs={false}
+            showArrows={false}
+            autoPlay
+            interval={3000}
+            className="border-[#D9D9D94D] border-4 rounded-md"
+          >
             <div className="w-full h-[158px] relative overflow-hidden ">
-              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+              <img
+                src="/assets/images/llama1.png"
+                alt=""
+                className="blurred-bg-img backdrop-blur-md"
+              />
               <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
               <div className="absolute top-0 left-0 p-[16px]">
-                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
+                <img
+                  src="/assets/images/llama1.png"
+                  alt=""
+                  className="w-[44px] h-[44px] rounded-md"
+                />
                 <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
                 <p className="break-words line-clamp-2 base-regular">
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam
+                  consectetur elementum mattis aliquam vulputate consectetur
+                  etiam consectetur lorem ipsum dolor sit amet consectetur
+                  adipiscing elit etiam consectetur elementum mattis aliquam
+                  vulputate consectetur etiam consectetur lorem ipsum dolor sit
+                  amet consectetur adipiscing elit etiam consectetur elementum
+                  mattis aliquam vulputate consectetur etiam consectetur lorem
+                  ipsum dolor sit amet consectetur adipiscing elit etiam
+                  consectetur elementum mattis aliquam vulputate consectetur
+                  etiam consectetur
                 </p>
               </div>
             </div>
             <div className="w-full h-[158px] relative overflow-hidden ">
-              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+              <img
+                src="/assets/images/llama1.png"
+                alt=""
+                className="blurred-bg-img backdrop-blur-md"
+              />
               <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
               <div className="absolute top-0 left-0 p-[16px]">
-                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
+                <img
+                  src="/assets/images/llama1.png"
+                  alt=""
+                  className="w-[44px] h-[44px] rounded-md"
+                />
                 <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
                 <p className="break-words line-clamp-2 base-regular">
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
-                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur
+                  lorem ipsum dolor sit amet consectetur adipiscing elit etiam
+                  consectetur elementum mattis aliquam vulputate consectetur
+                  etiam consectetur lorem ipsum dolor sit amet consectetur
+                  adipiscing elit etiam consectetur elementum mattis aliquam
+                  vulputate consectetur etiam consectetur lorem ipsum dolor sit
+                  amet consectetur adipiscing elit etiam consectetur elementum
+                  mattis aliquam vulputate consectetur etiam consectetur lorem
+                  ipsum dolor sit amet consectetur adipiscing elit etiam
+                  consectetur elementum mattis aliquam vulputate consectetur
+                  etiam consectetur
                 </p>
               </div>
             </div>

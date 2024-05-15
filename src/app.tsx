@@ -8,15 +8,15 @@ import useStore from "./store";
 
 const root = createRoot(document.getElementById("root"));
 
-root.render(
-  <App />
-);
+root.render(<App />);
 
 function App() {
-  const { setDownloadProgress, setMemoryUsage } = useStore((state) => state)
+  const { setDownloadProgress, setMemoryUsage } = useStore((state) => state);
 
   useEffect(() => {
-    console.log("Setting up listeners for download progress and memory usage updates...");
+    console.log(
+      "Setting up listeners for download progress and memory usage updates..."
+    );
     window.ipc.onDownloadProgress((data) => {
       setDownloadProgress(data);
     });
@@ -25,7 +25,6 @@ function App() {
     });
   }, []);
 
-  
   return (
     <div>
       <Toaster />
@@ -39,4 +38,3 @@ function App() {
     </div>
   );
 }
-

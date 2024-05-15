@@ -3,7 +3,7 @@ import fs from "fs";
 import os from "os";
 import axios from "axios";
 import { app } from "electron";
-import { isConvertableWeightFormat, isMLCFormat, mlcChatConfigExistsAndIsValid, convertModelWeights, genChatConfig } from "./utils/installUtils";
+import { isConvertableWeightFormat, isTruffleFormat, truffleChatConfigExistsAndIsValid, convertModelWeights, genChatConfig } from "./utils/installUtils";
 import { v4 as uuidv4 } from "uuid";
 import diskusage from "diskusage";
 
@@ -67,6 +67,8 @@ export class ModelManager {
     }
 
     async downloadModel(hfRepoId: string) {
+        // TODO: check if model is already downloaded or partially downloaded
+
         console.log(`Downloading model ${hfRepoId}`);
 
         const uuid = uuidv4();
@@ -154,19 +156,19 @@ export class ModelManager {
         this.installInProgress = true;
         this.installQueue.shift();
 
-        const isMLC = await isMLCFormat(model.path);
-        if (isMLC) {
-            console.log("Model is already in MLC format");
+        const isTruffle = await isTruffleFormat(model.path);
+        if (isTruffle) {
+            console.log("Model is already in Truffle format");
             this.installInProgress = false;
             return;
         }
 
         const convertableWeightFormat = isConvertableWeightFormat(model.path);
-        const hasChatConfig = mlcChatConfigExistsAndIsValid(model.path);
-        const hasNdArrayCache = mlcChatConfigExistsAndIsValid(model.path);
+        const hasChatConfig = truffleChatConfigExistsAndIsValid(model.path);
+        const hasNdArrayCache = truffleChatConfigExistsAndIsValid(model.path);
 
         if (!convertableWeightFormat && !hasChatConfig && hasNdArrayCache) {
-            console.log("Model is in MLC format but lacks chat config");
+            console.log("Model is in correct format but lacks chat config");
             await genChatConfig(model.path, os.totalmem(), model.size);
             this.installInProgress = false;
             return;
@@ -176,6 +178,7 @@ export class ModelManager {
             console.log("Model is in convertable weight format");
             const systemRam = os.totalmem();
             await convertModelWeights(model.path, systemRam, model.size);
+            console.log("Converted model weights");
             this.installInProgress = false;
             return;
         }

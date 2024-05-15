@@ -18,7 +18,7 @@ export function isConvertableWeightFormat(modelPath: string): boolean {
     return fs.existsSync(pytorch_json_path) || fs.existsSync(pytorch_bin_path) || fs.existsSync(safetensors_path) || fs.existsSync(safetensors_bin_path);
 }
 
-export function mlcChatConfigExistsAndIsValid(modelPath: string): boolean {
+export function truffleChatConfigExistsAndIsValid(modelPath: string): boolean {
     // todo: rename this to truffle.json
     const configPath = path.resolve(modelPath, "mlc-chat-config.json");
 
@@ -64,12 +64,12 @@ export function ndArrayCacheExistsAndIsValid(modelPath: string): boolean {
     return existsAndValid;
 }
 
-export async function isMLCFormat(modelPath: string): Promise<boolean> {
+export async function isTruffleFormat(modelPath: string): Promise<boolean> {
     if (!isConvertableWeightFormat(modelPath)) {
         return false;
     }
 
-    if (!mlcChatConfigExistsAndIsValid(modelPath)) {
+    if (!truffleChatConfigExistsAndIsValid(modelPath)) {
         return false;
     }
 
@@ -114,7 +114,7 @@ export async function convertModelWeights(modelPath: string, systemRAM: number, 
 }
 
 export async function genChatConfig(modelPath: string, systemRAM: number, modelSize: number) {
-    logger.info("Generating MLC chat config");
+    logger.info("Generating chat config");
     let res = spawn("bin/server", [
         "--cmd",
         "gen_chat_config",

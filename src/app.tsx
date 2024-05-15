@@ -17,10 +17,10 @@ function App() {
 
   useEffect(() => {
     console.log("Setting up listeners for download progress and memory usage updates...");
-    window.ipc.onDownloadProgress((data: { model: string, progress: number}) => {
+    window.ipc.onDownloadProgress((data) => {
       setDownloadProgress(data);
     });
-    window.ipc.onMemoryUsageUpdate((data: { pid: number, usage: number }) => {
+    window.ipc.onMemoryUsageUpdate((data) => {
       setMemoryUsage(data);
     });
   }, []);

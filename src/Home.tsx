@@ -124,18 +124,15 @@ export default function Home() {
 
       // await window.ipc.downloadModel("togethercomputer/RedPajama-INCITE-Instruct-3B-v1");
       await window.ipc.downloadModel(modelPathName);
-      console.log("Downloading model - 2");
 
       let timePassed = 0;
       let res = null;
-      while (!res && timePassed < 10 * 60 * 1000) {
-        console.log("Downloading model - 3");
-        res = await window.ipc.checkForServer();
-        if (res) break;
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        timePassed += 1000;
-      }
-      console.log("Downloading model - 4");
+      // while (!res && timePassed < 10 * 60 * 1000) {
+      //   res = await window.ipc.checkForServer();
+      //   if (res) break;
+      //   await new Promise((resolve) => setTimeout(resolve, 1000));
+      //   timePassed += 1000;
+      // }
 
       if (res) {
         setModelInfo(res);

@@ -1,6 +1,8 @@
 import path from "path";
 import fs from "fs";
 import { spawn } from "child_process";
+import logger from "../logger";
+import { app } from "electron";
 
 function getConvTemplate(modelPath: string) {
     // TODO: implement logic
@@ -17,6 +19,7 @@ export function isConvertableWeightFormat(modelPath: string): boolean {
 }
 
 export function mlcChatConfigExistsAndIsValid(modelPath: string): boolean {
+    // todo: rename this to truffle.json
     const configPath = path.resolve(modelPath, "mlc-chat-config.json");
 
     let existsAndValid = false;
@@ -79,7 +82,7 @@ export async function isMLCFormat(modelPath: string): Promise<boolean> {
 
 export async function convertModelWeights(modelPath: string, systemRAM: number, modelSize: number) {
     // The python script will automatically determine the proper quantization level
-    console.log("Converting model weights");
+    logger.info("Converting model weights");
     let res = spawn("bin/server", [
         "--cmd",
         "convert_weight",
@@ -93,7 +96,7 @@ export async function convertModelWeights(modelPath: string, systemRAM: number, 
         modelSize.toString(),
     ]);
 
-    const logStream = fs.createWriteStream("truffle.log", { flags: "a" });
+    const logStream = fs.createWriteStream(path.join(app.getPath("logs"), "server.log"), { flags: "a" });
     res.stdout.pipe(logStream);
     res.stderr.pipe(logStream);
 
@@ -103,6 +106,7 @@ export async function convertModelWeights(modelPath: string, systemRAM: number, 
             if (code === 0) {
                 resolve(null);
             } else {
+                logger.error(`Failed to convert model weights. Exit code: ${code}`);
                 reject(new Error(`Failed to convert model weights. Exit code: ${code}`));
             }
         });
@@ -110,7 +114,7 @@ export async function convertModelWeights(modelPath: string, systemRAM: number, 
 }
 
 export async function genChatConfig(modelPath: string, systemRAM: number, modelSize: number) {
-    console.log("Generating MLC chat config");
+    logger.info("Generating MLC chat config");
     let res = spawn("bin/server", [
         "--cmd",
         "gen_chat_config",
@@ -124,7 +128,7 @@ export async function genChatConfig(modelPath: string, systemRAM: number, modelS
         modelSize.toString(),
     ]);
 
-    const logStream = fs.createWriteStream("truffle.log", { flags: "a" });
+    const logStream = fs.createWriteStream(path.join(app.getPath("logs"), "server.log"), { flags: "a" });
     res.stdout.pipe(logStream);
     res.stderr.pipe(logStream);
 
@@ -134,6 +138,7 @@ export async function genChatConfig(modelPath: string, systemRAM: number, modelS
             if (code === 0) {
                 resolve(null);
             } else {
+                logger.error(`Failed to generate chat config. Exit code: ${code}`);
                 reject(new Error(`Failed to generate chat config. Exit code: ${code}`));
             }
         });

@@ -4,17 +4,7 @@ import ModelWidget from "./component/ModelWidget";
 import useStore from "./store";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
-
-interface DownloadProgress {
-  currentFileNum: number;
-  totalFiles: number;
-  currentProgress: number;
-}
-
-interface ModelInfo {
-  pid: number;
-  name: string;
-}
+import { IModelServerInfo } from "./types";
 
 const MODEL_LIST = [
   {
@@ -50,7 +40,7 @@ const MODEL_LIST = [
 ];
 
 export default function Home() {
-  const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
+  const [modelInfo, setModelInfo] = useState<IModelServerInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
@@ -115,9 +105,9 @@ export default function Home() {
     }
   }
 
-  async function unloadModel() {
+  async function unloadModel(pid: string) {
     try {
-      await window.ipc.killModel();
+      await window.ipc.killModel(pid);
     } catch (error) {
       toast.error("Failed to unload model");
       return;

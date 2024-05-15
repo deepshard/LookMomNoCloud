@@ -6,6 +6,7 @@ import path from "path";
 import settings from "electron-settings";
 import { app } from "electron";
 import logger from "./logger";
+import { IModelServerInfo } from "./types";
 
 declare global {
   interface Window {
@@ -14,7 +15,7 @@ declare global {
           killModel: (pid: string) => Promise<void>,
           startApp: (appName: string) => Promise<void>,
           killApp: (appName: string) => Promise<void>,
-          checkForServer: () => Promise<Servers | undefined>,
+          checkForServer: () => Promise<IModelServerInfo | undefined>,
           downloadModel: (modelName: string) => Promise<void>,
           onDownloadProgress: (callback: (data: { model: string, progress: number }) => void) => void,
           onMemoryUsageUpdate: (callback: (data: { pid: number, usage: number }) => void) => void
@@ -22,13 +23,9 @@ declare global {
   }
 }
 
-interface Servers {
-  [key: string]: string;
-}
-
 export async function startModel(modelName: string): Promise<{ pid: string, name: string }> {
   // Check that model server is not already running
-  let servers = (await settings.get("servers")) as Servers | undefined;
+  let servers = (await settings.get("servers")) as IModelServerInfo | undefined;
 
   if (servers && Object.values(servers).includes(modelName)) {
     throw new Error("Model server already running");
@@ -73,7 +70,7 @@ export async function startModel(modelName: string): Promise<{ pid: string, name
 }
 
 export async function killModel(pid: string): Promise<void> {
-  const servers = (await settings.get("servers")) as Servers | undefined;
+  const servers = (await settings.get("servers")) as IModelServerInfo | undefined;
   if (!servers) throw new Error("No servers found");
 
   // Kill the server
@@ -93,10 +90,20 @@ export async function killApp(appName: string): Promise<void> {
   // TODO: implement
 }
 
-export async function checkForServer(): Promise<Servers | undefined> {
-  const config = (await settings.get("server")) as Servers | undefined;
+export async function checkForServer(): Promise<IModelServerInfo | undefined> {
+  const config = (await settings.get("server")) as IModelServerInfo | undefined;
 
   if (!config) return null;
-  await axios.get("http://127.0.0.1:8899/v1/models");
-  return config;
+
+  // TODO: This should check that the actual processes tracked in the config are still running
+  // and update the config accordingly
+  try {
+    await axios.get("http://127.0.0.1:8899/v1/models");
+    console.log("Server found");
+    return config;
+  } catch (error) {
+    console.log("No server found");
+    await settings.set("server", null);
+    return null;
+  }
 }

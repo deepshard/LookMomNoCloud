@@ -22,3 +22,13 @@ export interface IEval {
     HumanEval?: number
     model?:    IModel
 }
+
+export interface IDownloadProgress {
+    currentFileNum: number;
+    totalFiles: number;
+    currentProgress: number;
+}
+
+export interface IModelServerInfo {
+    [key: string]: string;
+}

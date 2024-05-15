@@ -280,8 +280,12 @@ export default function Home() {
         </div>
         <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
           <div className="flex flex-col w-full h-full">
-            <div className="w-full h-full flex-1 bg-[#D9D9D94D]"></div>
-            <div className="w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]"></div>
+            <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
+              <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end"/>
+            </div>
+            <div className="w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
+
+            </div>
           </div>
         </div>
       </div>

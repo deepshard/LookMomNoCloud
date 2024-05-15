@@ -17,8 +17,8 @@ declare global {
           killApp: any,
           checkForServer: any,
           downloadModel: any,
-          onDownloadProgress: any,
-          onMemoryUsageUpdate: any
+          onDownloadProgress: (callback: (data: { model: string, progress: number }) => void) => void,
+          onMemoryUsageUpdate: (callback: (data: { pid: number, usage: number }) => void) => void
       };
   }
 }

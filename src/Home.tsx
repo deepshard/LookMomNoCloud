@@ -233,9 +233,9 @@ export default function Home() {
             </div>
           </Carousel>
 
-          <div className="w-full h-[158px] bg-black flex justify-between gap-3">
-            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>
-            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-blue-400"></div>
+          <div className="w-full h-[158px] flex justify-between gap-3">
+            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md"></div>
+            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md"></div>
           </div>
         </div>
         <div className="col-span-1 bg-red-400 min-w-[263px] w-full h-[280px] lg:h-[353.19px]"></div>

@@ -44,7 +44,7 @@ export async function startModel(modelName: string) {
 
   res.unref();
 
-  // Log stdout and stderr to truffle.log
+  // Log stdout and stderr
   const logStream = fs.createWriteStream(path.join(app.getPath("logs"), "server.log"), { flags: "a" });
   
   res.stdout.pipe(logStream);

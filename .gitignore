@@ -100,3 +100,5 @@ out/
 bun.lockb
 
 .tmp
+
+__pycache__/

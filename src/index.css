@@ -3,37 +3,27 @@
 @tailwind utilities;
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
   /* max-width: 38rem; */
   padding: 15px 25px;
   width: 100%;
 }
 
-.carousel .slide {
-  text-align: left !important;
-}
+.react-multi-carousel-list {
+  position: static !important;
 
-img.w-\[44px\].h-\[44px\].rounded-md {
-  width: 44px;
-  height: 44px;
-}
+  .react-multi-carousel-dot-list {
+    align-items: center !important;
+  }
 
-.control-dots {
-  margin: 0px 0 !important;
-}
-
-.carousel .control-dots .dot {
-  box-shadow: none !important;
-  width: 6.28px !important;
-  height: 6.28px !important;
-  background: rgba(255, 255, 255, 0.2) !important;
-  margin-bottom: 15px !important;
-}
-
-.carousel .control-dots .dot.selected {
-  background: rgba(255, 255, 255, 0.5) !important;
+  .react-multi-carousel-dot-list.order-truffle-carousel-dots {
+    bottom: -35px !important;
+    height: 35px;
+  }
+  .react-multi-carousel-dot-list.discover-carousel-dots {
+    bottom: 14px !important;
+  }
 }
 
 button.ant-btn.preorder-btn {

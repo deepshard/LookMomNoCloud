@@ -2,10 +2,12 @@ import { ReactDOM, useState, useEffect, useLayoutEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import useStore from "./store";
-import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
-import { Carousel } from "react-responsive-carousel";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+
 import { IModel, IModelServerInfo } from "./types";
 import { Button } from "antd";
+import CustomCarouselDot from "./component/CustomCarouselDot";
 
 const MODEL_LIST: IModel[] = [
   {
@@ -253,43 +255,102 @@ export default function Home() {
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
         <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-          <Carousel infiniteLoop showStatus={false} showThumbs={false} showArrows={false} autoPlay interval={3000} className="border-[#D9D9D94D] border-4 rounded-md">
-            <div className="w-full h-[158px] relative overflow-hidden ">
-              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
-              <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
-              <div className="absolute top-0 left-0 p-[16px]">
-                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
-                <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
-                <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
+          <div className="relative">
+            <Carousel
+              responsive={{
+                desktop: {
+                  breakpoint: { max: 3000, min: 1024 },
+                  items: 1,
+                },
+                tablet: {
+                  breakpoint: { max: 1024, min: 464 },
+                  items: 1,
+                },
+              }}
+              arrows={false}
+              autoPlay
+              showDots
+              infinite
+              className="border-[#D9D9D94D] border-4 rounded-md"
+              customDot={<CustomCarouselDot />}
+              dotListClass="discover-carousel-dots"
+            >
+              <div className="w-full h-[158px] relative overflow-hidden ">
+                <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+                <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
+                <div className="absolute top-0 left-0 p-[16px]">
+                  <img src="/assets/images/llama1.png" alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                  <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
+                  <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
+                </div>
+              </div>
+              <div className="w-full h-[158px] relative overflow-hidden ">
+                <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+                <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
+                <div className="absolute top-0 left-0 p-[16px]">
+                  <img src="/assets/images/llama1.png" alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                  <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
+                  <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
+                </div>
+              </div>
+            </Carousel>
+          </div>
+
+          <div className="w-full h-[158px] flex justify-between gap-3">
+            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
+              <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">App</p>
+            </div>
+            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
+              <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative">
+          <Carousel
+            responsive={{
+              desktop: {
+                breakpoint: { max: 3000, min: 1024 },
+                items: 1,
+              },
+              tablet: {
+                breakpoint: { max: 1024, min: 464 },
+                items: 1,
+              },
+            }}
+            arrows={false}
+            autoPlay
+            showDots
+            infinite
+            className=""
+            customDot={<CustomCarouselDot />}
+            dotListClass="order-truffle-carousel-dots"
+          >
+            <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
+              <div className="flex flex-col w-full h-full">
+                <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
+                  <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end" />
+                </div>
+                <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
+                  <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
+                    <span className="base-medium ">Pre Order Truffle–1</span>
+                  </Button>
+                </div>
               </div>
             </div>
-            <div className="w-full h-[158px] relative overflow-hidden ">
-              <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
-              <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
-              <div className="absolute top-0 left-0 p-[16px]">
-                <img src="/assets/images/llama1.png" alt="" className="w-[44px] h-[44px] rounded-md" />
-                <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
-                <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
+            <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
+              <div className="flex flex-col w-full h-full">
+                <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
+                  <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end" />
+                </div>
+                <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
+                  <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
+                    <span className="base-medium ">Pre Order Truffle–1</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </Carousel>
-
-          <div className="w-full h-[158px] flex justify-between gap-3">
-            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md"></div>
-            <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md"></div>
-          </div>
-        </div>
-        <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
-          <div className="flex flex-col w-full h-full">
-            <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-              <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end"/>
-            </div>
-            <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-              <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
-                <span className="base-medium ">Pre Order Truffle–1</span>
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

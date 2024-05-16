@@ -572,12 +572,20 @@ body {
   bottom: 0px;
 }
 
+.bottom-\[-35px\] {
+  bottom: -35px;
+}
+
 .left-0 {
   left: 0px;
 }
 
 .right-0 {
   right: 0px;
+}
+
+.right-\[50\%\] {
+  right: 50%;
 }
 
 .top-0 {
@@ -594,6 +602,11 @@ body {
 
 .m-\[13px\] {
   margin: 13px;
+}
+
+.mx-\[6\.28px\] {
+  margin-left: 6.28px;
+  margin-right: 6.28px;
 }
 
 .mb-2 {
@@ -675,6 +688,10 @@ body {
   height: 45%;
 }
 
+.h-\[6\.281px\] {
+  height: 6.281px;
+}
+
 .h-full {
   height: 100%;
 }
@@ -703,6 +720,10 @@ body {
   width: 490.07px;
 }
 
+.w-\[6\.281px\] {
+  width: 6.281px;
+}
+
 .w-\[60\%\] {
   width: 60%;
 }
@@ -721,6 +742,11 @@ body {
 
 .flex-1 {
   flex: 1 1 0%;
+}
+
+.translate-x-\[50\%\] {
+  --tw-translate-x: 50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .grid-cols-2 {
@@ -821,6 +847,10 @@ body {
 
 .bg-white\/20 {
   background-color: rgb(255 255 255 / 0.2);
+}
+
+.bg-white\/50 {
+  background-color: rgb(255 255 255 / 0.5);
 }
 
 .from-\[\#d9d9d9\]\/50 {
@@ -972,37 +1002,25 @@ body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: auto;
   /* max-width: 38rem; */
   padding: 15px 25px;
   width: 100%;
 }
 
-.carousel .slide {
-  text-align: left !important;
-}
-
-img.w-\[44px\].h-\[44px\].rounded-md {
-  width: 44px;
-  height: 44px;
-}
-
-.control-dots {
-  margin: 0px 0 !important;
-}
-
-.carousel .control-dots .dot {
-  box-shadow: none !important;
-  width: 6.28px !important;
-  height: 6.28px !important;
-  background: rgba(255, 255, 255, 0.2) !important;
-  margin-bottom: 15px !important;
-}
-
-.carousel .control-dots .dot.selected {
-  background: rgba(255, 255, 255, 0.5) !important;
+.react-multi-carousel-list {
+  position: static !important;
+  .react-multi-carousel-dot-list {
+    align-items: center !important;
+  }
+  .react-multi-carousel-dot-list.order-truffle-carousel-dots {
+    bottom: -35px !important;
+    height: 35px;
+  }
+  .react-multi-carousel-dot-list.discover-carousel-dots {
+    bottom: 14px !important;
+  }
 }
 
 button.ant-btn.preorder-btn {

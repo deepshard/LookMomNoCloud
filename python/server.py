@@ -10,6 +10,11 @@ app = FastAPI()
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+
+    async def return_message(res):
+        print("return_message", res)
+        await websocket.send_text(json.dumps(res))
+
     try:
         while True:
             data = await websocket.receive_text()
@@ -63,9 +68,8 @@ async def websocket_endpoint(websocket: WebSocket):
                             break
 
                         try:
-                            print("Downloading model")
-                            download_info = download_model(
-                                model_name, None)
+                            download_info = await download_model(
+                                model_name, return_message)
                             await websocket.send_text(json.dumps({
                                 "cmd": "DOWNLOAD_MODEL",
                                 "data": download_info
@@ -93,7 +97,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         try:
                             convert_info = convert_weights(
-                                model_name, quant, websocket)
+                                model_name, quant, return_message)
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
                                 "data": convert_info

@@ -3,34 +3,41 @@ import platform
 import requests
 import asyncio
 import aiohttp
+from pathlib import Path
+from loguru import logger
 
 
 def get_app_data_path():
     system = platform.system()
 
     if system == "Windows":
-        return "%APPDATA%/truffle-app"
+        return Path(os.getenv("APPDATA")) / "truffle-app"
     elif system == "Darwin":
-        return "~/Library/Application Support/truffle-app"
+        return Path(os.path.expanduser("~/Library/Application Support")) / "truffle-app"
     elif system == "Linux":
-        return "~/.config/truffle-app"
+        return Path(os.path.expanduser("~/.config")) / "truffle-app"
     else:
         raise ValueError(f"Unsupported system: {system}")
 
 
-async def get_repo_info(repo_url, downloaded_files):
-    response = requests.get(f"{repo_url}?")
+async def get_repo_info(model_name, repo_url, downloaded_files):
+    logger.info(f"Getting repo info for {model_name}")
+    if len(downloaded_files) > 0:
+        logger.info(f"Already downloaded files: {downloaded_files}")
+    response = requests.get(f"https://huggingface.co/api/models/{model_name}?")
     response.raise_for_status()
+    logger.info(f"Repo info response: {response.json()}")
 
     # Get list of repo files
-    data = response.json()["data"]
+    data = response.json()
     files = data["siblings"]
 
     # Create an array of async HEAD requests to get the file sizes
+    logger.info(f"Getting file sizes for {len(files)} files")
+
     async def get_file_size(file):
         async with aiohttp.ClientSession() as session:
-            async with session.head(f"{repo_url}/resolve/main/{file}") as response:
-                print(response.headers)
+            async with session.head(f"{repo_url}/resolve/main/{file}", allow_redirects=True) as response:
                 return file, int(response.headers["Content-Length"])
 
     tasks = []

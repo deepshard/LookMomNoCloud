@@ -41,6 +41,12 @@ const healthSchema = z.object({
   status: z.literal("OK"),
 });
 
+const downloadModelSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  progress: z.number(),
+});
+
 const useStore = create<State>()(
   devtools(
     (set) => ({
@@ -69,6 +75,11 @@ const useStore = create<State>()(
             case Command.SYSINFO:
               const sysinfo = sysinfoSchema.parse(data.data);
               set({ sysinfo });
+              break;
+
+            case Command.DOWNLOAD_MODEL:
+              const downloadModel = downloadModelSchema.parse(data.data);
+              console.log("[download model]", downloadModel);
               break;
 
             default:

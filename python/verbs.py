@@ -117,13 +117,13 @@ def get_model_state():
     return models
 
 
-async def download_model(model_name, websocket):
+async def download_model(model_name, return_message):
     """
         Downloads the model from HuggingFace
 
         Args:
             model_name: string
-            websocket: WebSocket
+            return_message: function
 
         - Check if model is already downloaded or partially downloaded
         - Push model to info table with status "DOWNLOADING"
@@ -140,9 +140,9 @@ async def download_model(model_name, websocket):
             }
     """
 
-    save_path = os.path.abspath(os.path.join(
-        get_app_data_path(), f"models/{model_name}/base"))
+    save_path = get_app_data_path() / "models" / model_name / "base"
     base_url = f"https://huggingface.co/{model_name}"
+    logger.info(f"Downloading {model_name} to {save_path}")
 
     # Check if model is already downloaded or partially downloaded
     # TODO: Implement this
@@ -152,7 +152,7 @@ async def download_model(model_name, websocket):
     if fully_downloaded:
         return {
             "name": model_name,
-            "path": save_path,
+            "path": str(save_path),
             "progress": 100
         }
 
@@ -160,8 +160,7 @@ async def download_model(model_name, websocket):
     # TODO: Implement this
 
     # Identify size of the download
-    logger.info(f"Getting info for {model_name}")
-    files, total_size = await get_repo_info(base_url, downloaded_files)
+    files, total_size = await get_repo_info(model_name, base_url, downloaded_files)
     logger.info(f"Downloading {model_name} with size {total_size} bytes")
 
     free_space = psutil.disk_usage("/").free
@@ -178,35 +177,39 @@ async def download_model(model_name, websocket):
         response = requests.get(url, stream=True)
         response.raise_for_status()
 
+        # Make sure the directory exists
+        os.makedirs(save_path, exist_ok=True)
+
+        # Save the file
         with open(os.path.join(save_path, file["rfilename"]), "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
                 downloaded_bytes += len(chunk)
 
-                progress = downloaded_bytes / total_size * 100
+                progress = 100 * downloaded_bytes / total_size
 
-                if progress - last_progress >= 0.01:
+                if (progress - last_progress) >= 0.01:
                     last_progress = progress
-                    await websocket.send_text(json.dumps({
+                    await return_message({
                         "cmd": "DOWNLOAD_MODEL",
                         "data": {
                             "name": model_name,
-                            "path": save_path,
+                            "path": str(save_path),
                             "progress": progress
                         }
-                    }))
+                    })
 
     # Update model status in info table to "QUEUED"
     # TODO: Implement this
 
     return {
         "name": model_name,
-        "path": save_path,
+        "path": str(save_path),
         "progress": 100
     }
 
 
-async def convert_weights(model_name, quant, websocket):
+async def convert_weights(model_name, quant, return_message):
     """
         Converts the weights of the model to the selected quantization
         in Truffle format
@@ -214,7 +217,7 @@ async def convert_weights(model_name, quant, websocket):
         Args:
             model_name: string
             quant: "no-quant" | "int4" | "int3"
-            websocket: WebSocket
+            return_message: function
 
         - Check if model already has desired quantization built
         - Update model status in info table to "INSTALLING"
@@ -232,8 +235,7 @@ async def convert_weights(model_name, quant, websocket):
     """
 
     # Check if model already has desired quantization built
-    quant_path = os.path.abspath(os.path.join(
-        get_app_data_path(), f"models/{model_name}/{quant}"))
+    quant_path = get_app_data_path() / "models" / model_name / quant
     if os.path.exists(quant_path):
         return {
             "name": model_name,
@@ -243,8 +245,7 @@ async def convert_weights(model_name, quant, websocket):
         }
 
     # Check that the base weights exist
-    base_path = os.path.abspath(os.path.join(
-        get_app_data_path(), f"models/{model_name}/base"))
+    base_path = get_app_data_path() / "models" / model_name / "base"
     if not os.path.exists(base_path):
         raise ValueError("Base weights not found")
 
@@ -276,7 +277,7 @@ async def convert_weights(model_name, quant, websocket):
     conv_template = get_conv_template(model_name)
 
     # Convert model
-    await websocket.send_text(json.dumps({
+    await return_message({
         "cmd": "CONVERT_WEIGHTS",
         "data": {
             "name": model_name,
@@ -284,7 +285,7 @@ async def convert_weights(model_name, quant, websocket):
             "quant": quant,
             "status": "IN_PROGRESS"
         }
-    }))
+    })
     convert_weight_mlc(
         config=config,
         quantization=quant,  # TODO: fix this to actually pull the quantization object
@@ -307,3 +308,13 @@ async def convert_weights(model_name, quant, websocket):
         max_batch_size=1,
         output=Path(quant_path),
     )
+
+    # Update model status in info table to "STOPPED"
+    # TODO: Implement this
+
+    return {
+        "name": model_name,
+        "path": str(quant_path),
+        "quant": quant,
+        "status": "FINISHED"
+    }

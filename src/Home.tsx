@@ -5,6 +5,7 @@ import useStore from "./store";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from "react-responsive-carousel";
 import { IModel, IModelServerInfo } from "./types";
+import { Button } from "antd";
 
 const MODEL_LIST: IModel[] = [
   {
@@ -283,8 +284,10 @@ export default function Home() {
             <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
               <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end"/>
             </div>
-            <div className="w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-
+            <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
+              <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
+                <span className="base-medium ">Pre Order Truffle–1</span>
+              </Button>
             </div>
           </div>
         </div>

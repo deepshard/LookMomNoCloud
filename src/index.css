@@ -36,6 +36,20 @@ img.w-\[44px\].h-\[44px\].rounded-md {
   background: rgba(255, 255, 255, 0.5) !important;
 }
 
+button.ant-btn.preorder-btn {
+  background: #817f7f !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+
+  &:hover {
+    background: #fff !important;
+
+    span {
+      color: #817f7f !important;
+    }
+  }
+}
+
 @layer base {
   body {
     background: rgba(39, 21, 57, 0.3);
@@ -58,7 +72,7 @@ img.w-\[44px\].h-\[44px\].rounded-md {
   }
 
   .base-medium {
-    @apply text-[12.57px] font-medium leading-[15px] !important;
+    @apply text-[14px] font-medium leading-[15px] !important;
   }
 
   .base-regular {

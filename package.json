@@ -44,6 +44,7 @@
   "dependencies": {
     "@types/pidusage": "^2.0.5",
     "@types/uuid": "^9.0.8",
+    "antd": "^5.17.2",
     "axios": "^1.6.8",
     "diskusage": "^1.2.0",
     "electron-settings": "^4.0.4",

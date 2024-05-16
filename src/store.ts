@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, devtools } from "zustand/middleware";
 import { z } from "zod";
 import { infer as Infer } from "zod";
 
@@ -41,43 +41,48 @@ const healthSchema = z.object({
   status: z.literal("OK"),
 });
 
-const useStore = create<State>()((set) => ({
-  socket: null,
-  setSocket: (socket: WebSocket | null) => set({ socket }),
-  sendCommand: (command: Command, data: any) =>
-    set((state) => {
-      console.log("-->", { cmd: command, data });
-      state.socket?.send(JSON.stringify({ cmd: command, data }));
-      return {};
+const useStore = create<State>()(
+  devtools(
+    (set) => ({
+      socket: null,
+      setSocket: (socket: WebSocket | null) => set({ socket }),
+      sendCommand: (command: Command, data: any) =>
+        set((state) => {
+          console.log("-->", { cmd: command, data });
+          state.socket?.send(JSON.stringify({ cmd: command, data }));
+          return {};
+        }),
+      parseResponse: (response: string) => {
+        try {
+          let data = responseSchema.parse(JSON.parse(response));
+          console.log("<--", data);
+          if (data.error) {
+            toast.error(data.error);
+          }
+
+          switch (data.cmd) {
+            case Command.HEALTH:
+              const health = healthSchema.parse(data.data);
+              set({ health });
+              break;
+
+            case Command.SYSINFO:
+              const sysinfo = sysinfoSchema.parse(data.data);
+              set({ sysinfo });
+              break;
+
+            default:
+              break;
+          }
+        } catch (error) {
+          console.error("[invalid response]", error);
+        }
+      },
+      sysinfo: null,
+      health: null,
     }),
-  parseResponse: (response: string) => {
-    try {
-      let data = responseSchema.parse(JSON.parse(response));
-      console.log("<--", data);
-      if (data.error) {
-        toast.error(data.error);
-      }
-
-      switch (data.cmd) {
-        case Command.HEALTH:
-          const health = healthSchema.parse(data.data);
-          set({ health });
-          break;
-
-        case Command.SYSINFO:
-          const sysinfo = sysinfoSchema.parse(data.data);
-          set({ sysinfo });
-          break;
-
-        default:
-          break;
-      }
-    } catch (error) {
-      console.error("[invalid response]", error);
-    }
-  },
-  sysinfo: null,
-  health: null,
-}));
+    { name: "store" }
+  )
+);
 
 export default useStore;

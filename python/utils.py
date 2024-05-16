@@ -1,7 +1,21 @@
 import os
+import platform
 import requests
 import asyncio
 import aiohttp
+
+
+def get_app_data_path():
+    system = platform.system()
+
+    if system == "Windows":
+        return "%APPDATA%/truffle-app"
+    elif system == "Darwin":
+        return "~/Library/Application Support/truffle-app"
+    elif system == "Linux":
+        return "~/.config/truffle-app"
+    else:
+        raise ValueError(f"Unsupported system: {system}")
 
 
 async def get_repo_info(repo_url, downloaded_files):
@@ -16,6 +30,7 @@ async def get_repo_info(repo_url, downloaded_files):
     async def get_file_size(file):
         async with aiohttp.ClientSession() as session:
             async with session.head(f"{repo_url}/resolve/main/{file}") as response:
+                print(response.headers)
                 return file, int(response.headers["Content-Length"])
 
     tasks = []

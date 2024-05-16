@@ -2,7 +2,9 @@ import os
 import json
 import platform
 import psutil
+import shutil
 import requests
+from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.support.auto_weight import detect_weight
@@ -10,7 +12,7 @@ from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from pathlib import Path
-from utils import get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format
+from utils import get_app_data_path, get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format
 
 
 def sysinfo():
@@ -60,11 +62,11 @@ def sysinfo():
 
     # Get global memory usage
     memory_info = psutil.virtual_memory()
-    ram_used = memory_info.used
+    ram_used = memory_info.total - memory_info.available
     ram_total = memory_info.total
 
     # Get global disk usage
-    disk_info = psutil.disk_usage("/")
+    disk_info = shutil.disk_usage("/")
     disk_used = disk_info.used
     disk_total = disk_info.total
 
@@ -115,12 +117,11 @@ def get_model_state():
     return models
 
 
-async def download_model(app_data_path, model_name, websocket):
+async def download_model(model_name, websocket):
     """
         Downloads the model from HuggingFace
 
         Args:
-            app_data_path: string
             model_name: string
             websocket: WebSocket
 
@@ -140,7 +141,7 @@ async def download_model(app_data_path, model_name, websocket):
     """
 
     save_path = os.path.abspath(os.path.join(
-        app_data_path, f"models/{model_name}/base"))
+        get_app_data_path(), f"models/{model_name}/base"))
     base_url = f"https://huggingface.co/{model_name}"
 
     # Check if model is already downloaded or partially downloaded
@@ -159,10 +160,11 @@ async def download_model(app_data_path, model_name, websocket):
     # TODO: Implement this
 
     # Identify size of the download
+    logger.info(f"Getting info for {model_name}")
     files, total_size = await get_repo_info(base_url, downloaded_files)
+    logger.info(f"Downloading {model_name} with size {total_size} bytes")
 
     free_space = psutil.disk_usage("/").free
-
     if total_size > free_space:
         raise ValueError("Insufficient disk space")
 
@@ -170,6 +172,8 @@ async def download_model(app_data_path, model_name, websocket):
     downloaded_bytes = 0
     last_progress = 0.0
     for file in files:
+        logger.info(f"Downloading {file['rfilename']}")
+
         url = f"{base_url}/resolve/main/{file['rfilename']}"
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -202,13 +206,12 @@ async def download_model(app_data_path, model_name, websocket):
     }
 
 
-async def convert_weights(app_data_path, model_name, quant, websocket):
+async def convert_weights(model_name, quant, websocket):
     """
         Converts the weights of the model to the selected quantization
         in Truffle format
 
         Args:
-            app_data_path: string
             model_name: string
             quant: "no-quant" | "int4" | "int3"
             websocket: WebSocket
@@ -230,7 +233,7 @@ async def convert_weights(app_data_path, model_name, quant, websocket):
 
     # Check if model already has desired quantization built
     quant_path = os.path.abspath(os.path.join(
-        app_data_path, f"models/{model_name}/{quant}"))
+        get_app_data_path(), f"models/{model_name}/{quant}"))
     if os.path.exists(quant_path):
         return {
             "name": model_name,
@@ -241,7 +244,7 @@ async def convert_weights(app_data_path, model_name, quant, websocket):
 
     # Check that the base weights exist
     base_path = os.path.abspath(os.path.join(
-        app_data_path, f"models/{model_name}/base"))
+        get_app_data_path(), f"models/{model_name}/base"))
     if not os.path.exists(base_path):
         raise ValueError("Base weights not found")
 

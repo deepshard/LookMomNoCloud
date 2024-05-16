@@ -4,6 +4,7 @@ import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import useStore, { Command } from "./store";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import { app } from "electron";
 
 import { IModel, IModelServerInfo } from "./types";
 import { Button } from "antd";
@@ -241,13 +242,24 @@ export default function Home() {
   };
 
   return (
-    <button
-      onClick={() => {
-        sendCommand(Command.SYSINFO, {});
-      }}
-    >
-      HOME
-    </button>
+    <>
+      <button
+        onClick={() => {
+          sendCommand(Command.SYSINFO, {});
+        }}
+      >
+        HOME
+      </button>
+      <button
+        onClick={() => {
+          sendCommand(Command.DOWNLOAD_MODEL, { 
+            model_name: "togethercomputer/RedPajama-INCITE-Chat-3B-v1" 
+          })
+        }}
+      >
+        Download model
+      </button>
+    </>
   );
 
   return (

@@ -16,6 +16,7 @@ async def websocket_endpoint(websocket: WebSocket):
             try:
                 data = json.loads(data)
                 cmd = data.get("cmd")
+                data = data.get("data")
 
                 match cmd:
                     case "HEALTH":
@@ -51,25 +52,26 @@ async def websocket_endpoint(websocket: WebSocket):
                     case "DOWNLOAD_MODEL":
                         logger.info(f"<-- DOWNLOAD_MODEL")
 
-                        app_data_path = data.get("app_data_path")
                         model_name = data.get("model_name")
 
-                        if model_name is None or app_data_path is None:
+                        if model_name is None:
                             await websocket.send_text(json.dumps({
                                 "cmd": "DOWNLOAD_MODEL",
                                 "data": {},
-                                "error": "Missing arguments"
+                                "error": "Missing model name"
                             }))
                             break
 
                         try:
+                            print("Downloading model")
                             download_info = download_model(
-                                app_data_path, model_name, websocket)
+                                model_name, None)
                             await websocket.send_text(json.dumps({
                                 "cmd": "DOWNLOAD_MODEL",
                                 "data": download_info
                             }))
                         except Exception as e:
+                            logger.error(f"Error downloading model: {e}")
                             await websocket.send_text(json.dumps({
                                 "cmd": "DOWNLOAD_MODEL",
                                 "data": {},
@@ -78,11 +80,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     case "CONVERT_WEIGHTS":
                         logger.info(f"<-- CONVERT_WEIGHTS")
 
-                        app_data_path = data.get("app_data_path")
                         model_name = data.get("model_name")
                         quant = data.get("quant")
 
-                        if model_name is None or app_data_path is None or quant is None:
+                        if model_name is None or quant is None:
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
                                 "data": {},
@@ -92,7 +93,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         try:
                             convert_info = convert_weights(
-                                app_data_path, model_name, quant, websocket)
+                                model_name, quant, websocket)
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
                                 "data": convert_info

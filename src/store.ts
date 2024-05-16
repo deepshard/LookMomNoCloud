@@ -1,44 +1,46 @@
+import toast from "react-hot-toast";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-interface DownloadProgress {
-  [key: string]: number;
-}
-
-interface MemoryUsage {
-  [key: number]: number;
-}
+import { z } from "zod";
 
 interface State {
-  downloadProgress: DownloadProgress;
-  memoryUsage: MemoryUsage;
-  setDownloadProgress: (data: { model: string; progress: number }) => void;
-  setMemoryUsage: (data: { pid: number; usage: number }) => void;
+  socket: WebSocket | null;
+  setSocket: (socket: WebSocket | null) => void;
+  sendCommand: (command: Command, data: any) => void;
+  parseResponse: (response: string) => void;
 }
 
-const useStore = create<State>()(
-  persist(
-    (set) => ({
-      downloadProgress: {},
-      memoryUsage: {},
-      setDownloadProgress: (data) => {
-        set((s) => ({
-          downloadProgress: {
-            ...s.downloadProgress,
-            [data.model]: data.progress,
-          },
-        }));
-      },
-      setMemoryUsage: (data) => {
-        set((s) => ({
-          memoryUsage: { ...s.memoryUsage, [data.pid]: data.usage },
-        }));
-      },
+export enum Command {
+  SYSINFO = "SYSINFO",
+  LAUNCH_MODEL = "LAUNCH_MODEL",
+}
+
+const responseSchema = z.object({
+  error: z.string().optional(),
+  data: z.any(),
+  cmd: z.nativeEnum(Command),
+});
+
+const useStore = create<State>()((set) => ({
+  socket: null,
+  setSocket: (socket: WebSocket | null) => set({ socket }),
+  sendCommand: (command: Command, data: any) =>
+    set((state) => {
+      console.log("-->", { cmd: command, data });
+      state.socket?.send(JSON.stringify({ cmd: command, data }));
+      return {};
     }),
-    {
-      name: "store",
-      partialize: (state) => ({ memoryUsage: state.memoryUsage }),
+  parseResponse: (response: string) => {
+    try {
+      const data = responseSchema.parse(JSON.parse(response));
+      console.log("<--", data);
+      if (data.error) {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("[invalid response]", error);
     }
-  )
-);
+  },
+}));
 
 export default useStore;

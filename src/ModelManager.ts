@@ -1,3 +1,4 @@
+// @ts-nocheck
 import path from "path";
 import fs from "fs";
 import os from "os";
@@ -12,7 +13,6 @@ import {
 } from "./utils/installUtils";
 import { v4 as uuidv4 } from "uuid";
 import diskusage from "diskusage";
-import logger from "./logger";
 
 interface Model {
   name: string;

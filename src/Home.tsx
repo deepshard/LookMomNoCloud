@@ -1,7 +1,7 @@
 import { ReactDOM, useState, useEffect, useLayoutEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
-import useStore from "./store";
+import useStore, { Command } from "./store";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 
@@ -16,10 +16,14 @@ const MODEL_LIST: IModel[] = [
     author: "Meta",
     size: 3000000000,
     downloads: 120,
-    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks:
+      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities:
+      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro:
+      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink:
+      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -28,10 +32,14 @@ const MODEL_LIST: IModel[] = [
     author: "Meta",
     size: 3000000000,
     downloads: 120,
-    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks:
+      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities:
+      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro:
+      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink:
+      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -40,10 +48,14 @@ const MODEL_LIST: IModel[] = [
     author: "Meta",
     size: 3000000000,
     downloads: 120,
-    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks:
+      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities:
+      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro:
+      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink:
+      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -52,10 +64,14 @@ const MODEL_LIST: IModel[] = [
     author: "Meta",
     size: 3000000000,
     downloads: 120,
-    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks:
+      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities:
+      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro:
+      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink:
+      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -64,10 +80,14 @@ const MODEL_LIST: IModel[] = [
     author: "Meta",
     size: 3000000000,
     downloads: 120,
-    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks:
+      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities:
+      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro:
+      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink:
+      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
 ];
@@ -78,7 +98,7 @@ export default function Home() {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
   const { downloadProgress } = useStore((state) => state);
-
+  const sendCommand = useStore((state) => state.sendCommand);
   const checkForServer = async () => {
     try {
       const res = await window.ipc.checkForServer();
@@ -91,10 +111,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    checkForServer();
-  }, []);
 
   async function loadModel(modelName: string) {
     try {
@@ -140,7 +156,9 @@ export default function Home() {
       if (res) {
         setModelInfo(res);
         console.log("Successfully downloaded model");
-        toast.success(`Loaded togethercomputer/RedPajama-INCITE-Instruct-3B-v1`);
+        toast.success(
+          `Loaded togethercomputer/RedPajama-INCITE-Instruct-3B-v1`
+        );
       } else {
         console.log("Failed to download model");
         toast.error("Failed to load model");
@@ -213,15 +231,24 @@ export default function Home() {
 
   const getWidgetState = (model: IModel): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    if (downloadProgress[modelPathName] > 0 && downloadProgress[modelPathName] < 100) {
+    if (
+      downloadProgress[modelPathName] > 0 &&
+      downloadProgress[modelPathName] < 100
+    ) {
       return "downloading";
     }
     return "not-downloaded";
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  return (
+    <button
+      onClick={() => {
+        sendCommand(Command.SYSINFO, {});
+      }}
+    >
+      HOME
+    </button>
+  );
 
   return (
     <div>
@@ -250,7 +277,12 @@ export default function Home() {
       {/* <button onClick={downloadModel}>Download model</button> */}
       <div className="flex gap-4">
         {MODEL_LIST.map((model) => (
-          <ModelWidget model={model} key={model.id} widgetState={getWidgetState(model)} downloadModel={downloadModel} />
+          <ModelWidget
+            model={model}
+            key={model.id}
+            widgetState={getWidgetState(model)}
+            downloadModel={downloadModel}
+          />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
@@ -276,21 +308,59 @@ export default function Home() {
               dotListClass="discover-carousel-dots"
             >
               <div className="w-full h-[158px] relative overflow-hidden ">
-                <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+                <img
+                  src="/assets/images/llama1.png"
+                  alt=""
+                  className="blurred-bg-img backdrop-blur-md"
+                />
                 <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                 <div className="absolute top-0 left-0 p-[16px]">
-                  <img src="/assets/images/llama1.png" alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                  <img
+                    src="/assets/images/llama1.png"
+                    alt=""
+                    className="discover-model-img w-[44px] h-[44px] rounded-md"
+                  />
                   <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
-                  <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
+                  <p className="break-words line-clamp-2 base-regular">
+                    lorem ipsum dolor sit amet consectetur adipiscing elit etiam
+                    consectetur elementum mattis aliquam vulputate consectetur
+                    etiam consectetur lorem ipsum dolor sit amet consectetur
+                    adipiscing elit etiam consectetur elementum mattis aliquam
+                    vulputate consectetur etiam consectetur lorem ipsum dolor
+                    sit amet consectetur adipiscing elit etiam consectetur
+                    elementum mattis aliquam vulputate consectetur etiam
+                    consectetur lorem ipsum dolor sit amet consectetur
+                    adipiscing elit etiam consectetur elementum mattis aliquam
+                    vulputate consectetur etiam consectetur
+                  </p>
                 </div>
               </div>
               <div className="w-full h-[158px] relative overflow-hidden ">
-                <img src="/assets/images/llama1.png" alt="" className="blurred-bg-img backdrop-blur-md" />
+                <img
+                  src="/assets/images/llama1.png"
+                  alt=""
+                  className="blurred-bg-img backdrop-blur-md"
+                />
                 <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                 <div className="absolute top-0 left-0 p-[16px]">
-                  <img src="/assets/images/llama1.png" alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                  <img
+                    src="/assets/images/llama1.png"
+                    alt=""
+                    className="discover-model-img w-[44px] h-[44px] rounded-md"
+                  />
                   <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
-                  <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
+                  <p className="break-words line-clamp-2 base-regular">
+                    lorem ipsum dolor sit amet consectetur adipiscing elit etiam
+                    consectetur elementum mattis aliquam vulputate consectetur
+                    etiam consectetur lorem ipsum dolor sit amet consectetur
+                    adipiscing elit etiam consectetur elementum mattis aliquam
+                    vulputate consectetur etiam consectetur lorem ipsum dolor
+                    sit amet consectetur adipiscing elit etiam consectetur
+                    elementum mattis aliquam vulputate consectetur etiam
+                    consectetur lorem ipsum dolor sit amet consectetur
+                    adipiscing elit etiam consectetur elementum mattis aliquam
+                    vulputate consectetur etiam consectetur
+                  </p>
                 </div>
               </div>
             </Carousel>
@@ -298,10 +368,14 @@ export default function Home() {
 
           <div className="w-full h-[158px] flex justify-between gap-3">
             <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
-              <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">App</p>
+              <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">
+                App
+              </p>
             </div>
             <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
-              <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
+              <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">
+                Models
+              </p>
             </div>
           </div>
         </div>
@@ -329,10 +403,17 @@ export default function Home() {
             <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
               <div className="flex flex-col w-full h-full">
                 <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-                  <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end" />
+                  <img
+                    src="/assets/icons/truffle-hardware.svg"
+                    alt=""
+                    className="self-end"
+                  />
                 </div>
                 <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                  <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
+                  <Button
+                    type="primary"
+                    className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white"
+                  >
                     <span className="base-medium ">Pre Order Truffle–1</span>
                   </Button>
                 </div>
@@ -341,10 +422,17 @@ export default function Home() {
             <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
               <div className="flex flex-col w-full h-full">
                 <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-                  <img src="/assets/icons/truffle-hardware.svg" alt="" className="self-end" />
+                  <img
+                    src="/assets/icons/truffle-hardware.svg"
+                    alt=""
+                    className="self-end"
+                  />
                 </div>
                 <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                  <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
+                  <Button
+                    type="primary"
+                    className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white"
+                  >
                     <span className="base-medium ">Pre Order Truffle–1</span>
                   </Button>
                 </div>

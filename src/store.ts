@@ -7,6 +7,10 @@ import { infer as Infer } from "zod";
 export enum Command {
   SYSINFO = "SYSINFO",
   HEALTH = "HEALTH",
+  GET_MODEL_STATE = "GET_MODEL_STATE",
+  DOWNLOAD_MODEL = "DOWNLOAD_MODEL",
+  CONVERT_WEIGHTS = "CONVERT_WEIGHTS",
+  LAUNCH_MODEL = "LAUNCH_MODEL",
 }
 
 const responseSchema = z.object({

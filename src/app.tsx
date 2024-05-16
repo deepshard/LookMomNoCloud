@@ -16,7 +16,7 @@ function App() {
   const parseResponse = useStore((state) => state.parseResponse);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8899/");
+    const socket = new WebSocket("ws://192.168.1.184:8899/");
     socket.onopen = () => {
       console.log("[ws connected]");
       setSocket(socket);

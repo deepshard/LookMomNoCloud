@@ -29,6 +29,7 @@ interface State {
   health: Infer<typeof healthSchema> | null;
   running_models: Infer<typeof modelStateSchema> | null;
   downloadProgress: Infer<typeof downloadModelSchema> | null;
+  conversionProgress: Infer<typeof convertWeightsSchema> | null;
 }
 
 const sysinfoSchema = z.object({
@@ -58,6 +59,13 @@ const downloadModelSchema = z.array(z.object({
   path: z.string(),
   progress: z.number(),
 }));
+
+const convertWeightsSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  quant: z.string(),
+  status: z.string(),
+});
 
 const modelInstanceSchema = z.object({
   id: z.string(),
@@ -111,7 +119,8 @@ const useStore = create<State>()(
               break;
 
             case Command.CONVERT_WEIGHTS:
-              console.log(`Weights converted`);
+              const conversionProgress = convertWeightsSchema.parse(data.data);
+              set({ conversionProgress });
               break;
 
             case Command.LAUNCH_MODEL:
@@ -135,6 +144,7 @@ const useStore = create<State>()(
       health: null,
       running_models: null,
       downloadProgress: null,
+      conversionProgress: null,
     }),
     { name: "store" }
   )

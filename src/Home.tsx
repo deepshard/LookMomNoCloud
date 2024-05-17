@@ -275,6 +275,16 @@ export default function Home() {
       )}
       <button
         onClick={() => {
+          sendCommand(Command.CONVERT_WEIGHTS, {
+            model_name: "togethercomputer/RedPajama-INCITE-Chat-3B-v1",
+            quant: "int4"
+          });
+        }}
+      >
+        Convert Weights
+      </button>
+      <button
+        onClick={() => {
           sendCommand(Command.GET_MODEL_STATE, {});
         }}
       >

@@ -61,13 +61,16 @@ async def get_repo_info(model_name, repo_url, downloaded_files):
 
 
 def get_conv_template(model_name):
-    # TODO
-    pass
+    return "llama-3"
 
 
 def get_quant_compression(quant):
-    # TODO
-    pass
+    quantization_compression_table = {
+        "int3": 0.25,
+        "int4": 0.33,
+        "int8": 0.55
+    }
+    return quantization_compression_table[quant]
 
 
 def select_quantization(model_name, running_models):

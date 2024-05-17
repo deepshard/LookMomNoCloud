@@ -284,9 +284,6 @@ async def convert_weights(model_name, quant, websocket):
     if ((model_size * compression_rate) > disk_space) or model_size > system_ram:
         raise ValueError("Insufficient disk space or memory")
 
-    # Update model status in info table to "INSTALLING"
-    # TODO: Implement this
-
     # Identify necessary info for conversion
     config = detect_config(base_path)
     model = detect_model_type("auto", config)
@@ -298,19 +295,37 @@ async def convert_weights(model_name, quant, websocket):
     device = detect_device("auto")
     conv_template = get_conv_template(model_name)
 
+    quantization = None
+    quantization_kinds = list(model.quantize.keys())
+    quantization_options = [quantization for quantization in QUANTIZATION.values(
+    ) if quantization.kind in quantization_kinds]
+    if quant == "no-quant":
+        filtered_quantization_options = [
+            quantization for quantization in quantization_options if quantization.kind == "no-quant"]
+        quantization = filtered_quantization_options[0]
+    else:
+        filtered_quantization_options = []
+        for quantization in quantization_options:
+            if quantization.kind == "no-quant":
+                continue
+            if quantization.quantize_dtype == quant:
+                filtered_quantization_options.append(quantization)
+
+        quantization = filtered_quantization_options[0]
+
     # Convert model
     await websocket.send_text(json.dumps({
         "cmd": "CONVERT_WEIGHTS",
         "data": {
             "name": model_name,
-            "path": None,
+            "path": quant_path,
             "quant": quant,
             "status": "IN_PROGRESS"
         }
     }))
     convert_weight_mlc(
         config=config,
-        quantization=quant,  # TODO: fix this to actually pull the quantization object
+        quantization=quantization,
         model=model,
         device=device,
         source=source,
@@ -320,7 +335,7 @@ async def convert_weights(model_name, quant, websocket):
     gen_config_mlc(
         config=config,
         model=model,
-        quantization=quant,  # TODO: fix this to actually pull the quantization object
+        quantization=quantization,
         conv_template=conv_template,
         context_window_size=None,
         sliding_window_size=None,
@@ -330,9 +345,6 @@ async def convert_weights(model_name, quant, websocket):
         max_batch_size=1,
         output=Path(quant_path),
     )
-
-    # Update model status in info table to "STOPPED"
-    # TODO: Implement this
 
     return {
         "name": model_name,

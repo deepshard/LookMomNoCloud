@@ -98,7 +98,7 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
-  // const { downloadProgress } = useStore((state) => state);
+  const { downloadProgress } = useStore((state) => state);
   const sendCommand = useStore((state) => state.sendCommand);
 
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/icons/llama1.png" : "../../renderer/main_window/assets/icons/llama1.png";
@@ -279,6 +279,13 @@ export default function Home() {
         }}
       >
         Get model state
+      </button>
+      <button
+        onClick={() => {
+          sendCommand(Command.LAUNCH_MODEL, { model_name: "togethercomputer/RedPajama-INCITE-Chat-3B-v1" });
+        }}
+      >
+        Launch Model
       </button>
     </>
   );

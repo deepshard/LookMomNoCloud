@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket
 from starlette.websockets import WebSocketDisconnect
 from loguru import logger
 import json
-from verbs import sysinfo, get_model_state, download_model, convert_weights
+from verbs import sysinfo, get_model_state, download_model, convert_weights, launch_model, stop_model
 from DownloadManager import DownloadManager
 
 app = FastAPI()
@@ -95,7 +95,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             break
 
                         try:
-                            convert_info = convert_weights(
+                            convert_info = await convert_weights(
                                 model_name, quant, websocket)
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
@@ -104,6 +104,55 @@ async def websocket_endpoint(websocket: WebSocket):
                         except Exception as e:
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
+                                "data": {},
+                                "error": str(e)
+                            }))
+                    case "LAUNCH_MODEL":
+                        logger.info(f"<-- LAUNCH_MODEL")
+
+                        model_name = data.get("model_name")
+
+                        if model_name is None:
+                            await websocket.send_text(json.dumps({
+                                "cmd": "LAUNCH_MODEL",
+                                "data": {},
+                                "error": "Missing model name"
+                            }))
+                            break
+
+                        try:
+                            instance_info = await launch_model(model_name)
+                            await websocket.send_text(json.dumps({
+                                "cmd": "LAUNCH_MODEL",
+                                "data": instance_info
+                            }))
+                        except Exception as e:
+                            await websocket.send_text(json.dumps({
+                                "cmd": "LAUNCH_MODEL",
+                                "data": {},
+                                "error": str(e)
+                            }))
+                    case "STOP_MODEL":
+                        logger.info(f"<-- STOP_MODEL")
+                        instance_id = data.get("instance_id")
+
+                        if instance_id is None:
+                            await websocket.send_text(json.dumps({
+                                "cmd": "STOP_MODEL",
+                                "data": {},
+                                "error": "Missing instance ID"
+                            }))
+                            break
+
+                        try:
+                            stop_info = stop_model(instance_id)
+                            await websocket.send_text(json.dumps({
+                                "cmd": "STOP_MODEL",
+                                "data": stop_info
+                            }))
+                        except Exception as e:
+                            await websocket.send_text(json.dumps({
+                                "cmd": "STOP_MODEL",
                                 "data": {},
                                 "error": str(e)
                             }))
@@ -128,7 +177,7 @@ if __name__ == "__main__":
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS running_models (
-            id UUID PRIMARY KEY,
+            id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             pid INTEGER NOT NULL,
             port INTEGER NOT NULL,

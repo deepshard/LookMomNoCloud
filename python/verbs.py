@@ -14,6 +14,7 @@ from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from pathlib import Path
+from uuid import uuid4
 from utils import get_app_data_path, get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format, check_process, check_port
 
 
@@ -113,17 +114,26 @@ def get_model_state():
     # Validate all processes are still in the expected state
     validated_models = []
     for model in models:
-        pid = model["pid"]
-        port = model["port"]
+        print(model)
+        id = model[0]
+        pid = model[2]
+        port = model[3]
 
         # Check if the process is still running
         if not check_process(pid) or not check_port(pid, port):
             cur.execute("DELETE FROM running_models WHERE id = ?",
-                        (model["id"],))
+                        (id,))
             con.commit()
             continue
 
-        validated_models.append(model)
+        validated_models.append({
+            "id": id,
+            "name": model[1],
+            "pid": pid,
+            "port": port,
+            "quant": model[4],
+            "size": model[5],
+        })
 
     return validated_models
 
@@ -330,3 +340,40 @@ async def convert_weights(model_name, quant, websocket):
         "quant": quant,
         "status": "FINISHED"
     }
+
+
+async def launch_model(model_name):
+    # Generate UUID
+    id = str(uuid4())
+    pid = 1111
+    port = 8000
+    quant = "int4"
+    size = 2000000000
+
+    # Create entry in db
+    con = sqlite3.connect("truffle.db")
+    cur = con.cursor()
+    cur.execute("INSERT INTO running_models (id, name, pid, port, quant, size) VALUES (?, ?, ?, ?, ?, ?)",
+                (id, model_name, pid, port, quant, size))
+    con.commit()
+    con.close()
+
+    return {
+        "id": id,
+        "name": model_name,
+        "pid": pid,
+        "port": port,
+        "quant": quant,
+        "size": size
+    }
+
+
+async def stop_model(id):
+    # Delete entry from db
+    con = sqlite3.connect("truffle.db")
+    cur = con.cursor()
+    cur.execute("DELETE FROM running_models WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+
+    return "OK"

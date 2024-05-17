@@ -11,6 +11,7 @@ export enum Command {
   DOWNLOAD_MODEL = "DOWNLOAD_MODEL",
   CONVERT_WEIGHTS = "CONVERT_WEIGHTS",
   LAUNCH_MODEL = "LAUNCH_MODEL",
+  STOP_MODEL = "STOP_MODEL",
 }
 
 const responseSchema = z.object({
@@ -58,6 +59,17 @@ const downloadModelSchema = z.array(z.object({
   progress: z.number(),
 }));
 
+const modelInstanceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  pid: z.number(),
+  port: z.number(),
+  quant: z.string(),
+  size: z.number(),
+});
+
+const stopModelResponseSchema = z.string();
+
 const useStore = create<State>()(
   devtools(
     (set) => ({
@@ -96,6 +108,20 @@ const useStore = create<State>()(
             case Command.DOWNLOAD_MODEL:
               const downloadProgress = downloadModelSchema.parse(data.data);
               set({ downloadProgress });
+              break;
+
+            case Command.CONVERT_WEIGHTS:
+              console.log(`Weights converted`);
+              break;
+
+            case Command.LAUNCH_MODEL:
+              const modelInstance = modelInstanceSchema.parse(data.data);
+              console.log(`Model launched: ${modelInstance}`);
+              break;
+
+            case Command.STOP_MODEL:
+              const stopModelResponse = stopModelResponseSchema.parse(data.data);
+              console.log(`Model stopped with status: ${stopModelResponse}`);
               break;
 
             default:

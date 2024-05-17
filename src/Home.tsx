@@ -259,7 +259,16 @@ export default function Home() {
       >
         Download model
       </button>
-      <p>Download Progress: {downloadProgress && downloadProgress.progress}</p>
+      {downloadProgress && (
+        <>
+          {downloadProgress.map((progress) => (
+            <p key={progress.name}>
+              Downloading file {progress.path} -{" "}
+              {progress.progress}% complete
+            </p>
+          ))}
+        </>
+      )}
     </>
   );
 

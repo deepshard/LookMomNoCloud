@@ -153,11 +153,7 @@ async def download_model(model_name, websocket, download_manager):
     downloaded_files = []
 
     if fully_downloaded:
-        return {
-            "name": model_name,
-            "path": str(save_path),
-            "progress": 100
-        }
+        return download_manager.get_downloads_in_return_format()
 
     # Push model to info table with status "DOWNLOADING"
     # TODO: Implement this
@@ -172,7 +168,7 @@ async def download_model(model_name, websocket, download_manager):
         raise ValueError("Insufficient disk space")
 
     # Push the download to the download manager
-    download_manager.set_download(model_name, total_size)
+    download_manager.set_download(model_name, save_path, 0, total_size)
 
     # Download the model
     downloaded_bytes = 0
@@ -196,17 +192,15 @@ async def download_model(model_name, websocket, download_manager):
 
                 # Update the download manager
                 download_manager.set_download(
-                    model_name, total_size - downloaded_bytes)
+                    model_name, save_path, progress, total_size - downloaded_bytes)
 
                 if (progress - last_progress) >= 0.01:
                     last_progress = progress
+                    downloads = download_manager.get_downloads_in_return_format()
+
                     await websocket.send_text(json.dumps({
                         "cmd": "DOWNLOAD_MODEL",
-                        "data": {
-                            "name": model_name,
-                            "path": str(save_path),
-                            "progress": progress
-                        }
+                        "data": downloads
                     }))
 
     # # Update model status in info table to "QUEUED"
@@ -215,11 +209,7 @@ async def download_model(model_name, websocket, download_manager):
     # Clear the download from the download manager
     download_manager.clear_download(model_name)
 
-    return {
-        "name": model_name,
-        "path": str(save_path),
-        "progress": 100
-    }
+    return download_manager.get_downloads_in_return_format()
 
 
 async def convert_weights(model_name, quant, websocket):

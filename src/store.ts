@@ -42,11 +42,11 @@ const healthSchema = z.object({
   status: z.literal("OK"),
 });
 
-const downloadModelSchema = z.object({
+const downloadModelSchema = z.array(z.object({
   name: z.string(),
   path: z.string(),
   progress: z.number(),
-});
+}));
 
 const useStore = create<State>()(
   devtools(

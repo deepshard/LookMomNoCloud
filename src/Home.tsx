@@ -10,10 +10,10 @@ import { IModel, IModelServerInfo } from "./types";
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 
-const MODEL_LIST: IModel[] = [
+const MODEL_LIST = [
   {
     id: "0",
-    title: "Llama",
+    title: "Llama 7B",
     author: "Meta",
     size: 3000000000,
     downloads: 120,
@@ -29,8 +29,8 @@ const MODEL_LIST: IModel[] = [
   },
   {
     id: "1",
-    title: "Llama",
-    author: "Meta",
+    title: "openai/gpt-3.5-turbo",
+    author: "Openai",
     size: 3000000000,
     downloads: 120,
     risks:
@@ -45,8 +45,8 @@ const MODEL_LIST: IModel[] = [
   },
   {
     id: "2",
-    title: "Llama",
-    author: "Meta",
+    title: "Phi",
+    author: "Microsoft",
     size: 3000000000,
     downloads: 120,
     risks:
@@ -61,24 +61,8 @@ const MODEL_LIST: IModel[] = [
   },
   {
     id: "3",
-    title: "Llama",
-    author: "Meta",
-    size: 3000000000,
-    downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
-    likes: 70,
-  },
-  {
-    id: "4",
-    title: "Llama",
-    author: "Meta",
+    title: "BLX",
+    author: "Databricks",
     size: 3000000000,
     downloads: 120,
     risks:
@@ -100,139 +84,16 @@ export default function Home() {
   const [modelResponse, setModelResponse] = useState<string | null>(null);
   const { downloadProgress } = useStore((state) => state);
   const sendCommand = useStore((state) => state.sendCommand);
+  const modelsState = useStore((state) => state.modelsState);
 
-  const llamaImage = process.env.NODE_ENV === "development" ? "/assets/icons/llama1.png" : "../../renderer/main_window/assets/icons/llama1.png";
-  const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.png" : "../../renderer/main_window/assets/icons/truffle-hardware.png";
-
-  const checkForServer = async () => {
-    try {
-      // const res = await window.ipc.checkForServer();
-      // if (res) {
-      //   setModelInfo(res);
-      // }
-    } catch (error) {
-      toast.error("Failed to check for server");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  async function loadModel(modelName: string) {
-    try {
-      toast.success(`Loading...`);
-      // await window.ipc.startModel(modelName);
-
-      let timePassed = 0;
-      let res = null;
-      while (!res && timePassed < 30000) {
-        // res = await window.ipc.checkForServer();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        timePassed += 1000;
-      }
-
-      if (res) {
-        setModelInfo(res);
-        toast.success(`Loaded ${modelName}`);
-      } else {
-        toast.error("Failed to load model");
-      }
-    } catch (error) {
-      toast.error("Failed to start model");
-    }
-  }
-
-  async function downloadModel(model: IModel) {
-    try {
-      console.log("Downloading model - 1");
-      const modelPathName = model.hfLink.split("/").slice(3).join("/");
-
-      // await window.ipc.downloadModel("togethercomputer/RedPajama-INCITE-Instruct-3B-v1");
-      // await window.ipc.downloadModel(modelPathName);
-
-      let timePassed = 0;
-      let res = null;
-      // while (!res && timePassed < 10 * 60 * 1000) {
-      //   res = await window.ipc.checkForServer();
-      //   if (res) break;
-      //   await new Promise((resolve) => setTimeout(resolve, 1000));
-      //   timePassed += 1000;
-      // }
-
-      if (res) {
-        setModelInfo(res);
-        console.log("Successfully downloaded model");
-        toast.success(
-          `Loaded togethercomputer/RedPajama-INCITE-Instruct-3B-v1`
-        );
-      } else {
-        console.log("Failed to download model");
-        toast.error("Failed to load model");
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  }
-
-  async function unloadModel(pid: string) {
-    try {
-      // await window.ipc.killModel(pid);
-    } catch (error) {
-      toast.error("Failed to unload model");
-      return;
-    }
-
-    toast.success(`Unloaded ${modelInfo.name}`);
-    setModelInfo(null);
-  }
-
-  async function sendMessage() {
-    if (!modelInfo) {
-      toast.error("No model loaded");
-      return;
-    }
-
-    console.log("Sending message");
-    const response = await fetch("http://127.0.0.1:8899/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: modelInfo?.name,
-        messages: [{ role: "user", content: userMessage }],
-        stream: true,
-      }),
-    });
-
-    const reader = response?.body?.getReader();
-    let currentText = "";
-
-    // Process the stream
-    reader?.read().then(function processText({ done, value }): any {
-      if (done) {
-        console.log("Stream complete");
-        return;
-      }
-
-      // Decode and handle the chunk and parse the JSON
-      let chunkText = new TextDecoder("utf-8").decode(value);
-      if (chunkText.startsWith("data: ")) {
-        chunkText = chunkText.slice(6);
-      }
-
-      let model_response_delta: any;
-      try {
-        model_response_delta = JSON.parse(chunkText).choices[0].delta.content;
-      } catch (error) {
-        model_response_delta = "";
-      }
-
-      currentText += model_response_delta;
-      setModelResponse(currentText); // Update the state with the current accumulated text
-
-      return reader.read().then(processText);
-    });
-  }
+  const llamaImage =
+    process.env.NODE_ENV === "development"
+      ? "/assets/icons/llama1.png"
+      : "../../renderer/main_window/assets/icons/llama1.png";
+  const truffleHardwareImage =
+    process.env.NODE_ENV === "development"
+      ? "/assets/icons/truffle-hardware.png"
+      : "../../renderer/main_window/assets/icons/truffle-hardware.png";
 
   const getWidgetState = (model: IModel): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
@@ -245,59 +106,50 @@ export default function Home() {
     return "not-downloaded";
   };
 
+  const activeModels = Object.values(modelsState);
+  const inactiveModels = MODEL_LIST.filter(
+    (model) =>
+      !activeModels.some((activeModel) => activeModel.name === model.title)
+  );
+
   return (
-    <>
-      <button
-        onClick={() => {
-          sendCommand(Command.SYSINFO, {});
-        }}
-      >
-        HOME
-      </button>
-      <button
-        onClick={() => {
-          sendCommand(Command.DOWNLOAD_MODEL, { 
-            model_name: "togethercomputer/RedPajama-INCITE-Chat-3B-v1" 
-          })
-        }}
-      >
-        Download model
-      </button>
-      {downloadProgress && (
-        <>
-          {downloadProgress.map((progress) => (
-            <p key={progress.name}>
-              Downloading file {progress.path} -{" "}
-              {progress.progress}% complete
-            </p>
-          ))}
-        </>
-      )}
-      <button
-        onClick={() => {
-          sendCommand(Command.CONVERT_WEIGHTS, {
-            model_name: "togethercomputer/RedPajama-INCITE-Chat-3B-v1",
-            quant: "int4"
-          });
-        }}
-      >
-        Convert Weights
-      </button>
-      <button
-        onClick={() => {
-          sendCommand(Command.GET_MODEL_STATE, {});
-        }}
-      >
-        Get model state
-      </button>
-      <button
-        onClick={() => {
-          sendCommand(Command.LAUNCH_MODEL, { model_name: "togethercomputer/RedPajama-INCITE-Chat-3B-v1" });
-        }}
-      >
-        Launch Model
-      </button>
-    </>
+    <div className="grid gap-4">
+      {activeModels.map((model) => (
+        <div key={model.id} className="bg-green-200">
+          <div>{model.id}</div>
+          <div>{model.name}</div>
+          <div>progress: {model.progress}</div>
+          <div>{model.status}</div>
+        </div>
+      ))}
+      {inactiveModels.map((model) => (
+        <div
+          className="bg-red-200"
+          key={model.id}
+          onClick={() => {
+            sendCommand(Command.LAUNCH_MODEL, {
+              model_name: model.title,
+            });
+          }}
+        >
+          {model.title}
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="bg-red-200">
+      <button>LLAMA 7B</button>
+
+      <br />
+      <p>
+        State: <span className="font-mono">INSTALLEDIn</span>
+      </p>
+      <div>
+        Progress: <span className="font-mono">100%</span>
+      </div>
+    </div>
   );
 
   return (
@@ -335,7 +187,7 @@ export default function Home() {
           />
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
+      {/* <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
         <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
           <div className="relative">
             <Carousel
@@ -453,11 +305,7 @@ export default function Home() {
             <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
               <div className="flex flex-col w-full h-full">
                 <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-                  <img
-                    src={truffleHardwareImage}
-                    alt=""
-                    className="self-end"
-                  />
+                  <img src={truffleHardwareImage} alt="" className="self-end" />
                 </div>
                 <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
                   <Button
@@ -472,11 +320,7 @@ export default function Home() {
             <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
               <div className="flex flex-col w-full h-full">
                 <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-                  <img
-                    src={truffleHardwareImage}
-                    alt=""
-                    className="self-end"
-                  />
+                  <img src={truffleHardwareImage} alt="" className="self-end" />
                 </div>
                 <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
                   <Button
@@ -490,7 +334,7 @@ export default function Home() {
             </div>
           </Carousel>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

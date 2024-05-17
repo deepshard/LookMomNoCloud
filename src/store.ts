@@ -27,9 +27,12 @@ interface State {
   parseResponse: (response: string) => void;
   sysinfo: Infer<typeof sysinfoSchema> | null;
   health: Infer<typeof healthSchema> | null;
-  running_models: Infer<typeof modelStateSchema> | null;
+  // modelsState: Infer<typeof modelStateSchema> | null;
   downloadProgress: Infer<typeof downloadModelSchema> | null;
   conversionProgress: Infer<typeof convertWeightsSchema> | null;
+  modelsState: {
+    [id: string]: Infer<typeof launchModelSchema>;
+  };
 }
 
 const sysinfoSchema = z.object({
@@ -45,20 +48,24 @@ const healthSchema = z.object({
   status: z.literal("OK"),
 });
 
-const modelStateSchema = z.array(z.object({
-  id: z.string(),
-  name: z.string(),
-  pid: z.number(),
-  port: z.number(),
-  quant: z.string(),
-  size: z.number(),
-}))
+const modelStateSchema = z.array(
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    pid: z.number(),
+    port: z.number(),
+    quant: z.string(),
+    size: z.number(),
+  })
+);
 
-const downloadModelSchema = z.array(z.object({
-  name: z.string(),
-  path: z.string(),
-  progress: z.number(),
-}));
+const downloadModelSchema = z.array(
+  z.object({
+    name: z.string(),
+    path: z.string(),
+    progress: z.number(),
+  })
+);
 
 const convertWeightsSchema = z.object({
   name: z.string(),
@@ -67,13 +74,15 @@ const convertWeightsSchema = z.object({
   status: z.string(),
 });
 
-const modelInstanceSchema = z.object({
+const launchModelSchema = z.object({
   id: z.string(),
   name: z.string(),
-  pid: z.number(),
-  port: z.number(),
-  quant: z.string(),
+  pid: z.number().optional(),
+  port: z.number().optional(),
+  quant: z.enum(["int8", "int4", "no-quant"]),
   size: z.number(),
+  progress: z.number().optional(),
+  status: z.enum(["DOWNLOADING", "INSTALL_QUEUED", "INSTALLING", "RUNNING"]),
 });
 
 const stopModelResponseSchema = z.string();
@@ -109,8 +118,8 @@ const useStore = create<State>()(
               break;
 
             case Command.GET_MODEL_STATE:
-              const running_models = modelStateSchema.parse(data.data);
-              set({ running_models });
+              const modelsState = modelStateSchema.parse(data.data);
+              set({ modelsState });
               break;
 
             case Command.DOWNLOAD_MODEL:
@@ -124,13 +133,21 @@ const useStore = create<State>()(
               break;
 
             case Command.LAUNCH_MODEL:
-              const modelInstance = modelInstanceSchema.parse(data.data);
-              console.log(`Model launched: ${modelInstance}`);
+              const launchModelStream = launchModelSchema.parse(data.data);
+              set((state) => {
+                return {
+                  modelsState: {
+                    ...state.modelsState,
+                    [launchModelStream.id]: launchModelStream,
+                  },
+                };
+              });
               break;
 
             case Command.STOP_MODEL:
-              const stopModelResponse = stopModelResponseSchema.parse(data.data);
-              console.log(`Model stopped with status: ${stopModelResponse}`);
+              const stopModelResponse = stopModelResponseSchema.parse(
+                data.data
+              );
               break;
 
             default:
@@ -142,9 +159,9 @@ const useStore = create<State>()(
       },
       sysinfo: null,
       health: null,
-      running_models: null,
       downloadProgress: null,
       conversionProgress: null,
+      modelsState: {},
     }),
     { name: "store" }
   )

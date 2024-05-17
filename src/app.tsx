@@ -7,11 +7,13 @@ import { useEffect, useState } from "react";
 import useStore from "./store";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { BarLoader } from "react-spinners";
 
 const root = createRoot(document.getElementById("root"));
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const setSocket = useStore((state) => state.setSocket);
   const parseResponse = useStore((state) => state.parseResponse);
 
@@ -29,22 +31,34 @@ function App() {
 
     socket.onclose = () => {
       console.log("[ws disconnected]");
+      setLoading(true);
       setSocket(null);
     };
 
     socket.onerror = (error) => {
       console.log("[ws error]", error);
       setSocket(null);
+      setError(error);
+      setLoading(false);
     };
 
     return () => {
       setSocket(null);
+      setError(null);
       socket.close();
     };
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <BarLoader color="white" />;
+  }
+
+  if (error) {
+    return (
+      <div>
+        Connection Error. Please contact <code>support@deepshard.org</code>.
+      </div>
+    );
   }
 
   return (

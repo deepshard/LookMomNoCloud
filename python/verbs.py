@@ -119,13 +119,14 @@ def get_model_state():
     return models
 
 
-async def download_model(model_name, return_message):
+async def download_model(model_name, websocket, download_manager):
     """
         Downloads the model from HuggingFace
 
         Args:
             model_name: string
-            return_message: function
+            websocket: WebSocket
+            current_downloads: DownloadManager
 
         - Check if model is already downloaded or partially downloaded
         - Push model to info table with status "DOWNLOADING"
@@ -165,9 +166,13 @@ async def download_model(model_name, return_message):
     files, total_size = await get_repo_info(model_name, base_url, downloaded_files)
     logger.info(f"Downloading {model_name} with size {total_size} bytes")
 
-    free_space = psutil.disk_usage("/").free
-    if total_size > free_space:
+    free_disk_space = psutil.disk_usage("/").free
+    to_be_downloaded = download_manager.get_total_bytes_remaining()
+    if total_size > free_disk_space - to_be_downloaded:
         raise ValueError("Insufficient disk space")
+
+    # Push the download to the download manager
+    download_manager.set_download(model_name, total_size)
 
     # Download the model
     downloaded_bytes = 0
@@ -189,19 +194,26 @@ async def download_model(model_name, return_message):
                 downloaded_bytes += len(chunk)
                 progress = 100 * downloaded_bytes / total_size
 
+                # Update the download manager
+                download_manager.set_download(
+                    model_name, total_size - downloaded_bytes)
+
                 if (progress - last_progress) >= 0.01:
                     last_progress = progress
-                    await return_message({
+                    await websocket.send_text(json.dumps({
                         "cmd": "DOWNLOAD_MODEL",
                         "data": {
                             "name": model_name,
                             "path": str(save_path),
                             "progress": progress
                         }
-                    })
+                    }))
 
     # # Update model status in info table to "QUEUED"
     # # TODO: Implement this
+
+    # Clear the download from the download manager
+    download_manager.clear_download(model_name)
 
     return {
         "name": model_name,
@@ -210,7 +222,7 @@ async def download_model(model_name, return_message):
     }
 
 
-async def convert_weights(model_name, quant, return_message):
+async def convert_weights(model_name, quant, websocket):
     """
         Converts the weights of the model to the selected quantization
         in Truffle format
@@ -218,7 +230,7 @@ async def convert_weights(model_name, quant, return_message):
         Args:
             model_name: string
             quant: "no-quant" | "int4" | "int3"
-            return_message: function
+            websocket: WebSocket
 
         - Check if model already has desired quantization built
         - Update model status in info table to "INSTALLING"
@@ -278,7 +290,7 @@ async def convert_weights(model_name, quant, return_message):
     conv_template = get_conv_template(model_name)
 
     # Convert model
-    await return_message({
+    await websocket.send_text(json.dumps({
         "cmd": "CONVERT_WEIGHTS",
         "data": {
             "name": model_name,
@@ -286,7 +298,7 @@ async def convert_weights(model_name, quant, return_message):
             "quant": quant,
             "status": "IN_PROGRESS"
         }
-    })
+    }))
     convert_weight_mlc(
         config=config,
         quantization=quant,  # TODO: fix this to actually pull the quantization object

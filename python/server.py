@@ -3,6 +3,7 @@ from starlette.websockets import WebSocketDisconnect
 from loguru import logger
 import json
 from verbs import sysinfo, get_model_state, download_model, convert_weights
+from DownloadManager import DownloadManager
 
 app = FastAPI()
 
@@ -11,12 +12,10 @@ app = FastAPI()
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
 
-    async def return_message(res):
-        print("return_message", res)
-        await websocket.send_text(json.dumps(res))
-
     try:
         while True:
+            download_manager = DownloadManager()
+
             data = await websocket.receive_text()
             try:
                 data = json.loads(data)
@@ -69,7 +68,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         try:
                             download_info = await download_model(
-                                model_name, return_message)
+                                model_name, websocket, download_manager)
                             await websocket.send_text(json.dumps({
                                 "cmd": "DOWNLOAD_MODEL",
                                 "data": download_info
@@ -97,7 +96,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         try:
                             convert_info = convert_weights(
-                                model_name, quant, return_message)
+                                model_name, quant, websocket)
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
                                 "data": convert_info

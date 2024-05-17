@@ -1,5 +1,6 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, session } from "electron";
 import path from "path";
+import os from "os";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -9,10 +10,10 @@ if (require("electron-squirrel-startup")) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 1200,
-    minHeight: 800,
+    width: 1600,
+    height: 900,
+    minWidth: 1600,
+    minHeight: 900,
     backgroundMaterial: "acrylic",
     vibrancy: "fullscreen-ui",
     webPreferences: {
@@ -41,8 +42,26 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", function () {
+app.on("ready", async function () {
   // todo: spawn the flask server here
+  // on macOS
+  const reactDevToolsPath = path.join(
+    os.homedir(),
+    "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
+  );
+
+  const reduxTools = path.join(
+    os.homedir(),
+    "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
+  );
+
+  try {
+    await session.defaultSession.loadExtension(reactDevToolsPath);
+    await session.defaultSession.loadExtension(reduxTools);
+  } catch (error) {
+    console.error("Failed to install extension:", error);
+  }
+
   const mainWindow = createWindow();
 });
 

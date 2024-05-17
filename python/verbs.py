@@ -5,6 +5,7 @@ import psutil
 import shutil
 import requests
 import aiofiles
+import sqlite3
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
@@ -318,3 +319,50 @@ async def convert_weights(model_name, quant, return_message):
         "quant": quant,
         "status": "FINISHED"
     }
+
+
+def get_model_state():
+    con = sqlite3.connect("models.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM models")
+    models = cur.fetchall()
+    return models
+
+
+def get_running_models():
+    con = sqlite3.connect("models.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM models WHERE status = 'RUNNING'")
+    models = cur.fetchall()
+    con.close()
+
+    return models
+
+
+def insert_model(
+    pid,
+    port,
+    id,
+    model_name,
+    quantization,
+    size,
+    status
+):
+    con = sqlite3.connect("models.db")
+    cur = con.cursor()
+    cur.execute("INSERT INTO models VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (pid, port, id, model_name, quantization, size, status))
+    con.commit()
+    con.close()
+
+    return "OK"
+
+
+def delete_model(id):
+    con = sqlite3.connect("models.db")
+    cur = con.cursor()
+    cur.execute("DELETE FROM models WHERE id = ?", (id,))
+    con.commit()
+    con.close()
+
+    return "OK"

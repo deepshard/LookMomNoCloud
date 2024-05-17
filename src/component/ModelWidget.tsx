@@ -4,22 +4,13 @@ import "react-circular-progressbar/dist/styles.css";
 import { IModel } from "src/types";
 import useStore from "../store";
 
-export type ModelWidgetState =
-  | "idle"
-  | "downloading"
-  | "not-downloaded"
-  | "running"
-  | "paused";
+export type ModelWidgetState = "idle" | "downloading" | "not-downloaded" | "running" | "paused";
 interface ModelWidgetProps {
   model: IModel;
   downloadModel?: (model: IModel) => void;
   widgetState?: ModelWidgetState;
 }
-const ModelWidget = ({
-  model,
-  downloadModel,
-  widgetState = "idle",
-}: ModelWidgetProps) => {
+const ModelWidget = ({ model, downloadModel, widgetState = "idle" }: ModelWidgetProps) => {
   const { downloadProgress } = useStore((state) => state);
 
   const getDownloadProgress = () => {
@@ -30,10 +21,10 @@ const ModelWidget = ({
     return 0;
   };
 
-  const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download.svg" : "../../renderer/main_window/assets/icons/download.svg";
+  const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
-  const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/icons/llama1.png" : "../../renderer/main_window/assets/icons/llama1.png";
+  const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
 
   const getWidgetButton = () => {
     switch (widgetState) {
@@ -60,31 +51,19 @@ const ModelWidget = ({
             }}
             className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
           >
-            <img
-              src={downloadIcon}
-              alt=""
-              className="h-[32.73px] w-[32.73px]"
-            />
+            <img src={downloadIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
       case "paused":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <img
-              src={playIcon}
-              alt=""
-              className="h-[32.73px] w-[32.73px]"
-            />
+            <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
       case "running":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <img
-              src={pauseIcon}
-              alt=""
-              className="h-[32.73px] w-[32.73px]"
-            />
+            <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
 

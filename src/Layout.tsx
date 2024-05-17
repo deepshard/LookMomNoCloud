@@ -8,7 +8,7 @@ const Layout = () => {
       <section className="mb-[71.2px]">
         <NavBar />
       </section>
-      <section className="lg:mx-[128px]">
+      <section className="">
         <Outlet />
       </section>
     </div>

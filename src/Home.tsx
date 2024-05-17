@@ -97,14 +97,18 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true);
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [modelResponse, setModelResponse] = useState<string | null>(null);
-  const { downloadProgress } = useStore((state) => state);
+  // const { downloadProgress } = useStore((state) => state);
   const sendCommand = useStore((state) => state.sendCommand);
+
+  const llamaImage = process.env.NODE_ENV === "development" ? "/assets/icons/llama1.png" : "../../renderer/main_window/assets/icons/llama1.png";
+  const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.png" : "../../renderer/main_window/assets/icons/truffle-hardware.png";
+
   const checkForServer = async () => {
     try {
-      const res = await window.ipc.checkForServer();
-      if (res) {
-        setModelInfo(res);
-      }
+      // const res = await window.ipc.checkForServer();
+      // if (res) {
+      //   setModelInfo(res);
+      // }
     } catch (error) {
       toast.error("Failed to check for server");
     } finally {
@@ -115,12 +119,12 @@ export default function Home() {
   async function loadModel(modelName: string) {
     try {
       toast.success(`Loading...`);
-      await window.ipc.startModel(modelName);
+      // await window.ipc.startModel(modelName);
 
       let timePassed = 0;
       let res = null;
       while (!res && timePassed < 30000) {
-        res = await window.ipc.checkForServer();
+        // res = await window.ipc.checkForServer();
         await new Promise((resolve) => setTimeout(resolve, 1000));
         timePassed += 1000;
       }
@@ -142,7 +146,7 @@ export default function Home() {
       const modelPathName = model.hfLink.split("/").slice(3).join("/");
 
       // await window.ipc.downloadModel("togethercomputer/RedPajama-INCITE-Instruct-3B-v1");
-      await window.ipc.downloadModel(modelPathName);
+      // await window.ipc.downloadModel(modelPathName);
 
       let timePassed = 0;
       let res = null;
@@ -170,7 +174,7 @@ export default function Home() {
 
   async function unloadModel(pid: string) {
     try {
-      await window.ipc.killModel(pid);
+      // await window.ipc.killModel(pid);
     } catch (error) {
       toast.error("Failed to unload model");
       return;
@@ -231,12 +235,12 @@ export default function Home() {
 
   const getWidgetState = (model: IModel): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    if (
-      downloadProgress[modelPathName] > 0 &&
-      downloadProgress[modelPathName] < 100
-    ) {
-      return "downloading";
-    }
+    // if (
+    //   downloadProgress[modelPathName] > 0 &&
+    //   downloadProgress[modelPathName] < 100
+    // ) {
+    //   return "downloading";
+    // }
     return "not-downloaded";
   };
 
@@ -309,14 +313,14 @@ export default function Home() {
             >
               <div className="w-full h-[158px] relative overflow-hidden ">
                 <img
-                  src="/assets/images/llama1.png"
+                  src={llamaImage}
                   alt=""
                   className="blurred-bg-img backdrop-blur-md"
                 />
                 <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                 <div className="absolute top-0 left-0 p-[16px]">
                   <img
-                    src="/assets/images/llama1.png"
+                    src={llamaImage}
                     alt=""
                     className="discover-model-img w-[44px] h-[44px] rounded-md"
                   />
@@ -337,14 +341,14 @@ export default function Home() {
               </div>
               <div className="w-full h-[158px] relative overflow-hidden ">
                 <img
-                  src="/assets/images/llama1.png"
+                  src={llamaImage}
                   alt=""
                   className="blurred-bg-img backdrop-blur-md"
                 />
                 <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                 <div className="absolute top-0 left-0 p-[16px]">
                   <img
-                    src="/assets/images/llama1.png"
+                    src={llamaImage}
                     alt=""
                     className="discover-model-img w-[44px] h-[44px] rounded-md"
                   />
@@ -404,7 +408,7 @@ export default function Home() {
               <div className="flex flex-col w-full h-full">
                 <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
                   <img
-                    src="/assets/icons/truffle-hardware.svg"
+                    src={truffleHardwareImage}
                     alt=""
                     className="self-end"
                   />
@@ -423,7 +427,7 @@ export default function Home() {
               <div className="flex flex-col w-full h-full">
                 <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
                   <img
-                    src="/assets/icons/truffle-hardware.svg"
+                    src={truffleHardwareImage}
                     alt=""
                     className="self-end"
                   />

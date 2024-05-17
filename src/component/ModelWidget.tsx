@@ -30,6 +30,11 @@ const ModelWidget = ({
     return 0;
   };
 
+  const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download.svg" : "../../renderer/main_window/assets/icons/download.svg";
+  const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
+  const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
+  const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/icons/llama1.png" : "../../renderer/main_window/assets/icons/llama1.png";
+
   const getWidgetButton = () => {
     switch (widgetState) {
       case "idle":
@@ -56,7 +61,7 @@ const ModelWidget = ({
             className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
           >
             <img
-              src="/assets/icons/download.svg"
+              src={downloadIcon}
               alt=""
               className="h-[32.73px] w-[32.73px]"
             />
@@ -66,7 +71,7 @@ const ModelWidget = ({
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img
-              src="/assets/icons/play.svg"
+              src={playIcon}
               alt=""
               className="h-[32.73px] w-[32.73px]"
             />
@@ -76,7 +81,7 @@ const ModelWidget = ({
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img
-              src="/assets/icons/pause.svg"
+              src={pauseIcon}
               alt=""
               className="h-[32.73px] w-[32.73px]"
             />
@@ -89,7 +94,7 @@ const ModelWidget = ({
   };
   return (
     <div className="model-widget base-regular">
-      <img src="/assets/images/llama1.png" alt="" className="rounded-lg" />
+      <img src={llamaIcon} alt="" className="rounded-lg" />
       <div className="absolute top-0 left-0 p-2">
         <p className="">{model.title}</p>
         <p className="opacity-75 w-[60%]">{model.author}</p>

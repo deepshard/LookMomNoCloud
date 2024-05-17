@@ -6,7 +6,6 @@ import Layout from "./Layout";
 import { useEffect, useState } from "react";
 import useStore from "./store";
 import axios from "axios";
-import { io } from "socket.io-client";
 import { BarLoader } from "react-spinners";
 
 const root = createRoot(document.getElementById("root"));

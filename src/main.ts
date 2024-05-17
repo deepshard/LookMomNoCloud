@@ -17,8 +17,10 @@ const createWindow = () => {
     backgroundMaterial: "acrylic",
     vibrancy: "fullscreen-ui",
     webPreferences: {
+      // devTools: process.env.NODE_ENV === "development",
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
+
     },
   });
 

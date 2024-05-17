@@ -1,5 +1,6 @@
 import os
 import platform
+import subprocess
 import requests
 import asyncio
 import aiohttp
@@ -89,3 +90,21 @@ def is_convertable_format(weight_path):
         os.path.exists(safetensors_bin_path)
     ):
         return True
+
+
+def check_process(pid):
+    """Check if there's a process running with the given PID."""
+    try:
+        subprocess.check_output(["ps", "-p", str(pid)])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def check_port(pid, port):
+    """Check if the correct process is using the given port."""
+    try:
+        result = subprocess.check_output(["lsof", "-i", f":{port}"])
+        return str(pid) in result.decode("utf-8")
+    except subprocess.CalledProcessError:
+        return False

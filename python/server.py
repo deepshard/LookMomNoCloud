@@ -121,4 +121,22 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
+    import sqlite3
+
+    # Create truffle.db if it doesn't exist and create a running_models table if it doesn't exist
+    conn = sqlite3.connect("truffle.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS running_models (
+            id UUID PRIMARY KEY,
+            name TEXT NOT NULL,
+            pid INTEGER NOT NULL,
+            port INTEGER NOT NULL,
+            quant TEXT NOT NULL,
+            size INTEGER NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
     uvicorn.run(app, host="0.0.0.0", port=8899)

@@ -14,7 +14,7 @@ from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from pathlib import Path
-from utils import get_app_data_path, get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format
+from utils import get_app_data_path, get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format, check_process, check_port
 
 
 def sysinfo():
@@ -105,18 +105,27 @@ def get_model_state():
     """
 
     # Select all models from info table
-    models = []
+    con = sqlite3.connect("truffle.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM running_models")
+    models = cur.fetchall()
 
     # Validate all processes are still in the expected state
+    validated_models = []
     for model in models:
-        try:
-            p = psutil.Process(model["pid"])
-            if p.status() == psutil.STATUS_ZOMBIE:
-                model["status"] = "STOPPED"
-        except psutil.NoSuchProcess:
-            model["status"] = "STOPPED"
+        pid = model["pid"]
+        port = model["port"]
 
-    return models
+        # Check if the process is still running
+        if not check_process(pid) or not check_port(pid, port):
+            cur.execute("DELETE FROM running_models WHERE id = ?",
+                        (model["id"],))
+            con.commit()
+            continue
+
+        validated_models.append(model)
+
+    return validated_models
 
 
 async def download_model(model_name, websocket, download_manager):
@@ -321,50 +330,3 @@ async def convert_weights(model_name, quant, websocket):
         "quant": quant,
         "status": "FINISHED"
     }
-
-
-def get_model_state():
-    con = sqlite3.connect("models.db")
-    cur = con.cursor()
-    cur.execute("SELECT * FROM models")
-    models = cur.fetchall()
-    return models
-
-
-def get_running_models():
-    con = sqlite3.connect("models.db")
-    cur = con.cursor()
-    cur.execute("SELECT * FROM models WHERE status = 'RUNNING'")
-    models = cur.fetchall()
-    con.close()
-
-    return models
-
-
-def insert_model(
-    pid,
-    port,
-    id,
-    model_name,
-    quantization,
-    size,
-    status
-):
-    con = sqlite3.connect("models.db")
-    cur = con.cursor()
-    cur.execute("INSERT INTO models VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (pid, port, id, model_name, quantization, size, status))
-    con.commit()
-    con.close()
-
-    return "OK"
-
-
-def delete_model(id):
-    con = sqlite3.connect("models.db")
-    cur = con.cursor()
-    cur.execute("DELETE FROM models WHERE id = ?", (id,))
-    con.commit()
-    con.close()
-
-    return "OK"

@@ -26,6 +26,7 @@ interface State {
   parseResponse: (response: string) => void;
   sysinfo: Infer<typeof sysinfoSchema> | null;
   health: Infer<typeof healthSchema> | null;
+  running_models: Infer<typeof modelStateSchema> | null;
   downloadProgress: Infer<typeof downloadModelSchema> | null;
 }
 
@@ -41,6 +42,15 @@ const sysinfoSchema = z.object({
 const healthSchema = z.object({
   status: z.literal("OK"),
 });
+
+const modelStateSchema = z.array(z.object({
+  id: z.string(),
+  name: z.string(),
+  pid: z.number(),
+  port: z.number(),
+  quant: z.string(),
+  size: z.number(),
+}))
 
 const downloadModelSchema = z.array(z.object({
   name: z.string(),
@@ -78,6 +88,11 @@ const useStore = create<State>()(
               set({ sysinfo });
               break;
 
+            case Command.GET_MODEL_STATE:
+              const running_models = modelStateSchema.parse(data.data);
+              set({ running_models });
+              break;
+
             case Command.DOWNLOAD_MODEL:
               const downloadProgress = downloadModelSchema.parse(data.data);
               set({ downloadProgress });
@@ -92,6 +107,7 @@ const useStore = create<State>()(
       },
       sysinfo: null,
       health: null,
+      running_models: null,
       downloadProgress: null,
     }),
     { name: "store" }

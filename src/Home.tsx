@@ -273,6 +273,13 @@ export default function Home() {
           ))}
         </>
       )}
+      <button
+        onClick={() => {
+          sendCommand(Command.GET_MODEL_STATE, {});
+        }}
+      >
+        Get model state
+      </button>
     </>
   );
 

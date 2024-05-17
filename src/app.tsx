@@ -24,7 +24,6 @@ function App() {
     };
 
     socket.onmessage = (event) => {
-      console.log("[ws message]", event.data);
       parseResponse(event.data);
     };
 

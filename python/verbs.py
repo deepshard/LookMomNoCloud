@@ -4,6 +4,7 @@ import platform
 import psutil
 import shutil
 import requests
+import aiofiles
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
@@ -181,11 +182,10 @@ async def download_model(model_name, return_message):
         os.makedirs(save_path, exist_ok=True)
 
         # Save the file
-        with open(os.path.join(save_path, file["rfilename"]), "wb") as f:
+        async with aiofiles.open(os.path.join(save_path, file["rfilename"]), "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
+                await f.write(chunk)
                 downloaded_bytes += len(chunk)
-
                 progress = 100 * downloaded_bytes / total_size
 
                 if (progress - last_progress) >= 0.01:
@@ -199,8 +199,8 @@ async def download_model(model_name, return_message):
                         }
                     })
 
-    # Update model status in info table to "QUEUED"
-    # TODO: Implement this
+    # # Update model status in info table to "QUEUED"
+    # # TODO: Implement this
 
     return {
         "name": model_name,

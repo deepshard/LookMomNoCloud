@@ -259,6 +259,7 @@ export default function Home() {
       >
         Download model
       </button>
+      <p>Download Progress: {downloadProgress && downloadProgress.progress}</p>
     </>
   );
 

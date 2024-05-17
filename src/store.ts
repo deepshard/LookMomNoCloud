@@ -26,6 +26,7 @@ interface State {
   parseResponse: (response: string) => void;
   sysinfo: Infer<typeof sysinfoSchema> | null;
   health: Infer<typeof healthSchema> | null;
+  downloadProgress: Infer<typeof downloadModelSchema> | null;
 }
 
 const sysinfoSchema = z.object({
@@ -78,8 +79,8 @@ const useStore = create<State>()(
               break;
 
             case Command.DOWNLOAD_MODEL:
-              const downloadModel = downloadModelSchema.parse(data.data);
-              console.log("[download model]", downloadModel);
+              const downloadProgress = downloadModelSchema.parse(data.data);
+              set({ downloadProgress });
               break;
 
             default:
@@ -91,6 +92,7 @@ const useStore = create<State>()(
       },
       sysinfo: null,
       health: null,
+      downloadProgress: null,
     }),
     { name: "store" }
   )

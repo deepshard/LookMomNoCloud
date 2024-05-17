@@ -48,9 +48,14 @@ button.ant-btn.preorder-btn {
 }
 
 @layer utilities {
+
+  .home-layout {
+    @apply lg:mx-[128px] fixed;
+  }
+
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply flex justify-between items-center;
+    @apply flex justify-between items-center fixed w-full top-[10px];
   }
 
   .h1-semibold {

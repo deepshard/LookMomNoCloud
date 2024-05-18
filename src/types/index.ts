@@ -1,4 +1,7 @@
-export interface IModel {
+import { launchModelSchema } from "src/store";
+import { infer } from "zod";
+
+export interface IModel extends infer<typeof launchModelSchema> {
   id: string;
   title: string;
   size: number;

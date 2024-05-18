@@ -17,7 +17,7 @@ function App() {
   const parseResponse = useStore((state) => state.parseResponse);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://192.168.1.184:8899/");
+    const socket = new WebSocket("ws://192.168.1.134:8899/");
     socket.onopen = () => {
       console.log("[ws connected]");
       setSocket(socket);
@@ -48,17 +48,17 @@ function App() {
     };
   }, []);
 
-  if (loading) {
-    return <BarLoader color="white" />;
-  }
+  // if (loading) {
+  //   return <BarLoader color="white" />;
+  // }
 
-  if (error) {
-    return (
-      <div>
-        Connection Error. Please contact <code>support@deepshard.org</code>.
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div>
+  //       Connection Error. Please contact <code>support@deepshard.org</code>.
+  //     </div>
+  //   );
+  // }
 
   return (
     <div>

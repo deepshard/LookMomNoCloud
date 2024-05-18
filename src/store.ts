@@ -74,7 +74,7 @@ const convertWeightsSchema = z.object({
   status: z.string(),
 });
 
-const launchModelSchema = z.object({
+export const launchModelSchema = z.object({
   id: z.string(),
   name: z.string(),
   pid: z.number().optional(),

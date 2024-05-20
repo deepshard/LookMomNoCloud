@@ -16,6 +16,8 @@ from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from pathlib import Path
 from uuid import uuid4
 from utils import get_app_data_path, get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format, check_process, check_port
+from schemas import ModelInfo, ModelStatus, ModelQuantization
+from db_manager import insert_model, update_model, delete_model, get_model, get_models
 
 
 def sysinfo():
@@ -94,45 +96,38 @@ def get_model_state():
         Returns:
             [
                 {
-                    "pid": number,
-                    "port": number,
                     "id": UUID,
                     "name": string,
-                    "quantization": "no-quant" | "int4" | "int3",
                     "size": number,
-                    "status": "RUNNING" | "DOWNLOADING" | "QUEUED" | "INSTALLING" | "STOPPED"
+                    "status": "DOWNLOADING" | "INSTALL_QUEUE" | "INSTALLING" | "RUNNING",
+                    "pid": number (optional),
+                    "port": number (optional),
+                    "quantization": "no-quant" | "int4" | "int3" (optional),
+                    "progress": number (optional)
                 }
             ]
     """
 
     # Select all models from info table
-    con = sqlite3.connect("truffle.db")
-    cur = con.cursor()
-    cur.execute("SELECT * FROM running_models")
-    models = cur.fetchall()
+    models = get_models()
 
     # Validate all processes are still in the expected state
     validated_models = []
     for model in models:
-        print(model)
-        id = model[0]
-        pid = model[2]
-        port = model[3]
-
         # Check if the process is still running
-        if not check_process(pid) or not check_port(pid, port):
-            cur.execute("DELETE FROM running_models WHERE id = ?",
-                        (id,))
-            con.commit()
+        if not check_process(model.pid) or not check_port(model.pid, model.port):
+            delete_model(model.id)
             continue
 
         validated_models.append({
-            "id": id,
-            "name": model[1],
-            "pid": pid,
-            "port": port,
-            "quant": model[4],
-            "size": model[5],
+            "id": model.id,
+            "name": model.name,
+            "size": model.size,
+            "status": model.status,
+            "pid": model.pid,
+            "port": model.port,
+            "quantization": model.quantization,
+            "progress": model.progress
         })
 
     return validated_models
@@ -356,36 +351,34 @@ async def convert_weights(model_name, quant, websocket):
 
 async def launch_model(model_name):
     # Generate UUID
-    id = str(uuid4())
-    pid = 1111
-    port = 8000
-    quant = "int4"
-    size = 2000000000
+    model = ModelInfo(
+        id=str(uuid4()),
+        name=model_name,
+        size=2000000000,
+        status=ModelStatus.RUNNING,
+        pid=1111,
+        port=8000,
+        quantization=ModelQuantization.int4,
+        progress=None
+    )
 
-    # Create entry in db
-    con = sqlite3.connect("truffle.db")
-    cur = con.cursor()
-    cur.execute("INSERT INTO running_models (id, name, pid, port, quant, size) VALUES (?, ?, ?, ?, ?, ?)",
-                (id, model_name, pid, port, quant, size))
-    con.commit()
-    con.close()
+    # Insert model into db
+    insert_model(model)
 
     return {
         "id": id,
         "name": model_name,
-        "pid": pid,
-        "port": port,
-        "quant": quant,
-        "size": size
+        "size": 2000000000,
+        "status": "RUNNING",
+        "pid": 1111,
+        "port": 8000,
+        "quantization": "int4",
+        "progress": None
     }
 
 
 async def stop_model(id):
     # Delete entry from db
-    con = sqlite3.connect("truffle.db")
-    cur = con.cursor()
-    cur.execute("DELETE FROM running_models WHERE id = ?", (id,))
-    con.commit()
-    con.close()
+    delete_model(id)
 
     return "OK"

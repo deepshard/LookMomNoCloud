@@ -4,8 +4,20 @@ from loguru import logger
 import json
 from verbs import sysinfo, get_model_state, download_model, convert_weights, launch_model, stop_model
 from DownloadManager import DownloadManager
+from db_manager import create_models_table
 
 app = FastAPI()
+
+
+async def execute_cmd(websocket, cmd, operation, *args, **kwargs):
+    try:
+        data = await operation(*args, **kwargs)
+        response = {"cmd": cmd, "data": data}
+    except Exception as e:
+        logger.error(f"Error executing command {cmd}: {e}")
+        response = {"cmd": cmd, "data": {}, "error": str(e)}
+
+    await websocket.send_text(json.dumps(response))
 
 
 @app.websocket("/")
@@ -25,39 +37,21 @@ async def websocket_endpoint(websocket: WebSocket):
                 match cmd:
                     case "HEALTH":
                         logger.info(f"<-- HEALTH")
-                        await websocket.send_text(json.dumps({
-                            "cmd": "HEALTH",
-                            "data": {
-                                "status": "OK"
-                            }
-                        }))
+                        await execute_cmd(websocket, cmd, lambda: {"status": "OK"})
+
                     case "SYSINFO":
                         logger.info(f"<-- SYSINFO")
                         info = sysinfo()
+                        await execute_cmd(websocket, "SYSINFO", sysinfo)
 
-                        try:
-                            await websocket.send_text(json.dumps({
-                                "cmd": "SYSINFO",
-                                "data": info
-                            }))
-                        except Exception as e:
-                            await websocket.send_text(json.dumps({
-                                "cmd": "SYSINFO",
-                                "data": {},
-                                "error": str(e)
-                            }))
                     case "GET_MODEL_STATE":
                         logger.info(f"<-- GET_MODEL_STATE")
-                        state = get_model_state()
-                        await websocket.send_text(json.dumps({
-                            "cmd": "GET_MODEL_STATE",
-                            "data": state
-                        }))
+                        await execute_cmd(websocket, "GET_MODEL_STATE", get_model_state)
+
                     case "DOWNLOAD_MODEL":
                         logger.info(f"<-- DOWNLOAD_MODEL")
 
                         model_name = data.get("model_name")
-
                         if model_name is None:
                             await websocket.send_text(json.dumps({
                                 "cmd": "DOWNLOAD_MODEL",
@@ -66,26 +60,13 @@ async def websocket_endpoint(websocket: WebSocket):
                             }))
                             break
 
-                        try:
-                            download_info = await download_model(
-                                model_name, websocket, download_manager)
-                            await websocket.send_text(json.dumps({
-                                "cmd": "DOWNLOAD_MODEL",
-                                "data": download_info
-                            }))
-                        except Exception as e:
-                            logger.error(f"Error downloading model: {e}")
-                            await websocket.send_text(json.dumps({
-                                "cmd": "DOWNLOAD_MODEL",
-                                "data": {},
-                                "error": str(e)
-                            }))
+                        await execute_cmd(websocket, "DOWNLOAD_MODEL", download_model, model_name, websocket, download_manager)
+
                     case "CONVERT_WEIGHTS":
                         logger.info(f"<-- CONVERT_WEIGHTS")
 
                         model_name = data.get("model_name")
                         quant = data.get("quant")
-
                         if model_name is None or quant is None:
                             await websocket.send_text(json.dumps({
                                 "cmd": "CONVERT_WEIGHTS",
@@ -94,24 +75,12 @@ async def websocket_endpoint(websocket: WebSocket):
                             }))
                             break
 
-                        try:
-                            convert_info = await convert_weights(
-                                model_name, quant, websocket)
-                            await websocket.send_text(json.dumps({
-                                "cmd": "CONVERT_WEIGHTS",
-                                "data": convert_info
-                            }))
-                        except Exception as e:
-                            await websocket.send_text(json.dumps({
-                                "cmd": "CONVERT_WEIGHTS",
-                                "data": {},
-                                "error": str(e)
-                            }))
+                        await execute_cmd(websocket, "CONVERT_WEIGHTS", convert_weights, model_name, quant, websocket)
+
                     case "LAUNCH_MODEL":
                         logger.info(f"<-- LAUNCH_MODEL")
 
                         model_name = data.get("model_name")
-
                         if model_name is None:
                             await websocket.send_text(json.dumps({
                                 "cmd": "LAUNCH_MODEL",
@@ -120,22 +89,12 @@ async def websocket_endpoint(websocket: WebSocket):
                             }))
                             break
 
-                        try:
-                            instance_info = await launch_model(model_name)
-                            await websocket.send_text(json.dumps({
-                                "cmd": "LAUNCH_MODEL",
-                                "data": instance_info
-                            }))
-                        except Exception as e:
-                            await websocket.send_text(json.dumps({
-                                "cmd": "LAUNCH_MODEL",
-                                "data": {},
-                                "error": str(e)
-                            }))
+                        await execute_cmd(websocket, "LAUNCH_MODEL", launch_model, model_name)
+
                     case "STOP_MODEL":
                         logger.info(f"<-- STOP_MODEL")
-                        instance_id = data.get("instance_id")
 
+                        instance_id = data.get("instance_id")
                         if instance_id is None:
                             await websocket.send_text(json.dumps({
                                 "cmd": "STOP_MODEL",
@@ -144,21 +103,12 @@ async def websocket_endpoint(websocket: WebSocket):
                             }))
                             break
 
-                        try:
-                            stop_info = stop_model(instance_id)
-                            await websocket.send_text(json.dumps({
-                                "cmd": "STOP_MODEL",
-                                "data": stop_info
-                            }))
-                        except Exception as e:
-                            await websocket.send_text(json.dumps({
-                                "cmd": "STOP_MODEL",
-                                "data": {},
-                                "error": str(e)
-                            }))
+                        await execute_cmd(websocket, "STOP_MODEL", stop_model, instance_id)
+
                     case _:
                         await websocket.send_text(json.dumps({
                             "cmd": cmd,
+                            "data": {},
                             "error": "Invalid command"
                         }))
 
@@ -170,22 +120,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    import sqlite3
 
-    # Create truffle.db if it doesn't exist and create a running_models table if it doesn't exist
-    conn = sqlite3.connect("truffle.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS running_models (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            pid INTEGER NOT NULL,
-            port INTEGER NOT NULL,
-            quant TEXT NOT NULL,
-            size INTEGER NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
-
+    create_models_table()
     uvicorn.run(app, host="0.0.0.0", port=8899)

@@ -41,7 +41,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     case "SYSINFO":
                         logger.info(f"<-- SYSINFO")
-                        info = sysinfo()
                         await execute_cmd(websocket, "SYSINFO", sysinfo)
 
                     case "GET_MODEL_STATE":

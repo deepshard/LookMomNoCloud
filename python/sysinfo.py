@@ -4,6 +4,8 @@ import psutil
 import time
 import os
 import uuid
+
+from .utils import get_app_data_path
 from .db import db
 import psutil
 
@@ -29,6 +31,16 @@ async def get_sysinfo():
 
     return data
 
+def get_disk_usage(folder_path):
+    total_size = 0
+    with os.scandir(folder_path) as dir_entries:
+        for entry in dir_entries:
+            if entry.is_file():
+                total_size += entry.stat().st_size
+            elif entry.is_dir():
+                total_size += get_disk_usage(entry.path)
+    return total_size
+
 async def get_models_data():
     models = await db.runningmodels.find_many()
     final = []
@@ -39,7 +51,8 @@ async def get_models_data():
             final.append({
                 "id": model.id,
                 "ram": memory_info.rss,
-                "disk": memory_info.vms
+                # todo: @matt whats the folder structure?
+                "disk": get_disk_usage(get_app_data_path() / "models" / model.name)
             })
         except psutil.NoSuchProcess:
             logger.warning("No process found with PID: {}".format(model.pid))

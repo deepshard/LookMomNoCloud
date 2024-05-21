@@ -287,8 +287,8 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-screen h-screen absolute left-0 bottom-[-95vh] snap-start snap-always">
-        <span className="cursor-pointer w-full flex-center sticky top-0 mb-4">
+      <div className="w-screen h-screen absolute left-0 bottom-[-94vh] snap-start snap-always">
+        <span className="cursor-pointer w-full flex-center sticky top-4 mb-4">
           <DiscoverButton />
         </span>
         <div className="w-full h-full bg-slate-600 rounded-lg border-t-[0.9px] overflow-hidden "></div>

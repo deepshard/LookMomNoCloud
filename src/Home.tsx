@@ -9,7 +9,7 @@ import { app } from "electron";
 import { IModel, IModelServerInfo } from "./types";
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
-import { uniqBy } from 'lodash';
+import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
 
 const MODEL_LIST = [
@@ -74,13 +74,10 @@ export default function Home() {
 
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
-  
+
   const getWidgetState = (model: IModel): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    if (
-      model.progress > 0 && 
-      model.progress < 100
-    ) {
+    if (model.progress > 0 && model.progress < 100) {
       return "downloading";
     }
     return "not-downloaded";
@@ -88,23 +85,23 @@ export default function Home() {
 
   function getMergedModels() {
     const launchModelMap = new Map<string, IModel>();
-    
+
     // Create a map for quick lookup of launchModels by id
-    MODEL_LIST.forEach(launchModel => {
-        launchModelMap.set(launchModel.title, launchModel);
+    MODEL_LIST.forEach((launchModel) => {
+      launchModelMap.set(launchModel.title, launchModel);
     });
-    
+
     // Merge models based on the id
-    const mergedModels = Object.values(modelsState).map(launchModel => {
-        const model = launchModelMap.get(launchModel.name);
-        return {
-          ...launchModel,
-            ...model,
-        };
+    const mergedModels = Object.values(modelsState).map((launchModel) => {
+      const model = launchModelMap.get(launchModel.name);
+      return {
+        ...launchModel,
+        ...model,
+      };
     });
-    
-    return uniqBy([...mergedModels, ...MODEL_LIST], 'title');
-}
+
+    return uniqBy([...mergedModels, ...MODEL_LIST], "title");
+  }
 
   // return (
   //   <div className="grid gap-4">
@@ -145,23 +142,22 @@ export default function Home() {
   //     </div>
   //   </div>
   // );
-  
-  
+
   return (
     <div className="snap-y snap-mandatory">
       <div className="home-layout">
         <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
         <div className="flex gap-4">
           {getMergedModels().map((model) => (
-            <ModelWidget 
-              model={model} 
-              key={model.id} 
-              widgetState={getWidgetState(model)} 
+            <ModelWidget
+              model={model}
+              key={model.id}
+              widgetState={getWidgetState(model)}
               downloadModel={() => {
                 sendCommand(Command.LAUNCH_MODEL, {
                   model_name: model.title,
                 });
-              }} 
+              }}
             />
           ))}
         </div>
@@ -288,10 +284,13 @@ export default function Home() {
       </div>
 
       <div className="w-screen h-screen absolute left-0 bottom-[-94vh] snap-start snap-always">
-        <span className="cursor-pointer w-full flex-center sticky top-4 mb-4">
+        <span className="cursor-pointer w-full flex-center sticky top-4 mb-4 z-10">
           <DiscoverButton />
         </span>
-        <div className="w-full h-full bg-slate-600 rounded-lg border-t-[0.9px] overflow-hidden "></div>
+        <div className="w-full h-full relative">
+          <div className="backdrop-blur-2xl bg-white/20 w-full h-full rounded-lg overflow-hidden "></div>
+          <div className="absolute top-0 backdrop-blur-2xl  w-full h-full rounded-lg border-t-[0.9px] overflow-hidden "></div>
+        </div>
       </div>
     </div>
   );

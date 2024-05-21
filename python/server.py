@@ -9,27 +9,25 @@ from loguru import logger
 from .utils import get_app_data_path
 from .db import db
 
-
-
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Create "DATABASE_URL" environment variable with the path to the user data directory
-    # for Prisma to access the SQLite database
+async def init_db():
     app_data_path = get_app_data_path()
     db_path = app_data_path / "truffle.db"
     os.environ["DATABASE_URL"] = f"file:{db_path}"
-    logger.info(f"Using DB path: {db_path}")
+    logger.info(f"Connecting to DB at: {db_path}")
 
-    # Connect to DB on startup
-    # With SQLite this should automatically create the DB file
-    
     await db.connect()
 
-    yield
+    try:
+        yield
+    finally:
+        logger.info(f"Disconnecting from DB")
+        await db.disconnect()
 
-    # Disconnect from DB on shutdown
-    await db.disconnect()
-
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with init_db():
+        yield
 
 app = FastAPI(lifespan=lifespan)
 

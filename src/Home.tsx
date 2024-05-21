@@ -289,7 +289,8 @@ export default function Home() {
         </span>
         <div className="w-full h-full relative">
           <div className="backdrop-blur-2xl bg-white/20 w-full h-full rounded-lg overflow-hidden "></div>
-          <div className="absolute top-0 backdrop-blur-2xl  w-full h-full rounded-lg border-t-[0.9px] overflow-hidden "></div>
+          <div className="absolute top-0 backdrop-blur-xl  w-full h-full rounded-lg overflow-hidden "></div>
+          <div className="absolute top-0 backdrop-blur-xl  w-full h-full rounded-lg border-t-[0.9px] overflow-hidden "></div>
         </div>
       </div>
     </div>

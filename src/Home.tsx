@@ -284,7 +284,7 @@ export default function Home() {
       </div>
 
       <div className="w-screen h-screen absolute left-0 bottom-[-94vh] snap-start snap-always">
-        <span className="cursor-pointer w-full flex-center sticky top-4 mb-4 z-10">
+        <span className="cursor-pointer w-full flex-center sticky top-8 mb-4 z-10">
           <DiscoverButton />
         </span>
         <div className="w-full h-full relative">

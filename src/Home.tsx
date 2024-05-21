@@ -11,6 +11,7 @@ import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
+import SysInfo from "./component/SysInfo";
 
 const MODEL_LIST = [
   {
@@ -162,6 +163,7 @@ export default function Home() {
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
+          {/* New Explore and Apps container */}
           <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
             <div className="relative">
               <Carousel
@@ -204,6 +206,7 @@ export default function Home() {
               </Carousel>
             </div>
 
+                {/* Apps and Models */}
             <div className="w-full h-[158px] flex justify-between gap-3">
               <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
                 <div className="grid grid-cols-2 gap-[21px] w-full h-full p-5">
@@ -247,28 +250,19 @@ export default function Home() {
                 },
               }}
               arrows={false}
-              autoPlay
+              // autoPlay
               showDots
               infinite
-              className="rounded-md overflow-hidden"
+              className="rounded-md overflow-hidden bg-[#D9D9D94D]"
               customDot={<CustomCarouselDot />}
               dotListClass="order-truffle-carousel-dots"
             >
+              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
+                <SysInfo />
+              </div>
               <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] ">
                 <div className="flex flex-col w-full h-full">
-                  <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-                    <img src={truffleHardwareImage} alt="" className="self-end" />
-                  </div>
-                  <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                    <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
-                      <span className="base-medium ">Pre Order Truffle–1</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-                <div className="flex flex-col w-full h-full">
-                  <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
+                  <div className="w-full h-full flex justify-center flex-1 ">
                     <img src={truffleHardwareImage} alt="" className="self-end" />
                   </div>
                   <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">

@@ -1,13 +1,21 @@
 from fastapi import FastAPI, WebSocket
+import psutil
 from starlette.websockets import WebSocketDisconnect
-from loguru import logger
+from fastapi.responses import StreamingResponse
+import time
+import os
+import uuid
+from .sysinfo import sysinfo_generator
 
 app = FastAPI()
 
-
-@app.get("/sysinfo")
+@app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    pass
+    response =  StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
+    response.headers['Content-Type'] = 'text/event-stream'
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['Connection'] = 'keep-alive'
+    return response
 
 
 @app.get("/highlights")

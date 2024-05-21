@@ -11,15 +11,7 @@ interface ModelWidgetProps {
   widgetState?: ModelWidgetState;
 }
 const ModelWidget = ({ model, downloadModel, widgetState = "idle" }: ModelWidgetProps) => {
-  const { downloadProgress } = useStore((state) => state);
-
-  // const getDownloadProgress = () => {
-  //   const modelPathName = model.hfLink.split("/").slice(3).join("/");
-  //   if (downloadProgress[modelPathName]) {
-  //     return downloadProgress[modelPathName];
-  //   }
-  //   return 0;
-  // };
+  // const { downloadProgress } = useStore((state) => state);
 
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
@@ -73,7 +65,7 @@ const ModelWidget = ({ model, downloadModel, widgetState = "idle" }: ModelWidget
   };
   return (
     <div className="model-widget base-regular">
-      <img src={llamaIcon} alt="" className="rounded-lg" />
+      <img src={llamaIcon} alt="" />
       <div className="absolute top-0 left-0 p-2">
         <p className="">{model.title}</p>
         <p className="opacity-75 w-[60%]">{model.author}</p>

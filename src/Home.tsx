@@ -10,6 +10,7 @@ import { IModel, IModelServerInfo } from "./types";
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from 'lodash';
+import DiscoverButton from "./component/common/DiscoverButton";
 
 const MODEL_LIST = [
   {
@@ -73,7 +74,7 @@ export default function Home() {
 
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
-
+  
   const getWidgetState = (model: IModel): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
     if (
@@ -253,11 +254,11 @@ export default function Home() {
               autoPlay
               showDots
               infinite
-              className=""
+              className="rounded-md overflow-hidden"
               customDot={<CustomCarouselDot />}
               dotListClass="order-truffle-carousel-dots"
             >
-              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
+              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] ">
                 <div className="flex flex-col w-full h-full">
                   <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
                     <img src={truffleHardwareImage} alt="" className="self-end" />
@@ -269,7 +270,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] rounded-md overflow-hidden">
+              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
                 <div className="flex flex-col w-full h-full">
                   <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
                     <img src={truffleHardwareImage} alt="" className="self-end" />
@@ -286,7 +287,12 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-screen h-screen absolute bg-red-200 left-0 bottom-[-90vh] snap-start snap-always"></div>
+      <div className="w-screen h-screen absolute left-0 bottom-[-95vh] snap-start snap-always">
+        <span className="cursor-pointer w-full flex-center sticky top-0 mb-4">
+          <DiscoverButton />
+        </span>
+        <div className="w-full h-full bg-slate-600 rounded-lg border-t-[0.9px] overflow-hidden "></div>
+      </div>
     </div>
   );
 }

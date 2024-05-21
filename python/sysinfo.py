@@ -1,13 +1,17 @@
 import json
+from loguru import logger
 import psutil
 import time
 import os
 import uuid
+from .db import db
+import psutil
+
 
 CHANGE_THRESHOLD = 2
 
-def get_sysinfo():
-    models_data = get_models_data() 
+async def get_sysinfo():
+    models_data = await get_models_data() 
     data =  {
         "os": "MAC" if os.name == 'posix' else "LINUX",
         "resources": {
@@ -25,16 +29,29 @@ def get_sysinfo():
 
     return data
 
-def get_models_data():
-    # todo
-    return [] 
+async def get_models_data():
+    models = await db.runningmodels.find_many()
+    final = []
+    for model in models:
+        try:
+            process = psutil.Process(model.pid)
+            memory_info = process.memory_info()
+            final.append({
+                "id": model.id,
+                "ram": memory_info.rss,
+                "disk": memory_info.vms
+            })
+        except psutil.NoSuchProcess:
+            logger.warning("No process found with PID: {}".format(model.pid))
+            continue
+    return final
 
-def sysinfo_generator():
-    last_info = get_sysinfo()
+async def sysinfo_generator():
+    last_info = await get_sysinfo()
     yield f"data: {json.dumps(last_info)}\n\n"
     while True:
         time.sleep(3)
-        current_info = get_sysinfo()
+        current_info = await get_sysinfo()
         if needs_update(last_info, current_info):
             yield f"data: {json.dumps(current_info)}\n\n"
             last_info = current_info

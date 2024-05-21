@@ -6,11 +6,9 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from loguru import logger
-from prisma import Prisma
-from utils import get_app_data_path
+from .utils import get_app_data_path
+from .db import db
 
-
-db = None
 
 
 @asynccontextmanager
@@ -24,7 +22,7 @@ async def lifespan(app: FastAPI):
 
     # Connect to DB on startup
     # With SQLite this should automatically create the DB file
-    db = Prisma()
+    
     await db.connect()
 
     yield

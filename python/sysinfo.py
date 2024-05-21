@@ -4,6 +4,8 @@ import time
 import os
 import uuid
 
+CHANGE_THRESHOLD = 2
+
 def get_sysinfo():
     models_data = get_models_data() 
     data =  {
@@ -37,6 +39,7 @@ def sysinfo_generator():
             yield f"data: {json.dumps(current_info)}\n\n"
             last_info = current_info
 
+
 def needs_update(last_info, current_info):
     def percent_change(old, new):
         if old == 0:
@@ -46,4 +49,4 @@ def needs_update(last_info, current_info):
     ram_change = percent_change(last_info['resources']['available']['ram'], current_info['resources']['available']['ram'])
     disk_change = percent_change(last_info['resources']['available']['disk'], current_info['resources']['available']['disk'])
 
-    return ram_change >= 2 or disk_change >= 2
+    return ram_change >= CHANGE_THRESHOLD or disk_change >= CHANGE_THRESHOLD

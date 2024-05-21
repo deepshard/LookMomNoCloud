@@ -1,6 +1,6 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, session } from "electron";
 import path from "path";
-import { checkForServer, getStats, killServer, startServer } from "./ipc";
+import os from "os";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -10,10 +10,17 @@ if (require("electron-squirrel-startup")) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1600,
+    height: 900,
+    minWidth: 1600,
+    minHeight: 900,
+    backgroundMaterial: "acrylic",
+    vibrancy: "fullscreen-ui",
     webPreferences: {
+      // devTools: process.env.NODE_ENV === "development",
+      nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
+
     },
   });
 
@@ -28,26 +35,34 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  return mainWindow;
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", function () {
-  ipcMain.handle("getStats", getStats);
-  ipcMain.handle("startServer", async (event, modelName) => {
-    const result = await startServer(modelName);
-    return result;
-  });
-  ipcMain.handle("killServer", async (event, pid) => {
-    const result = await killServer(pid);
-    return result;
-  });
-  ipcMain.handle("checkForServer", async (event) => {
-    const result = await checkForServer();
-    return result;
-  });
-  createWindow();
+app.on("ready", async function () {
+  // todo: spawn the flask server here
+  // on macOS
+  const reactDevToolsPath = path.join(
+    os.homedir(),
+    "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
+  );
+
+  const reduxTools = path.join(
+    os.homedir(),
+    "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
+  );
+
+  try {
+    await session.defaultSession.loadExtension(reactDevToolsPath);
+    await session.defaultSession.loadExtension(reduxTools);
+  } catch (error) {
+    console.error("Failed to install extension:", error);
+  }
+
+  const mainWindow = createWindow();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

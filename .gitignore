@@ -1,6 +1,7 @@
 build
 bin
-*.spec
+dist
+.tmp
 
 # Logs
 logs
@@ -97,3 +98,9 @@ out/
 
 .venv/
 bun.lockb
+
+.tmp
+
+__pycache__/
+
+truffle.db

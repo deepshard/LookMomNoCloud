@@ -25,9 +25,11 @@ class InstallationSystemManager:
         if self.current_conversion:
             quantization_dir = Path(
                 self.current_conversion["model_path"]) / self.current_conversion["quantization"]
-            quantized_bytes = get_disk_usage(quantization_dir)
-            conversion_bytes = self.current_conversion["compressed_size"] - \
-                quantized_bytes
+
+            if quantization_dir.exists():
+                quantized_bytes = get_disk_usage(quantization_dir)
+                conversion_bytes = self.current_conversion["compressed_size"] - \
+                    quantized_bytes
 
         return download_bytes + conversion_bytes
 

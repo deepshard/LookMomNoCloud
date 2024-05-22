@@ -177,7 +177,7 @@ async def download_file(session, url, install_path, file_info, progress_tracker)
     async with session.get(url, allow_redirects=True, timeout=None) as response:
         response.raise_for_status()
         async with aiofiles_open(file_path, "wb") as f:
-            async for chunk in response.content.iter_chunked(chunk_size=8192):
+            async for chunk in response.content.iter_chunked(1024):
                 await f.write(chunk)
                 progress_tracker["downloaded_bytes"] += len(chunk)
 
@@ -273,7 +273,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
     # Check that there is enough space to download the model
     disk_space = psutil.disk_usage("/").free
     total_bytes_remaining = installation_system_manager.get_total_bytes_remaining()
-    if total_size > disk_space + total_bytes_remaining:
+    if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
             "id": id,
@@ -314,7 +314,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
                     }
                     yield f"data: {json.dumps(progress_event)}\n\n"
 
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.1)
 
             # Ensure that the download is complete
             await download_tasks
@@ -335,6 +335,10 @@ async def install_generator(model_url: str, installation_system_manager: Install
     # Mark as installing and send to InstallManager
     logger.info(f"""Downloaded {
                 len(files_to_download)} files. Beginning weight conversion and quantization.""")
+
+    # Weight conversion and quantization process
+    logger.info(f"Adding {model_dir} to the conversion queue")
+    installation_system_manager.add_to_conversion_queue(model_dir)
     progress_event = {
         "id": id,
         "status": "INSTALLING",
@@ -343,9 +347,6 @@ async def install_generator(model_url: str, installation_system_manager: Install
     }
     yield f"data: {json.dumps(progress_event)}\n\n"
 
-    # Weight conversion and quantization process
-    logger.info(f"Adding {model_dir} to the conversion queue")
-    installation_system_manager.add_to_conversion_queue(model_dir)
     while not installation_system_manager.is_models_conversion_turn(model_dir):
         await asyncio.sleep(5)
 
@@ -357,9 +358,10 @@ async def install_generator(model_url: str, installation_system_manager: Install
     installation_system_manager.remove_from_conversion_queue(
         quantization, compressed_size)
 
-    # Return early if the quantization is already built
+    # Return early if the quantization is alrady built
     quant_path = model_dir / quantization.value
-    if os.path.exists(quant_path):
+    # if path exists and is non-empty
+    if os.path.exists(quant_path) and os.listdir(quant_path):
         logger.info(
             f"Conversion and quantization already done for {model_dir}")
         progress_event = {

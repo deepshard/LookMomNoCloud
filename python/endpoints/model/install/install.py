@@ -75,7 +75,7 @@ def get_local_files(directory: str) -> list[FileInfo]:
         for filename in filenames:
             file_path = os.path.join(root, filename)
             size = os.path.getsize(file_path)
-            files.append(FileInfo(file=file_path, size=size))
+            files.append(FileInfo(file=filename, size=size))
 
     return files
 

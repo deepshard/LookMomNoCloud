@@ -15,20 +15,29 @@ from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from python.types import RepoType, InstallProgress, InstallStatus, FileInfo, Quantization
 from python.utils import get_app_data_path
-from python.endpoints.model.install.ConversionManager import ConversionManager
+from python.endpoints.model.install.InstallationSystemManager import InstallationSystemManager
 
 
 def get_id_for_url(url: str) -> str:
+    """ Based on the URL, return a unique ID for the model from the HF scraping API. """
+
     # TODO: Change this when HF scraping API is ready
     return "123456"
 
 
 def get_url_type(url: str) -> RepoType:
+    """ Maps the URL to a RepoType. """
+
     # TODO: Change this later when we may start accepting S3 URLs
     return RepoType.HF
 
 
 def get_hf_name_for_url(url: str) -> str:
+    """ 
+        Extracts the human readable model name from the HF base repo URL for use in 
+        mapping to the HF API.
+    """
+
     url_parts = url.split("/")
     author = url_parts[-2]
     model_name = url_parts[-1]
@@ -37,12 +46,16 @@ def get_hf_name_for_url(url: str) -> str:
 
 
 async def get_file_size_hf(url, file):
+    """ Extends the base URL with the download path for the file and gets the file size. """
+
     async with aiohttp.ClientSession() as session:
         async with session.head(f"{url}/resolve/main/{file}", allow_redirects=True) as response:
             return file, int(response.headers["Content-Length"])
 
 
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
+    """ Creates an array of file name and size objects for the model. """
+
     # Query the HF API to get the requisite info
     response = requests.get(f"https://huggingface.co/api/models/{model_name}?")
     response.raise_for_status()
@@ -70,6 +83,8 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
 
 
 def get_local_files(directory: str) -> list[FileInfo]:
+    """ Creates an array of file name and size objects for a local directory. """
+
     files = []
 
     # Get all files, including in sub-directories
@@ -83,6 +98,8 @@ def get_local_files(directory: str) -> list[FileInfo]:
 
 
 def get_files_to_download(remote_files: list[FileInfo], local_files: list[FileInfo]) -> list[FileInfo]:
+    """ Compares the remote and local files and returns the files that still need to be downloaded. """
+
     # Get the files that need to be downloaded
     remote_files_dict = {file.file: file.size for file in remote_files}
     local_files_dict = {file.file: file.size for file in local_files}
@@ -96,6 +113,8 @@ def get_files_to_download(remote_files: list[FileInfo], local_files: list[FileIn
 
 
 async def get_repo_info(url: str) -> list[FileInfo]:
+    """ Uses the repo type to determine the appropriate function to get the repo file and size info. """
+
     # Get repo type
     repo_type = get_url_type(url)
     if repo_type == RepoType.HF:
@@ -106,6 +125,8 @@ async def get_repo_info(url: str) -> list[FileInfo]:
 
 
 def get_file_download_url(url: str, file: str) -> str:
+    """ Extends the base URL with the download path for the file based on the repo type. """
+
     repo_type = get_url_type(url)
     if repo_type == RepoType.HF:
         return f"{url}/resolve/main/{file}"
@@ -114,14 +135,18 @@ def get_file_download_url(url: str, file: str) -> str:
 
 
 def get_conv_template(base_weights_path: str) -> str:
+    # NOTE: We can replace this with a more sophisticated method later
     return "LM"
 
 
 def get_base_quantization_decision(base_weights_path: str) -> Quantization:
+    # TODO: Implement a more sophisticated method to determine the quantization later
     return Quantization.INT4
 
 
 def get_quantization_object(quantization: Quantization, model):
+    """ Take a Quantization enum and convert it to the related quantization object. """
+
     quantization_kinds = list(model.quantize.keys())
     quantization_options = [
         quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds]
@@ -141,6 +166,7 @@ def get_quantization_object(quantization: Quantization, model):
 
 
 def get_quantization_compression(quant: Quantization) -> float:
+    # NOTE: We can replace this with a more sophisticated calculation later
     quantization_compression_table = {
         Quantization.INT3: 0.25,
         Quantization.INT4: 0.33,
@@ -150,6 +176,8 @@ def get_quantization_compression(quant: Quantization) -> float:
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
+    """ The weight conversion process requires certain tensor formats, check if they exist. """
+
     pytorch_json_path = os.path.join(
         base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
@@ -169,7 +197,7 @@ def is_convertable_format(base_weights_path: str) -> bool:
     return False
 
 
-async def install_generator(model_url: str, conversion_manager: ConversionManager):
+async def install_generator(model_url: str, installation_system_manager: InstallationSystemManager):
     """
         Downloads and installs a model from a given URL.
 
@@ -179,7 +207,7 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
 
         Args:
             model_url (str): The URL to download the model from
-            conversion_manager (ConversionManager): The manager to handle the global conversion and quantization queue
+            installation_system_manager (InstallationSystemManager): The manager of global download and conversion state
 
         Yields:
             InstallProgress: JSON representing the progress of the installation
@@ -216,6 +244,23 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
         yield f"data: {json.dumps(asdict(progress_event))}\n\n"
         return
 
+    # Check that there is enough space to download the model
+    disk_space = psutil.disk_usage("/").free
+    total_bytes_remaining = installation_system_manager.get_total_bytes_remaining()
+    if total_size > disk_space + total_bytes_remaining:
+        logger.error(f"Not enough space to download {model_dir}")
+        progress_event = InstallProgress(
+            id=id,
+            status=InstallStatus.DOWNLOADING,
+            progress=0,
+            error="Not enough space to download the model"
+        )
+        yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        return
+
+    # Mark as downloading and send to InstallSystemManager
+    installation_system_manager.set_download(id, total_size)
+
     # Start downloading files
     logger.info(f"Downloading {len(files_to_download)} files")
     downloaded_bytes = 0
@@ -234,6 +279,8 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
                 await f.write(chunk)
                 downloaded_bytes += len(chunk)
                 progress = int(100 * downloaded_bytes / total_size)
+                installation_system_manager.set_download(
+                    id, total_size - downloaded_bytes)
 
                 if (progress - last_progress) >= 1:
                     last_progress = progress
@@ -244,6 +291,7 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
                         error=None
                     )
                     yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        installation_system_manager.clear_download(id)
 
     # Mark as installing and send to InstallManager
     logger.info(f"""Downloaded {
@@ -258,12 +306,17 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
 
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    conversion_manager.add_to_queue(model_dir)
-    while not conversion_manager.is_models_turn(model_dir):
+    installation_system_manager.add_to_conversion_queue(model_dir)
+    while not installation_system_manager.is_models_conversion_turn(model_dir):
         await asyncio.sleep(5)
-    conversion_manager.remove_from_queue()
 
     quantization = get_base_quantization_decision(install_path)
+    model_size = sum(
+        os.path.getsize(file) for file in os.listdir(install_path))
+    compression_rate = get_quantization_compression(quantization)
+    compressed_size = model_size * compression_rate
+    installation_system_manager.remove_from_conversion_queue(
+        quantization, compressed_size)
 
     # Return early if the quantization is already built
     quant_path = model_dir / quantization.value
@@ -294,10 +347,8 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
     # Check that there is enough space and memory to convert and quantize the model
     available_ram = psutil.virtual_memory().available
     disk_space = psutil.disk_usage("/").free
-    model_size = sum(
-        os.path.getsize(file) for file in os.listdir(install_path))
-    compression_rate = get_quantization_compression(quantization)
-    if ((model_size * compression_rate) > disk_space) or (model_size > available_ram):
+    bytes_remaining = installation_system_manager.get_total_bytes_remaining()
+    if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):
         logger.info(
             f"Not enough space or memory to convert and quantize {model_dir}")
         progress_event = InstallProgress(
@@ -351,5 +402,5 @@ async def install_generator(model_url: str, conversion_manager: ConversionManage
         error=None
     )
     yield f"data: {json.dumps(asdict(progress_event))}\n\n"
-    conversion_manager.complete_conversion()
+    installation_system_manager.complete_conversion()
     return

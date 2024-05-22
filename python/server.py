@@ -1,9 +1,11 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 from loguru import logger
 from prisma import Prisma
 from utils import get_app_data_path
+from .endpoints.model.install import install_generator
 
 
 db = None
@@ -42,9 +44,19 @@ async def highlights():
     pass
 
 
-@app.post("/model/install")
-async def install_model():
-    pass
+@app.post("/model/install", response_class=StreamingResponse)
+async def install_model(request: Request):
+    # Get the model URL from the request body
+    data = await request.json()
+    model_download_url = data["url"]
+
+    # Start the model installation process
+    response = StreamingResponse(install_generator(
+        model_download_url), media_type="text/event-stream")
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
+    return response
 
 
 @app.post("/model/run")

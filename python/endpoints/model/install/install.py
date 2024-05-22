@@ -1,0 +1,355 @@
+import os
+import json
+import requests
+import aiohttp
+from aiofiles import open as aiofiles_open
+import asyncio
+import psutil
+from dataclasses import asdict
+from loguru import logger
+from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
+from mlc_llm.support.auto_config import detect_config, detect_model_type
+from mlc_llm.support.auto_weight import detect_weight
+from mlc_llm.support.auto_device import detect_device
+from mlc_llm.quantization import QUANTIZATION
+from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
+from python.types import RepoType, InstallProgress, InstallStatus, FileInfo, Quantization
+from python.utils import get_app_data_path
+from python.endpoints.model.install.ConversionManager import ConversionManager
+
+
+def get_id_for_url(url: str) -> str:
+    # TODO: Change this when HF scraping API is ready
+    return "123456"
+
+
+def get_url_type(url: str) -> RepoType:
+    # TODO: Change this later when we may start accepting S3 URLs
+    return RepoType.HF
+
+
+def get_hf_name_for_url(url: str) -> str:
+    url_parts = url.split("/")
+    author = url_parts[-2]
+    model_name = url_parts[-1]
+
+    return f"{author}/{model_name}"
+
+
+async def get_file_size_hf(url, file):
+    async with aiohttp.ClientSession() as session:
+        async with session.head(f"{url}/resolve/main/{file}", allow_redirects=True) as response:
+            return file, int(response.headers["Content-Length"])
+
+
+async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
+    # Query the HF API to get the requisite info
+    response = requests.get(f"https://huggingface.co/api/models/{model_name}?")
+    response.raise_for_status()
+
+    # Get list of repo files
+    data = response.json()
+    files = data["siblings"]
+
+    tasks = []
+    files_to_download = []
+    for file in files:
+        if not file["rfilename"]:
+            raise ValueError(f"Missing rfilename for {file}")
+
+        tasks.append(get_file_size_hf(model_name, file["rfilename"]))
+
+    for task in asyncio.as_completed(tasks):
+        file, size = await task
+        files_to_download.append({
+            "file": file,
+            "size": size
+        })
+
+    return files_to_download
+
+
+def get_local_files(directory: str) -> list[FileInfo]:
+    files = []
+
+    # Get all files, including in sub-directories
+    for root, _, filenames in os.walk(directory):
+        for filename in filenames:
+            file_path = os.path.join(root, filename)
+            size = os.path.getsize(file_path)
+            files.append(FileInfo(file=file_path, size=size))
+
+    return files
+
+
+def get_files_to_download(remote_files: list[FileInfo], local_files: list[FileInfo]) -> list[FileInfo]:
+    # Get the files that need to be downloaded
+    remote_files_dict = {file.file: file.size for file in remote_files}
+    local_files_dict = {file.file: file.size for file in local_files}
+
+    files_to_download = []
+    for file, size in remote_files_dict.items():
+        if file not in local_files_dict or local_files_dict[file] != size:
+            files_to_download.append(FileInfo(file=file, size=size))
+
+    return files_to_download
+
+
+async def get_repo_info(url: str) -> list[FileInfo]:
+    # Get repo type
+    repo_type = get_url_type(url)
+    if repo_type == RepoType.HF:
+        model_name = get_hf_name_for_url(url)
+        return await get_hf_repo_info(model_name)
+    else:
+        raise ValueError(f"Unsupported repo type: {repo_type}")
+
+
+def get_file_download_url(url: str, file: str) -> str:
+    repo_type = get_url_type(url)
+    if repo_type == RepoType.HF:
+        return f"{url}/resolve/main/{file}"
+    else:
+        raise ValueError(f"Unsupported repo type: {repo_type}")
+
+
+def get_conv_template(base_weights_path: str) -> str:
+    return "LM"
+
+
+def get_base_quantization_decision(base_weights_path: str) -> Quantization:
+    return Quantization.INT4
+
+
+def get_quantization_object(quantization: Quantization, model):
+    quantization_kinds = list(model.quantize.keys())
+    quantization_options = [
+        quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds]
+
+    if quantization.value == "INT8":
+        filtered_quantization_options = [
+            quant for quant in quantization_options if quant.kind == "no-quant"]
+        return filtered_quantization_options[0]
+    else:
+        filtered_quantization_options = []
+        for quant in quantization_options:
+            if quant.kind == "no-quant":
+                continue
+            if quant.kind == quantization.value.lower():
+                filtered_quantization_options.append(quant)
+        return filtered_quantization_options[0]
+
+
+def get_quantization_compression(quant: Quantization) -> float:
+    quantization_compression_table = {
+        Quantization.INT3: 0.25,
+        Quantization.INT4: 0.33,
+        Quantization.INT8: 0.55
+    }
+    return quantization_compression_table[quant]
+
+
+def is_convertable_format(base_weights_path: str) -> bool:
+    pytorch_json_path = os.path.join(
+        base_weights_path, "pytorch_model.bin.index.json")
+    pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
+    safetensors_path = os.path.join(
+        base_weights_path, "model.safetensors.index.json")
+    safetensors_bin_path = os.path.join(
+        base_weights_path, "model.safetensors")
+
+    if (
+        os.path.exists(pytorch_json_path) or
+        os.path.exists(pytorch_bin_path) or
+        os.path.exists(safetensors_path) or
+        os.path.exists(safetensors_bin_path)
+    ):
+        return True
+
+    return False
+
+
+async def install_generator(model_url: str, conversion_manager: ConversionManager):
+    """
+        Downloads and installs a model from a given URL.
+
+        - Downloads the model files if they don't exist locally
+        - Converts the weights and quantizes them
+        - Generates the Truffle config file
+
+        Args:
+            model_url (str): The URL to download the model from
+            conversion_manager (ConversionManager): The manager to handle the global conversion and quantization queue
+
+        Yields:
+            InstallProgress: JSON representing the progress of the installation
+    """
+
+    id = get_id_for_url(model_url)
+    model_dir = get_app_data_path() / "models" / id
+    install_path = model_dir / "base"
+
+    # Send initial install progress
+    logger.info(f"Starting install for {model_url}")
+    initial_progress = InstallProgress(
+        id=id,
+        status=InstallStatus.DOWNLOADING,
+        progress=0,
+        error=None
+    )
+    yield f"data: {json.dumps(asdict(initial_progress))}\n\n"
+
+    # Get files to download
+    try:
+        remote_files = await get_repo_info(model_url)
+        local_files = get_local_files(install_path)
+        files_to_download = get_files_to_download(
+            remote_files.files_to_download, local_files)
+        total_size = sum([file.size for file in files_to_download])
+    except Exception as e:
+        progress_event = InstallProgress(
+            id=id,
+            status=InstallStatus.DOWNLOADING,
+            progress=0,
+            error=str(e)
+        )
+        yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        return
+
+    # Start downloading files
+    logger.info(f"Downloading {len(files_to_download)} files")
+    downloaded_bytes = 0
+    last_progress = 0
+    for file in files_to_download:
+        url = get_file_download_url(model_url, file.file)
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+
+        # Make sure the directory exists
+        os.makedirs(install_path, exist_ok=True)
+
+        # Write the file to disk and process the progress chunk by chunk
+        async with aiofiles_open(os.path.join(install_path, file.file), "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                await f.write(chunk)
+                downloaded_bytes += len(chunk)
+                progress = int(100 * downloaded_bytes / total_size)
+
+                if (progress - last_progress) >= 1:
+                    last_progress = progress
+                    progress_event = InstallProgress(
+                        id=id,
+                        status=InstallStatus.DOWNLOADING,
+                        progress=progress,
+                        error=None
+                    )
+                    yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+
+    # Mark as installing and send to InstallManager
+    logger.info(f"""Downloaded {
+                len(files_to_download)} files. Beginning weight conversion and quantization.""")
+    progress_event = InstallProgress(
+        id=id,
+        status=InstallStatus.INSTALLING,
+        progress=100,
+        error=None
+    )
+    yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+
+    # Weight conversion and quantization process
+    logger.info(f"Adding {model_dir} to the conversion queue")
+    conversion_manager.add_to_queue(model_dir)
+    while not conversion_manager.is_models_turn(model_dir):
+        await asyncio.sleep(5)
+    conversion_manager.remove_from_queue()
+
+    quantization = get_base_quantization_decision(install_path)
+
+    # Return early if the quantization is already built
+    quant_path = model_dir / quantization.value
+    if os.path.exists(quant_path):
+        logger.info(
+            f"Conversion and quantization already done for {model_dir}")
+        progress_event = InstallProgress(
+            id=id,
+            status=InstallStatus.DONE,
+            progress=100,
+            error=None
+        )
+        yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        return
+
+    # Check if the format is convertable
+    if not is_convertable_format(install_path):
+        logger.info(f"Unsupported model format for {model_dir}")
+        progress_event = InstallProgress(
+            id=id,
+            status=InstallStatus.INSTALLING,
+            progress=100,
+            error="Unsupported model format"
+        )
+        yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        return
+
+    # Check that there is enough space and memory to convert and quantize the model
+    available_ram = psutil.virtual_memory().available
+    disk_space = psutil.disk_usage("/").free
+    model_size = sum(
+        os.path.getsize(file) for file in os.listdir(install_path))
+    compression_rate = get_quantization_compression(quantization)
+    if ((model_size * compression_rate) > disk_space) or (model_size > available_ram):
+        logger.info(
+            f"Not enough space or memory to convert and quantize {model_dir}")
+        progress_event = InstallProgress(
+            id=id,
+            status=InstallStatus.INSTALLING,
+            progress=100,
+            error="Not enough space or memory to convert and quantize the model"
+        )
+        yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        return
+
+    # Identify necessary info for conversion
+    config = detect_config(install_path)
+    model = detect_model_type("auto", config)
+    source, source_format = detect_weight(
+        weight_path=config.parent,
+        config_json_path=config,
+        weight_format="auto",
+    )
+    device = detect_device("auto")
+    conv_template = get_conv_template(install_path)
+    quantization_obj = get_quantization_object(quantization, model)
+
+    # Convert and quantize
+    logger.info(f"Converting weights for {model_dir}")
+    convert_weight_mlc(
+        config=config,
+        quantization=quantization_obj,
+        model=model,
+        device=device,
+        source=source,
+        source_format=source_format,
+        output=quant_path
+    )
+
+    # Generate config
+    logger.info(f"Generating config for {model_dir}")
+    gen_config_mlc(
+        config=config,
+        model=model,
+        quantization=quantization_obj,
+        conv_template=conv_template,
+        context_window_size=None,
+    )
+
+    logger.info(f"Conversion and quantization complete for {model_dir}")
+    progress_event = InstallProgress(
+        id=id,
+        status=InstallStatus.DONE,
+        progress=100,
+        error=None
+    )
+    yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+    conversion_manager.complete_conversion()
+    return

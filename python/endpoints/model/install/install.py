@@ -35,7 +35,7 @@ def get_hf_name_for_url(url: str) -> str:
     return f"{author}/{model_name}"
 
 
-async def get_file_size_hf(url, file):
+async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
     async with aiohttp.ClientSession() as session:
         async with session.head(f"{url}/resolve/main/{file}", allow_redirects=True) as response:
             return file, int(response.headers["Content-Length"])
@@ -169,7 +169,7 @@ def is_convertable_format(base_weights_path: str) -> bool:
     return False
 
 
-async def download_file(session, url, install_path, file_info, progress_tracker):
+async def download_file(session: any, url: str, install_path: Path, file_info: FileInfo, progress_tracker: dict[str, int]):
     file_path = os.path.join(install_path, file_info.file)
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 

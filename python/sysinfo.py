@@ -42,7 +42,7 @@ async def get_models_data():
             final.append({
                 "id": model.id,
                 "ram": memory_info.rss,
-                "disk": get_disk_usage(get_app_data_path() / "models" / model.name)
+                "disk": get_disk_usage(get_app_data_path() / "models" / model.id)
             })
         except psutil.NoSuchProcess:
             logger.warning("No process found with PID: {}".format(model.pid))

@@ -12,7 +12,10 @@ from .db import db
 @asynccontextmanager
 async def init_db():
     app_data_path = get_app_data_path()
-    db_path = app_data_path / "truffle.db"
+    if os.getenv("ENV") == "prod":
+        db_path = app_data_path / "truffle.db"
+    else:
+        db_path = app_data_path / "truffle.test.db"
     os.environ["DATABASE_URL"] = f"file:{db_path}"
     logger.info(f"Connecting to DB at: {db_path}")
 

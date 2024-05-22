@@ -1,8 +1,7 @@
 import os
 import asyncio
 import pytest
-import aiohttp
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
+from unittest.mock import patch, MagicMock
 import json
 import shutil
 from aioresponses import aioresponses

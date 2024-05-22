@@ -5,10 +5,11 @@ from fastapi.responses import StreamingResponse
 from loguru import logger
 from prisma import Prisma
 from utils import get_app_data_path
-from .endpoints.model.install import install_generator
+from .endpoints.model.install import install_generator, InstallationSystemManager
 
 
 db = None
+installation_system_manager = None
 
 
 @asynccontextmanager
@@ -24,6 +25,9 @@ async def lifespan(app: FastAPI):
     # With SQLite this should automatically create the DB file
     db = Prisma()
     await db.connect()
+
+    # Initialize the installation system manager
+    installation_system_manager = InstallationSystemManager()
 
     yield
 
@@ -52,7 +56,7 @@ async def install_model(request: Request):
 
     # Start the model installation process
     response = StreamingResponse(install_generator(
-        model_download_url), media_type="text/event-stream")
+        model_download_url, installation_system_manager), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"

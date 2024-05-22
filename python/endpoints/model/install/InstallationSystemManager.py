@@ -1,4 +1,5 @@
 from pathlib import Path
+from python.types import Quantization
 from python.utils import get_disk_usage
 
 
@@ -11,27 +12,27 @@ class InstallationSystemManager:
         self.current_conversion = None
         self.conversion_in_progress = False
 
-    def set_download(set, id, bytes_remaining):
-        set.downloads[id] = bytes_remaining
+    def set_download(self, id: str, bytes_remaining: int):
+        self.downloads[id] = bytes_remaining
 
-    def clear_download(self, id):
+    def clear_download(self, id: str):
         self.downloads.pop(id, None)
 
-    def get_total_bytes_remaining(self):
+    def get_total_bytes_remaining(self) -> int:
         download_bytes = sum(self.downloads.values())
+        conversion_bytes = 0
 
-        quantization_dir = Path(
-            self.current_conversion["model_path"]) / self.current_conversion["quantization"]
-        quantized_bytes = get_disk_usage(quantization_dir)
+        if self.current_conversion:
+            quantization_dir = Path(
+                self.current_conversion["model_path"]) / self.current_conversion["quantization"]
+            quantized_bytes = get_disk_usage(quantization_dir)
+            conversion_bytes = self.current_conversion["compressed_size"] - \
+                quantized_bytes
 
-        return download_bytes + (self.current_conversion["compressed_size"] - quantized_bytes)
+        return download_bytes + conversion_bytes
 
     def is_models_conversion_turn(self, model_path: str) -> bool:
-        return (
-            self.conversion_in_progress == False and
-            len(self.conversion_queue) != 0 and
-            self.conversion_queue[0] == model_path
-        )
+        return not self.conversion_in_progress and self.conversion_queue and self.conversion_queue[0] == model_path
 
     def add_to_conversion_queue(self, model_path: str):
         self.conversion_queue.append(model_path)

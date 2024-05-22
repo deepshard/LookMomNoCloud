@@ -1,1 +1,2 @@
 from .install import install_generator
+from InstallationSystemManager import InstallationSystemManager

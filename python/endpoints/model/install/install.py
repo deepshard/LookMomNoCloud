@@ -6,6 +6,7 @@ from aiofiles import open as aiofiles_open
 import asyncio
 import psutil
 from dataclasses import asdict
+from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
@@ -19,25 +20,16 @@ from python.endpoints.model.install.InstallationSystemManager import Installatio
 
 
 def get_id_for_url(url: str) -> str:
-    """ Based on the URL, return a unique ID for the model from the HF scraping API. """
-
     # TODO: Change this when HF scraping API is ready
     return "123456"
 
 
 def get_url_type(url: str) -> RepoType:
-    """ Maps the URL to a RepoType. """
-
     # TODO: Change this later when we may start accepting S3 URLs
     return RepoType.HF
 
 
 def get_hf_name_for_url(url: str) -> str:
-    """ 
-        Extracts the human readable model name from the HF base repo URL for use in 
-        mapping to the HF API.
-    """
-
     url_parts = url.split("/")
     author = url_parts[-2]
     model_name = url_parts[-1]
@@ -46,45 +38,37 @@ def get_hf_name_for_url(url: str) -> str:
 
 
 async def get_file_size_hf(url, file):
-    """ Extends the base URL with the download path for the file and gets the file size. """
-
     async with aiohttp.ClientSession() as session:
         async with session.head(f"{url}/resolve/main/{file}", allow_redirects=True) as response:
             return file, int(response.headers["Content-Length"])
 
 
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
-    """ Creates an array of file name and size objects for the model. """
-
     # Query the HF API to get the requisite info
-    response = requests.get(f"https://huggingface.co/api/models/{model_name}?")
-    response.raise_for_status()
+    url = f"https://huggingface.co/api/models/{model_name}?"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            response.raise_for_status()
+            data = await response.json()
 
     # Get list of repo files
-    data = response.json()
-    files = data["siblings"]
+    files = data.get("siblings", [])
+    if not files:
+        raise ValueError(f"Could not find any files for {model_name}")
 
     tasks = []
-    files_to_download = []
     for file in files:
         if not file["rfilename"]:
             raise ValueError(f"Missing rfilename for {file}")
 
         tasks.append(get_file_size_hf(model_name, file["rfilename"]))
 
-    for task in asyncio.as_completed(tasks):
-        file, size = await task
-        files_to_download.append({
-            "file": file,
-            "size": size
-        })
-
-    return files_to_download
+    # Get the file sizes
+    files_to_download = await asyncio.gather(*tasks)
+    return [FileInfo(file=file, size=size) for file, size in files_to_download]
 
 
 def get_local_files(directory: str) -> list[FileInfo]:
-    """ Creates an array of file name and size objects for a local directory. """
-
     files = []
 
     # Get all files, including in sub-directories
@@ -98,8 +82,6 @@ def get_local_files(directory: str) -> list[FileInfo]:
 
 
 def get_files_to_download(remote_files: list[FileInfo], local_files: list[FileInfo]) -> list[FileInfo]:
-    """ Compares the remote and local files and returns the files that still need to be downloaded. """
-
     # Get the files that need to be downloaded
     remote_files_dict = {file.file: file.size for file in remote_files}
     local_files_dict = {file.file: file.size for file in local_files}
@@ -113,8 +95,6 @@ def get_files_to_download(remote_files: list[FileInfo], local_files: list[FileIn
 
 
 async def get_repo_info(url: str) -> list[FileInfo]:
-    """ Uses the repo type to determine the appropriate function to get the repo file and size info. """
-
     # Get repo type
     repo_type = get_url_type(url)
     if repo_type == RepoType.HF:
@@ -125,8 +105,6 @@ async def get_repo_info(url: str) -> list[FileInfo]:
 
 
 def get_file_download_url(url: str, file: str) -> str:
-    """ Extends the base URL with the download path for the file based on the repo type. """
-
     repo_type = get_url_type(url)
     if repo_type == RepoType.HF:
         return f"{url}/resolve/main/{file}"
@@ -145,8 +123,6 @@ def get_base_quantization_decision(base_weights_path: str) -> Quantization:
 
 
 def get_quantization_object(quantization: Quantization, model):
-    """ Take a Quantization enum and convert it to the related quantization object. """
-
     quantization_kinds = list(model.quantize.keys())
     quantization_options = [
         quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds]
@@ -176,8 +152,6 @@ def get_quantization_compression(quant: Quantization) -> float:
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
-    """ The weight conversion process requires certain tensor formats, check if they exist. """
-
     pytorch_json_path = os.path.join(
         base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
@@ -195,6 +169,59 @@ def is_convertable_format(base_weights_path: str) -> bool:
         return True
 
     return False
+
+
+async def download_file(session, url, install_path, file_info, progress_tracker):
+    file_path = os.path.join(install_path, file_info["file"])
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    async with session.get(url, allow_redirects=True, timeout=None) as response:
+        response.raise_for_status()
+        async with aiofiles_open(file_path, "wb") as f:
+            async for chunk in response.content.iter_chunked(chunk_size=8192):
+                await f.write(chunk)
+                progress_tracker["downloaded_bytes"] += len(chunk)
+
+
+def convert_and_quantize(base_weights_path: str, quant_weights_path: str, quantization: Quantization):
+    # Gather necessary info for conversion
+    config = detect_config(base_weights_path)
+    model = detect_model_type("auto", config)
+    source, source_format = detect_weight(
+        weight_path=config.parent,
+        config_json_path=config,
+        weight_format="auto",
+    )
+    device = detect_device("auto")
+    conv_template = get_conv_template(base_weights_path)
+    quantization_obj = get_quantization_object(quantization, model)
+
+    # Convert and quantize
+    logger.info(f"Converting weights for {base_weights_path}")
+    convert_weight_mlc(
+        config=config,
+        quantization=quantization_obj,
+        model=model,
+        device=device,
+        source=source,
+        source_format=source_format,
+        output=quant_weights_path
+    )
+
+    # Generate config
+    logger.info(f"Generating config for {base_weights_path}")
+    gen_config_mlc(
+        config=config,
+        model=model,
+        quantization=quantization_obj,
+        conv_template=conv_template,
+        context_window_size=None,
+        sliding_window_size=None,
+        prefill_chunk_size=None,
+        tensor_parallel_shards=None,
+        max_batch_size=1,
+        output=Path(quant_weights_path)
+    )
 
 
 async def install_generator(model_url: str, installation_system_manager: InstallationSystemManager):
@@ -258,30 +285,26 @@ async def install_generator(model_url: str, installation_system_manager: Install
         yield f"data: {json.dumps(asdict(progress_event))}\n\n"
         return
 
-    # Mark as downloading and send to InstallSystemManager
-    installation_system_manager.set_download(id, total_size)
+    try:
+        # Mark as downloading and send to InstallSystemManager
+        installation_system_manager.set_download(id, total_size)
 
-    # Start downloading files
-    logger.info(f"Downloading {len(files_to_download)} files")
-    downloaded_bytes = 0
-    last_progress = 0
-    for file in files_to_download:
-        url = get_file_download_url(model_url, file.file)
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
+        # Start downloading files
+        logger.info(f"Downloading {len(files_to_download)} files")
+        progress_tracker = {"downloaded_bytes": 0}
+        last_progress = 0
+        async with aiohttp.ClientSession() as session:
+            tasks = [download_file(session, get_file_download_url(
+                model_url, file["file"]), install_path, file, progress_tracker) for file in files_to_download]
+            download_tasks = asyncio.gather(*tasks)
 
-        # Make sure the directory exists
-        os.makedirs(install_path, exist_ok=True)
-
-        # Write the file to disk and process the progress chunk by chunk
-        async with aiofiles_open(os.path.join(install_path, file.file), "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                await f.write(chunk)
-                downloaded_bytes += len(chunk)
-                progress = int(100 * downloaded_bytes / total_size)
+            while not download_tasks.done():
+                progress = int(
+                    100 * progress_tracker["downloaded_bytes"] / total_size)
                 installation_system_manager.set_download(
-                    id, total_size - downloaded_bytes)
+                    id, total_size - progress_tracker["downloaded_bytes"])
 
+                # Send progress event
                 if (progress - last_progress) >= 1:
                     last_progress = progress
                     progress_event = InstallProgress(
@@ -291,7 +314,24 @@ async def install_generator(model_url: str, installation_system_manager: Install
                         error=None
                     )
                     yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+
+                await asyncio.sleep(1)
+
+            # Ensure that the download is complete
+            await download_tasks
+
+        # Clear download from InstallSystemManager
         installation_system_manager.clear_download(id)
+    except Exception as e:
+        logger.error(f"Failed to download {model_dir}: {str(e)}")
+        progress_event = InstallProgress(
+            id=id,
+            status=InstallStatus.DOWNLOADING,
+            progress=0,
+            error=str(e)
+        )
+        yield f"data: {json.dumps(asdict(progress_event))}\n\n"
+        return
 
     # Mark as installing and send to InstallManager
     logger.info(f"""Downloaded {
@@ -360,39 +400,8 @@ async def install_generator(model_url: str, installation_system_manager: Install
         yield f"data: {json.dumps(asdict(progress_event))}\n\n"
         return
 
-    # Identify necessary info for conversion
-    config = detect_config(install_path)
-    model = detect_model_type("auto", config)
-    source, source_format = detect_weight(
-        weight_path=config.parent,
-        config_json_path=config,
-        weight_format="auto",
-    )
-    device = detect_device("auto")
-    conv_template = get_conv_template(install_path)
-    quantization_obj = get_quantization_object(quantization, model)
-
-    # Convert and quantize
-    logger.info(f"Converting weights for {model_dir}")
-    convert_weight_mlc(
-        config=config,
-        quantization=quantization_obj,
-        model=model,
-        device=device,
-        source=source,
-        source_format=source_format,
-        output=quant_path
-    )
-
-    # Generate config
-    logger.info(f"Generating config for {model_dir}")
-    gen_config_mlc(
-        config=config,
-        model=model,
-        quantization=quantization_obj,
-        conv_template=conv_template,
-        context_window_size=None,
-    )
+    # Convert and quantize the model
+    convert_and_quantize(install_path, quant_path, quantization)
 
     logger.info(f"Conversion and quantization complete for {model_dir}")
     progress_event = InstallProgress(

@@ -355,7 +355,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     compression_rate = get_quantization_compression(quantization)
     compressed_size = model_size * compression_rate
     installation_manager.remove_from_conversion_queue(
-        quantization, compressed_size)
+        quantization, compressed_size, False)
 
     # Return early if the quantization is alrady built
     quant_path = model_dir / quantization.value
@@ -370,6 +370,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             "error": None
         }
         yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
         return
 
     # Check if the format is convertable
@@ -382,6 +383,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             "error": f"Unsupported model format for {install_path}"
         }
         yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
         return
 
     # Check that there is enough space and memory to convert and quantize the model
@@ -398,6 +400,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             "error": "Not enough space or memory to convert and quantize the model"
         }
         yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
         return
 
     # Convert and quantize the model

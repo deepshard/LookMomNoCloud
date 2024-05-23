@@ -39,13 +39,14 @@ class InstallationManager:
     def add_to_conversion_queue(self, model_path: str):
         self.conversion_queue.append(model_path)
 
-    def remove_from_conversion_queue(self, quantization: Quantization, compressed_size: int):
+    def remove_from_conversion_queue(self, quantization: Quantization, compressed_size: int, to_run: bool):
         model_path = self.conversion_queue.pop(0)
         self.conversion_in_progress = True
         self.current_conversion = {
             "model_path": model_path,
             "quantization": quantization.value,
-            "compressed_size": compressed_size
+            "compressed_size": compressed_size,
+            "to_run": to_run
         }
 
     def complete_conversion(self):

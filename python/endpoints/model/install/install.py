@@ -14,7 +14,7 @@ from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from python.truffle_types import RepoType, FileInfo, Quantization
 from python.utils import get_app_data_path
-from python.endpoints.model.install.InstallationSystemManager import InstallationSystemManager
+from python.endpoints.model.install.InstallationManager import InstallationManager
 
 
 def get_id_for_url(url: str) -> str:
@@ -222,7 +222,7 @@ def convert_and_quantize(base_weights_path: str, quant_weights_path: str, quanti
     )
 
 
-async def install_generator(model_url: str, installation_system_manager: InstallationSystemManager):
+async def install_generator(model_url: str, installation_manager: InstallationManager):
     """
         Downloads and installs a model from a given URL.
 
@@ -232,7 +232,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
 
         Args:
             model_url (str): The URL to download the model from
-            installation_system_manager (InstallationSystemManager): The manager of global download and conversion state
+            installation_manager (InstallationManager): The manager of global download and conversion state
 
         Yields:
             InstallProgress: JSON representing the progress of the installation
@@ -271,7 +271,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
 
     # Check that there is enough space to download the model
     disk_space = psutil.disk_usage("/").free
-    total_bytes_remaining = installation_system_manager.get_total_bytes_remaining()
+    total_bytes_remaining = installation_manager.get_total_bytes_remaining()
     if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
@@ -285,7 +285,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
 
     try:
         # Mark as downloading and send to InstallSystemManager
-        installation_system_manager.set_download(id, total_size)
+        installation_manager.set_download(id, total_size)
 
         # Start downloading files
         logger.info(f"Downloading {len(files_to_download)} files")
@@ -299,7 +299,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
             while not download_tasks.done():
                 progress = int(
                     100 * progress_tracker["downloaded_bytes"] / total_size)
-                installation_system_manager.set_download(
+                installation_manager.set_download(
                     id, total_size - progress_tracker["downloaded_bytes"])
 
                 # Send progress event
@@ -319,7 +319,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
             await download_tasks
 
         # Clear download from InstallSystemManager
-        installation_system_manager.clear_download(id)
+        installation_manager.clear_download(id)
     except Exception as e:
         logger.error(f"Failed to download {model_dir}: {str(e)}")
         progress_event = {
@@ -337,7 +337,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
 
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    installation_system_manager.add_to_conversion_queue(model_dir)
+    installation_manager.add_to_conversion_queue(model_dir)
     progress_event = {
         "id": id,
         "status": "INSTALLING",
@@ -346,7 +346,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
     }
     yield f"data: {json.dumps(progress_event)}\n\n"
 
-    while not installation_system_manager.is_models_conversion_turn(model_dir):
+    while not installation_manager.is_models_conversion_turn(model_dir):
         await asyncio.sleep(5)
 
     quantization = get_base_quantization_decision(install_path)
@@ -354,7 +354,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
         os.path.getsize(install_path / file) for file in os.listdir(install_path))
     compression_rate = get_quantization_compression(quantization)
     compressed_size = model_size * compression_rate
-    installation_system_manager.remove_from_conversion_queue(
+    installation_manager.remove_from_conversion_queue(
         quantization, compressed_size)
 
     # Return early if the quantization is alrady built
@@ -387,7 +387,7 @@ async def install_generator(model_url: str, installation_system_manager: Install
     # Check that there is enough space and memory to convert and quantize the model
     available_ram = psutil.virtual_memory().available
     disk_space = psutil.disk_usage("/").free
-    bytes_remaining = installation_system_manager.get_total_bytes_remaining()
+    bytes_remaining = installation_manager.get_total_bytes_remaining()
     if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):
         logger.info(
             f"Not enough space or memory to convert and quantize {model_dir}")
@@ -411,5 +411,5 @@ async def install_generator(model_url: str, installation_system_manager: Install
         "error": None
     }
     yield f"data: {json.dumps(progress_event)}\n\n"
-    installation_system_manager.complete_conversion()
+    installation_manager.complete_conversion()
     return

@@ -3,7 +3,7 @@ from python.truffle_types import Quantization
 from python.utils import get_disk_usage
 
 
-class InstallationSystemManager:
+class InstallationManager:
     """ Manages global state of the installation system. """
 
     def __init__(self):

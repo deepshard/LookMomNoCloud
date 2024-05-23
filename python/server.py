@@ -7,11 +7,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from .endpoints.model.install import install_generator, InstallationSystemManager
+from .endpoints.model.install import install_generator, InstallationManager
 from .utils import get_app_data_path
 from .db import db
 
-installation_system_manager = None
+installation_manager = None
 
 
 @asynccontextmanager
@@ -35,7 +35,7 @@ async def init_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    installation_system_manager = InstallationSystemManager()
+    installation_manager = InstallationManager()
 
     async with init_db():
         yield
@@ -79,7 +79,7 @@ async def install_model(request: Request):
 
     # Start the model installation process
     response = StreamingResponse(install_generator(
-        model_download_url, installation_system_manager), media_type="text/event-stream")
+        model_download_url, installation_manager), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"

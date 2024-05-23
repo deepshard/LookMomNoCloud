@@ -81,10 +81,9 @@ async def is_server_running(port: int, timeout: int = 60) -> bool:
     return False
 
 
-async def run_model(model_id: str, quantization: str) -> dict:
+async def run_model(model_id: str, instance: int, quantization: str) -> dict:
     model_path = get_app_data_path() / "models" / model_id / quantization
     model_info = get_model_info(model_id)
-    instance = get_instance(model_id)
     port = find_port()
 
     proc = multiprocessing.Process(target=serve_model, args=(model_path, port))
@@ -114,7 +113,14 @@ async def run_model(model_id: str, quantization: str) -> dict:
 
 
 async def run_models(model_ids: list[str]) -> list[dict]:
+    # Determine optimal quantization for each model and determine its instance number
     quantizations = adaptive_quantization_decision(model_ids)
     instance_numbers = get_instances(model_ids)
 
-    return [run_model(model_id, quantization) for model_id, quantization in quantizations.items()]
+    # Run each model
+    results = []
+    for model_id, instance, quantization in zip(model_ids, instance_numbers, quantizations):
+        result = await run_model(model_id, instance, quantization)
+        results.append(result)
+
+    return results

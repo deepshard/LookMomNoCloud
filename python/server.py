@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 import os
 from .sysinfo import sysinfo_generator
@@ -8,6 +8,8 @@ from fastapi import FastAPI
 from loguru import logger
 from .utils import get_app_data_path
 from .db import db
+from python.endpoints.model.delete import delete_model_handler
+
 
 @asynccontextmanager
 async def init_db():
@@ -27,6 +29,7 @@ async def init_db():
         logger.info(f"Disconnecting from DB")
         await db.disconnect()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with init_db():
@@ -34,9 +37,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response =  StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
+    response = StreamingResponse(
+        sysinfo_generator(), media_type="text/event-stream")
     response.headers['Content-Type'] = 'text/event-stream'
     response.headers['Cache-Control'] = 'no-cache'
     response.headers['Connection'] = 'keep-alive'
@@ -65,7 +70,13 @@ async def stop_model():
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    pass
+    try:
+        delete_model_handler(model_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=404, detail="Model directory not found")
+
+    return {}
 
 if __name__ == "__main__":
     import uvicorn

@@ -10,6 +10,8 @@ from loguru import logger
 from .endpoints.model.install import install_generator, InstallationManager
 from .utils import get_app_data_path
 from .db import db
+from python.endpoints.model.delete import delete_model_handler
+
 
 installation_manager = None
 
@@ -98,7 +100,13 @@ async def stop_model():
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    pass
+    try:
+        delete_model_handler(model_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=404, detail="Model directory not found")
+
+    return {}
 
 if __name__ == "__main__":
     import uvicorn

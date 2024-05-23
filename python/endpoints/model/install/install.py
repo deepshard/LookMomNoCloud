@@ -12,7 +12,7 @@ from mlc_llm.support.auto_weight import detect_weight
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
-from python.types import RepoType, FileInfo, Quantization
+from python.truffle_types import RepoType, FileInfo, Quantization
 from python.utils import get_app_data_path
 from python.endpoints.model.install.InstallationSystemManager import InstallationSystemManager
 

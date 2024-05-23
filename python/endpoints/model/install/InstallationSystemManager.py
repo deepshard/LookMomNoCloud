@@ -1,5 +1,5 @@
 from pathlib import Path
-from python.types import Quantization
+from python.truffle_types import Quantization
 from python.utils import get_disk_usage
 
 

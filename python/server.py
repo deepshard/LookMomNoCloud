@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 import os
+from jsonschema import validate, ValidationError
 from .sysinfo import sysinfo_generator
-import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -60,9 +60,22 @@ async def highlights():
 
 @app.post("/model/install", response_class=StreamingResponse)
 async def install_model(request: Request):
-    # Get the model URL from the request body
-    data = await request.json()
-    model_download_url = data["url"]
+    # Validate the request body and get the model URL
+    request_body = await request.json()
+
+    try:
+        schema = {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string"}
+            },
+            "required": ["url"]
+        }
+        validate(instance=request_body, schema=schema)
+        model_download_url = request_body["url"]
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request body: {e}")
 
     # Start the model installation process
     response = StreamingResponse(install_generator(

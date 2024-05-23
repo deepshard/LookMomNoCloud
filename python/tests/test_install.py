@@ -7,7 +7,7 @@ import shutil
 from aioresponses import aioresponses
 from python.endpoints.model.install import install_generator, InstallationSystemManager
 from python.endpoints.model.install.install import get_hf_name_for_url, get_files_to_download, download_file
-from python.types import FileInfo
+from python.truffle_types import FileInfo
 from python.utils import get_app_data_path
 
 schema = {

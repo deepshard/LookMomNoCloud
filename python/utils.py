@@ -4,6 +4,7 @@ import subprocess
 import requests
 import asyncio
 import aiohttp
+import socket
 from pathlib import Path
 from loguru import logger
 
@@ -17,6 +18,7 @@ def get_disk_usage(folder_path):
             elif entry.is_dir():
                 total_size += get_disk_usage(entry.path)
     return total_size
+
 
 def get_app_data_path():
     system = platform.system()
@@ -121,3 +123,11 @@ def check_port(pid, port):
         return str(pid) in result.decode("utf-8")
     except subprocess.CalledProcessError:
         return False
+
+
+def find_port(port=8899):
+    """Find an open port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if s.connect_ex(("localhost", port)) == 0:
+            return find_port(port + 1)
+        return port

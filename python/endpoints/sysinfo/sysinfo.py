@@ -28,7 +28,6 @@ async def get_sysinfo():
             }
         }
     }
-
     return data
 
 

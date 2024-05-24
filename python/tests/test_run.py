@@ -128,12 +128,6 @@ def mlc_mock():
         yield convert_and_quantize
 
 
-@pytest.fixture
-def kill_models_mock():
-    with patch("python.endpoints.model.run.run.kill_models") as kill_models:
-        yield kill_models
-
-
 # Tests
 @pytest.mark.asyncio
 async def test_run_quantization_does_not_exist(base_fixture, server_mock, subprocess_mock, mlc_mock):
@@ -331,33 +325,33 @@ async def test_run_not_enough_memory_quantization(base_fixture, server_mock, sub
 
 
 @pytest.mark.asyncio
-async def test_run_not_enough_memory_run(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock, kill_models_mock):
+async def test_run_not_enough_memory_run(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
     async with init_db():
         manager = InstallationManager()
 
         with patch("psutil.virtual_memory", return_value=MagicMock(total=0, free=0, available=1024)) as ram_mock:
-            # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator([model_id_1], manager)
+            with patch("os.kill") as kill_mock:
+                # Prepare JSON streaming responses as they would be sent from the generator
+                stream = run_models_generator([model_id_1], manager)
 
-            # Collect the responses
-            responses = []
-            async for response in stream:
-                responses.append(json.loads(response[5:]))
+                # Collect the responses
+                responses = []
+                async for response in stream:
+                    responses.append(json.loads(response[5:]))
 
-            # Check the responses
-            assert mlc_mock.call_count == 0
-            assert kill_models_mock.call_count == 1
-            kill_models_mock.assert_called_with([])
+                # Check the responses
+                assert mlc_mock.call_count == 0
+                assert kill_mock.call_count == 0
 
-            assert len(responses) == 1
-            assert responses[-1]["id"] == model_id_1
-            assert responses[-1]["instance"] == 1
-            assert responses[-1]["port"] == None
-            assert responses[-1]["error"] == "Not enough memory to run the model"
+                assert len(responses) == 1
+                assert responses[-1]["id"] == model_id_1
+                assert responses[-1]["instance"] == 1
+                assert responses[-1]["port"] == None
+                assert responses[-1]["error"] == "Not enough memory to run the model"
 
 
 @pytest.mark.asyncio
-async def test_run_kill_previous_models(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock, kill_models_mock):
+async def test_run_kill_previous_models(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
     async with init_db():
         manager = InstallationManager()
 
@@ -371,48 +365,35 @@ async def test_run_kill_previous_models(base_fixture, mock_quants, server_mock, 
                 return MagicMock(total=0, free=0, available=0)
             ram_mock.side_effect = mock_virtual_memory
 
-            # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_2, model_id_3], manager)
+            with patch("os.kill") as kill_mock:
+                # Prepare JSON streaming responses as they would be sent from the generator
+                stream = run_models_generator(
+                    [model_id_1, model_id_2, model_id_3], manager)
 
-            # Collect the responses
-            responses = []
-            async for response in stream:
-                responses.append(json.loads(response[5:]))
+                # Collect the responses
+                responses = []
+                async for response in stream:
+                    responses.append(json.loads(response[5:]))
 
-            # Check the responses
-            assert mlc_mock.call_count == 0
-            assert kill_models_mock.call_count == 1
-            kill_models_mock.assert_called_with([
-                {
-                    "id": model_id_1,
-                    "instance": 1,
-                    "port": 8899,
-                    "error": None
-                },
-                {
-                    "id": model_id_2,
-                    "instance": 1,
-                    "port": 8899,
-                    "error": None
-                }
-            ])
+                # Check the responses
+                assert mlc_mock.call_count == 0
+                assert kill_mock.call_count == 2
 
-            assert len(responses) == 3
-            assert responses[0]["id"] == model_id_1
-            assert responses[0]["instance"] == 1
-            assert responses[0]["port"] == 8899
-            assert responses[0]["error"] == None
+                assert len(responses) == 3
+                assert responses[0]["id"] == model_id_1
+                assert responses[0]["instance"] == 1
+                assert responses[0]["port"] == 8899
+                assert responses[0]["error"] == None
 
-            assert responses[1]["id"] == model_id_2
-            assert responses[1]["instance"] == 1
-            assert responses[1]["port"] == 8899
-            assert responses[1]["error"] == None
+                assert responses[1]["id"] == model_id_2
+                assert responses[1]["instance"] == 1
+                assert responses[1]["port"] == 8899
+                assert responses[1]["error"] == None
 
-            assert responses[2]["id"] == model_id_3
-            assert responses[2]["instance"] == 1
-            assert responses[2]["port"] == None
-            assert responses[2]["error"] == "Not enough memory to run the model"
+                assert responses[2]["id"] == model_id_3
+                assert responses[2]["instance"] == 1
+                assert responses[2]["port"] == None
+                assert responses[2]["error"] == "Not enough memory to run the model"
 
 
 @pytest.mark.asyncio

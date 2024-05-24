@@ -143,9 +143,12 @@ async def run_model(model_id: str, quantization: Quantization, mem_share: float,
 async def kill_models(models: list[dict]):
     # Kill all of the running models and remove them from the database
     for model in models:
-        model_db_info = await db.runningmodels.find_one({"id": model["id"], "instance": model["instance"]})
-        os.kill(model_db_info["pid"], signal.SIGTERM)
-        await db.runningmodels.delete_one({"id": model["id"], "instance": model["instance"]})
+        model_db_info = await db.runningmodels.find_first(where={"id": model["id"], "instance": model["instance"]})
+
+        logger.info(f"""Killing model {model["id"]}, instance {
+                    model["instance"]}, on process {model_db_info.pid}""")
+        os.kill(model_db_info.pid, signal.SIGTERM)
+        await db.runningmodels.delete_many({"id": model["id"], "instance": model["instance"]})
 
 
 async def run_models_generator(model_ids: list[str], installation_manager: InstallationManager):

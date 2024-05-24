@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 import os
+import subprocess
 from jsonschema import validate, ValidationError
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -23,10 +24,18 @@ async def init_db():
         db_path = app_data_path / "truffle.db"
     else:
         db_path = app_data_path / "truffle.test.db"
-    os.environ["DATABASE_URL"] = str(db_path)
+    os.environ["DATABASE_URL"] = f"file:{db_path}"
     logger.info(f"Connecting to DB at: {db_path}")
 
     await db.connect()
+
+    try:
+        print("Checking if DB is already migrated")
+        await db.execute_raw("SELECT * FROM runningmodels")
+    except Exception:
+        logger.info(f"Running migrations")
+        subprocess.run(["bunx", "prisma", "db", "push",
+                       "--schema", "python/prisma/schema.prisma"], check=True)
 
     try:
         yield

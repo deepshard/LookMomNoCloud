@@ -1,4 +1,5 @@
 import os
+import signal
 import multiprocessing
 import asyncio
 import aiohttp
@@ -14,17 +15,25 @@ from python.truffle_types import Quantization
 
 
 async def get_instances(model_ids: list[str]) -> list[int]:
+    # Get all of the running models
     models = await db.runningmodels.find_many()
 
+    # For each model ID, get the max instance number from the DB, increment it, then
+    # add the number of instances from the model IDs array that will be starting before it
     instances = []
     for model_id in model_ids:
         # Filter models down to matching IDs
         matching_models = [model for model in models if model.id == model_id]
 
         # Get the max instance number for the model
+        instances_to_run = [
+            model for model in instances if model["model_id"] == model_id]
         instance = max(
-            [model.instance for model in matching_models], default=0) + 1
-        instances.append(instance)
+            [model.instance for model in matching_models], default=0) + 1 + len(instances_to_run)
+        instances.append({
+            "model_id": model_id,
+            "instance": instance
+        })
 
     return instances
 
@@ -49,6 +58,8 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
 
 
 def serve_model(model_path: str, mem_share: float, port: int):
+    # This is a wrapper around the base serve function to make it cleaner to spawn from
+    # multiprocess.Process
     serve(
         model=model_path,
         device="auto",
@@ -130,10 +141,10 @@ async def run_model(model_id: str, quantization: Quantization, mem_share: float,
 
 
 async def kill_models(models: list[dict]):
-    # Kill all of the running models
+    # Kill all of the running models and remove them from the database
     for model in models:
         model_db_info = await db.runningmodels.find_one({"id": model["id"], "instance": model["instance"]})
-        os.kill(model_db_info["pid"], 9)
+        os.kill(model_db_info["pid"], signal.SIGTERM)
         await db.runningmodels.delete_one({"id": model["id"], "instance": model["instance"]})
 
 
@@ -141,7 +152,9 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
     """
         Run the models with the given IDs. If any model fails to quantize or run, the generator 
         will yield an error event and stop running the models from this request. It is an all-
-        or-nothing operation.
+        or-nothing operation. This is reasonable because if a user request multiple models at 
+        once (a pro feature), they likely have some use case requiring all models to be running.
+        If one fails it is better to stop them all than force the user to manually stop the others.
 
         Args:
             model_ids (list[str]): The list of model IDs to run
@@ -166,7 +179,9 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
     logger.info("Identifying models that need to be converted and quantized")
     total_compressed_size = 0
     conversions = []
-    for model_id, quant in list(set(zip(model_ids, quantizations))):
+
+    # This creates an ordered set of model IDs and quantizations
+    for model_id, quant in list(dict.fromkeys(zip(model_ids, quantizations)).keys()):
         weights_path = get_app_data_path() / "models" / model_id / "base"
 
         # Check if the model is in a convertable format
@@ -207,7 +222,6 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
         return
 
     # Add all of the conversions to the queue at once
-    logger.info("Adding models to the global conversion queue")
     for conversion in conversions:
         model_path = get_app_data_path() / "models" / conversion["model_id"]
         installation_manager.add_to_conversion_queue(
@@ -230,7 +244,7 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
         # Check if there is enough memory to convert and quantize the model
         model_size, _ = get_model_size_info(
             weights_path, quant)
-        available_ram, _, _ = get_space_check_info(installation_manager)
+        available_ram = psutil.virtual_memory().available
         if model_size > available_ram:
             logger.error(
                 f"Not enough memory to convert and quantize the model {model_id}")
@@ -253,8 +267,9 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
 
     # Now that all missing quantizations have been created, run the models
     models_started = []
-    for model_id, quant, mem_share, instance in zip(model_ids, quantizations, mem_shares, instance_numbers):
+    for model_id, quant, mem_share, instance_obj in zip(model_ids, quantizations, mem_shares, instance_numbers):
         logger.info(f"Running model {model_id}")
+        instance = instance_obj["instance"]
 
         # Check if there is enough memory to run the model
         available_ram = psutil.virtual_memory().available

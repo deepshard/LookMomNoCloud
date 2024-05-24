@@ -1,6 +1,6 @@
 datasource db {
     provider = "sqlite"
-    url      = "file:/Users/mattfirth/Library/Application Support/truffle-app/truffle.test.db"
+    url      = env("DATABASE_URL")
 }
 
 generator db {
@@ -10,7 +10,8 @@ generator db {
 }
 
 model RunningModels {
-    id           String @id
+    db_id        String @id @default(cuid())
+    id           String
     instance     Int
     name         String
     size         BigInt

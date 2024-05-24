@@ -94,8 +94,26 @@ async def run_model():
 
 
 @app.post("/model/stop")
-async def stop_model():
-    pass
+async def stop_model(request: Request):
+    # Validate the request body and get the model ID + instance number
+    request_body = await request.json()
+
+    try:
+        schema = {
+            "type": "object",
+            "properties": {
+                "model_id": {"type": "string"},
+                "instance": {"type": "integer"}
+            },
+            "required": ["model_id", "instance"]
+        }
+        validate(instance=request_body, schema=schema)
+        stop_model_handler(request_body["model_id"], request_body["instance"])
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request body: {e}")
+
+    return {}
 
 
 @app.delete("/model/{model_id}")

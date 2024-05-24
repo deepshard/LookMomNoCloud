@@ -91,10 +91,10 @@ async def is_server_running(port: int, timeout: int = 60) -> bool:
     return False
 
 
-async def run_model(model_id: str, quantization: str, mem_share: float, instance: int) -> dict:
+async def run_model(model_id: str, quantization: Quantization, mem_share: float, instance: int) -> dict:
     # Identify the necessary info to launch the model
-    model_path = get_app_data_path() / "models" / model_id / quantization
-    model_info = get_model_info(model_id)
+    model_path = get_app_data_path() / "models" / model_id / quantization.value
+    model_info = await get_model_info(model_id)
     port = find_port()
 
     # Start the model server as a separate process
@@ -117,7 +117,7 @@ async def run_model(model_id: str, quantization: str, mem_share: float, instance
             "size": model_info["size"],
             "pid": proc.pid,
             "port": port,
-            "quantization": quantization
+            "quantization": quantization.value
         }
     )
 
@@ -221,7 +221,7 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
         quant = conversion["quant"]
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
-        quant_path = model_path / quant
+        quant_path = model_path / quant.value
 
         # Wait for the model to be the next in line for conversion in the global queue
         while not installation_manager.is_models_conversion_turn(model_path, quant):

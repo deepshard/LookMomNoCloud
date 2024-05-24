@@ -39,7 +39,7 @@ def find_port(port: int = 8899) -> int:
 
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
-    return quant_path.exists() and os.listdir(quant_path)
+    return quant_path.exists() and len(os.listdir(quant_path)) > 0
 
 
 def get_quantization_compression(quant: Quantization) -> float:

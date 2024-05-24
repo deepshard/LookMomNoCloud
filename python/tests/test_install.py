@@ -89,6 +89,7 @@ def mock_headers():
     return _mock_headers
 
 
+# Tests
 @pytest.mark.asyncio
 async def test_install_single_model_from_scratch(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
     # Mocks setup

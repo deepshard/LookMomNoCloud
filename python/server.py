@@ -1,16 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 import os
+import subprocess
 from jsonschema import validate, ValidationError
-from .sysinfo import sysinfo_generator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from .endpoints.model.install import install_generator, InstallationManager
-from .utils import get_app_data_path
-from .db import db
-from python.endpoints.model.delete import delete_model_handler
+from endpoints.sysinfo import sysinfo_generator
+from endpoints.model.install import install_generator, InstallationManager
+from utils import get_app_data_path
+from db import db
+from endpoints.model.delete import delete_model_handler
 
 
 installation_manager = None
@@ -27,6 +28,14 @@ async def init_db():
     logger.info(f"Connecting to DB at: {db_path}")
 
     await db.connect()
+
+    try:
+        print("Checking if DB is already migrated")
+        await db.execute_raw("SELECT * FROM runningmodels")
+    except Exception:
+        logger.info(f"Running migrations")
+        subprocess.run(["bunx", "prisma", "db", "push",
+                       "--schema", "python/prisma/schema.prisma"], check=True)
 
     try:
         yield

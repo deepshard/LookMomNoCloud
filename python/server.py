@@ -2,14 +2,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 import os
 from jsonschema import validate, ValidationError
-from .sysinfo import sysinfo_generator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from .endpoints.model.install import install_generator, InstallationManager
-from .utils import get_app_data_path
-from .db import db
+from python.endpoints.sysinfo import sysinfo_generator
+from python.endpoints.model.install import install_generator, InstallationManager
+from python.utils import get_app_data_path
+from python.db import db
 from python.endpoints.model.delete import delete_model_handler
 
 
@@ -23,7 +23,7 @@ async def init_db():
         db_path = app_data_path / "truffle.db"
     else:
         db_path = app_data_path / "truffle.test.db"
-    os.environ["DATABASE_URL"] = f"file:{db_path}"
+    os.environ["DATABASE_URL"] = str(db_path)
     logger.info(f"Connecting to DB at: {db_path}")
 
     await db.connect()

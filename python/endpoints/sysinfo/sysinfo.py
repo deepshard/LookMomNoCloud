@@ -3,18 +3,18 @@ from loguru import logger
 import psutil
 import time
 import os
-import uuid
 
-from .utils import get_app_data_path, get_disk_usage
-from .db import db
+from python.utils import get_app_data_path, get_disk_usage
+from python.db import db
 import psutil
 
 
 CHANGE_THRESHOLD = 2
 
+
 async def get_sysinfo():
-    models_data = await get_models_data() 
-    data =  {
+    models_data = await get_models_data()
+    data = {
         "os": "MAC" if os.name == 'posix' else "LINUX",
         "resources": {
             "available": {
@@ -30,7 +30,6 @@ async def get_sysinfo():
     }
 
     return data
-
 
 
 async def get_models_data():
@@ -49,6 +48,7 @@ async def get_models_data():
             continue
     return final
 
+
 async def sysinfo_generator():
     last_info = await get_sysinfo()
     yield f"data: {json.dumps(last_info)}\n\n"
@@ -66,7 +66,9 @@ def needs_update(last_info, current_info):
             return float('inf')  # Avoid division by zero
         return abs(new - old) / old * 100
 
-    ram_change = percent_change(last_info['resources']['available']['ram'], current_info['resources']['available']['ram'])
-    disk_change = percent_change(last_info['resources']['available']['disk'], current_info['resources']['available']['disk'])
+    ram_change = percent_change(
+        last_info['resources']['available']['ram'], current_info['resources']['available']['ram'])
+    disk_change = percent_change(
+        last_info['resources']['available']['disk'], current_info['resources']['available']['disk'])
 
     return ram_change >= CHANGE_THRESHOLD or disk_change >= CHANGE_THRESHOLD

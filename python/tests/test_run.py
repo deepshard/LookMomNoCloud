@@ -3,10 +3,8 @@ import re
 import json
 import asyncio
 import pytest
-from prisma import Prisma
 from unittest.mock import patch, MagicMock
 import shutil
-from aioresponses import aioresponses
 from python.endpoints.model.install import InstallationManager
 from python.endpoints.model.run import run_models_generator
 from python.endpoints.model.run.run import get_instances

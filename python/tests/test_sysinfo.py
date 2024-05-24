@@ -10,9 +10,9 @@ import pytest
 from jsonschema import validate, ValidationError
 import subprocess
 import pytest
-from python.endpoints.sysinfo import sysinfo_generator, CHANGE_THRESHOLD
-from python.db import db
-from python.server import init_db
+from endpoints.sysinfo import sysinfo_generator, CHANGE_THRESHOLD
+from db import db
+from server import init_db
 
 schema = {
     "type": "object",

@@ -3,10 +3,10 @@ from loguru import logger
 import psutil
 import time
 import os
+import asyncio
 
 from utils import get_app_data_path, get_disk_usage
 from db import db
-import psutil
 
 
 CHANGE_THRESHOLD = 2
@@ -53,7 +53,7 @@ async def sysinfo_generator():
     last_info = await get_sysinfo()
     yield f"data: {json.dumps(last_info)}\n\n"
     while True:
-        time.sleep(3)
+        await asyncio.sleep(3)
         current_info = await get_sysinfo()
         if needs_update(last_info, current_info):
             yield f"data: {json.dumps(current_info)}\n\n"

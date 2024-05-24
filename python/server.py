@@ -6,11 +6,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from python.endpoints.sysinfo import sysinfo_generator
-from python.endpoints.model.install import install_generator, InstallationManager
-from python.utils import get_app_data_path
-from python.db import db
-from python.endpoints.model.delete import delete_model_handler
+from endpoints.sysinfo import sysinfo_generator
+from endpoints.model.install import install_generator, InstallationManager
+from utils import get_app_data_path
+from db import db
+from endpoints.model.delete import delete_model_handler
 
 
 installation_manager = None

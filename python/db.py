@@ -1,6 +1,6 @@
 import os
 from prisma import Prisma
-from python.utils import get_app_data_path
+from utils import get_app_data_path
 
 db: Prisma = None
 db = Prisma(

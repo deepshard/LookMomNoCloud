@@ -2,9 +2,9 @@ import os
 import pytest
 import asyncio
 import multiprocessing
-from python.endpoints.model.stop import stop_model_handler
-from python.db import db
-from python.server import init_db
+from endpoints.model.stop import stop_model_handler
+from db import db
+from server import init_db
 
 
 # Test the stop_model_handler logic

@@ -1,7 +1,7 @@
 import os
 import signal
 from loguru import logger
-from python.db import db
+from db import db
 
 
 async def stop_model_handler(model_id: str, instance: int):

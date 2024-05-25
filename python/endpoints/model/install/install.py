@@ -12,9 +12,9 @@ from mlc_llm.support.auto_weight import detect_weight
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
-from python.truffle_types import RepoType, FileInfo, Quantization
-from python.utils import get_app_data_path, does_quantization_exist, is_convertable_format, get_model_size_info
-from python.endpoints.model.install.InstallationManager import InstallationManager
+from truffle_types import RepoType, FileInfo, Quantization
+from utils import get_app_data_path, does_quantization_exist, is_convertable_format, get_model_size_info
+from endpoints.model.install.InstallationManager import InstallationManager
 
 
 def get_id_for_url(url: str) -> str:

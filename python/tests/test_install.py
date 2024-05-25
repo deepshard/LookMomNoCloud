@@ -5,10 +5,10 @@ from unittest.mock import patch, MagicMock
 import json
 import shutil
 from aioresponses import aioresponses
-from python.endpoints.model.install import install_generator, InstallationManager
-from python.endpoints.model.install.install import get_hf_name_for_url, get_files_to_download, download_file
-from python.truffle_types import FileInfo
-from python.utils import get_app_data_path
+from endpoints.model.install import install_generator, InstallationManager
+from endpoints.model.install.install import get_hf_name_for_url, get_files_to_download, download_file
+from truffle_types import FileInfo
+from utils import get_app_data_path
 
 schema = {
     "type": "object",
@@ -98,7 +98,7 @@ async def test_install_single_model_from_scratch(standard_aiohttp_get_mocks, moc
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -137,7 +137,7 @@ async def test_complete_partial_installation_of_single_model(standard_aiohttp_ge
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Write one of the files to simulate a partial download
@@ -147,7 +147,7 @@ async def test_complete_partial_installation_of_single_model(standard_aiohttp_ge
         f.write(MOCK_FILE_ONE_DATA)
 
     # Create wrapper around download_file function so we can track how many times it was called
-    with patch("python.endpoints.model.install.install.download_file") as mock_download_file:
+    with patch("endpoints.model.install.install.download_file") as mock_download_file:
         mock_download_file.side_effect = download_file
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -180,7 +180,7 @@ async def test_skip_download_of_already_downloaded_model(standard_aiohttp_get_mo
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Write both files to simulate a complete download
@@ -192,7 +192,7 @@ async def test_skip_download_of_already_downloaded_model(standard_aiohttp_get_mo
         f.write(MOCK_FILE_TWO_DATA)
 
     # Create wrapper around download_file function so we can track how many times it was called
-    with patch("python.endpoints.model.install.install.download_file") as mock_download_file:
+    with patch("endpoints.model.install.install.download_file") as mock_download_file:
         mock_download_file.side_effect = download_file
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -231,7 +231,7 @@ async def test_model_download_returns_progress_in_expected_format(mock_aiohttp_h
 
         # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
         mock_mlc = mocker.patch(
-            "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+            "endpoints.model.install.install.convert_and_quantize", return_value=None)
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -263,7 +263,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(standa
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Mock the disk usage function to return a value that is less than the size of the model
@@ -296,7 +296,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
 
     # Mock manager to return bytes remaining for a model in progress
     manager = InstallationManager()
@@ -332,7 +332,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aioht
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Mock a conversion in progress
@@ -383,7 +383,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(stan
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Write both files to simulate a complete download
@@ -438,7 +438,7 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(mock_ai
 
         # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
         mock_mlc = mocker.patch(
-            "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+            "endpoints.model.install.install.convert_and_quantize", return_value=None)
         manager = InstallationManager()
 
         # Write both files to simulate a complete download
@@ -472,7 +472,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(standar
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -504,7 +504,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(standa
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Mock the disk usage function to return a value that is less than the size of the model
@@ -535,7 +535,7 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "python.endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None)
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator

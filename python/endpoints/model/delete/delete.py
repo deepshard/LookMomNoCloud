@@ -1,6 +1,6 @@
 import shutil
 from loguru import logger
-from python.utils import get_app_data_path
+from utils import get_app_data_path
 
 
 def delete_model_handler(model_id: str):

@@ -1,6 +1,6 @@
 from pathlib import Path
-from python.truffle_types import Quantization
-from python.utils import get_disk_usage
+from truffle_types import Quantization
+from utils import get_disk_usage
 
 
 class InstallationManager:

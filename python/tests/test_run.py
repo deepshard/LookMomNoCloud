@@ -5,12 +5,12 @@ import asyncio
 import pytest
 from unittest.mock import patch, MagicMock
 import shutil
-from python.endpoints.model.install import InstallationManager
-from python.endpoints.model.run import run_models_generator
-from python.endpoints.model.run.run import get_instances
-from python.utils import get_app_data_path
-from python.db import db
-from python.server import init_db
+from endpoints.model.install import InstallationManager
+from endpoints.model.run import run_models_generator
+from endpoints.model.run.run import get_instances
+from utils import get_app_data_path
+from db import db
+from server import init_db
 
 schema = {
     "type": "object",
@@ -70,6 +70,7 @@ async def clear_db():
 @pytest.fixture(autouse=True)
 def base_fixture(request):
     # Setup
+    asyncio.run(clear_db())
     for model_id in [model_id_1, model_id_2, model_id_3]:
         model_path = get_app_data_path() / "models" / model_id / "base"
         os.makedirs(model_path, exist_ok=True)
@@ -89,7 +90,7 @@ def base_fixture(request):
 
 @pytest.fixture
 def server_mock():
-    with patch("python.endpoints.model.run.run.is_server_running", return_value=True) as is_server_running:
+    with patch("endpoints.model.run.run.is_server_running", return_value=True) as is_server_running:
         yield is_server_running
 
 
@@ -115,7 +116,7 @@ def mock_quants():
 @pytest.fixture
 def mlc_mock():
     # Mock convert_and_quantize, when called write some data to the model's quantization directory
-    with patch("python.endpoints.model.run.run.convert_and_quantize", return_value=None) as convert_and_quantize:
+    with patch("endpoints.model.run.run.convert_and_quantize", return_value=None) as convert_and_quantize:
         def write_data(weights_path, quant_path, quant):
             print(f"Writing data to {quant_path}")
             os.makedirs(quant_path, exist_ok=True)
@@ -174,7 +175,7 @@ async def test_run_quantization_exists(base_fixture, mock_quants, server_mock, s
 @pytest.mark.asyncio
 async def test_run_multiple_models(base_fixture, server_mock, subprocess_mock, mlc_mock, mocker):
     async with init_db():
-        with patch("python.endpoints.model.run.run.find_port", return_value=8899) as find_port:
+        with patch("endpoints.model.run.run.find_port", return_value=8899) as find_port:
             manager = InstallationManager()
 
             # Prepare JSON streaming responses as they would be sent from the generator
@@ -277,7 +278,7 @@ async def test_run_not_enough_space(base_fixture, server_mock, subprocess_mock, 
         manager = InstallationManager()
 
         # Mock the disk usage
-        with patch("python.endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)):
+        with patch("endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)):
             # Prepare JSON streaming responses as they would be sent from the generator
             stream = run_models_generator(
                 [model_id_1, model_id_2, model_id_3], manager)

@@ -1,17 +1,19 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
+import subprocess
 from jsonschema import validate, ValidationError
-from .sysinfo import sysinfo_generator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from python.endpoints.model.install import install_generator, InstallationManager
-from python.endpoints.model.run import run_models_generator
-from python.endpoints.model.delete import delete_model_handler
-from python.utils import get_app_data_path
-from python.db import db
+from endpoints.sysinfo import sysinfo_generator
+from endpoints.model.install import install_generator, InstallationManager
+from endpoints.model.run import run_models_generator
+from endpoints.model.delete import delete_model_handler
+from utils import get_app_data_path
+from db import db
 
 
 installation_manager = None
@@ -30,6 +32,14 @@ async def init_db():
     await db.connect()
 
     try:
+        print("Checking if DB is already migrated")
+        await db.execute_raw("SELECT * FROM runningmodels")
+    except Exception:
+        logger.info(f"Running migrations")
+        subprocess.run(["bunx", "prisma", "db", "push",
+                       "--schema", "python/prisma/schema.prisma"], check=True)
+
+    try:
         yield
     finally:
         logger.info(f"Disconnecting from DB")
@@ -44,6 +54,13 @@ async def lifespan(app: FastAPI):
         yield
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/sysinfo", response_class=StreamingResponse)

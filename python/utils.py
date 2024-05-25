@@ -2,7 +2,7 @@ import os
 import platform
 import socket
 from pathlib import Path
-from python.truffle_types import Quantization
+from truffle_types import Quantization
 
 
 def get_disk_usage(folder_path: str) -> int:

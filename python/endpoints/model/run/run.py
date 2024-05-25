@@ -7,11 +7,11 @@ import psutil
 import json
 from loguru import logger
 from mlc_llm.interface.serve import serve
-from python.endpoints.model.install import InstallationManager
-from python.endpoints.model.install.install import get_space_check_info, convert_and_quantize
-from python.utils import get_app_data_path, find_port, does_quantization_exist, is_convertable_format, get_model_size_info
-from python.db import db
-from python.truffle_types import Quantization
+from endpoints.model.install import InstallationManager
+from endpoints.model.install.install import get_space_check_info, convert_and_quantize
+from utils import get_app_data_path, find_port, does_quantization_exist, is_convertable_format, get_model_size_info
+from db import db
+from truffle_types import Quantization
 
 
 async def get_instances(model_ids: list[str]) -> list[int]:

@@ -48,6 +48,7 @@ async def init_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global installation_manager
     installation_manager = InstallationManager()
 
     async with init_db():

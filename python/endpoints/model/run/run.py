@@ -9,7 +9,7 @@ from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.install import InstallationManager
 from endpoints.model.install.install import get_space_check_info, convert_and_quantize
-from utils import get_app_data_path, find_port, does_quantization_exist, is_convertable_format, get_model_size_info
+from utils import get_app_data_path, find_port, does_quantization_exist, is_convertable_format, get_model_size_info, get_usable_memory
 from db import db
 from truffle_types import Quantization
 
@@ -247,7 +247,7 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
         # Check if there is enough memory to convert and quantize the model
         model_size, _ = get_model_size_info(
             weights_path, quant)
-        available_ram = psutil.virtual_memory().available
+        available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
                 f"Not enough memory to convert and quantize the model {model_id}")
@@ -275,7 +275,7 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
         instance = instance_obj["instance"]
 
         # Check if there is enough memory to run the model
-        available_ram = psutil.virtual_memory().available
+        available_ram = get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
         model_size, _ = get_model_size_info(weights_path, quant)

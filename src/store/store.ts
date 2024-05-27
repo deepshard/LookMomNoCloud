@@ -14,5 +14,5 @@ export const useStore = create<State>(set => ({
   addSysInfo: (info) => set(state => ({ sysInfo: info })),
   highlights: [],
   setHighlights: (highlights) => set({ highlights }),
-  clearData: () => set({ sysInfo: null }) // Method to clear all data
+  clearData: () => set({ sysInfo: null, highlights: [] }) // Method to clear all data
 }));

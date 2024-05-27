@@ -55,10 +55,8 @@ class InstallationManager:
         self.current_conversion = None
         self.conversion_in_progress = False
 
-    def cancel_conversion(self, model_path: str, quantization: Quantization):
-        self.conversion_queue = [
-            model for model in self.conversion_queue if model["model_path"] != model_path and model["quantization"] != quantization.value]
-
     def cancel_conversions(self, models: list[dict]):
-        for model in models:
-            self.cancel_conversion(model["model_path"], model["quantization"])
+        cancel_set = {(model["model_path"], model["quantization"].value)
+                      for model in models}
+        self.conversion_queue = [queued_model for queued_model in self.conversion_queue if (
+            queued_model["model_path"], queued_model["quantization"]) not in cancel_set]

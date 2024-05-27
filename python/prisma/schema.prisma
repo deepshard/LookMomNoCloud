@@ -10,10 +10,11 @@ generator db {
 }
 
 model RunningModels {
-    id           String @id
+    db_id        String @id @default(cuid())
+    id           String
     instance     Int
     name         String
-    size         Int
+    size         BigInt
     pid          Int
     port         Int
     quantization String

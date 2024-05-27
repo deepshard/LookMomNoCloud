@@ -22,6 +22,9 @@ class InstallationManager:
         download_bytes = sum(self.downloads.values())
         conversion_bytes = 0
 
+        for model in self.conversion_queue:
+            conversion_bytes += model["compressed_size"]
+
         if self.current_conversion:
             quantization_dir = Path(
                 self.current_conversion["model_path"]) / self.current_conversion["quantization"]
@@ -33,21 +36,27 @@ class InstallationManager:
 
         return download_bytes + conversion_bytes
 
-    def is_models_conversion_turn(self, model_path: str) -> bool:
-        return not self.conversion_in_progress and self.conversion_queue and self.conversion_queue[0] == model_path
+    def is_models_conversion_turn(self, model_path: str, quantization: Quantization) -> bool:
+        return not self.conversion_in_progress and self.conversion_queue and self.conversion_queue[0]["model_path"] == model_path and self.conversion_queue[0]["quantization"] == quantization.value
 
-    def add_to_conversion_queue(self, model_path: str):
-        self.conversion_queue.append(model_path)
-
-    def remove_from_conversion_queue(self, quantization: Quantization, compressed_size: int):
-        model_path = self.conversion_queue.pop(0)
-        self.conversion_in_progress = True
-        self.current_conversion = {
+    def add_to_conversion_queue(self, model_path: str, quantization: Quantization, compressed_size: int):
+        self.conversion_queue.append({
             "model_path": model_path,
             "quantization": quantization.value,
             "compressed_size": compressed_size
-        }
+        })
+
+    def remove_from_conversion_queue(self):
+        model = self.conversion_queue.pop(0)
+        self.conversion_in_progress = True
+        self.current_conversion = model
 
     def complete_conversion(self):
         self.current_conversion = None
         self.conversion_in_progress = False
+
+    def cancel_conversions(self, models: list[dict]):
+        cancel_set = {(model["model_path"], model["quantization"].value)
+                      for model in models}
+        self.conversion_queue = [queued_model for queued_model in self.conversion_queue if (
+            queued_model["model_path"], queued_model["quantization"]) not in cancel_set]

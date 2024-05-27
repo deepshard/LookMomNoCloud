@@ -10,9 +10,10 @@ from fastapi.responses import StreamingResponse
 from loguru import logger
 from endpoints.sysinfo import sysinfo_generator
 from endpoints.model.install import install_generator, InstallationManager
+from endpoints.model.run import run_models_generator
+from endpoints.model.delete import delete_model_handler
 from utils import get_app_data_path
 from db import db
-from endpoints.model.delete import delete_model_handler
 
 
 installation_manager = None
@@ -105,9 +106,32 @@ async def install_model(request: Request):
     return response
 
 
-@app.post("/model/run")
-async def run_model():
-    pass
+@app.post("/model/run", response_class=StreamingResponse)
+async def run_model(request: Request):
+    # Validate the request body and get the model IDs
+    request_body = await request.json()
+
+    try:
+        schema = {
+            "type": "object",
+            "properties": {
+                "model_ids": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["model_ids"]
+        }
+        validate(instance=request_body, schema=schema)
+        model_ids = request_body["model_ids"]
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request body: {e}")
+
+    # Start the model running process
+    response = StreamingResponse(run_models_generator(
+        model_ids, installation_manager), media_type="text/event-stream")
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
+    return response
 
 
 @app.post("/model/stop")

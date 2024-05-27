@@ -13,7 +13,7 @@ from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from truffle_types import RepoType, FileInfo, Quantization
-from utils import get_app_data_path
+from utils import get_app_data_path, does_quantization_exist, is_convertable_format, get_model_size_info
 from endpoints.model.install.InstallationManager import InstallationManager
 
 
@@ -139,34 +139,11 @@ def get_quantization_object(quantization: Quantization, model):
         return filtered_quantization_options[0]
 
 
-def get_quantization_compression(quant: Quantization) -> float:
-    # NOTE: We can replace this with a more sophisticated calculation later
-    quantization_compression_table = {
-        Quantization.INT3: 0.25,
-        Quantization.INT4: 0.33,
-        Quantization.INT8: 0.55
-    }
-    return quantization_compression_table[quant]
-
-
-def is_convertable_format(base_weights_path: str) -> bool:
-    pytorch_json_path = os.path.join(
-        base_weights_path, "pytorch_model.bin.index.json")
-    pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
-    safetensors_path = os.path.join(
-        base_weights_path, "model.safetensors.index.json")
-    safetensors_bin_path = os.path.join(
-        base_weights_path, "model.safetensors")
-
-    if (
-        os.path.exists(pytorch_json_path) or
-        os.path.exists(pytorch_bin_path) or
-        os.path.exists(safetensors_path) or
-        os.path.exists(safetensors_bin_path)
-    ):
-        return True
-
-    return False
+def get_space_check_info(installation_manager: InstallationManager) -> tuple[int, int, int]:
+    available_ram = psutil.virtual_memory().available
+    disk_space = psutil.disk_usage("/").free
+    bytes_remaining = installation_manager.get_total_bytes_remaining()
+    return available_ram, disk_space, bytes_remaining
 
 
 async def download_file(session: any, url: str, install_path: Path, file_info: FileInfo, progress_tracker: dict[str, int]):
@@ -235,7 +212,12 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             installation_manager (InstallationManager): The manager of global download and conversion state
 
         Yields:
-            InstallProgress: JSON representing the progress of the installation
+            {
+                "id": str,
+                "status": str (DOWNLOADING, INSTALLING, DONE),
+                "progress": int,
+                "error": str (optional)
+            }
     """
 
     id = get_id_for_url(model_url)
@@ -270,8 +252,8 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
         return
 
     # Check that there is enough space to download the model
-    disk_space = psutil.disk_usage("/").free
-    total_bytes_remaining = installation_manager.get_total_bytes_remaining()
+    _, disk_space, total_bytes_remaining = get_space_check_info(
+        installation_manager)
     if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
@@ -337,7 +319,11 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
 
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    installation_manager.add_to_conversion_queue(model_dir)
+    quantization = get_base_quantization_decision(install_path)
+    model_size, compressed_size = get_model_size_info(
+        install_path, quantization)
+    installation_manager.add_to_conversion_queue(
+        model_dir, quantization, compressed_size)
     progress_event = {
         "id": id,
         "status": "INSTALLING",
@@ -346,21 +332,13 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     }
     yield f"data: {json.dumps(progress_event)}\n\n"
 
-    while not installation_manager.is_models_conversion_turn(model_dir):
+    while not installation_manager.is_models_conversion_turn(model_dir, quantization):
         await asyncio.sleep(5)
 
-    quantization = get_base_quantization_decision(install_path)
-    model_size = sum(
-        os.path.getsize(install_path / file) for file in os.listdir(install_path))
-    compression_rate = get_quantization_compression(quantization)
-    compressed_size = model_size * compression_rate
-    installation_manager.remove_from_conversion_queue(
-        quantization, compressed_size)
+    installation_manager.remove_from_conversion_queue()
 
     # Return early if the quantization is alrady built
-    quant_path = model_dir / quantization.value
-    # if path exists and is non-empty
-    if os.path.exists(quant_path) and os.listdir(quant_path):
+    if does_quantization_exist(id, quantization):
         logger.info(
             f"Conversion and quantization already done for {model_dir}")
         progress_event = {
@@ -370,6 +348,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             "error": None
         }
         yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
         return
 
     # Check if the format is convertable
@@ -382,12 +361,12 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             "error": f"Unsupported model format for {install_path}"
         }
         yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
         return
 
     # Check that there is enough space and memory to convert and quantize the model
-    available_ram = psutil.virtual_memory().available
-    disk_space = psutil.disk_usage("/").free
-    bytes_remaining = installation_manager.get_total_bytes_remaining()
+    available_ram, disk_space, bytes_remaining = get_space_check_info(
+        installation_manager)
     if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):
         logger.info(
             f"Not enough space or memory to convert and quantize {model_dir}")
@@ -398,9 +377,11 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             "error": "Not enough space or memory to convert and quantize the model"
         }
         yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
         return
 
     # Convert and quantize the model
+    quant_path = model_dir / quantization.value
     convert_and_quantize(install_path, quant_path, quantization)
 
     logger.info(f"Conversion and quantization complete for {model_dir}")

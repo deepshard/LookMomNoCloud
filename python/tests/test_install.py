@@ -58,11 +58,13 @@ MOCK_FILE_ONE_DATA = os.urandom(1024)
 MOCK_FILE_TWO_DATA = os.urandom(1024)
 
 
+# Helpers
 def clear_path(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
 
+# Fixtures
 @pytest.fixture
 def standard_aiohttp_get_mocks():
     with aioresponses() as mocked:
@@ -87,6 +89,7 @@ def mock_headers():
     return _mock_headers
 
 
+# Tests
 @pytest.mark.asyncio
 async def test_install_single_model_from_scratch(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
     # Mocks setup
@@ -119,6 +122,9 @@ async def test_install_single_model_from_scratch(standard_aiohttp_get_mocks, moc
         progress_updates[0]["id"]
     assert (download_path / "base" / "pytorch_model.bin").exists()
     assert (download_path / "base" / "config.json").exists()
+
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
 
     clear_path(download_path)
 
@@ -159,6 +165,9 @@ async def test_complete_partial_installation_of_single_model(standard_aiohttp_ge
             progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
+
+        # Check that queue is empty
+        assert len(manager.conversion_queue) == 0
 
     clear_path(download_path)
 
@@ -202,6 +211,9 @@ async def test_skip_download_of_already_downloaded_model(standard_aiohttp_get_mo
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
 
+        # Check that queue is empty
+        assert len(manager.conversion_queue) == 0
+
     clear_path(download_path)
 
 
@@ -237,6 +249,8 @@ async def test_model_download_returns_progress_in_expected_format(mock_aiohttp_h
         assert len(progress_updates) > 3
         assert (progress_updates[1]["progress"] >
                 0 and progress_updates[1]["progress"] < 100)
+        # Check that queue is empty
+        assert len(manager.conversion_queue) == 0
 
         clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
@@ -267,6 +281,9 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(standa
     assert progress_updates[0]['status'] == 'DOWNLOADING'
     assert progress_updates[-1]['status'] == 'DOWNLOADING'
     assert progress_updates[-1]['error'] == 'Not enough space to download the model'
+
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
 
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
@@ -301,6 +318,9 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
     assert progress_updates[-1]['status'] == 'DOWNLOADING'
     assert progress_updates[-1]['error'] == 'Not enough space to download the model'
 
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
+
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
@@ -333,13 +353,13 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aioht
 
         # When status switches to installing, check that the conversion is in the queue
         if progress_updates[-1]["status"] == "INSTALLING":
-            assert manager.conversion_queue[0] == get_app_data_path(
+            assert manager.conversion_queue[0]["model_path"] == get_app_data_path(
             ) / "models" / ID
 
             # Wait 5 seconds and check that conversion is still in the queue
             await asyncio.sleep(5)
 
-            assert manager.conversion_queue[0] == get_app_data_path(
+            assert manager.conversion_queue[0]["model_path"] == get_app_data_path(
             ) / "models" / ID
 
             # Clear current conversion
@@ -348,6 +368,9 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aioht
     assert progress_updates[0]['status'] == 'DOWNLOADING'
     assert progress_updates[-1]['status'] == 'DONE'
     assert mock_mlc.call_count == 1
+
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
 
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
@@ -388,6 +411,9 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(stan
     assert progress_updates[0]['status'] == 'DOWNLOADING'
     assert progress_updates[-1]['status'] == 'DONE'
     assert mock_mlc.call_count == 0  # Conversion and quantization should be skipped
+
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
 
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
@@ -432,6 +458,9 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(mock_ai
         assert progress_updates[-1]["error"] == f"Unsupported model format for {
             download_path}"
 
+        # Check that queue is empty
+        assert len(manager.conversion_queue) == 0
+
         clear_path(download_path)
 
 
@@ -461,6 +490,9 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(standar
 
     assert progress_updates[-1]["error"] == "Not enough space or memory to convert and quantize the model"
 
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
+
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
@@ -489,6 +521,9 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(standa
 
     assert progress_updates[-1]["error"] == "Not enough space or memory to convert and quantize the model"
 
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
+
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
@@ -516,6 +551,9 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
             manager.complete_conversion()
 
     assert progress_updates[-1]["status"] == "DONE"
+
+    # Check that queue is empty
+    assert len(manager.conversion_queue) == 0
 
     clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 

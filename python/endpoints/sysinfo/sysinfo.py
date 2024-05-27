@@ -6,7 +6,6 @@ import os
 
 from utils import get_app_data_path, get_disk_usage
 from db import db
-import psutil
 
 
 CHANGE_THRESHOLD = 2

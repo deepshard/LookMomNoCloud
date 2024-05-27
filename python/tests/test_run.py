@@ -19,7 +19,7 @@ schema = {
         "instance": {"type": "integer"},
         "port": {"type": "integer"},
         "error": {"type": "string"},
-    }
+    },
 }
 
 
@@ -41,14 +41,8 @@ model_id_1 = "TEST_model_1"
 model_id_2 = "TEST_model_2"
 model_id_3 = "TEST_model_3"
 model_files = [
-    {
-        "file": "pytorch_model.bin",
-        "data": os.urandom(1024)
-    },
-    {
-        "file": "config.json",
-        "data": os.urandom(1024)
-    },
+    {"file": "pytorch_model.bin", "data": os.urandom(1024)},
+    {"file": "config.json", "data": os.urandom(1024)},
 ]
 
 # Helpers
@@ -90,7 +84,9 @@ def base_fixture(request):
 
 @pytest.fixture
 def server_mock():
-    with patch("endpoints.model.run.run.is_server_running", return_value=True) as is_server_running:
+    with patch(
+        "endpoints.model.run.run.is_server_running", return_value=True
+    ) as is_server_running:
         yield is_server_running
 
 
@@ -116,7 +112,10 @@ def mock_quants():
 @pytest.fixture
 def mlc_mock():
     # Mock convert_and_quantize, when called write some data to the model's quantization directory
-    with patch("endpoints.model.run.run.convert_and_quantize", return_value=None) as convert_and_quantize:
+    with patch(
+        "endpoints.model.run.run.convert_and_quantize", return_value=None
+    ) as convert_and_quantize:
+
         def write_data(weights_path, quant_path, quant):
             print(f"Writing data to {quant_path}")
             os.makedirs(quant_path, exist_ok=True)
@@ -129,7 +128,9 @@ def mlc_mock():
 
 # Tests
 @pytest.mark.asyncio
-async def test_run_quantization_does_not_exist(base_fixture, server_mock, subprocess_mock, mlc_mock):
+async def test_run_quantization_does_not_exist(
+    base_fixture, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
@@ -151,7 +152,9 @@ async def test_run_quantization_does_not_exist(base_fixture, server_mock, subpro
 
 
 @pytest.mark.asyncio
-async def test_run_quantization_exists(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
+async def test_run_quantization_exists(
+    base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
@@ -173,14 +176,15 @@ async def test_run_quantization_exists(base_fixture, mock_quants, server_mock, s
 
 
 @pytest.mark.asyncio
-async def test_run_multiple_models(base_fixture, server_mock, subprocess_mock, mlc_mock, mocker):
+async def test_run_multiple_models(
+    base_fixture, server_mock, subprocess_mock, mlc_mock, mocker
+):
     async with init_db():
         with patch("endpoints.model.run.run.find_port", return_value=8899) as find_port:
             manager = InstallationManager()
 
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_1, model_id_2], manager)
+            stream = run_models_generator([model_id_1, model_id_1, model_id_2], manager)
 
             # Collect the responses
             responses = []
@@ -213,20 +217,24 @@ async def test_run_multiple_models(base_fixture, server_mock, subprocess_mock, m
 
 
 @pytest.mark.asyncio
-async def test_run_instance_running(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
+async def test_run_instance_running(
+    base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
         # Insert a running model
-        await db.runningmodels.create({
-            "id": model_id_1,
-            "instance": 1,
-            "name": "meta-llama/Meta-Llama-3-8B",
-            "size": 8000000000,
-            "pid": 1234,
-            "port": 8899,
-            "quantization": "INT4"
-        })
+        await db.runningmodels.create(
+            {
+                "id": model_id_1,
+                "instance": 1,
+                "name": "meta-llama/Meta-Llama-3-8B",
+                "size": 8000000000,
+                "pid": 1234,
+                "port": 8899,
+                "quantization": "INT4",
+            }
+        )
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1], manager)
@@ -246,14 +254,15 @@ async def test_run_instance_running(base_fixture, mock_quants, server_mock, subp
 
 
 @pytest.mark.asyncio
-async def test_run_not_convertable_format(base_fixture, server_mock, subprocess_mock, mlc_mock):
+async def test_run_not_convertable_format(
+    base_fixture, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
         # Rename pytorch_model.bin to something else
         model_path = get_app_data_path() / "models" / model_id_1 / "base"
-        os.rename(model_path / "pytorch_model.bin",
-                  model_path / "invalid_file.bin")
+        os.rename(model_path / "pytorch_model.bin", model_path / "invalid_file.bin")
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1], manager)
@@ -273,15 +282,18 @@ async def test_run_not_convertable_format(base_fixture, server_mock, subprocess_
 
 
 @pytest.mark.asyncio
-async def test_run_not_enough_space(base_fixture, server_mock, subprocess_mock, mlc_mock):
+async def test_run_not_enough_space(
+    base_fixture, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
         # Mock the disk usage
-        with patch("endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)):
+        with patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)
+        ):
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_2, model_id_3], manager)
+            stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
 
             # Collect the responses
             responses = []
@@ -294,18 +306,25 @@ async def test_run_not_enough_space(base_fixture, server_mock, subprocess_mock, 
             assert responses[-1]["id"] == None
             assert responses[-1]["instance"] == None
             assert responses[-1]["port"] == None
-            assert responses[-1]["error"] == "Not enough space to convert and quantize the models"
+            assert (
+                responses[-1]["error"]
+                == "Not enough space to convert and quantize the models"
+            )
 
 
 @pytest.mark.asyncio
-async def test_run_not_enough_memory_quantization(base_fixture, server_mock, subprocess_mock, mlc_mock):
+async def test_run_not_enough_memory_quantization(
+    base_fixture, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
-        with patch("psutil.virtual_memory", return_value=MagicMock(total=0, used=0, available=0)) as ram_mock:
+        with patch(
+            "psutil.virtual_memory",
+            return_value=MagicMock(total=0, used=0, available=0),
+        ) as ram_mock:
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_2, model_id_3], manager)
+            stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
 
             # Collect the responses
             responses = []
@@ -318,17 +337,26 @@ async def test_run_not_enough_memory_quantization(base_fixture, server_mock, sub
             assert responses[-1]["id"] == model_id_1
             assert responses[-1]["instance"] == None
             assert responses[-1]["port"] == None
-            assert responses[-1]["error"] == "Not enough memory to convert and quantize the model"
-            assert len(
-                manager.conversion_queue) == 0, "Conversion queue should be cleared"
+            assert (
+                responses[-1]["error"]
+                == "Not enough memory to convert and quantize the model"
+            )
+            assert (
+                len(manager.conversion_queue) == 0
+            ), "Conversion queue should be cleared"
 
 
 @pytest.mark.asyncio
-async def test_run_not_enough_memory_run(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
+async def test_run_not_enough_memory_run(
+    base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
-        with patch("psutil.virtual_memory", return_value=MagicMock(total=0, used=0, available=0)) as ram_mock:
+        with patch(
+            "psutil.virtual_memory",
+            return_value=MagicMock(total=0, used=0, available=0),
+        ) as ram_mock:
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator
                 stream = run_models_generator([model_id_1], manager)
@@ -350,23 +378,28 @@ async def test_run_not_enough_memory_run(base_fixture, mock_quants, server_mock,
 
 
 @pytest.mark.asyncio
-async def test_run_kill_previous_models(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
+async def test_run_kill_previous_models(
+    base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
         with patch("psutil.virtual_memory") as ram_mock:
+
             def mock_virtual_memory():
                 if ram_mock.call_count <= 6:
                     return MagicMock(total=4096, used=0, available=0)
 
                 # For model_id_3, there is not enough memory to run the model
                 return MagicMock(total=0, used=0, available=0)
+
             ram_mock.side_effect = mock_virtual_memory
 
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator
                 stream = run_models_generator(
-                    [model_id_1, model_id_2, model_id_3], manager)
+                    [model_id_1, model_id_2, model_id_3], manager
+                )
 
                 # Collect the responses
                 responses = []
@@ -395,7 +428,9 @@ async def test_run_kill_previous_models(base_fixture, mock_quants, server_mock, 
 
 
 @pytest.mark.asyncio
-async def test_run_get_instance_count(base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock):
+async def test_run_get_instance_count(
+    base_fixture, mock_quants, server_mock, subprocess_mock, mlc_mock
+):
     async with init_db():
         manager = InstallationManager()
 
@@ -408,7 +443,7 @@ async def test_run_get_instance_count(base_fixture, mock_quants, server_mock, su
                 "size": 8000000000,
                 "pid": 1234,
                 "port": 8899,
-                "quantization": "INT4"
+                "quantization": "INT4",
             },
             {
                 "id": model_id_1,
@@ -417,7 +452,7 @@ async def test_run_get_instance_count(base_fixture, mock_quants, server_mock, su
                 "size": 8000000000,
                 "pid": 1235,
                 "port": 8900,
-                "quantization": "INT4"
+                "quantization": "INT4",
             },
             {
                 "id": model_id_2,
@@ -426,8 +461,8 @@ async def test_run_get_instance_count(base_fixture, mock_quants, server_mock, su
                 "size": 8000000000,
                 "pid": 1236,
                 "port": 8901,
-                "quantization": "INT4"
-            }
+                "quantization": "INT4",
+            },
         ]
         for data_item in data:
             await db.runningmodels.create(data_item)
@@ -437,5 +472,5 @@ async def test_run_get_instance_count(base_fixture, mock_quants, server_mock, su
         assert instances == [
             {"model_id": model_id_1, "instance": 3},
             {"model_id": model_id_2, "instance": 2},
-            {"model_id": model_id_3, "instance": 1}
+            {"model_id": model_id_3, "instance": 1},
         ]

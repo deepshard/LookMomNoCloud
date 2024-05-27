@@ -14,18 +14,18 @@ CHANGE_THRESHOLD = 2
 async def get_sysinfo():
     models_data = await get_models_data()
     data = {
-        "os": "MAC" if os.name == 'posix' else "LINUX",
+        "os": "MAC" if os.name == "posix" else "LINUX",
         "resources": {
             "available": {
                 "ram": psutil.virtual_memory().available,
-                "disk": psutil.disk_usage('/').free
+                "disk": psutil.disk_usage("/").free,
             },
             "models": models_data,
             "total": {
                 "ram": psutil.virtual_memory().total,
-                "disk": psutil.disk_usage('/').total
-            }
-        }
+                "disk": psutil.disk_usage("/").total,
+            },
+        },
     }
     return data
 
@@ -36,11 +36,13 @@ async def get_models_data():
     for model in models:
         try:
             memory_info = psutil.Process(model.pid).memory_info()
-            final.append({
-                "id": model.id,
-                "ram": memory_info.rss,
-                "disk": get_disk_usage(get_app_data_path() / "models" / model.id)
-            })
+            final.append(
+                {
+                    "id": model.id,
+                    "ram": memory_info.rss,
+                    "disk": get_disk_usage(get_app_data_path() / "models" / model.id),
+                }
+            )
         except psutil.NoSuchProcess:
             logger.warning("No process found with PID: {}".format(model.pid))
             continue
@@ -61,12 +63,16 @@ async def sysinfo_generator():
 def needs_update(last_info, current_info):
     def percent_change(old, new):
         if old == 0:
-            return float('inf')  # Avoid division by zero
+            return float("inf")  # Avoid division by zero
         return abs(new - old) / old * 100
 
     ram_change = percent_change(
-        last_info['resources']['available']['ram'], current_info['resources']['available']['ram'])
+        last_info["resources"]["available"]["ram"],
+        current_info["resources"]["available"]["ram"],
+    )
     disk_change = percent_change(
-        last_info['resources']['available']['disk'], current_info['resources']['available']['disk'])
+        last_info["resources"]["available"]["disk"],
+        current_info["resources"]["available"]["disk"],
+    )
 
     return ram_change >= CHANGE_THRESHOLD or disk_change >= CHANGE_THRESHOLD

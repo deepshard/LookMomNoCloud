@@ -29,6 +29,7 @@ async def clear_db():
 def base_fixture(request):
     def teardown():
         asyncio.run(clear_db())
+
     request.addfinalizer(teardown)
 
 
@@ -52,7 +53,7 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
             "size": 8000000000,
             "pid": mock_process.pid,
             "port": 8899,
-            "quantization": "INT4"
+            "quantization": "INT4",
         }
         await db.runningmodels.create(mock_model)
 
@@ -66,8 +67,12 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
         assert not mock_process.is_alive(), "Mock process should be stopped"
 
         # Check that the model instance was removed from the database
-        model_instance = await db.runningmodels.find_first(where={"id": mock_model["id"], "instance": mock_model["instance"]})
-        assert model_instance is None, "Model instance should be removed from the database"
+        model_instance = await db.runningmodels.find_first(
+            where={"id": mock_model["id"], "instance": mock_model["instance"]}
+        )
+        assert (
+            model_instance is None
+        ), "Model instance should be removed from the database"
 
 
 @pytest.mark.asyncio

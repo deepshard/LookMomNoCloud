@@ -12,43 +12,7 @@ import { useStore } from "./store/store";
 const root = createRoot(document.getElementById("root"));
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  // const setSocket = useStore((state) => state.setSocket);
-  // const parseResponse = useStore((state) => state.parseResponse);
-  const { addSysInfo, sysInfo } = useStore((state) => state);
-
-  // useEffect(() => {
-  //   const socket = new WebSocket("ws://0.0.0.0:8899/");
-  //   socket.onopen = () => {
-  //     console.log("[ws connected]");
-  //     setSocket(socket);
-  //     setLoading(false);
-  //   };
-
-  //   socket.onmessage = (event) => {
-  //     parseResponse(event.data);
-  //   };
-
-  //   socket.onclose = () => {
-  //     console.log("[ws disconnected]");
-  //     setLoading(true);
-  //     setSocket(null);
-  //   };
-
-  //   socket.onerror = (error) => {
-  //     console.log("[ws error]", error);
-  //     setSocket(null);
-  //     setError(error);
-  //     setLoading(false);
-  //   };
-
-  //   return () => {
-  //     setSocket(null);
-  //     setError(null);
-  //     socket.close();
-  //   };
-  // }, []);
+  const { addSysInfo } = useStore((state) => state);
 
   useEffect(() => {
     ROOTURL;
@@ -67,18 +31,6 @@ function App() {
       eventSource.close();
     };
   }, []);
-
-  // if (loading) {
-  //   return <BarLoader color="white" />;
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div>
-  //       Connection Error. Please contact <code>support@deepshard.org</code>.
-  //     </div>
-  //   );
-  // }
 
   return (
     <div>

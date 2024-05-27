@@ -61,22 +61,12 @@ const MODEL_LIST = [
 ];
 
 export default function Home() {
-  // const [modelInfo, setModelInfo] = useState<IModelServerInfo | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [userMessage, setUserMessage] = useState<string | null>(null);
-  const [modelResponse, setModelResponse] = useState<string | null>(null);
-  // const { downloadProgress } = useStore((state) => state);
-  // const sendCommand = useStore((state) => state.sendCommand);
-  // const modelsState = useStore((state) => state.modelsState);
 
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
 
   const getWidgetState = (model: any): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    // if (model.progress > 0 && model.progress < 100) {
-    //   return "downloading";
-    // }
     return "not-downloaded";
   };
 

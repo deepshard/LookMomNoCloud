@@ -1,16 +1,13 @@
-import { ReactDOM, useState, useEffect, useLayoutEffect } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { useState } from "react";
 import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
-import useStore, { Command } from "./store";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { app } from "electron";
 
-import { IModel, IModelServerInfo } from "./types";
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
+import SysInfo from "./component/SysInfo";
 
 const MODEL_LIST = [
   {
@@ -64,104 +61,26 @@ const MODEL_LIST = [
 ];
 
 export default function Home() {
-  const [modelInfo, setModelInfo] = useState<IModelServerInfo | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [userMessage, setUserMessage] = useState<string | null>(null);
-  const [modelResponse, setModelResponse] = useState<string | null>(null);
-  const { downloadProgress } = useStore((state) => state);
-  const sendCommand = useStore((state) => state.sendCommand);
-  const modelsState = useStore((state) => state.modelsState);
 
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
 
-  const getWidgetState = (model: IModel): ModelWidgetState => {
+  const getWidgetState = (model: any): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    if (model.progress > 0 && model.progress < 100) {
-      return "downloading";
-    }
     return "not-downloaded";
   };
-
-  function getMergedModels() {
-    const launchModelMap = new Map<string, IModel>();
-
-    // Create a map for quick lookup of launchModels by id
-    MODEL_LIST.forEach((launchModel) => {
-      launchModelMap.set(launchModel.title, launchModel);
-    });
-
-    // Merge models based on the id
-    const mergedModels = Object.values(modelsState).map((launchModel) => {
-      const model = launchModelMap.get(launchModel.name);
-      return {
-        ...launchModel,
-        ...model,
-      };
-    });
-
-    return uniqBy([...mergedModels, ...MODEL_LIST], "title");
-  }
-
-  // return (
-  //   <div className="grid gap-4">
-  //     {activeModels.map((model) => (
-  //       <div key={model.id} className="bg-green-200">
-  //         <div>{model.id}</div>
-  //         <div>{model.name}</div>
-  //         <div>progress: {model.progress}</div>
-  //         <div>{model.status}</div>
-  //       </div>
-  //     ))}
-  //     {inactiveModels.map((model) => (
-  //       <div
-  //         className="bg-red-200"
-  //         key={model.id}
-  //         onClick={() => {
-  //           sendCommand(Command.LAUNCH_MODEL, {
-  //             model_name: model.title,
-  //           });
-  //         }}
-  //       >
-  //         {model.title}
-  //       </div>
-  //     ))}
-  //   </div>
-  // );
-
-  // return (
-  //   <div className="bg-red-200">
-  //     <button>LLAMA 7B</button>
-
-  //     <br />
-  //     <p>
-  //       State: <span className="font-mono">INSTALLEDIn</span>
-  //     </p>
-  //     <div>
-  //       Progress: <span className="font-mono">100%</span>
-  //     </div>
-  //   </div>
-  // );
 
   return (
     <div className="snap-y snap-mandatory">
       <div className="home-layout">
         <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
         <div className="flex gap-4">
-          {getMergedModels().map((model) => (
-            <ModelWidget
-              model={model}
-              key={model.id}
-              widgetState={getWidgetState(model)}
-              downloadModel={() => {
-                sendCommand(Command.LAUNCH_MODEL, {
-                  model_name: model.title,
-                });
-              }}
-            />
+          {MODEL_LIST.map((model) => (
+            <ModelWidget model={model} key={model.id} widgetState={getWidgetState(model)} downloadModel={() => {}} />
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
+          {/* New Explore and Apps container */}
           <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
             <div className="relative">
               <Carousel
@@ -204,6 +123,7 @@ export default function Home() {
               </Carousel>
             </div>
 
+            {/* Apps and Models */}
             <div className="w-full h-[158px] flex justify-between gap-3">
               <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
                 <div className="grid grid-cols-2 gap-[21px] w-full h-full p-5">
@@ -247,28 +167,19 @@ export default function Home() {
                 },
               }}
               arrows={false}
-              autoPlay
+              // autoPlay
               showDots
               infinite
-              className="rounded-md overflow-hidden"
+              className="rounded-md overflow-hidden bg-[#D9D9D94D]"
               customDot={<CustomCarouselDot />}
               dotListClass="order-truffle-carousel-dots"
             >
+              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
+                <SysInfo />
+              </div>
               <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] ">
                 <div className="flex flex-col w-full h-full">
-                  <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
-                    <img src={truffleHardwareImage} alt="" className="self-end" />
-                  </div>
-                  <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                    <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
-                      <span className="base-medium ">Pre Order Truffle–1</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
-                <div className="flex flex-col w-full h-full">
-                  <div className="w-full h-full flex justify-center flex-1 bg-[#D9D9D94D]">
+                  <div className="w-full h-full flex justify-center flex-1 ">
                     <img src={truffleHardwareImage} alt="" className="self-end" />
                   </div>
                   <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">

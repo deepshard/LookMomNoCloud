@@ -2,7 +2,7 @@ import React from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { IModel } from "src/types";
-import useStore from "../store";
+import useStore from "../store/store";
 
 export type ModelWidgetState = "idle" | "downloading" | "not-downloaded" | "running" | "paused";
 interface ModelWidgetProps {

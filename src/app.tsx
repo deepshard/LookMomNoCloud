@@ -3,62 +3,31 @@ import Home from "./Home";
 import { Toaster } from "react-hot-toast";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
-import { useEffect, useState } from "react";
-import useStore from "./store";
-import axios from "axios";
-import { BarLoader } from "react-spinners";
+import { useEffect } from "react";
+import { ROOTURL } from "./api/client";
+import { useStore } from "./store/store";
 
 const root = createRoot(document.getElementById("root"));
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const setSocket = useStore((state) => state.setSocket);
-  const parseResponse = useStore((state) => state.parseResponse);
+  const { addSysInfo } = useStore((state) => state);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://0.0.0.0:8899/");
-    socket.onopen = () => {
-      console.log("[ws connected]");
-      setSocket(socket);
-      setLoading(false);
+    const eventSource = new EventSource(ROOTURL + "/sysinfo");
+    eventSource.onmessage = (event) => {
+      const newSysInfo = JSON.parse(event.data);
+      addSysInfo(newSysInfo);
     };
 
-    socket.onmessage = (event) => {
-      parseResponse(event.data);
-    };
-
-    socket.onclose = () => {
-      console.log("[ws disconnected]");
-      setLoading(true);
-      setSocket(null);
-    };
-
-    socket.onerror = (error) => {
-      console.log("[ws error]", error);
-      setSocket(null);
-      setError(error);
-      setLoading(false);
+    eventSource.onerror = (error) => {
+      console.error("EventSource error:", error);
+      eventSource.close();
     };
 
     return () => {
-      setSocket(null);
-      setError(null);
-      socket.close();
+      eventSource.close();
     };
   }, []);
-
-  // if (loading) {
-  //   return <BarLoader color="white" />;
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div>
-  //       Connection Error. Please contact <code>support@deepshard.org</code>.
-  //     </div>
-  //   );
-  // }
 
   return (
     <div>

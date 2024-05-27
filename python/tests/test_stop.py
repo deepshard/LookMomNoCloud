@@ -14,9 +14,9 @@ from server import init_db
 
 
 # Helpers
-def fake_process():
+async def fake_process():
     while True:
-        asyncio.sleep(10)
+        await asyncio.sleep(10)
 
 
 async def clear_db():

@@ -4,9 +4,8 @@ from utils import get_app_data_path
 
 db: Prisma = None
 
-file = (
-    (get_app_data_path() / "truffle.db")
-    if os.getenv("ENV") == "prod"
+file = os.getenv("DATABASE_URL", 
+    str(get_app_data_path() / "truffle.db") if os.getenv("ENV") == "prod" 
     else str(get_app_data_path() / "truffle.test.db")
 )
 

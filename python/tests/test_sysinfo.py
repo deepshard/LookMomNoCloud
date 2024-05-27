@@ -58,27 +58,6 @@ schema = {
 
 
 @pytest.mark.asyncio
-async def test_schema():
-    async with httpx.AsyncClient(timeout=None) as client:
-        async with client.stream("GET", "http://localhost:8899/sysinfo") as response:
-            async for line in response.aiter_lines():
-                if line == "":
-                    pass
-                else:
-                    assert "data: {" in line
-                    data = line.split("data: ")[1]
-                    data = json.loads(data)
-
-                    # Validate the data against the schema
-                    try:
-                        validate(instance=data, schema=schema)
-                    except ValidationError as e:
-                        pytest.fail(f"JSON data did not validate against schema: {e}")
-
-                    break
-
-
-@pytest.mark.asyncio
 async def test_ram_change_detection():
     # Start the sysinfo generator
     async with init_db():

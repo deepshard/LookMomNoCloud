@@ -21,30 +21,22 @@ installation_manager = None
 
 @asynccontextmanager
 async def init_db():
-    app_data_path = get_app_data_path()
-    if os.getenv("ENV") == "prod":
-        db_path = app_data_path / "truffle.db"
-    else:
-        db_path = app_data_path / "truffle.test.db"
-    os.environ["DATABASE_URL"] = f"file:{db_path}"
-    logger.info(f"Connecting to DB at: {db_path}")
 
-    await db.connect()
+    # try:
+    #     print("Checking if DB is already migrated")
+    #     await db.execute_raw("SELECT * FROM runningmodels")
+    # except Exception:
+    #     logger.info(f"Running migrations")
+    #     subprocess.run(
+    #         ["bunx", "prisma", "db", "push", "--schema", "python/prisma/schema.prisma"],
+    #         check=True,
+    #     )
 
-    try:
-        print("Checking if DB is already migrated")
-        await db.execute_raw("SELECT * FROM runningmodels")
-    except Exception:
-        logger.info(f"Running migrations")
-        subprocess.run(
-            ["bunx", "prisma", "db", "push", "--schema", "python/prisma/schema.prisma"],
-            check=True,
-        )
-
-    try:
-        yield
-    finally:
-        logger.info(f"Disconnecting from DB")
+    if not db.is_connected():
+        logger.info(f"Connecting to DB at: {db._datasource}")
+        await db.connect()
+    yield
+    if db.is_connected():
         await db.disconnect()
 
 

@@ -32,4 +32,4 @@ jobs:
         run: bun install
 
       - name: Run TypeScript linters
-        run: bunx eslint . --ext .ts,.tsx
+        run: eslint . --ext .ts,.tsx

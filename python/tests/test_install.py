@@ -5,8 +5,7 @@ from unittest.mock import patch, MagicMock
 import json
 import shutil
 from aioresponses import aioresponses
-from endpoints.model.install import install_generator, InstallationManager
-from endpoints.model.install.install import get_hf_name_for_url, get_files_to_download, download_file
+from endpoints.model.install.install import install_generator, InstallationManager, get_hf_name_for_url, get_files_to_download, download_file
 from truffle_types import FileInfo
 from utils import get_app_data_path
 

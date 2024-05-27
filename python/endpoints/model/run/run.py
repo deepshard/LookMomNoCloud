@@ -9,6 +9,7 @@ from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.install import InstallationManager
 from endpoints.model.install.install import get_space_check_info, convert_and_quantize
+from endpoints.model.stop import stop_model_handler
 from utils import get_app_data_path, find_port, does_quantization_exist, is_convertable_format, get_model_size_info
 from db import db
 from truffle_types import Quantization
@@ -143,12 +144,7 @@ async def run_model(model_id: str, quantization: Quantization, mem_share: float,
 async def kill_models(models: list[dict]):
     # Kill all of the running models and remove them from the database
     for model in models:
-        model_db_info = await db.runningmodels.find_first(where={"id": model["id"], "instance": model["instance"]})
-
-        logger.info(f"""Killing model {model["id"]}, instance {
-                    model["instance"]}, on process {model_db_info.pid}""")
-        os.kill(model_db_info.pid, signal.SIGTERM)
-        await db.runningmodels.delete_many({"id": model["id"], "instance": model["instance"]})
+        await stop_model_handler(model["id"], model["instance"])
 
 
 async def run_models_generator(model_ids: list[str], installation_manager: InstallationManager):

@@ -4,9 +4,12 @@ module.exports = {
   theme: {
     extend: {
       borderRadius: {
+        'xs': '8px',
         'sm': '13px',
         'md': '18px',
         'lg': '24px',
+        'xl': '28px',
+        '2xl': '32px',
       },
       fontSize: {
         'base': '14px',

@@ -24,7 +24,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
-      - name: Install Node.js dependencies
-        run: npm install
+
+      - name: Install Bun
+        run: npm install -g bun
+
+      - name: Install Node.js dependencies with Bun
+        run: bun install
+
       - name: Run TypeScript linters
         run: eslint . --ext .ts,.tsx

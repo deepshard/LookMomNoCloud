@@ -10,9 +10,10 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx .",
     "watch-css": "bunx tailwindcss -i ./src/index.css -o ./src/output.css --watch",
-    "python:dev": "uvicorn python.server:app --host 0.0.0.0 --port 8899 --reload"
+    "python:dev": "uvicorn python.server:app --host 0.0.0.0 --port 8899 --reload",
+    "format:py": "black python",
+    "format:ts": "eslint . --ext .ts,.tsx --fix"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",

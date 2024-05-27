@@ -109,12 +109,7 @@ async def stop_model(request: StopRequest):
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    try:
-        delete_model_handler(model_id)
-    except Exception as e:
-        raise HTTPException(
-            status_code=404, detail="Model directory not found")
-
+    delete_model_handler(model_id)
     return {}
 
 if __name__ == "__main__":

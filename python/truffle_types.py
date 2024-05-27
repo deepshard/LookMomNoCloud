@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
+from pydantic import BaseModel
 
 
 class RepoType(Enum):
@@ -16,3 +18,18 @@ class Quantization(Enum):
 class FileInfo:
     file: str
     size: int
+
+
+# Request Schemas
+
+class InstallRequest(BaseModel):
+    url: str
+
+
+class RunRequest(BaseModel):
+    ids: List[str]
+
+
+class StopRequest(BaseModel):
+    id: str
+    instance: int

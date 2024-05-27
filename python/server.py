@@ -3,7 +3,6 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import subprocess
-from jsonschema import validate, ValidationError
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -11,7 +10,9 @@ from loguru import logger
 from endpoints.sysinfo import sysinfo_generator
 from endpoints.model.install import install_generator, InstallationManager
 from endpoints.model.run import run_models_generator
+from endpoints.model.stop import stop_model_handler
 from endpoints.model.delete import delete_model_handler
+from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
 from db import db
 
@@ -79,27 +80,10 @@ async def highlights():
 
 
 @app.post("/model/install", response_class=StreamingResponse)
-async def install_model(request: Request):
-    # Validate the request body and get the model URL
-    request_body = await request.json()
-
-    try:
-        schema = {
-            "type": "object",
-            "properties": {
-                "url": {"type": "string"}
-            },
-            "required": ["url"]
-        }
-        validate(instance=request_body, schema=schema)
-        model_download_url = request_body["url"]
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid request body: {e}")
-
+async def install_model(request: InstallRequest):
     # Start the model installation process
     response = StreamingResponse(install_generator(
-        model_download_url, installation_manager), media_type="text/event-stream")
+        request.url, installation_manager), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -107,27 +91,10 @@ async def install_model(request: Request):
 
 
 @app.post("/model/run", response_class=StreamingResponse)
-async def run_model(request: Request):
-    # Validate the request body and get the model IDs
-    request_body = await request.json()
-
-    try:
-        schema = {
-            "type": "object",
-            "properties": {
-                "model_ids": {"type": "array", "items": {"type": "string"}}
-            },
-            "required": ["model_ids"]
-        }
-        validate(instance=request_body, schema=schema)
-        model_ids = request_body["model_ids"]
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid request body: {e}")
-
+async def run_model(request: RunRequest):
     # Start the model running process
     response = StreamingResponse(run_models_generator(
-        model_ids, installation_manager), media_type="text/event-stream")
+        request.ids, installation_manager), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -135,25 +102,8 @@ async def run_model(request: Request):
 
 
 @app.post("/model/stop")
-async def stop_model(request: Request):
-    # Validate the request body and get the model ID + instance number
-    request_body = await request.json()
-
-    try:
-        schema = {
-            "type": "object",
-            "properties": {
-                "model_id": {"type": "string"},
-                "instance": {"type": "integer"}
-            },
-            "required": ["model_id", "instance"]
-        }
-        validate(instance=request_body, schema=schema)
-        stop_model_handler(request_body["model_id"], request_body["instance"])
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid request body: {e}")
-
+async def stop_model(request: StopRequest):
+    await stop_model_handler(request.id, request.instance)
     return {}
 
 

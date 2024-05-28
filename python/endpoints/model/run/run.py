@@ -66,10 +66,11 @@ def serve_model(model_path: str, mem_share: float, port: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
-        model=model_path,
+        model=str(model_path),
         device="auto",
         model_lib=None,
         mode="local",
+        additional_models=[],  # Not relevant
         max_batch_size=1,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
@@ -88,7 +89,7 @@ def serve_model(model_path: str, mem_share: float, port: int):
     )
 
 
-async def is_server_running(port: int, timeout: int = 60) -> bool:
+async def is_server_running(port: int, timeout: int = 120) -> bool:
     seconds_elapsed = 0
     url = f"http://localhost:{port}/v1/models"
 
@@ -263,7 +264,8 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {model_id}"
+                f"Not enough memory to convert and quantize the model {
+                    model_id}"
             )
             error_event = {
                 "id": model_id,

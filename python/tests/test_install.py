@@ -102,17 +102,10 @@ def mock_headers():
     return _mock_headers
 
 
-@pytest.fixture
-def mock_uuid():
-    with patch("endpoints.model.install.install.get_id_for_url") as mock_uuid:
-        mock_uuid.return_value = ID
-        yield mock_uuid
-
-
 # Tests
 @pytest.mark.asyncio
 async def test_install_single_model_from_scratch(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -134,7 +127,7 @@ async def test_install_single_model_from_scratch(
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -168,7 +161,7 @@ async def test_install_single_model_from_scratch(
 
 @pytest.mark.asyncio
 async def test_complete_partial_installation_of_single_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -192,7 +185,7 @@ async def test_complete_partial_installation_of_single_model(
         mock_download_file.side_effect = download_file
 
         # Prepare JSON streaming responses as they would be sent from the generator
-        progress_stream = install_generator(MODEL_URL, manager)
+        progress_stream = install_generator(ID, MODEL_URL, manager)
 
         # Collect all progress updates
         progress_updates = []
@@ -214,7 +207,7 @@ async def test_complete_partial_installation_of_single_model(
 
 @pytest.mark.asyncio
 async def test_skip_download_of_already_downloaded_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -240,7 +233,7 @@ async def test_skip_download_of_already_downloaded_model(
         mock_download_file.side_effect = download_file
 
         # Prepare JSON streaming responses as they would be sent from the generator
-        progress_stream = install_generator(MODEL_URL, manager)
+        progress_stream = install_generator(ID, MODEL_URL, manager)
 
         # Collect all progress updates
         progress_updates = []
@@ -262,7 +255,7 @@ async def test_skip_download_of_already_downloaded_model(
 
 @pytest.mark.asyncio
 async def test_model_download_returns_progress_in_expected_format(
-    mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    mock_aiohttp_head, mock_headers, mocker
 ):
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
@@ -280,7 +273,7 @@ async def test_model_download_returns_progress_in_expected_format(
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
-        progress_stream = install_generator(MODEL_URL, manager)
+        progress_stream = install_generator(ID, MODEL_URL, manager)
 
         # Collect all progress updates
         progress_updates = []
@@ -304,7 +297,7 @@ async def test_model_download_returns_progress_in_expected_format(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_single_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -323,7 +316,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
     )
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -342,7 +335,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -364,7 +357,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
     )
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -383,7 +376,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 
 @pytest.mark.asyncio
 async def test_only_converts_and_quantizes_single_model_at_a_time(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -405,7 +398,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
     }
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -442,7 +435,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
 
 @pytest.mark.asyncio
 async def test_skips_conversion_and_quantization_of_already_converted_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -470,7 +463,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
         f.write(MOCK_FILE_ONE_DATA)
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -489,7 +482,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_model_weights_are_not_in_expected_format(
-    mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    mock_aiohttp_head, mock_headers, mocker
 ):
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
@@ -520,7 +513,7 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
             f.write(MOCK_FILE_TWO_DATA)
 
         # Prepare JSON streaming responses as they would be sent from the generator
-        progress_stream = install_generator(MODEL_URL, manager)
+        progress_stream = install_generator(ID, MODEL_URL, manager)
 
         # Collect all progress updates
         progress_updates = []
@@ -540,7 +533,7 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -554,7 +547,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -580,7 +573,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -600,7 +593,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     )
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []
@@ -620,7 +613,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 
 @pytest.mark.asyncio
 async def test_completion_of_conversion_and_quantization_returns_status_transition(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -634,7 +627,7 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
-    progress_stream = install_generator(MODEL_URL, manager)
+    progress_stream = install_generator(ID, MODEL_URL, manager)
 
     # Collect all progress updates
     progress_updates = []

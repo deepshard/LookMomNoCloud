@@ -3,31 +3,18 @@ import Home from "./Home";
 import { Toaster } from "react-hot-toast";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
-import { useEffect } from "react";
-import { ROOTURL } from "./api/client";
+import useSysInfo from "./hooks/useSysInfo";
 import { useStore } from "./store/store";
+import { ROOTURL } from "./api/client";
 
 const root = createRoot(document.getElementById("root"));
 
 function App() {
-  const { addSysInfo } = useStore((state) => state);
-
-  useEffect(() => {
-    const eventSource = new EventSource(ROOTURL + "/sysinfo");
-    eventSource.onmessage = (event) => {
-      const newSysInfo = JSON.parse(event.data);
-      addSysInfo(newSysInfo);
-    };
-
-    eventSource.onerror = (error) => {
-      console.error("EventSource error:", error);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  const { addSysInfo } = useStore();
+  useSysInfo({
+    rootUrl: ROOTURL,
+    addSysInfo,
+  });
 
   return (
     <div>

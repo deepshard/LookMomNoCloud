@@ -1,79 +1,65 @@
-import { useState } from "react";
-import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
+import ModelWidget from "./component/ModelWidget";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
-import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
 import SysInfo from "./component/SysInfo";
+import { TModel } from "./types/schemas";
 
-const MODEL_LIST = [
+const MODEL_LIST: TModel[] = [
   {
-    id: "0",
-    title: "Llama 7B",
+    id: "00000000-0000-0000-0000-000000000000",
+    instance: 0,
+    url: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    status: "NOT_INSTALLED",
+    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
     author: "Meta",
-    size: 3000000000,
-    downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
-    likes: 70,
+    name: "Llama 7B",
+    params: 0,
   },
   {
-    id: "1",
-    title: "openai/gpt-3.5-turbo",
-    author: "Openai",
-    size: 3000000000,
-    downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
-    likes: 70,
+    id: "00000000-0000-0000-0000-000000000001",
+    instance: 1,
+    url: "https://huggingface.co/abacusai/Smaug-Llama-3-70B-Instruct",
+    status: "NOT_INSTALLED",
+    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
+    author: "Abacus AI",
+    name: "Smaug-Llama-3-70B-Instruct",
+    params: 0,
   },
   {
-    id: "2",
-    title: "Phi",
-    author: "Microsoft",
-    size: 3000000000,
-    downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
-    likes: 70,
+    id: "00000000-0000-0000-0000-000000000002",
+    instance: 2,
+    url: "https://huggingface.co/google/paligemma-3b-pt-224",
+    status: "STOPPED",
+    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
+    author: "google",
+    name: "paligemma-3b-pt-224",
+    params: 0,
   },
   {
-    id: "3",
-    title: "BLX",
-    author: "Databricks",
-    size: 3000000000,
-    downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
-    likes: 70,
+    id: "00000000-0000-0000-0000-000000000003",
+    instance: 3,
+    url: "https://huggingface.co/CohereForAI/aya-23-8B",
+    status: "STOPPED",
+    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
+    author: "Cohere",
+    name: "aya-23-8B",
+    params: 0,
   },
+  {
+    id: "00000000-0000-0000-0000-000000000004",
+    instance: 4,
+    url: "https://huggingface.co/openai-community/gpt2",
+    status: "STOPPED",
+    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
+    author: "OpenAI",
+    name: "gpt2",
+    params: 0,
+  },
+  
 ];
 
 export default function Home() {
@@ -86,25 +72,13 @@ export default function Home() {
       ? "/assets/icons/truffle-hardware.svg"
       : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
 
-  const getWidgetState = (model: any): ModelWidgetState => {
-    const modelPathName = model.hfLink.split("/").slice(3).join("/");
-    return "not-downloaded";
-  };
-
   return (
     <div className="snap-y snap-mandatory">
       <div className="home-layout">
         <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
         <div className="flex gap-4">
           {MODEL_LIST.map((model) => (
-            <ModelWidget
-              model={model}
-              key={model.id}
-              widgetState={getWidgetState(model)}
-              downloadModel={() => {
-                return null;
-              }}
-            />
+            <ModelWidget model={model} key={model.id} />
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">

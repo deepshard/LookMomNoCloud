@@ -19,7 +19,7 @@ export const ModelSchema = z.object({
     id: z.string(),
     instance: z.number(),
     url: z.string(), //hflink
-    status: z.enum(["downloading", "installing", "running", "stopped"]),
+    status: z.enum(["DOWNLOADING", "INSTALLING", "RUNNING", "STOPPED", "NOT_INSTALLED"]),
     progress: z.number().optional(),
     backgroundImage: z.string(),
     author: z.string(),

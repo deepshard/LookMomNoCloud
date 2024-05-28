@@ -1,48 +1,53 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
+import useInstallModel from "../hooks/useInstallModel";
 
-export type ModelWidgetState =
-  | "idle"
-  | "downloading"
-  | "not-downloaded"
-  | "running"
-  | "paused";
 interface ModelWidgetProps {
   model: TModel;
-  downloadModel?: (model: TModel) => void;
-  widgetState?: ModelWidgetState;
 }
-const ModelWidget = ({
-  model,
-  downloadModel,
-  widgetState = "idle",
-}: ModelWidgetProps) => {
-  // const { downloadProgress } = useStore((state) => state);
 
-  const downloadIcon =
-    process.env.NODE_ENV === "development"
-      ? "/assets/icons/download-fill.svg"
-      : "../../renderer/main_window/assets/icons/download-fill.svg";
-  const playIcon =
-    process.env.NODE_ENV === "development"
-      ? "/assets/icons/play.svg"
-      : "../../renderer/main_window/assets/icons/play.svg";
-  const pauseIcon =
-    process.env.NODE_ENV === "development"
-      ? "/assets/icons/pause.svg"
-      : "../../renderer/main_window/assets/icons/pause.svg";
-  const llamaIcon =
-    process.env.NODE_ENV === "development"
-      ? "/assets/images/llama1.png"
-      : "../../renderer/main_window/assets/images/llama1.png";
+const ModelWidget = ({ model, }: ModelWidgetProps) => {
+  const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
+  const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
+  const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
+  const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
+
+  const {installModel, disconnect} = useInstallModel();
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    }
+  }, [])
+
+  const handleAction = () => {
+    switch (model.status) {
+      case "DOWNLOADING":
+        console.log("TODO: downloading");
+        break;
+      case "NOT_INSTALLED":
+        console.log("TODO: not-installed");
+        installModel(model);
+        break;
+      case "RUNNING":
+        console.log("TODO: running");
+        break;
+      case "STOPPED":
+        console.log("TODO: stopped");
+        break;
+      default:
+        break;
+    }
+  }
+
+
+
 
   const getWidgetButton = () => {
-    switch (widgetState) {
-      case "idle":
-        return;
-      case "downloading":
+    switch (model.status) {
+      case "DOWNLOADING":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <CircularProgressbar
@@ -55,11 +60,11 @@ const ModelWidget = ({
             />
           </div>
         );
-      case "not-downloaded":
+      case "NOT_INSTALLED":
         return (
           <div
             onClick={() => {
-              downloadModel && downloadModel(model);
+              handleAction();
             }}
             className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
           >
@@ -70,13 +75,13 @@ const ModelWidget = ({
             />
           </div>
         );
-      case "paused":
+      case "STOPPED":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
-      case "running":
+      case "RUNNING":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
@@ -87,10 +92,12 @@ const ModelWidget = ({
         break;
     }
   };
+
   return (
     <div className="model-widget base-regular">
       <img src={llamaIcon} alt="" />
       <div className="absolute top-0 left-0 p-2">
+        <p className="">{model.name}</p>
         <p className="opacity-75 w-[60%]">{model.author}</p>
       </div>
       <p className="opacity-75 absolute bottom-0 left-0 p-2"></p>

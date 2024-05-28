@@ -40,4 +40,4 @@ jobs:
       - name: Run tests
         run: |
           cd python
-          PYTHONPATH="." pytest -s -v tests/
+          PYTHONPATH="." pytest -s --maxfail=1 -v tests/

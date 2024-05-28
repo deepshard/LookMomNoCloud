@@ -43,7 +43,8 @@ async def init_db():
     except Exception:
         logger.info(f"Running migrations")
         subprocess.run(
-            ["bunx", "prisma", "db", "push", "--schema", "python/prisma/schema.prisma"],
+            ["bunx", "prisma", "db", "push", "--schema",
+                "python/prisma/schema.prisma"],
             check=True,
         )
 
@@ -75,7 +76,8 @@ app.add_middleware(
 
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response = StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
+    response = StreamingResponse(
+        sysinfo_generator(), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -100,17 +102,23 @@ async def install_model(request: Request):
     try:
         schema = {
             "type": "object",
-            "properties": {"url": {"type": "string"}},
-            "required": ["url"],
+            "properties": {
+                "id": {"type": "string"},
+                "url": {"type": "string"}
+            },
+            "required": ["id", "url"],
         }
         validate(instance=request_body, schema=schema)
+        model_download_id = request_body["id"]
         model_download_url = request_body["url"]
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request body: {e}")
 
     # Start the model installation process
     response = StreamingResponse(
-        install_generator(model_download_url, installation_manager),
+        install_generator(model_download_id,
+                          model_download_url, installation_manager),
         media_type="text/event-stream",
     )
     response.headers["Content-Type"] = "text/event-stream"
@@ -133,7 +141,8 @@ async def run_model(request: Request):
         validate(instance=request_body, schema=schema)
         model_ids = request_body["model_ids"]
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request body: {e}")
 
     # Start the model running process
     response = StreamingResponse(
@@ -163,7 +172,8 @@ async def stop_model(request: Request):
         validate(instance=request_body, schema=schema)
         stop_model_handler(request_body["model_id"], request_body["instance"])
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid request body: {e}")
 
     return {}
 
@@ -173,7 +183,8 @@ async def delete_model(model_id: str):
     try:
         delete_model_handler(model_id)
     except Exception as e:
-        raise HTTPException(status_code=404, detail="Model directory not found")
+        raise HTTPException(
+            status_code=404, detail="Model directory not found")
 
     return {}
 

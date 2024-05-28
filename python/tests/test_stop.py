@@ -1,4 +1,3 @@
-import os
 import pytest
 import asyncio
 from multiprocessing import Process, set_start_method

@@ -4,6 +4,7 @@ import aiohttp
 from aiofiles import open as aiofiles_open
 import asyncio
 import psutil
+from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
@@ -18,13 +19,14 @@ from utils import (
     does_quantization_exist,
     is_convertable_format,
     get_model_size_info,
+    get_usable_memory,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
 
 def get_id_for_url(url: str) -> str:
     # TODO: Change this when HF scraping API is ready
-    return "123456"
+    return str(uuid4())
 
 
 def get_url_type(url: str) -> RepoType:
@@ -66,7 +68,9 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
         if not file["rfilename"]:
             raise ValueError(f"Missing rfilename for {file}")
 
-        tasks.append(get_file_size_hf(model_name, file["rfilename"]))
+        tasks.append(
+            get_file_size_hf(f"https://huggingface.co/{model_name}", file["rfilename"])
+        )
 
     # Get the file sizes
     files_to_download = await asyncio.gather(*tasks)
@@ -145,7 +149,7 @@ def get_quantization_object(quantization: Quantization, model):
         for quant in quantization_options:
             if quant.kind == "no-quant":
                 continue
-            if quant.kind == quantization.value.lower():
+            if quant.quantize_dtype == quantization.value.lower():
                 filtered_quantization_options.append(quant)
         return filtered_quantization_options[0]
 
@@ -153,7 +157,7 @@ def get_quantization_object(quantization: Quantization, model):
 def get_space_check_info(
     installation_manager: InstallationManager,
 ) -> tuple[int, int, int]:
-    available_ram = psutil.virtual_memory().available
+    available_ram = get_usable_memory()
     disk_space = psutil.disk_usage("/").free
     bytes_remaining = installation_manager.get_total_bytes_remaining()
     return available_ram, disk_space, bytes_remaining
@@ -214,6 +218,7 @@ def convert_and_quantize(
         context_window_size=None,
         sliding_window_size=None,
         prefill_chunk_size=None,
+        attention_sink_size=None,
         tensor_parallel_shards=None,
         max_batch_size=1,
         output=Path(quant_weights_path),
@@ -338,7 +343,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     # Mark as installing and send to InstallManager
     logger.info(
         f"""Downloaded {
-                len(files_to_download)} files. Beginning weight conversion and quantization."""
+            len(files_to_download)} files. Beginning weight conversion and quantization."""
     )
 
     # Weight conversion and quantization process

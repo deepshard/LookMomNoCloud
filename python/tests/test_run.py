@@ -1,13 +1,11 @@
 import os
-import re
 import json
 import asyncio
 import pytest
 from unittest.mock import patch, MagicMock
 import shutil
 from endpoints.model.install import InstallationManager
-from endpoints.model.run import run_models_generator
-from endpoints.model.run.run import get_instances
+from endpoints.model.run.run import run_models_generator, get_instances
 from utils import get_app_data_path
 from db import db
 from server import init_db
@@ -321,7 +319,7 @@ async def test_run_not_enough_memory_quantization(
 
         with patch(
             "psutil.virtual_memory",
-            return_value=MagicMock(total=0, free=0, available=1024),
+            return_value=MagicMock(total=0, used=0, available=0),
         ) as ram_mock:
             # Prepare JSON streaming responses as they would be sent from the generator
             stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
@@ -355,7 +353,7 @@ async def test_run_not_enough_memory_run(
 
         with patch(
             "psutil.virtual_memory",
-            return_value=MagicMock(total=0, free=0, available=1024),
+            return_value=MagicMock(total=0, used=0, available=0),
         ) as ram_mock:
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator
@@ -387,12 +385,11 @@ async def test_run_kill_previous_models(
         with patch("psutil.virtual_memory") as ram_mock:
 
             def mock_virtual_memory():
-                # One call for get_space_check_info, then one call for model_id_1, then one call for model_id_2
-                if ram_mock.call_count <= 3:
-                    return MagicMock(total=0, free=0, available=4096)
+                if ram_mock.call_count <= 6:
+                    return MagicMock(total=4096, used=0, available=0)
 
                 # For model_id_3, there is not enough memory to run the model
-                return MagicMock(total=0, free=0, available=0)
+                return MagicMock(total=0, used=0, available=0)
 
             ram_mock.side_effect = mock_virtual_memory
 

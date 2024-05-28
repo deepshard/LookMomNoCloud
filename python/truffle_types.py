@@ -13,6 +13,7 @@ class Quantization(Enum):
 
 
 class ModelStatus(Enum):
+    NOT_DOWNLOADED = "NOT_DOWNLOADED"
     DOWNLOADING = "DOWNLOADING"
     INSTALLING = "INSTALLING"
     RUNNING = "RUNNING"
@@ -29,15 +30,11 @@ class FileInfo:
 class Model:
     id: str
     url: str
+    status: ModelStatus
     background_image: str
     author: str
     name: str
     params: int
     description: str
-
-
-@dataclass
-class HighlightedModel(Model):
     instance: int
-    status: ModelStatus
     progress: int

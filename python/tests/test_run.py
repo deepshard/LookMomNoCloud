@@ -1,13 +1,11 @@
 import os
-import re
 import json
 import asyncio
 import pytest
 from unittest.mock import patch, MagicMock
 import shutil
 from endpoints.model.install import InstallationManager
-from endpoints.model.run import run_models_generator
-from endpoints.model.run.run import get_instances
+from endpoints.model.run.run import run_models_generator, get_instances
 from utils import get_app_data_path
 from db import db
 from server import init_db

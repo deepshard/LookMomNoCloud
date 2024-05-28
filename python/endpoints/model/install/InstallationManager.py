@@ -4,7 +4,7 @@ from utils import get_disk_usage
 
 
 class InstallationManager:
-    """Manages global state of the installation system."""
+    """Manages global state of the installation/conversion system."""
 
     def __init__(self):
         self.downloads = {}
@@ -33,7 +33,7 @@ class InstallationManager:
 
             if quantization_dir.exists():
                 quantized_bytes = get_disk_usage(quantization_dir)
-                conversion_bytes = (
+                conversion_bytes += (
                     self.current_conversion["compressed_size"] - quantized_bytes
                 )
 

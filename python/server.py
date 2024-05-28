@@ -8,10 +8,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from endpoints.sysinfo import sysinfo_generator
-from endpoints.model.install import install_generator, InstallationManager
-from endpoints.model.run import run_models_generator
-from endpoints.model.delete import delete_model_handler
+from endpoints import (
+    sysinfo_generator,
+    delete_model_handler,
+    install_generator,
+    run_models_generator,
+    stop_model_handler,
+)
+from endpoints.model.install import InstallationManager
 from utils import get_app_data_path
 from db import db
 

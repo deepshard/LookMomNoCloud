@@ -14,6 +14,8 @@ from endpoints import (
     install_generator,
     run_models_generator,
     stop_model_handler,
+    get_highlights,
+    get_new,
 )
 from endpoints.model.install import InstallationManager
 from utils import get_app_data_path
@@ -82,7 +84,12 @@ async def sysinfo():
 
 @app.get("/highlights")
 async def highlights():
-    pass
+    return get_highlights()
+
+
+@app.get("/new")
+async def new():
+    return get_new()
 
 
 @app.post("/model/install", response_class=StreamingResponse)

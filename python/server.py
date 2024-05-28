@@ -22,16 +22,6 @@ installation_manager = None
 @asynccontextmanager
 async def init_db():
 
-    # try:
-    #     print("Checking if DB is already migrated")
-    #     await db.execute_raw("SELECT * FROM runningmodels")
-    # except Exception:
-    #     logger.info(f"Running migrations")
-    #     subprocess.run(
-    #         ["bunx", "prisma", "db", "push", "--schema", "python/prisma/schema.prisma"],
-    #         check=True,
-    #     )
-
     if not db.is_connected():
         logger.info(f"Connecting to DB at: {db._datasource}")
         await db.connect()

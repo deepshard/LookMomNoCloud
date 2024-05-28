@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.10  # Specify your Python version here
+
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.3.0  # Use the latest ESLint version
+    hooks:
+      - id: eslint
+        additional_dependencies: ['eslint@8.57.0'] 

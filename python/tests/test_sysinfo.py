@@ -14,6 +14,7 @@ from endpoints.sysinfo import sysinfo_generator, CHANGE_THRESHOLD
 from db import db
 from server import init_db
 
+
 @pytest.mark.asyncio
 async def test_ram_change_detection():
     # Start the sysinfo generator

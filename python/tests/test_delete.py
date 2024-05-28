@@ -12,18 +12,9 @@ from utils import get_app_data_path
 # Mocks
 ID = "TEST_1234"
 MOCK_FILES = [
-    {
-        "file_path": "file_one.bin",
-        "data": os.urandom(1024)
-    },
-    {
-        "file_path": "file_two.bin",
-        "data": os.urandom(1024)
-    },
-    {
-        "file_path": "sub_folder/file_three.bin",
-        "data": os.urandom(1024)
-    }
+    {"file_path": "file_one.bin", "data": os.urandom(1024)},
+    {"file_path": "file_two.bin", "data": os.urandom(1024)},
+    {"file_path": "sub_folder/file_three.bin", "data": os.urandom(1024)},
 ]
 
 
@@ -41,10 +32,10 @@ def test_delete_model_base():
 
     # Assert that the model directory is deleted
     assert not base_path.exists(), "Model base directory should be deleted"
+    assert not (base_path / "sub_folder").exists(), "Sub-folder should be deleted"
     assert not (
-        base_path / "sub_folder").exists(), "Sub-folder should be deleted"
-    assert not (get_app_data_path() / "models" /
-                ID).exists(), "Model top-level directory should be deleted"
+        get_app_data_path() / "models" / ID
+    ).exists(), "Model top-level directory should be deleted"
 
 
 def test_delete_model_with_quant_dir():
@@ -68,12 +59,11 @@ def test_delete_model_with_quant_dir():
     # Assert that the model directory is deleted
     assert not base_path.exists(), "Model base directory should be deleted"
     assert not quant_path.exists(), "Model quant directory should be deleted"
+    assert not (base_path / "sub_folder").exists(), "Sub-folder should be deleted"
+    assert not (quant_path / "sub_folder").exists(), "Sub-folder should be deleted"
     assert not (
-        base_path / "sub_folder").exists(), "Sub-folder should be deleted"
-    assert not (
-        quant_path / "sub_folder").exists(), "Sub-folder should be deleted"
-    assert not (get_app_data_path() / "models" /
-                ID).exists(), "Model top-level directory should be deleted"
+        get_app_data_path() / "models" / ID
+    ).exists(), "Model top-level directory should be deleted"
 
 
 def test_delete_model_no_files():

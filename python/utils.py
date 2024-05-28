@@ -1,4 +1,5 @@
 import os
+import psutil
 import platform
 import socket
 from pathlib import Path
@@ -47,33 +48,40 @@ def get_quantization_compression(quant: Quantization) -> float:
     quantization_compression_table = {
         Quantization.INT3: 0.25,
         Quantization.INT4: 0.33,
-        Quantization.INT8: 0.55
+        Quantization.INT8: 0.55,
     }
     return quantization_compression_table[quant]
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
-    pytorch_json_path = os.path.join(
-        base_weights_path, "pytorch_model.bin.index.json")
+    pytorch_json_path = os.path.join(base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
-    safetensors_path = os.path.join(
-        base_weights_path, "model.safetensors.index.json")
-    safetensors_bin_path = os.path.join(
-        base_weights_path, "model.safetensors")
+    safetensors_path = os.path.join(base_weights_path, "model.safetensors.index.json")
+    safetensors_bin_path = os.path.join(base_weights_path, "model.safetensors")
 
     if (
-        os.path.exists(pytorch_json_path) or
-        os.path.exists(pytorch_bin_path) or
-        os.path.exists(safetensors_path) or
-        os.path.exists(safetensors_bin_path)
+        os.path.exists(pytorch_json_path)
+        or os.path.exists(pytorch_bin_path)
+        or os.path.exists(safetensors_path)
+        or os.path.exists(safetensors_bin_path)
     ):
         return True
 
     return False
 
 
-def get_model_size_info(weights_path: str, quantization: Quantization) -> tuple[int, float]:
+def get_model_size_info(
+    weights_path: str, quantization: Quantization
+) -> tuple[int, float]:
     model_size = get_disk_usage(weights_path)
     compression_rate = get_quantization_compression(quantization)
     compressed_size = model_size * compression_rate
     return model_size, compressed_size
+
+
+def get_usable_memory() -> int:
+    """
+    This is the memory that is currently available or could be quickly made available.
+    That is, the maximum memory a new process could use without trigger an OOM error.
+    """
+    return psutil.virtual_memory().total - psutil.virtual_memory().used

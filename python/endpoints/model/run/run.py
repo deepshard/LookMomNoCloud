@@ -7,10 +7,17 @@ import psutil
 import json
 from loguru import logger
 from mlc_llm.interface.serve import serve
+from endpoints import stop_model_handler
 from endpoints.model.install import InstallationManager
 from endpoints.model.install.install import get_space_check_info, convert_and_quantize
-from endpoints.model.stop import stop_model_handler
-from utils import get_app_data_path, find_port, does_quantization_exist, is_convertable_format, get_model_size_info
+from utils import (
+    get_app_data_path,
+    find_port,
+    does_quantization_exist,
+    is_convertable_format,
+    get_model_size_info,
+    get_usable_memory,
+)
 from db import db
 from truffle_types import Quantization
 
@@ -28,23 +35,21 @@ async def get_instances(model_ids: list[str]) -> list[int]:
 
         # Get the max instance number for the model
         instances_to_run = [
-            model for model in instances if model["model_id"] == model_id]
-        instance = max(
-            [model.instance for model in matching_models], default=0) + 1 + len(instances_to_run)
-        instances.append({
-            "model_id": model_id,
-            "instance": instance
-        })
+            model for model in instances if model["model_id"] == model_id
+        ]
+        instance = (
+            max([model.instance for model in matching_models], default=0)
+            + 1
+            + len(instances_to_run)
+        )
+        instances.append({"model_id": model_id, "instance": instance})
 
     return instances
 
 
 async def get_model_info(model_id: str) -> dict:
     # TODO: Properly implement this when the HF scraping API is ready
-    return {
-        "name": "meta-llama/Meta-Llama-3-8B",
-        "size": 8000000000
-    }
+    return {"name": "meta-llama/Meta-Llama-3-8B", "size": 8000000000}
 
 
 def adaptive_quantization_decision(model_ids: list[str]) -> list[Quantization]:
@@ -62,10 +67,11 @@ def serve_model(model_path: str, mem_share: float, port: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
-        model=model_path,
+        model=str(model_path),
         device="auto",
         model_lib=None,
         mode="local",
+        additional_models=[],  # Not relevant
         max_batch_size=1,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
@@ -84,7 +90,7 @@ def serve_model(model_path: str, mem_share: float, port: int):
     )
 
 
-async def is_server_running(port: int, timeout: int = 60) -> bool:
+async def is_server_running(port: int, timeout: int = 120) -> bool:
     seconds_elapsed = 0
     url = f"http://localhost:{port}/v1/models"
 
@@ -103,7 +109,9 @@ async def is_server_running(port: int, timeout: int = 60) -> bool:
     return False
 
 
-async def run_model(model_id: str, quantization: Quantization, mem_share: float, instance: int) -> dict:
+async def run_model(
+    model_id: str, quantization: Quantization, mem_share: float, instance: int
+) -> dict:
     # Identify the necessary info to launch the model
     model_path = get_app_data_path() / "models" / model_id / quantization.value
     model_info = await get_model_info(model_id)
@@ -111,7 +119,8 @@ async def run_model(model_id: str, quantization: Quantization, mem_share: float,
 
     # Start the model server as a separate process
     proc = multiprocessing.Process(
-        target=serve_model, args=(model_path, mem_share, port))
+        target=serve_model, args=(model_path, mem_share, port)
+    )
     proc.start()
 
     # Wait for the server to start and be available
@@ -129,16 +138,11 @@ async def run_model(model_id: str, quantization: Quantization, mem_share: float,
             "size": model_info["size"],
             "pid": proc.pid,
             "port": port,
-            "quantization": quantization.value
+            "quantization": quantization.value,
         }
     )
 
-    return {
-        "id": model_id,
-        "instance": instance,
-        "port": port,
-        "error": None
-    }
+    return {"id": model_id, "instance": instance, "port": port, "error": None}
 
 
 async def kill_models(models: list[dict]):
@@ -147,25 +151,27 @@ async def kill_models(models: list[dict]):
         await stop_model_handler(model["id"], model["instance"])
 
 
-async def run_models_generator(model_ids: list[str], installation_manager: InstallationManager):
+async def run_models_generator(
+    model_ids: list[str], installation_manager: InstallationManager
+):
     """
-        Run the models with the given IDs. If any model fails to quantize or run, the generator 
-        will yield an error event and stop running the models from this request. It is an all-
-        or-nothing operation. This is reasonable because if a user request multiple models at 
-        once (a pro feature), they likely have some use case requiring all models to be running.
-        If one fails it is better to stop them all than force the user to manually stop the others.
+    Run the models with the given IDs. If any model fails to quantize or run, the generator
+    will yield an error event and stop running the models from this request. It is an all-
+    or-nothing operation. This is reasonable because if a user request multiple models at
+    once (a pro feature), they likely have some use case requiring all models to be running.
+    If one fails it is better to stop them all than force the user to manually stop the others.
 
-        Args:
-            model_ids (list[str]): The list of model IDs to run
-            installation_manager (InstallationManager): The installation manager instance
+    Args:
+        model_ids (list[str]): The list of model IDs to run
+        installation_manager (InstallationManager): The installation manager instance
 
-        Yields:
-            {
-                "id": str,
-                "instance": int,
-                "port": int,
-                "error": str
-            }
+    Yields:
+        {
+            "id": str,
+            "instance": int,
+            "port": int,
+            "error": str
+        }
     """
 
     # Determine optimal quantization for each model and determine its instance number
@@ -189,33 +195,33 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
                 "id": model_id,
                 "instance": None,
                 "port": None,
-                "error": "Model is not in a convertable format"
+                "error": "Model is not in a convertable format",
             }
             yield f"data: {json.dumps(error_event)}\n\n"
             return
 
         # Check if the quantization already exists
         if not does_quantization_exist(model_id, quant):
-            _, compressed_size = get_model_size_info(
-                weights_path, quant)
+            _, compressed_size = get_model_size_info(weights_path, quant)
             total_compressed_size += compressed_size
-            conversions.append({
-                "model_id": model_id,
-                "quant": quant,
-                "compressed_size": compressed_size
-            })
+            conversions.append(
+                {
+                    "model_id": model_id,
+                    "quant": quant,
+                    "compressed_size": compressed_size,
+                }
+            )
 
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
-    _, disk_space, bytes_remaining = get_space_check_info(
-        installation_manager)
+    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
     if total_compressed_size + bytes_remaining > disk_space:
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
             "id": None,
             "instance": None,
             "port": None,
-            "error": "Not enough space to convert and quantize the models"
+            "error": "Not enough space to convert and quantize the models",
         }
         yield f"data: {json.dumps(error_event)}\n\n"
         return
@@ -224,12 +230,15 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
     for conversion in conversions:
         model_path = get_app_data_path() / "models" / conversion["model_id"]
         installation_manager.add_to_conversion_queue(
-            model_path, conversion["quant"], conversion["compressed_size"])
+            model_path, conversion["quant"], conversion["compressed_size"]
+        )
 
     # Convert and quantize the models
     for i, conversion in enumerate(conversions):
-        logger.info(f"""Converting and quantizing model {
-                    conversion['model_id']}""")
+        logger.info(
+            f"""Converting and quantizing model {
+                conversion['model_id']}"""
+        )
         model_id = conversion["model_id"]
         quant = conversion["quant"]
         model_path = get_app_data_path() / "models" / model_id
@@ -241,21 +250,28 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
             await asyncio.sleep(5)
 
         # Check if there is enough memory to convert and quantize the model
-        model_size, _ = get_model_size_info(
-            weights_path, quant)
-        available_ram = psutil.virtual_memory().available
+        model_size, _ = get_model_size_info(weights_path, quant)
+        available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {model_id}")
+                f"Not enough memory to convert and quantize the model {model_id}"
+            )
             error_event = {
                 "id": model_id,
                 "instance": None,
                 "port": None,
-                "error": "Not enough memory to convert and quantize the model"
+                "error": "Not enough memory to convert and quantize the model",
             }
             yield f"data: {json.dumps(error_event)}\n\n"
-            models_to_cancel = [{"model_path": get_app_data_path() / "models" / canceled_conversion["model_id"],
-                                 "quantization": canceled_conversion["quant"]} for canceled_conversion in conversions[i:]]
+            models_to_cancel = [
+                {
+                    "model_path": get_app_data_path()
+                    / "models"
+                    / canceled_conversion["model_id"],
+                    "quantization": canceled_conversion["quant"],
+                }
+                for canceled_conversion in conversions[i:]
+            ]
             installation_manager.cancel_conversions(models_to_cancel)
             return
 
@@ -266,12 +282,14 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
 
     # Now that all missing quantizations have been created, run the models
     models_started = []
-    for model_id, quant, mem_share, instance_obj in zip(model_ids, quantizations, mem_shares, instance_numbers):
+    for model_id, quant, mem_share, instance_obj in zip(
+        model_ids, quantizations, mem_shares, instance_numbers
+    ):
         logger.info(f"Running model {model_id}")
         instance = instance_obj["instance"]
 
         # Check if there is enough memory to run the model
-        available_ram = psutil.virtual_memory().available
+        available_ram = get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
         model_size, _ = get_model_size_info(weights_path, quant)
@@ -280,7 +298,7 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
                 "id": model_id,
                 "instance": instance,
                 "port": None,
-                "error": "Not enough memory to run the model"
+                "error": "Not enough memory to run the model",
             }
             yield f"data: {json.dumps(error_event)}\n\n"
             await kill_models(models_started)
@@ -298,7 +316,7 @@ async def run_models_generator(model_ids: list[str], installation_manager: Insta
                 "id": model_id,
                 "instance": instance,
                 "port": None,
-                "error": str(e)
+                "error": str(e),
             }
             yield f"data: {json.dumps(error_event)}\n\n"
             await kill_models(models_started)

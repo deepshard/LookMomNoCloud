@@ -1,4 +1,5 @@
 import asyncio
+import dataclasses
 import json
 from typing import List
 from loguru import logger
@@ -60,12 +61,12 @@ async def get_models_data() -> List[ModelResourceDetails]:
 
 async def sysinfo_generator():
     last_info = await get_sysinfo()
-    yield f"data: {json.dumps(last_info)}\n\n"
+    yield f"data: {json.dumps(dataclasses.asdict(last_info))}\n\n"
     while True:
         await asyncio.sleep(3)
         current_info = await get_sysinfo()
         if needs_update(last_info, current_info):
-            yield f"data: {json.dumps(current_info)}\n\n"
+            yield f"data: {json.dumps(dataclasses.asdict(current_info))}\n\n"
             last_info = current_info
 
 

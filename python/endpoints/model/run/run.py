@@ -15,6 +15,7 @@ from utils import (
     does_quantization_exist,
     is_convertable_format,
     get_model_size_info,
+    get_usable_memory,
 )
 from db import db
 from truffle_types import Quantization
@@ -65,10 +66,11 @@ def serve_model(model_path: str, mem_share: float, port: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
-        model=model_path,
+        model=str(model_path),
         device="auto",
         model_lib=None,
         mode="local",
+        additional_models=[],  # Not relevant
         max_batch_size=1,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
@@ -87,7 +89,7 @@ def serve_model(model_path: str, mem_share: float, port: int):
     )
 
 
-async def is_server_running(port: int, timeout: int = 60) -> bool:
+async def is_server_running(port: int, timeout: int = 120) -> bool:
     seconds_elapsed = 0
     url = f"http://localhost:{port}/v1/models"
 
@@ -151,7 +153,7 @@ async def kill_models(models: list[dict]):
 
         logger.info(
             f"""Killing model {model["id"]}, instance {
-                    model["instance"]}, on process {model_db_info.pid}"""
+                model["instance"]}, on process {model_db_info.pid}"""
         )
         os.kill(model_db_info.pid, signal.SIGTERM)
         await db.runningmodels.delete_many(
@@ -245,7 +247,7 @@ async def run_models_generator(
     for i, conversion in enumerate(conversions):
         logger.info(
             f"""Converting and quantizing model {
-                    conversion['model_id']}"""
+                conversion['model_id']}"""
         )
         model_id = conversion["model_id"]
         quant = conversion["quant"]
@@ -259,10 +261,11 @@ async def run_models_generator(
 
         # Check if there is enough memory to convert and quantize the model
         model_size, _ = get_model_size_info(weights_path, quant)
-        available_ram = psutil.virtual_memory().available
+        available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {model_id}"
+                f"Not enough memory to convert and quantize the model {
+                    model_id}"
             )
             error_event = {
                 "id": model_id,
@@ -297,7 +300,7 @@ async def run_models_generator(
         instance = instance_obj["instance"]
 
         # Check if there is enough memory to run the model
-        available_ram = psutil.virtual_memory().available
+        available_ram = get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
         model_size, _ = get_model_size_info(weights_path, quant)

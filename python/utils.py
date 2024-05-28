@@ -1,4 +1,5 @@
 import os
+import psutil
 import platform
 import socket
 from pathlib import Path
@@ -76,3 +77,11 @@ def get_model_size_info(
     compression_rate = get_quantization_compression(quantization)
     compressed_size = model_size * compression_rate
     return model_size, compressed_size
+
+
+def get_usable_memory() -> int:
+    """
+    This is the memory that is currently available or could be quickly made available.
+    That is, the maximum memory a new process could use without trigger an OOM error.
+    """
+    return psutil.virtual_memory().total - psutil.virtual_memory().used

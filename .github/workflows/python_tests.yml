@@ -24,10 +24,9 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python dependencies
-        env:
-          PIP_EXTRA_INDEX_URL: "https://mlc.ai/wheels"
         run: |
           cd python
+          python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly
           pip install -r requirements.txt
 
       - name: Install stress-ng

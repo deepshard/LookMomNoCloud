@@ -136,7 +136,8 @@ async def test_install_single_model_from_scratch(
     assert progress_updates[0]["status"] == "DOWNLOADING"
     assert progress_updates[-2]["status"] == "INSTALLING"
     assert progress_updates[-1]["status"] == "DONE"
-    assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
+    assert all(p["progress"] >= 0 and p["progress"]
+               <= 100 for p in progress_updates)
 
     assert mock_mlc.call_count == 1
 
@@ -194,7 +195,8 @@ async def test_complete_partial_installation_of_single_model(
         assert mock_download_file.call_count == 1
 
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
+        download_path = get_app_data_path() / "models" / \
+            progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
 
@@ -242,7 +244,8 @@ async def test_skip_download_of_already_downloaded_model(
         assert mock_download_file.call_count == 0
 
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
+        download_path = get_app_data_path() / "models" / \
+            progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
 
@@ -259,8 +262,10 @@ async def test_model_download_returns_progress_in_expected_format(
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE)
-        mocked.get(FILE_ONE_URL, status=200, body=os.urandom(100000000))  # 100 MB
-        mocked.get(FILE_TWO_URL, status=200, body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_ONE_URL, status=200,
+                   body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_TWO_URL, status=200,
+                   body=os.urandom(100000000))  # 100 MB
         mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
             {"Content-Length": 100000000}
         )
@@ -279,7 +284,8 @@ async def test_model_download_returns_progress_in_expected_format(
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert all(p.keys() == schema["properties"].keys() for p in progress_updates)
+        assert all(p.keys() == schema["properties"].keys()
+                   for p in progress_updates)
         assert all(
             p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates
         )
@@ -708,4 +714,5 @@ def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_
     ]
 
     for case, expected_outcome in zip(cases, expected_outcomes):
-        assert get_files_to_download(case["remote"], case["local"]) == expected_outcome
+        assert get_files_to_download(
+            case["remote"], case["local"]) == expected_outcome

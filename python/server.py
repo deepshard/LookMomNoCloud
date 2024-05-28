@@ -38,8 +38,7 @@ async def init_db():
     except Exception:
         logger.info(f"Running migrations")
         subprocess.run(
-            ["bunx", "prisma", "db", "push", "--schema",
-                "python/prisma/schema.prisma"],
+            ["bunx", "prisma", "db", "push", "--schema", "python/prisma/schema.prisma"],
             check=True,
         )
 
@@ -71,8 +70,7 @@ app.add_middleware(
 
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response = StreamingResponse(
-        sysinfo_generator(), media_type="text/event-stream")
+    response = StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -87,8 +85,10 @@ async def highlights():
 @app.post("/model/install", response_class=StreamingResponse)
 async def install_model(request: InstallRequest):
     # Start the model installation process
-    response = StreamingResponse(install_generator(
-        request.url, installation_manager), media_type="text/event-stream")
+    response = StreamingResponse(
+        install_generator(request.url, installation_manager),
+        media_type="text/event-stream",
+    )
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -98,8 +98,10 @@ async def install_model(request: InstallRequest):
 @app.post("/model/run", response_class=StreamingResponse)
 async def run_model(request: RunRequest):
     # Start the model running process
-    response = StreamingResponse(run_models_generator(
-        request.ids, installation_manager), media_type="text/event-stream")
+    response = StreamingResponse(
+        run_models_generator(request.ids, installation_manager),
+        media_type="text/event-stream",
+    )
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"

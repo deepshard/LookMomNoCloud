@@ -22,6 +22,7 @@ class FileInfo:
 
 # Request Schemas
 
+
 class InstallRequest(BaseModel):
     url: str
 

@@ -37,8 +37,11 @@ async def init_db():
         await db.execute_raw("SELECT * FROM runningmodels")
     except Exception:
         logger.info(f"Running migrations")
-        subprocess.run(["bunx", "prisma", "db", "push",
-                       "--schema", "python/prisma/schema.prisma"], check=True)
+        subprocess.run(
+            ["bunx", "prisma", "db", "push", "--schema",
+                "python/prisma/schema.prisma"],
+            check=True,
+        )
 
     try:
         yield
@@ -49,10 +52,12 @@ async def init_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global installation_manager
     installation_manager = InstallationManager()
 
     async with init_db():
         yield
+
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
@@ -68,9 +73,9 @@ app.add_middleware(
 async def sysinfo():
     response = StreamingResponse(
         sysinfo_generator(), media_type="text/event-stream")
-    response.headers['Content-Type'] = 'text/event-stream'
-    response.headers['Cache-Control'] = 'no-cache'
-    response.headers['Connection'] = 'keep-alive'
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
     return response
 
 
@@ -112,6 +117,8 @@ async def delete_model(model_id: str):
     delete_model_handler(model_id)
     return {}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8899)

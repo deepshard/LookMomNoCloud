@@ -15,37 +15,46 @@ from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from pathlib import Path
 from uuid import uuid4
-from utils import get_app_data_path, get_repo_info, get_conv_template, get_quant_compression, select_quantization, is_convertable_format, check_process, check_port
+from utils import (
+    get_app_data_path,
+    get_repo_info,
+    get_conv_template,
+    get_quant_compression,
+    select_quantization,
+    is_convertable_format,
+    check_process,
+    check_port,
+)
 from schemas import ModelInfo, ModelStatus, ModelQuantization
 from db_manager import insert_model, update_model, delete_model, get_model, get_models
 
 
 def sysinfo():
     """
-        Returns the system information
+    Returns the system information
 
-        - Get OS name
-        - Select PIDs for current running models
-        - Check memory usage for each PID
-        - Get global memory usage
-        - Get total global system memory
-        - Get global disk usage
-        - Get total global disk space
+    - Get OS name
+    - Select PIDs for current running models
+    - Check memory usage for each PID
+    - Get global memory usage
+    - Get total global system memory
+    - Get global disk usage
+    - Get total global disk space
 
-        Returns:
-            {
-                "os": "MAC" | "LINUX",
-                "ram_used": number,
-                "ram_total": number,
-                "disk_used": number,
-                "disk_total": number,
-                "models": [
-                    {
-                        "id": UUID,
-                        "ram_usage": number
-                    }
-                ]
-            }
+    Returns:
+        {
+            "os": "MAC" | "LINUX",
+            "ram_used": number,
+            "ram_total": number,
+            "disk_used": number,
+            "disk_total": number,
+            "models": [
+                {
+                    "id": UUID,
+                    "ram_usage": number
+                }
+            ]
+        }
     """
 
     # Get OS name
@@ -60,10 +69,7 @@ def sysinfo():
     for model in running_models:
         p = psutil.Process(model["pid"])
         ram_usage = p.memory_info().rss
-        models.append({
-            "id": model["id"],
-            "ram_usage": ram_usage
-        })
+        models.append({"id": model["id"], "ram_usage": ram_usage})
 
     # Get global memory usage
     memory_info = psutil.virtual_memory()
@@ -81,31 +87,31 @@ def sysinfo():
         "ram_total": ram_total,
         "disk_used": disk_used,
         "disk_total": disk_total,
-        "models": models
+        "models": models,
     }
 
 
 def get_model_state():
     """
-        Returns the states of all models in the system
+    Returns the states of all models in the system
 
-        - Select all models from info table
-        - Validate all processes are still in the expected state
-        - Return the states of all models
+    - Select all models from info table
+    - Validate all processes are still in the expected state
+    - Return the states of all models
 
-        Returns:
-            [
-                {
-                    "id": UUID,
-                    "name": string,
-                    "size": number,
-                    "status": "DOWNLOADING" | "INSTALL_QUEUE" | "INSTALLING" | "RUNNING",
-                    "pid": number (optional),
-                    "port": number (optional),
-                    "quantization": "no-quant" | "int4" | "int3" (optional),
-                    "progress": number (optional)
-                }
-            ]
+    Returns:
+        [
+            {
+                "id": UUID,
+                "name": string,
+                "size": number,
+                "status": "DOWNLOADING" | "INSTALL_QUEUE" | "INSTALLING" | "RUNNING",
+                "pid": number (optional),
+                "port": number (optional),
+                "quantization": "no-quant" | "int4" | "int3" (optional),
+                "progress": number (optional)
+            }
+        ]
     """
 
     # Select all models from info table
@@ -119,42 +125,44 @@ def get_model_state():
             delete_model(model.id)
             continue
 
-        validated_models.append({
-            "id": model.id,
-            "name": model.name,
-            "size": model.size,
-            "status": model.status,
-            "pid": model.pid,
-            "port": model.port,
-            "quantization": model.quantization,
-            "progress": model.progress
-        })
+        validated_models.append(
+            {
+                "id": model.id,
+                "name": model.name,
+                "size": model.size,
+                "status": model.status,
+                "pid": model.pid,
+                "port": model.port,
+                "quantization": model.quantization,
+                "progress": model.progress,
+            }
+        )
 
     return validated_models
 
 
 async def download_model(model_name, websocket, download_manager):
     """
-        Downloads the model from HuggingFace
+    Downloads the model from HuggingFace
 
-        Args:
-            model_name: string
-            websocket: WebSocket
-            current_downloads: DownloadManager
+    Args:
+        model_name: string
+        websocket: WebSocket
+        current_downloads: DownloadManager
 
-        - Check if model is already downloaded or partially downloaded
-        - Push model to info table with status "DOWNLOADING"
-        - Identify size of the download
-        - Download the model
-        - Update model status in info table to "QUEUED"
-        - Return the download information
+    - Check if model is already downloaded or partially downloaded
+    - Push model to info table with status "DOWNLOADING"
+    - Identify size of the download
+    - Download the model
+    - Update model status in info table to "QUEUED"
+    - Return the download information
 
-        Returns:
-            {
-                "name": string,
-                "path": string,
-                "progress": number?
-            }
+    Returns:
+        {
+            "name": string,
+            "path": string,
+            "progress": number?
+        }
     """
 
     save_path = get_app_data_path() / "models" / model_name / "base"
@@ -206,16 +214,16 @@ async def download_model(model_name, websocket, download_manager):
 
                 # Update the download manager
                 download_manager.set_download(
-                    model_name, save_path, progress, total_size - downloaded_bytes)
+                    model_name, save_path, progress, total_size - downloaded_bytes
+                )
 
                 if (progress - last_progress) >= 0.01:
                     last_progress = progress
                     downloads = download_manager.get_downloads_in_return_format()
 
-                    await websocket.send_text(json.dumps({
-                        "cmd": "DOWNLOAD_MODEL",
-                        "data": downloads
-                    }))
+                    await websocket.send_text(
+                        json.dumps({"cmd": "DOWNLOAD_MODEL", "data": downloads})
+                    )
 
     # # Update model status in info table to "QUEUED"
     # # TODO: Implement this
@@ -228,27 +236,27 @@ async def download_model(model_name, websocket, download_manager):
 
 async def convert_weights(model_name, quant, websocket):
     """
-        Converts the weights of the model to the selected quantization
-        in Truffle format
+    Converts the weights of the model to the selected quantization
+    in Truffle format
 
-        Args:
-            model_name: string
-            quant: "no-quant" | "int4" | "int3"
-            websocket: WebSocket
+    Args:
+        model_name: string
+        quant: "no-quant" | "int4" | "int3"
+        websocket: WebSocket
 
-        - Check if model already has desired quantization built
-        - Update model status in info table to "INSTALLING"
-        - Identify necessary info for conversion
-        - Convert model
-        - Update model status in info table to "STOPPED"
+    - Check if model already has desired quantization built
+    - Update model status in info table to "INSTALLING"
+    - Identify necessary info for conversion
+    - Convert model
+    - Update model status in info table to "STOPPED"
 
-        Returns:
-            {
-                "name": string,
-                "path": string,
-                "quant": "no-quant" | "int4" | "int3",
-                "status": "IN_PROGRESS" | "FINISHED",
-            }
+    Returns:
+        {
+            "name": string,
+            "path": string,
+            "quant": "no-quant" | "int4" | "int3",
+            "status": "IN_PROGRESS" | "FINISHED",
+        }
     """
 
     # Check if model already has desired quantization built
@@ -258,7 +266,7 @@ async def convert_weights(model_name, quant, websocket):
             "name": model_name,
             "path": quant_path,
             "quant": quant,
-            "status": "FINISHED"
+            "status": "FINISHED",
         }
 
     # Check that the base weights exist
@@ -273,8 +281,9 @@ async def convert_weights(model_name, quant, websocket):
     # Check that there is enough space and memory to convert the weights
     system_ram = psutil.virtual_memory().total
     disk_space = psutil.disk_usage("/").free
-    model_size = sum(os.path.getsize(os.path.join(base_path, f))
-                     for f in os.listdir(base_path))
+    model_size = sum(
+        os.path.getsize(os.path.join(base_path, f)) for f in os.listdir(base_path)
+    )
     compression_rate = get_quant_compression(quant)
     if ((model_size * compression_rate) > disk_space) or model_size > system_ram:
         raise ValueError("Insufficient disk space or memory")
@@ -292,11 +301,17 @@ async def convert_weights(model_name, quant, websocket):
 
     quantization = None
     quantization_kinds = list(model.quantize.keys())
-    quantization_options = [quantization for quantization in QUANTIZATION.values(
-    ) if quantization.kind in quantization_kinds]
+    quantization_options = [
+        quantization
+        for quantization in QUANTIZATION.values()
+        if quantization.kind in quantization_kinds
+    ]
     if quant == "no-quant":
         filtered_quantization_options = [
-            quantization for quantization in quantization_options if quantization.kind == "no-quant"]
+            quantization
+            for quantization in quantization_options
+            if quantization.kind == "no-quant"
+        ]
         quantization = filtered_quantization_options[0]
     else:
         filtered_quantization_options = []
@@ -309,15 +324,19 @@ async def convert_weights(model_name, quant, websocket):
         quantization = filtered_quantization_options[0]
 
     # Convert model
-    await websocket.send_text(json.dumps({
-        "cmd": "CONVERT_WEIGHTS",
-        "data": {
-            "name": model_name,
-            "path": quant_path,
-            "quant": quant,
-            "status": "IN_PROGRESS"
-        }
-    }))
+    await websocket.send_text(
+        json.dumps(
+            {
+                "cmd": "CONVERT_WEIGHTS",
+                "data": {
+                    "name": model_name,
+                    "path": quant_path,
+                    "quant": quant,
+                    "status": "IN_PROGRESS",
+                },
+            }
+        )
+    )
     convert_weight_mlc(
         config=config,
         quantization=quantization,
@@ -325,7 +344,7 @@ async def convert_weights(model_name, quant, websocket):
         device=device,
         source=source,
         source_format=source_format,
-        output=quant_path
+        output=quant_path,
     )
     gen_config_mlc(
         config=config,
@@ -345,7 +364,7 @@ async def convert_weights(model_name, quant, websocket):
         "name": model_name,
         "path": str(quant_path),
         "quant": quant,
-        "status": "FINISHED"
+        "status": "FINISHED",
     }
 
 
@@ -359,7 +378,7 @@ async def launch_model(model_name):
         pid=1111,
         port=8000,
         quantization=ModelQuantization.int4,
-        progress=None
+        progress=None,
     )
 
     # Insert model into db
@@ -373,7 +392,7 @@ async def launch_model(model_name):
         "pid": 1111,
         "port": 8000,
         "quantization": "int4",
-        "progress": None
+        "progress": None,
     }
 
 

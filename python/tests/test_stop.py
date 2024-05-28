@@ -1,6 +1,7 @@
 import os
 import pytest
 import asyncio
+import time
 import multiprocessing
 from endpoints.model.stop import stop_model_handler
 from db import db
@@ -14,9 +15,9 @@ from server import init_db
 
 
 # Helpers
-async def fake_process():
+def fake_process():
     while True:
-        await asyncio.sleep(10)
+        time.sleep(10)
 
 
 async def clear_db():

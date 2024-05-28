@@ -1,6 +1,6 @@
 name: Python tests
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   lint:
@@ -17,7 +17,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           cd python
-          python -m pip install --upgrade pip
+          python -m pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
           pip install -r requirements.txt
 
       - name: Create test database

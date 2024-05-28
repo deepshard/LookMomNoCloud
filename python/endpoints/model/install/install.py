@@ -4,6 +4,7 @@ import aiohttp
 from aiofiles import open as aiofiles_open
 import asyncio
 import psutil
+from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
@@ -25,7 +26,7 @@ from endpoints.model.install.InstallationManager import InstallationManager
 
 def get_id_for_url(url: str) -> str:
     # TODO: Change this when HF scraping API is ready
-    return "123456"
+    return str(uuid4())
 
 
 def get_url_type(url: str) -> RepoType:

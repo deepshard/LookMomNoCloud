@@ -1,12 +1,14 @@
 import os
 import asyncio
 import pytest
+from uuid import uuid4
 from unittest.mock import patch, MagicMock
 import json
 import shutil
 from aioresponses import aioresponses
-from endpoints.model.install import install_generator, InstallationManager
 from endpoints.model.install.install import (
+    install_generator,
+    InstallationManager,
     get_hf_name_for_url,
     get_files_to_download,
     download_file,
@@ -45,7 +47,7 @@ schema = {
 
 
 # Mock constants
-ID = "123456"
+ID = str(uuid4())
 MODEL_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B"
 HF_API_URL = "https://huggingface.co/api/models/meta-llama/Meta-Llama-3-8B?"
 FILE_ONE_URL = (
@@ -100,10 +102,17 @@ def mock_headers():
     return _mock_headers
 
 
+@pytest.fixture
+def mock_uuid():
+    with patch("endpoints.model.install.install.get_id_for_url") as mock_uuid:
+        mock_uuid.return_value = ID
+        yield mock_uuid
+
+
 # Tests
 @pytest.mark.asyncio
 async def test_install_single_model_from_scratch(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -159,7 +168,7 @@ async def test_install_single_model_from_scratch(
 
 @pytest.mark.asyncio
 async def test_complete_partial_installation_of_single_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -205,7 +214,7 @@ async def test_complete_partial_installation_of_single_model(
 
 @pytest.mark.asyncio
 async def test_skip_download_of_already_downloaded_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -253,7 +262,7 @@ async def test_skip_download_of_already_downloaded_model(
 
 @pytest.mark.asyncio
 async def test_model_download_returns_progress_in_expected_format(
-    mock_aiohttp_head, mock_headers, mocker
+    mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
@@ -295,7 +304,7 @@ async def test_model_download_returns_progress_in_expected_format(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_single_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -333,7 +342,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -374,7 +383,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 
 @pytest.mark.asyncio
 async def test_only_converts_and_quantizes_single_model_at_a_time(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -433,7 +442,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
 
 @pytest.mark.asyncio
 async def test_skips_conversion_and_quantization_of_already_converted_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -480,7 +489,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_model_weights_are_not_in_expected_format(
-    mock_aiohttp_head, mock_headers, mocker
+    mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
@@ -531,7 +540,7 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -571,7 +580,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -611,7 +620,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 
 @pytest.mark.asyncio
 async def test_completion_of_conversion_and_quantization_returns_status_transition(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
 ):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(

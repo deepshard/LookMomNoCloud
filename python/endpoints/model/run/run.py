@@ -254,8 +254,7 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {
-                    model_id}"
+                f"Not enough memory to convert and quantize the model {model_id}"
             )
             error_event = {
                 "id": model_id,

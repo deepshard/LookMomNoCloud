@@ -5,7 +5,7 @@ from loguru import logger
 import psutil
 import time
 import os
-from ...truffle_types import (
+from truffle_types import (
     ModelResourceDetails,
     SystemInfo,
     SystemResourceDetails,

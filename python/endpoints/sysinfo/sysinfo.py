@@ -63,7 +63,7 @@ async def sysinfo_generator():
     last_info = await get_sysinfo()
     yield f"data: {json.dumps(dataclasses.asdict(last_info))}\n\n"
     while True:
-        await asyncio.sleep(3)
+        await asyncio.sleep(4)
         current_info = await get_sysinfo()
         if needs_update(last_info, current_info):
             yield f"data: {json.dumps(dataclasses.asdict(current_info))}\n\n"

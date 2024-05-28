@@ -24,11 +24,11 @@ async def test_ram_change_detection():
 
         # Start stress-ng to use RAM
         stress_process = subprocess.Popen(
-            ["stress-ng", "--vm", "1", "--vm-bytes", "4G", "--timeout", "10s"]
+            ["stress-ng", "--vm", "1", "--vm-bytes", "4G", "--timeout", "5s"]
         )
 
         # Wait for stress-ng to start affecting RAM
-        await asyncio.sleep(10)
+        await asyncio.sleep(5)
 
         # Get updated data
         updated_data = await generator.__anext__()
@@ -71,7 +71,7 @@ async def test_disk_change_detection():
             temp_file.write(os.urandom(1024 * 1024 * 1024 * 4))
 
         # Wait for file system to update
-        await asyncio.sleep(20)  # Adjust time as necessary for your system
+        await asyncio.sleep(10)  # Adjust time as necessary for your system
 
         # Get updated data
         updated_data = await generator.__anext__()

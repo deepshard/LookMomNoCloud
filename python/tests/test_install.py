@@ -1,13 +1,21 @@
 import os
 import asyncio
 import pytest
+from uuid import uuid4
 from unittest.mock import patch, MagicMock
 import json
 import shutil
 from aioresponses import aioresponses
-from endpoints.model.install import install_generator, InstallationManager
-from endpoints.model.install.install import get_hf_name_for_url, get_files_to_download, download_file
-from truffle_types import FileInfo
+from endpoints.model.install.install import (
+    install_generator,
+    InstallationManager,
+    get_hf_name_for_url,
+    get_files_to_download,
+    download_file,
+    get_file_size_hf,
+    get_hf_repo_info,
+)
+from truffle_types import FileInfo, Quantization
 from utils import get_app_data_path
 
 schema = {
@@ -17,7 +25,7 @@ schema = {
         "status": {"type": "string", "enum": ["DOWNLOADING", "INSTALLING", "DONE"]},
         "progress": {"type": "integer"},
         "error": {"type": "string"},
-    }
+    },
 }
 
 
@@ -39,11 +47,15 @@ schema = {
 
 
 # Mock constants
-ID = "123456"
+ID = str(uuid4())
 MODEL_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B"
 HF_API_URL = "https://huggingface.co/api/models/meta-llama/Meta-Llama-3-8B?"
-FILE_ONE_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/pytorch_model.bin"
-FILE_TWO_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/config.json"
+FILE_ONE_URL = (
+    "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/pytorch_model.bin"
+)
+FILE_TWO_URL = (
+    "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/config.json"
+)
 MOCK_API_RESPONSE = {
     "siblings": [
         {
@@ -86,19 +98,39 @@ def mock_headers():
         mock_resp = MagicMock()
         mock_resp.headers = expected_headers
         return mock_resp
+
     return _mock_headers
+
+
+@pytest.fixture
+def mock_uuid():
+    with patch("endpoints.model.install.install.get_id_for_url") as mock_uuid:
+        mock_uuid.return_value = ID
+        yield mock_uuid
 
 
 # Tests
 @pytest.mark.asyncio
-async def test_install_single_model_from_scratch(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_install_single_model_from_scratch(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
+    mock_get_file_sizes = mocker.patch(
+        "endpoints.model.install.install.get_file_size_hf"
+    )
+    mock_get_file_sizes.side_effect = get_file_size_hf
+    mock_get_hf_repo_info = mocker.patch(
+        "endpoints.model.install.install.get_hf_repo_info"
+    )
+    mock_get_hf_repo_info.side_effect = get_hf_repo_info
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -109,35 +141,44 @@ async def test_install_single_model_from_scratch(standard_aiohttp_get_mocks, moc
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]['status'] == 'DOWNLOADING'
-    assert progress_updates[-2]["status"] == 'INSTALLING'
-    assert progress_updates[-1]['status'] == 'DONE'
-    assert all(p['progress'] >= 0 and p['progress']
-               <= 100 for p in progress_updates)
+    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[-2]["status"] == "INSTALLING"
+    assert progress_updates[-1]["status"] == "DONE"
+    assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
 
     assert mock_mlc.call_count == 1
 
     # Check that the files were downloaded
-    download_path = get_app_data_path() / "models" / \
-        progress_updates[0]["id"]
+    download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
     assert (download_path / "base" / "pytorch_model.bin").exists()
     assert (download_path / "base" / "config.json").exists()
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
 
+    # Assert that functions were called with the correct arguments
+    mock_get_file_sizes.assert_called_with(MODEL_URL, "config.json")
+    mock_get_hf_repo_info.assert_called_with("meta-llama/Meta-Llama-3-8B")
+    mock_mlc.assert_called_with(
+        download_path / "base", download_path / "INT4", Quantization.INT4
+    )
+
     clear_path(download_path)
 
 
 @pytest.mark.asyncio
-async def test_complete_partial_installation_of_single_model(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_complete_partial_installation_of_single_model(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Write one of the files to simulate a partial download
@@ -161,8 +202,7 @@ async def test_complete_partial_installation_of_single_model(standard_aiohttp_ge
         assert mock_download_file.call_count == 1
 
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / \
-            progress_updates[0]["id"]
+        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
 
@@ -173,14 +213,18 @@ async def test_complete_partial_installation_of_single_model(standard_aiohttp_ge
 
 
 @pytest.mark.asyncio
-async def test_skip_download_of_already_downloaded_model(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_skip_download_of_already_downloaded_model(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Write both files to simulate a complete download
@@ -206,8 +250,7 @@ async def test_skip_download_of_already_downloaded_model(standard_aiohttp_get_mo
         assert mock_download_file.call_count == 0
 
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / \
-            progress_updates[0]["id"]
+        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
 
@@ -218,20 +261,22 @@ async def test_skip_download_of_already_downloaded_model(standard_aiohttp_get_mo
 
 
 @pytest.mark.asyncio
-async def test_model_download_returns_progress_in_expected_format(mock_aiohttp_head, mock_headers, mocker):
+async def test_model_download_returns_progress_in_expected_format(
+    mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE)
-        mocked.get(FILE_ONE_URL, status=200,
-                   body=os.urandom(100000000))  # 100 MB
-        mocked.get(FILE_TWO_URL, status=200,
-                   body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_ONE_URL, status=200, body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_TWO_URL, status=200, body=os.urandom(100000000))  # 100 MB
         mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-            {"Content-Length": 100000000})
+            {"Content-Length": 100000000}
+        )
 
         # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
         mock_mlc = mocker.patch(
-            "endpoints.model.install.install.convert_and_quantize", return_value=None)
+            "endpoints.model.install.install.convert_and_quantize", return_value=None
+        )
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -242,13 +287,15 @@ async def test_model_download_returns_progress_in_expected_format(mock_aiohttp_h
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert all(p.keys() == schema["properties"].keys()
-                   for p in progress_updates)
-        assert all(p["progress"] >= 0 and p["progress"]
-                   <= 100 for p in progress_updates)
+        assert all(p.keys() == schema["properties"].keys() for p in progress_updates)
+        assert all(
+            p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates
+        )
         assert len(progress_updates) > 3
-        assert (progress_updates[1]["progress"] >
-                0 and progress_updates[1]["progress"] < 100)
+        assert (
+            progress_updates[1]["progress"] > 0
+            and progress_updates[1]["progress"] < 100
+        )
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
 
@@ -256,19 +303,24 @@ async def test_model_download_returns_progress_in_expected_format(mock_aiohttp_h
 
 
 @pytest.mark.asyncio
-async def test_returns_error_if_not_enough_space_to_download_single_model(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_returns_error_if_not_enough_space_to_download_single_model(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Mock the disk usage function to return a value that is less than the size of the model
-    mocker.patch("psutil.disk_usage", return_value=MagicMock(
-        total=1024, used=1024, free=0))
+    mocker.patch(
+        "psutil.disk_usage", return_value=MagicMock(total=1024, used=1024, free=0)
+    )
 
     # Prepare JSON streaming responses as they would be sent from the generator
     progress_stream = install_generator(MODEL_URL, manager)
@@ -278,9 +330,9 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(standa
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]['status'] == 'DOWNLOADING'
-    assert progress_updates[-1]['status'] == 'DOWNLOADING'
-    assert progress_updates[-1]['error'] == 'Not enough space to download the model'
+    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[-1]["status"] == "DOWNLOADING"
+    assert progress_updates[-1]["error"] == "Not enough space to download the model"
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -289,22 +341,27 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(standa
 
 
 @pytest.mark.asyncio
-async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
 
     # Mock manager to return bytes remaining for a model in progress
     manager = InstallationManager()
     manager.set_download("000", 1024)
 
     # Mock the disk usage function to return a value that is less than the size of the model
-    mocker.patch("psutil.disk_usage", return_value=MagicMock(
-        total=1024, used=0, free=1024))
+    mocker.patch(
+        "psutil.disk_usage", return_value=MagicMock(total=1024, used=0, free=1024)
+    )
 
     # Prepare JSON streaming responses as they would be sent from the generator
     progress_stream = install_generator(MODEL_URL, manager)
@@ -314,9 +371,9 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]['status'] == 'DOWNLOADING'
-    assert progress_updates[-1]['status'] == 'DOWNLOADING'
-    assert progress_updates[-1]['error'] == 'Not enough space to download the model'
+    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[-1]["status"] == "DOWNLOADING"
+    assert progress_updates[-1]["error"] == "Not enough space to download the model"
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -325,14 +382,18 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 
 
 @pytest.mark.asyncio
-async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_only_converts_and_quantizes_single_model_at_a_time(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Mock a conversion in progress
@@ -340,7 +401,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aioht
     manager.current_conversion = {
         "model_path": "000",
         "quantization": "INT4",
-        "compressed_size": 1024
+        "compressed_size": 1024,
     }
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -353,20 +414,24 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aioht
 
         # When status switches to installing, check that the conversion is in the queue
         if progress_updates[-1]["status"] == "INSTALLING":
-            assert manager.conversion_queue[0]["model_path"] == get_app_data_path(
-            ) / "models" / ID
+            assert (
+                manager.conversion_queue[0]["model_path"]
+                == get_app_data_path() / "models" / ID
+            )
 
             # Wait 5 seconds and check that conversion is still in the queue
             await asyncio.sleep(5)
 
-            assert manager.conversion_queue[0]["model_path"] == get_app_data_path(
-            ) / "models" / ID
+            assert (
+                manager.conversion_queue[0]["model_path"]
+                == get_app_data_path() / "models" / ID
+            )
 
             # Clear current conversion
             manager.complete_conversion()
 
-    assert progress_updates[0]['status'] == 'DOWNLOADING'
-    assert progress_updates[-1]['status'] == 'DONE'
+    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[-1]["status"] == "DONE"
     assert mock_mlc.call_count == 1
 
     # Check that queue is empty
@@ -376,14 +441,18 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(standard_aioht
 
 
 @pytest.mark.asyncio
-async def test_skips_conversion_and_quantization_of_already_converted_model(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_skips_conversion_and_quantization_of_already_converted_model(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Write both files to simulate a complete download
@@ -408,8 +477,8 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(stan
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]['status'] == 'DOWNLOADING'
-    assert progress_updates[-1]['status'] == 'DONE'
+    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[-1]["status"] == "DONE"
     assert mock_mlc.call_count == 0  # Conversion and quantization should be skipped
 
     # Check that queue is empty
@@ -419,7 +488,9 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(stan
 
 
 @pytest.mark.asyncio
-async def test_returns_error_if_model_weights_are_not_in_expected_format(mock_aiohttp_head, mock_headers, mocker):
+async def test_returns_error_if_model_weights_are_not_in_expected_format(
+    mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
         # Change API response to not have the correct pytorch_model.bin file
@@ -431,14 +502,15 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(mock_ai
             ]
         }
         mocked.get(HF_API_URL, status=200, payload=API_RESPONSE)
-        mocked.get(FILE_TWO_URL, status=200,
-                   body=MOCK_FILE_TWO_DATA)
+        mocked.get(FILE_TWO_URL, status=200, body=MOCK_FILE_TWO_DATA)
         mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-            {"Content-Length": 1024})
+            {"Content-Length": 1024}
+        )
 
         # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
         mock_mlc = mocker.patch(
-            "endpoints.model.install.install.convert_and_quantize", return_value=None)
+            "endpoints.model.install.install.convert_and_quantize", return_value=None
+        )
         manager = InstallationManager()
 
         # Write both files to simulate a complete download
@@ -455,8 +527,10 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(mock_ai
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert progress_updates[-1]["error"] == f"Unsupported model format for {
-            download_path}"
+        assert (
+            progress_updates[-1]["error"]
+            == f"Unsupported model format for {download_path}"
+        )
 
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
@@ -465,14 +539,18 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(mock_ai
 
 
 @pytest.mark.asyncio
-async def test_returns_error_if_not_enough_space_to_convert_and_quantize(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -485,10 +563,14 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(standar
 
         if progress_updates[-1]["status"] == "INSTALLING":
             # Mock the disk usage function to return a value that is less than the size of the model
-            mocker.patch("psutil.disk_usage", return_value=MagicMock(
-                total=1024, used=0, free=0))
+            mocker.patch(
+                "psutil.disk_usage", return_value=MagicMock(total=1024, used=0, free=0)
+            )
 
-    assert progress_updates[-1]["error"] == "Not enough space or memory to convert and quantize the model"
+    assert (
+        progress_updates[-1]["error"]
+        == "Not enough space or memory to convert and quantize the model"
+    )
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -497,19 +579,25 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(standar
 
 
 @pytest.mark.asyncio
-async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Mock the disk usage function to return a value that is less than the size of the model
-    mocker.patch("psutil.virtual_memory", return_value=MagicMock(
-        total=1024, used=1024, available=0))
+    mocker.patch(
+        "psutil.virtual_memory",
+        return_value=MagicMock(total=1024, used=1024, available=0),
+    )
 
     # Prepare JSON streaming responses as they would be sent from the generator
     progress_stream = install_generator(MODEL_URL, manager)
@@ -519,7 +607,10 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(standa
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[-1]["error"] == "Not enough space or memory to convert and quantize the model"
+    assert (
+        progress_updates[-1]["error"]
+        == "Not enough space or memory to convert and quantize the model"
+    )
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -528,14 +619,18 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(standa
 
 
 @pytest.mark.asyncio
-async def test_completion_of_conversion_and_quantization_returns_status_transition(standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker):
+async def test_completion_of_conversion_and_quantization_returns_status_transition(
+    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mock_uuid, mocker
+):
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024})
+        {"Content-Length": 1024}
+    )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None)
+        "endpoints.model.install.install.convert_and_quantize", return_value=None
+    )
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -562,12 +657,12 @@ def test_get_hf_name_for_url():
     urls = [
         "https://huggingface.co/meta-llama/Meta-Llama-3-8B",
         "https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5",
-        "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0"
+        "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0",
     ]
     expected_names = [
         "meta-llama/Meta-Llama-3-8B",
         "openbmb/MiniCPM-Llama3-V-2_5",
-        "stabilityai/stable-diffusion-xl-base-1.0"
+        "stabilityai/stable-diffusion-xl-base-1.0",
     ]
 
     for url, expected_name in zip(urls, expected_names):
@@ -611,15 +706,14 @@ def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_
                 FileInfo("config.json", 1024),
             ],
             "local": [],
-        }
+        },
     ]
     expected_outcomes = [
         [],
         [FileInfo("config.json", 1024)],
         [FileInfo("config.json", 1024)],
-        [FileInfo("pytorch_model.bin", 1024), FileInfo("config.json", 1024)]
+        [FileInfo("pytorch_model.bin", 1024), FileInfo("config.json", 1024)],
     ]
 
     for case, expected_outcome in zip(cases, expected_outcomes):
-        assert get_files_to_download(
-            case["remote"], case["local"]) == expected_outcome
+        assert get_files_to_download(case["remote"], case["local"]) == expected_outcome

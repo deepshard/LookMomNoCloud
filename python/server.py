@@ -8,13 +8,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from endpoints.sysinfo import sysinfo_generator
-from endpoints.model.install import install_generator, InstallationManager
-from endpoints.model.run import run_models_generator
-from endpoints.model.delete import delete_model_handler
-from endpoints.model.stop import stop_model_handler
-from endpoints.highlights import get_highlights
-from endpoints.new import get_new
+from endpoints import (
+    sysinfo_generator,
+    delete_model_handler,
+    install_generator,
+    run_models_generator,
+    stop_model_handler,
+    get_highlights,
+    get_new,
+)
+from endpoints.model.install import InstallationManager
 from utils import get_app_data_path
 from db import db
 
@@ -39,8 +42,11 @@ async def init_db():
         await db.execute_raw("SELECT * FROM runningmodels")
     except Exception:
         logger.info(f"Running migrations")
-        subprocess.run(["bunx", "prisma", "db", "push",
-                       "--schema", "python/prisma/schema.prisma"], check=True)
+        subprocess.run(
+            ["bunx", "prisma", "db", "push", "--schema",
+                "python/prisma/schema.prisma"],
+            check=True,
+        )
 
     try:
         yield
@@ -51,10 +57,12 @@ async def init_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global installation_manager
     installation_manager = InstallationManager()
 
     async with init_db():
         yield
+
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
@@ -70,9 +78,9 @@ app.add_middleware(
 async def sysinfo():
     response = StreamingResponse(
         sysinfo_generator(), media_type="text/event-stream")
-    response.headers['Content-Type'] = 'text/event-stream'
-    response.headers['Cache-Control'] = 'no-cache'
-    response.headers['Connection'] = 'keep-alive'
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
     return response
 
 
@@ -94,10 +102,8 @@ async def install_model(request: Request):
     try:
         schema = {
             "type": "object",
-            "properties": {
-                "url": {"type": "string"}
-            },
-            "required": ["url"]
+            "properties": {"url": {"type": "string"}},
+            "required": ["url"],
         }
         validate(instance=request_body, schema=schema)
         model_download_url = request_body["url"]
@@ -106,8 +112,10 @@ async def install_model(request: Request):
             status_code=400, detail=f"Invalid request body: {e}")
 
     # Start the model installation process
-    response = StreamingResponse(install_generator(
-        model_download_url, installation_manager), media_type="text/event-stream")
+    response = StreamingResponse(
+        install_generator(model_download_url, installation_manager),
+        media_type="text/event-stream",
+    )
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -122,10 +130,8 @@ async def run_model(request: Request):
     try:
         schema = {
             "type": "object",
-            "properties": {
-                "model_ids": {"type": "array", "items": {"type": "string"}}
-            },
-            "required": ["model_ids"]
+            "properties": {"model_ids": {"type": "array", "items": {"type": "string"}}},
+            "required": ["model_ids"],
         }
         validate(instance=request_body, schema=schema)
         model_ids = request_body["model_ids"]
@@ -134,8 +140,10 @@ async def run_model(request: Request):
             status_code=400, detail=f"Invalid request body: {e}")
 
     # Start the model running process
-    response = StreamingResponse(run_models_generator(
-        model_ids, installation_manager), media_type="text/event-stream")
+    response = StreamingResponse(
+        run_models_generator(model_ids, installation_manager),
+        media_type="text/event-stream",
+    )
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -152,9 +160,9 @@ async def stop_model(request: Request):
             "type": "object",
             "properties": {
                 "model_id": {"type": "string"},
-                "instance": {"type": "integer"}
+                "instance": {"type": "integer"},
             },
-            "required": ["model_id", "instance"]
+            "required": ["model_id", "instance"],
         }
         validate(instance=request_body, schema=schema)
         stop_model_handler(request_body["model_id"], request_body["instance"])
@@ -175,6 +183,8 @@ async def delete_model(model_id: str):
 
     return {}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8899)

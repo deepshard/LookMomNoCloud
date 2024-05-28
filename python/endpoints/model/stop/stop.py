@@ -9,10 +9,14 @@ async def stop_model_handler(model_id: str, instance: int):
     logger.info(f"Stopping model {model_id} instance {instance}")
 
     # Get the model instance from the database
-    model_db_info = await db.runningmodels.find_first(where={"id": model_id, "instance": instance})
+    model_db_info = await db.runningmodels.find_first(
+        where={"id": model_id, "instance": instance}
+    )
     if model_db_info is None:
-        logger.error(f"""Model {model_id} instance {
-                     instance} not found in database""")
+        logger.error(
+            f"""Model {model_id} instance {
+                     instance} not found in database"""
+        )
         raise ValueError(f"Model {model_id} instance {instance} not found")
 
     # Stop the model instance

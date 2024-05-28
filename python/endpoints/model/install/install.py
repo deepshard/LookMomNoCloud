@@ -64,8 +64,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
             raise ValueError(f"Missing rfilename for {file}")
 
         tasks.append(
-            get_file_size_hf(
-                f"https://huggingface.co/{model_name}", file["rfilename"])
+            get_file_size_hf(f"https://huggingface.co/{model_name}", file["rfilename"])
         )
 
     # Get the file sizes
@@ -221,7 +220,9 @@ def convert_and_quantize(
     )
 
 
-async def install_generator(model_id: str, model_url: str, installation_manager: InstallationManager):
+async def install_generator(
+    model_id: str, model_url: str, installation_manager: InstallationManager
+):
     """
     Downloads and installs a model from a given URL.
 
@@ -247,8 +248,12 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
 
     # Send initial install progress
     logger.info(f"Starting install for {model_url}")
-    initial_progress = {"id": model_id,
-                        "status": "DOWNLOADING", "progress": 0, "error": None}
+    initial_progress = {
+        "id": model_id,
+        "status": "DOWNLOADING",
+        "progress": 0,
+        "error": None,
+    }
     yield f"data: {json.dumps(initial_progress)}\n\n"
 
     # Get files to download
@@ -268,8 +273,7 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
         return
 
     # Check that there is enough space to download the model
-    _, disk_space, total_bytes_remaining = get_space_check_info(
-        installation_manager)
+    _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
     if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
@@ -303,8 +307,7 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
             download_tasks = asyncio.gather(*tasks)
 
             while not download_tasks.done():
-                progress = int(
-                    100 * progress_tracker["downloaded_bytes"] / total_size)
+                progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
                 installation_manager.set_download(
                     model_id, total_size - progress_tracker["downloaded_bytes"]
                 )
@@ -347,13 +350,16 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
     quantization = get_base_quantization_decision(install_path)
-    model_size, compressed_size = get_model_size_info(
-        install_path, quantization)
+    model_size, compressed_size = get_model_size_info(install_path, quantization)
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
     )
-    progress_event = {"id": model_id, "status": "INSTALLING",
-                      "progress": 100, "error": None}
+    progress_event = {
+        "id": model_id,
+        "status": "INSTALLING",
+        "progress": 100,
+        "error": None,
+    }
     yield f"data: {json.dumps(progress_event)}\n\n"
 
     while not installation_manager.is_models_conversion_turn(model_dir, quantization):
@@ -363,10 +369,13 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
 
     # Return early if the quantization is alrady built
     if does_quantization_exist(model_id, quantization):
-        logger.info(
-            f"Conversion and quantization already done for {model_dir}")
-        progress_event = {"id": model_id, "status": "DONE",
-                          "progress": 100, "error": None}
+        logger.info(f"Conversion and quantization already done for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "DONE",
+            "progress": 100,
+            "error": None,
+        }
         yield f"data: {json.dumps(progress_event)}\n\n"
         installation_manager.complete_conversion()
         return
@@ -389,8 +398,7 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
         installation_manager
     )
     if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):
-        logger.info(
-            f"Not enough space or memory to convert and quantize {model_dir}")
+        logger.info(f"Not enough space or memory to convert and quantize {model_dir}")
         progress_event = {
             "id": model_id,
             "status": "INSTALLING",
@@ -406,8 +414,7 @@ async def install_generator(model_id: str, model_url: str, installation_manager:
     convert_and_quantize(install_path, quant_path, quantization)
 
     logger.info(f"Conversion and quantization complete for {model_dir}")
-    progress_event = {"id": model_id, "status": "DONE",
-                      "progress": 100, "error": None}
+    progress_event = {"id": model_id, "status": "DONE", "progress": 100, "error": None}
     yield f"data: {json.dumps(progress_event)}\n\n"
     installation_manager.complete_conversion()
     return

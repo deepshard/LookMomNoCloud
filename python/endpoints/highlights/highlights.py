@@ -60,7 +60,7 @@ data = [
         "name": "Yi-1.5-34B-Chat",
         "params": 34_400_000_000,
         "description": "01 AI's 34.4B parameter model for chat-based question answering.",
-    }
+    },
 ]
 
 

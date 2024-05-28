@@ -18,7 +18,7 @@ data = [
         "name": "whisper-large-v3",
         "params": 1_540_000_000,
         "description": "OpenAI's 1.54B parameter model for automatic speech recognition.",
-    }
+    },
 ]
 
 

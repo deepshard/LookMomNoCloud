@@ -18,7 +18,7 @@ export const useStore = create<State>((set) => ({
   setHighlights: (highlights) => set({ highlights }),
   downloads: {},
   setDownloads: (model) => set((state) => {
-    let highlights = state.highlights.map((highlight) => {
+    const highlights = state.highlights.map((highlight) => {
       if (highlight.id === model.id) {
         return model
       }

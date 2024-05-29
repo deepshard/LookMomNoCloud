@@ -56,6 +56,7 @@ class SystemInfo:
     resources: SystemResources
 
 
+@dataclass
 class Model:
     id: str
     url: str

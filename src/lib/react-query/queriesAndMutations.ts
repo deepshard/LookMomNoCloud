@@ -1,9 +1,10 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getHighlights } from "../api/general";
+import { getHighlights } from "../../api/general";
 
 export const useGetHighlights = () => {
   return useQuery({
     queryKey: ["highlights"],
     queryFn: () => getHighlights(),
+    retry: 3,
   });
 };

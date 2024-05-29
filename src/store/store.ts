@@ -17,6 +17,18 @@ export const useStore = create<State>((set) => ({
   highlights: [],
   setHighlights: (highlights) => set({ highlights }),
   downloads: {},
-  setDownloads: (model) => set((state) => ({ downloads: { ...state.downloads, [model.id]: model } })),
+  setDownloads: (model) => set((state) => {
+    let highlights = state.highlights.map((highlight) => {
+      if (highlight.id === model.id) {
+        return model
+      }
+      return highlight
+    })
+
+    return { 
+      downloads: { ...state.downloads, [model.id]: model }, 
+      highlights
+    }
+  }),
   clearData: () => set({ sysInfo: null, highlights: [] }), // Method to clear all data
 }));

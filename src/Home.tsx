@@ -1,83 +1,33 @@
 import ModelWidget from "./component/ModelWidget";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import DiscoverButton from "./component/common/DiscoverButton";
 import SysInfo from "./component/SysInfo";
-import { TModel } from "./types/schemas";
-
-const MODEL_LIST: TModel[] = [
-  {
-    id: "00000000-0000-0000-0000-000000000000",
-    instance: 0,
-    url: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
-    status: "NOT_INSTALLED",
-    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
-    author: "Meta",
-    name: "Llama 7B",
-    params: 0,
-  },
-  {
-    id: "00000000-0000-0000-0000-000000000001",
-    instance: 1,
-    url: "https://huggingface.co/abacusai/Smaug-Llama-3-70B-Instruct",
-    status: "NOT_INSTALLED",
-    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
-    author: "Abacus AI",
-    name: "Smaug-Llama-3-70B-Instruct",
-    params: 0,
-  },
-  {
-    id: "00000000-0000-0000-0000-000000000002",
-    instance: 2,
-    url: "https://huggingface.co/google/paligemma-3b-pt-224",
-    status: "STOPPED",
-    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
-    author: "google",
-    name: "paligemma-3b-pt-224",
-    params: 0,
-  },
-  {
-    id: "00000000-0000-0000-0000-000000000003",
-    instance: 3,
-    url: "https://huggingface.co/CohereForAI/aya-23-8B",
-    status: "STOPPED",
-    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
-    author: "Cohere",
-    name: "aya-23-8B",
-    params: 0,
-  },
-  {
-    id: "00000000-0000-0000-0000-000000000004",
-    instance: 4,
-    url: "https://huggingface.co/openai-community/gpt2",
-    status: "STOPPED",
-    backgroundImage: process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png",
-    author: "OpenAI",
-    name: "gpt2",
-    params: 0,
-  },
-  
-];
+import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
+import { useEffect } from "react";
+import { useStore } from "./store/store";
 
 export default function Home() {
-  const llamaImage =
-    process.env.NODE_ENV === "development"
-      ? "/assets/images/llama1.png"
-      : "../../renderer/main_window/assets/images/llama1.png";
-  const truffleHardwareImage =
-    process.env.NODE_ENV === "development"
-      ? "/assets/icons/truffle-hardware.svg"
-      : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
+  const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
+  const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
+
+  const { data: highlights, } = useGetHighlights();
+  const { highlights: storeHighlights, setHighlights } = useStore();
+
+  useEffect(() => {
+    if (highlights) {
+      setHighlights(highlights);
+    }
+  }, [highlights]);
 
   return (
     <div className="snap-y snap-mandatory">
       <div className="home-layout">
         <h1 className="h1-semibold mb-2">Welcome, Peter</h1>
         <div className="flex gap-4">
-          {MODEL_LIST.map((model) => (
+          {storeHighlights?.map((model) => (
             <ModelWidget model={model} key={model.id} />
           ))}
         </div>
@@ -105,63 +55,21 @@ export default function Home() {
                 dotListClass="discover-carousel-dots"
               >
                 <div className="w-full h-[158px] relative overflow-hidden ">
-                  <img
-                    src={llamaImage}
-                    alt=""
-                    className="blurred-bg-img backdrop-blur-md"
-                  />
+                  <img src={llamaImage} alt="" className="blurred-bg-img backdrop-blur-md" />
                   <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                   <div className="absolute top-0 left-0 p-[16px]">
-                    <img
-                      src={llamaImage}
-                      alt=""
-                      className="discover-model-img w-[44px] h-[44px] rounded-md"
-                    />
-                    <h3 className="base-regular mt-[10px] mb-[3px]">
-                      DeepSeek
-                    </h3>
-                    <p className="break-words line-clamp-2 base-regular">
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                    </p>
+                    <img src={llamaImage} alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                    <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
+                    <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
                   </div>
                 </div>
                 <div className="w-full h-[158px] relative overflow-hidden ">
-                  <img
-                    src={llamaImage}
-                    alt=""
-                    className="blurred-bg-img backdrop-blur-md"
-                  />
+                  <img src={llamaImage} alt="" className="blurred-bg-img backdrop-blur-md" />
                   <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                   <div className="absolute top-0 left-0 p-[16px]">
-                    <img
-                      src={llamaImage}
-                      alt=""
-                      className="discover-model-img w-[44px] h-[44px] rounded-md"
-                    />
-                    <h3 className="base-regular mt-[10px] mb-[3px]">
-                      DeepSeek
-                    </h3>
-                    <p className="break-words line-clamp-2 base-regular">
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                    </p>
+                    <img src={llamaImage} alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                    <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
+                    <p className="break-words line-clamp-2 base-regular">lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur</p>
                   </div>
                 </div>
               </Carousel>
@@ -180,9 +88,7 @@ export default function Home() {
                     <div className="h-[38px] w-[38px] bg-[#457efb] rounded-md"></div>
                   </div>
                 </div>
-                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">
-                  App
-                </p>
+                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">App</p>
               </div>
               <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
                 <div className="grid grid-cols-2 gap-[21px] w-full h-full p-5">
@@ -195,9 +101,7 @@ export default function Home() {
                     <div className="h-[38px] w-[38px] bg-[#457efb] rounded-md"></div>
                   </div>
                 </div>
-                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">
-                  Models
-                </p>
+                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
               </div>
             </div>
           </div>
@@ -228,17 +132,10 @@ export default function Home() {
               <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] ">
                 <div className="flex flex-col w-full h-full">
                   <div className="w-full h-full flex justify-center flex-1 ">
-                    <img
-                      src={truffleHardwareImage}
-                      alt=""
-                      className="self-end"
-                    />
+                    <img src={truffleHardwareImage} alt="" className="self-end" />
                   </div>
                   <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                    <Button
-                      type="primary"
-                      className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white"
-                    >
+                    <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
                       <span className="base-medium ">Pre Order Truffle–1</span>
                     </Button>
                   </div>

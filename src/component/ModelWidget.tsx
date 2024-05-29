@@ -2,32 +2,32 @@ import React, { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
-import useInstallModel from "../hooks/useInstallModel";
+import useInstallModel from "../hooks/installModel/useInstallModel";
 
 interface ModelWidgetProps {
   model: TModel;
 }
 
-const ModelWidget = ({ model, }: ModelWidgetProps) => {
+const ModelWidget = ({ model }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
 
-  const {installModel, disconnect} = useInstallModel();
+  const { installModel, disconnect } = useInstallModel();
 
   useEffect(() => {
     return () => {
       disconnect();
-    }
-  }, [])
+    };
+  }, []);
 
   const handleAction = () => {
     switch (model.status) {
       case "DOWNLOADING":
         console.log("TODO: downloading");
         break;
-      case "NOT_INSTALLED":
+      case "NOT_DOWNLOADED":
         console.log("TODO: not-installed");
         installModel(model);
         break;
@@ -40,10 +40,7 @@ const ModelWidget = ({ model, }: ModelWidgetProps) => {
       default:
         break;
     }
-  }
-
-
-
+  };
 
   const getWidgetButton = () => {
     switch (model.status) {
@@ -60,7 +57,7 @@ const ModelWidget = ({ model, }: ModelWidgetProps) => {
             />
           </div>
         );
-      case "NOT_INSTALLED":
+      case "NOT_DOWNLOADED":
         return (
           <div
             onClick={() => {
@@ -68,11 +65,7 @@ const ModelWidget = ({ model, }: ModelWidgetProps) => {
             }}
             className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
           >
-            <img
-              src={downloadIcon}
-              alt=""
-              className="h-[32.73px] w-[32.73px]"
-            />
+            <img src={downloadIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
       case "STOPPED":

@@ -49,6 +49,8 @@
   "license": "MIT",
   "dependencies": {
     "@tanstack/react-query": "^5.37.1",
+    "@testing-library/react": "^15.0.7",
+    "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.4",
     "@types/pidusage": "^2.0.5",
     "@types/uuid": "^9.0.8",

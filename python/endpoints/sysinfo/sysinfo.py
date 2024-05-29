@@ -17,7 +17,7 @@ from utils import get_app_data_path, get_disk_usage
 from db import db
 
 
-CHANGE_THRESHOLD = 2
+CHANGE_THRESHOLD = 3
 
 
 async def get_sysinfo() -> SystemInfo:

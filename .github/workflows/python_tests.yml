@@ -21,9 +21,6 @@ jobs:
           python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly
           pip install -r requirements.txt
 
-      - name: Install stress-ng
-        run: sudo apt-get install -y stress-ng
-
       - name: Create test database
         run: |
           cd python

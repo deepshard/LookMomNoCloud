@@ -57,12 +57,8 @@ FILE_ONE_URL = (
 FILE_TWO_URL = (
     "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/config.json"
 )
-FILE_THREE_URL = (
-    "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/onnx/onnx_model.onnx"
-)
-FILE_FOUR_URL = (
-    "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/tf_model/tf_model.pb"
-)
+FILE_THREE_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/onnx/onnx_model.onnx"
+FILE_FOUR_URL = "https://huggingface.co/meta-llama/Meta-Llama-3-8B/resolve/main/tf_model/tf_model.pb"
 MOCK_API_RESPONSE = {
     "siblings": [
         {
@@ -76,7 +72,7 @@ MOCK_API_RESPONSE = {
         },
         {
             "rfilename": "tf_model/tf_model.pb",
-        }
+        },
     ]
 }
 MOCK_FILE_ONE_DATA = os.urandom(1024)
@@ -154,8 +150,7 @@ async def test_install_single_model_from_scratch(
     assert progress_updates[0]["status"] == "DOWNLOADING"
     assert progress_updates[-2]["status"] == "INSTALLING"
     assert progress_updates[-1]["status"] == "DONE"
-    assert all(p["progress"] >= 0 and p["progress"]
-               <= 100 for p in progress_updates)
+    assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
 
     assert mock_mlc.call_count == 1
 
@@ -214,8 +209,7 @@ async def test_complete_partial_installation_of_single_model(
         assert mock_download_file.call_count == 3
 
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / \
-            progress_updates[0]["id"]
+        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
         assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
@@ -273,8 +267,7 @@ async def test_skip_download_of_already_downloaded_model(
         assert mock_download_file.call_count == 0
 
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / \
-            progress_updates[0]["id"]
+        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
         assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
@@ -293,14 +286,10 @@ async def test_model_download_returns_progress_in_expected_format(
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE)
-        mocked.get(FILE_ONE_URL, status=200,
-                   body=os.urandom(100000000))  # 100 MB
-        mocked.get(FILE_TWO_URL, status=200,
-                   body=os.urandom(100000000))  # 100 MB
-        mocked.get(FILE_THREE_URL, status=200,
-                   body=os.urandom(100000000))  # 100 MB
-        mocked.get(FILE_FOUR_URL, status=200,
-                   body=os.urandom(100000000))
+        mocked.get(FILE_ONE_URL, status=200, body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_TWO_URL, status=200, body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_THREE_URL, status=200, body=os.urandom(100000000))  # 100 MB
+        mocked.get(FILE_FOUR_URL, status=200, body=os.urandom(100000000))
         mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
             {"Content-Length": 100000000}
         )
@@ -319,8 +308,7 @@ async def test_model_download_returns_progress_in_expected_format(
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert all(p.keys() == schema["properties"].keys()
-                   for p in progress_updates)
+        assert all(p.keys() == schema["properties"].keys() for p in progress_updates)
         assert all(
             p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates
         )
@@ -782,20 +770,25 @@ def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_
                 FileInfo("tf_model/tf_model.pb", 1024),
             ],
             "local": [],
-        }
+        },
     ]
     expected_outcomes = [
         [],
         [FileInfo("config.json", 1024)],
         [FileInfo("config.json", 1024)],
         [FileInfo("pytorch_model.bin", 1024), FileInfo("config.json", 1024)],
-        [FileInfo("onnx/onnx_model.onnx", 1024),
-         FileInfo("tf_model/tf_model.pb", 1024)],
+        [
+            FileInfo("onnx/onnx_model.onnx", 1024),
+            FileInfo("tf_model/tf_model.pb", 1024),
+        ],
         [],
-        [FileInfo("pytorch_model.bin", 1024), FileInfo("config.json", 1024),
-         FileInfo("onnx/onnx_model.onnx", 1024), FileInfo("tf_model/tf_model.pb", 1024)]
+        [
+            FileInfo("pytorch_model.bin", 1024),
+            FileInfo("config.json", 1024),
+            FileInfo("onnx/onnx_model.onnx", 1024),
+            FileInfo("tf_model/tf_model.pb", 1024),
+        ],
     ]
 
     for case, expected_outcome in zip(cases, expected_outcomes):
-        assert get_files_to_download(
-            case["remote"], case["local"]) == expected_outcome
+        assert get_files_to_download(case["remote"], case["local"]) == expected_outcome

@@ -72,6 +72,7 @@ class Model:
 
 # Request Schemas
 class InstallRequest(BaseModel):
+    id: str
     url: str
 
 

@@ -1,0 +1,32 @@
+name: Python tests
+
+on: [pull_request]
+
+jobs:
+  python_tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:${{ github.workspace }}/truffle.test.db"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: |
+          cd python
+          python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly
+          pip install -r requirements.txt
+
+      - name: Create test database
+        run: |
+          cd python
+          prisma db push --schema ./prisma/schema.prisma
+
+      - name: Run tests
+        run: |
+          cd python
+          PYTHONPATH="." pytest -s --maxfail=1 -v tests/

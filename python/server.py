@@ -27,7 +27,6 @@ installation_manager = None
 
 @asynccontextmanager
 async def init_db():
-
     if not db.is_connected():
         logger.info(f"Connecting to DB at: {db._datasource}")
         await db.connect()
@@ -57,8 +56,7 @@ app.add_middleware(
 
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response = StreamingResponse(
-        sysinfo_generator(), media_type="text/event-stream")
+    response = StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"

@@ -52,7 +52,8 @@ class SystemResources:
 class SystemInfo:
     os: Literal["MAC", "LINUX"]
     resources: SystemResources
-      
+
+
 class Model:
     id: str
     url: str

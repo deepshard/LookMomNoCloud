@@ -7,11 +7,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
-from endpoints.sysinfo import sysinfo_generator
-from endpoints.model.install import install_generator, InstallationManager
-from endpoints.model.run import run_models_generator
-from endpoints.model.stop import stop_model_handler
-from endpoints.model.delete import delete_model_handler
+from endpoints import (
+    sysinfo_generator,
+    delete_model_handler,
+    install_generator,
+    run_models_generator,
+    stop_model_handler,
+    get_highlights,
+    get_new,
+)
+from endpoints.model.install import InstallationManager
 from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
 from db import db
@@ -79,7 +84,12 @@ async def sysinfo():
 
 @app.get("/highlights")
 async def highlights():
-    pass
+    return get_highlights()
+
+
+@app.get("/new")
+async def new():
+    return get_new()
 
 
 @app.post("/model/install", response_class=StreamingResponse)
@@ -89,7 +99,6 @@ async def install_model(request: InstallRequest):
         install_generator(request.url, installation_manager),
         media_type="text/event-stream",
     )
-    response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
     return response
@@ -102,7 +111,6 @@ async def run_model(request: RunRequest):
         run_models_generator(request.ids, installation_manager),
         media_type="text/event-stream",
     )
-    response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
     return response

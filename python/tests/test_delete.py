@@ -1,6 +1,6 @@
 import os
 import pytest
-from endpoints.model.delete import delete_model_handler
+from endpoints import delete_model_handler
 from utils import get_app_data_path
 
 # Test the delete model logic

@@ -4,6 +4,7 @@ import aiohttp
 from aiofiles import open as aiofiles_open
 import asyncio
 import psutil
+from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
@@ -21,11 +22,6 @@ from utils import (
     get_usable_memory,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
-
-
-def get_id_for_url(url: str) -> str:
-    # TODO: Change this when HF scraping API is ready
-    return "123456"
 
 
 def get_url_type(url: str) -> RepoType:
@@ -224,7 +220,9 @@ def convert_and_quantize(
     )
 
 
-async def install_generator(model_url: str, installation_manager: InstallationManager):
+async def install_generator(
+    model_id: str, model_url: str, installation_manager: InstallationManager
+):
     """
     Downloads and installs a model from a given URL.
 
@@ -245,13 +243,17 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
         }
     """
 
-    id = get_id_for_url(model_url)
-    model_dir = get_app_data_path() / "models" / id
+    model_dir = get_app_data_path() / "models" / model_id
     install_path = model_dir / "base"
 
     # Send initial install progress
     logger.info(f"Starting install for {model_url}")
-    initial_progress = {"id": id, "status": "DOWNLOADING", "progress": 0, "error": None}
+    initial_progress = {
+        "id": model_id,
+        "status": "DOWNLOADING",
+        "progress": 0,
+        "error": None,
+    }
     yield f"data: {json.dumps(initial_progress)}\n\n"
 
     # Get files to download
@@ -262,7 +264,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
         total_size = sum([file.size for file in files_to_download])
     except Exception as e:
         progress_event = {
-            "id": id,
+            "id": model_id,
             "status": "DOWNLOADING",
             "progress": 0,
             "error": str(e),
@@ -275,7 +277,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
-            "id": id,
+            "id": model_id,
             "status": "DOWNLOADING",
             "progress": 0,
             "error": "Not enough space to download the model",
@@ -285,7 +287,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
 
     try:
         # Mark as downloading and send to InstallSystemManager
-        installation_manager.set_download(id, total_size)
+        installation_manager.set_download(model_id, total_size)
 
         # Start downloading files
         logger.info(f"Downloading {len(files_to_download)} files")
@@ -307,14 +309,14 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             while not download_tasks.done():
                 progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
                 installation_manager.set_download(
-                    id, total_size - progress_tracker["downloaded_bytes"]
+                    model_id, total_size - progress_tracker["downloaded_bytes"]
                 )
 
                 # Send progress event
                 if (progress - last_progress) >= 1:
                     last_progress = progress
                     progress_event = {
-                        "id": id,
+                        "id": model_id,
                         "status": "DOWNLOADING",
                         "progress": progress,
                         "error": None,
@@ -327,11 +329,11 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
             await download_tasks
 
         # Clear download from InstallSystemManager
-        installation_manager.clear_download(id)
+        installation_manager.clear_download(model_id)
     except Exception as e:
         logger.error(f"Failed to download {model_dir}: {str(e)}")
         progress_event = {
-            "id": id,
+            "id": model_id,
             "status": "DOWNLOADING",
             "progress": 0,
             "error": str(e),
@@ -352,7 +354,12 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
     )
-    progress_event = {"id": id, "status": "INSTALLING", "progress": 100, "error": None}
+    progress_event = {
+        "id": model_id,
+        "status": "INSTALLING",
+        "progress": 100,
+        "error": None,
+    }
     yield f"data: {json.dumps(progress_event)}\n\n"
 
     while not installation_manager.is_models_conversion_turn(model_dir, quantization):
@@ -361,9 +368,14 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     installation_manager.remove_from_conversion_queue()
 
     # Return early if the quantization is alrady built
-    if does_quantization_exist(id, quantization):
+    if does_quantization_exist(model_id, quantization):
         logger.info(f"Conversion and quantization already done for {model_dir}")
-        progress_event = {"id": id, "status": "DONE", "progress": 100, "error": None}
+        progress_event = {
+            "id": model_id,
+            "status": "DONE",
+            "progress": 100,
+            "error": None,
+        }
         yield f"data: {json.dumps(progress_event)}\n\n"
         installation_manager.complete_conversion()
         return
@@ -372,7 +384,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     if not is_convertable_format(install_path):
         logger.info(f"Unsupported model format for {model_dir}")
         progress_event = {
-            "id": id,
+            "id": model_id,
             "status": "INSTALLING",
             "progress": 100,
             "error": f"Unsupported model format for {install_path}",
@@ -388,7 +400,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):
         logger.info(f"Not enough space or memory to convert and quantize {model_dir}")
         progress_event = {
-            "id": id,
+            "id": model_id,
             "status": "INSTALLING",
             "progress": 100,
             "error": "Not enough space or memory to convert and quantize the model",
@@ -402,7 +414,7 @@ async def install_generator(model_url: str, installation_manager: InstallationMa
     convert_and_quantize(install_path, quant_path, quantization)
 
     logger.info(f"Conversion and quantization complete for {model_dir}")
-    progress_event = {"id": id, "status": "DONE", "progress": 100, "error": None}
+    progress_event = {"id": model_id, "status": "DONE", "progress": 100, "error": None}
     yield f"data: {json.dumps(progress_event)}\n\n"
     installation_manager.complete_conversion()
     return

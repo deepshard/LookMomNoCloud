@@ -14,6 +14,14 @@ class Quantization(Enum):
     INT3 = "INT3"
 
 
+class ModelStatus(Enum):
+    NOT_DOWNLOADED = "NOT_DOWNLOADED"
+    DOWNLOADING = "DOWNLOADING"
+    INSTALLING = "INSTALLING"
+    RUNNING = "RUNNING"
+    STOPPED = "STOPPED"
+
+
 @dataclass
 class FileInfo:
     file: str
@@ -44,3 +52,15 @@ class SystemResources:
 class SystemInfo:
     os: Literal["MAC", "LINUX"]
     resources: SystemResources
+      
+class Model:
+    id: str
+    url: str
+    status: ModelStatus
+    background_image: str
+    author: str
+    name: str
+    params: int
+    description: str
+    instance: int
+    progress: int

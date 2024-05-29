@@ -14,6 +14,8 @@ from endpoints import (
     install_generator,
     run_models_generator,
     stop_model_handler,
+    get_highlights,
+    get_new,
 )
 from endpoints.model.install import InstallationManager
 from utils import get_app_data_path
@@ -64,7 +66,12 @@ async def sysinfo():
 
 @app.get("/highlights")
 async def highlights():
-    pass
+    return get_highlights()
+
+
+@app.get("/new")
+async def new():
+    return get_new()
 
 
 @app.post("/model/install", response_class=StreamingResponse)
@@ -75,17 +82,18 @@ async def install_model(request: Request):
     try:
         schema = {
             "type": "object",
-            "properties": {"url": {"type": "string"}},
-            "required": ["url"],
+            "properties": {"id": {"type": "string"}, "url": {"type": "string"}},
+            "required": ["id", "url"],
         }
         validate(instance=request_body, schema=schema)
+        model_download_id = request_body["id"]
         model_download_url = request_body["url"]
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
 
     # Start the model installation process
     response = StreamingResponse(
-        install_generator(model_download_url, installation_manager),
+        install_generator(model_download_id, model_download_url, installation_manager),
         media_type="text/event-stream",
     )
     response.headers["Content-Type"] = "text/event-stream"

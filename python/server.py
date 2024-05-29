@@ -1,13 +1,29 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import os
-from .sysinfo import sysinfo_generator
-import os
+import subprocess
+from jsonschema import validate, ValidationError
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 from loguru import logger
-from .utils import get_app_data_path
-from .db import db
+from endpoints import (
+    sysinfo_generator,
+    delete_model_handler,
+    install_generator,
+    run_models_generator,
+    stop_model_handler,
+    get_highlights,
+    get_new,
+)
+from endpoints.model.install import InstallationManager
+from utils import get_app_data_path
+from db import db
+
+
+installation_manager = None
+
 
 @asynccontextmanager
 async def init_db():
@@ -22,51 +38,148 @@ async def init_db():
     await db.connect()
 
     try:
+        print("Checking if DB is already migrated")
+        await db.execute_raw("SELECT * FROM runningmodels")
+    except Exception:
+        logger.info(f"Running migrations")
+        subprocess.run(
+            ["bunx", "prisma", "db", "push", "--schema", "python/prisma/schema.prisma"],
+            check=True,
+        )
+
+    try:
         yield
     finally:
         logger.info(f"Disconnecting from DB")
         await db.disconnect()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global installation_manager
+    installation_manager = InstallationManager()
+
     async with init_db():
         yield
 
+
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response =  StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
-    response.headers['Content-Type'] = 'text/event-stream'
-    response.headers['Cache-Control'] = 'no-cache'
-    response.headers['Connection'] = 'keep-alive'
+    response = StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
     return response
 
 
 @app.get("/highlights")
 async def highlights():
-    pass
+    return get_highlights()
 
 
-@app.post("/model/install")
-async def install_model():
-    pass
+@app.get("/new")
+async def new():
+    return get_new()
 
 
-@app.post("/model/run")
-async def run_model():
-    pass
+@app.post("/model/install", response_class=StreamingResponse)
+async def install_model(request: Request):
+    # Validate the request body and get the model URL
+    request_body = await request.json()
+
+    try:
+        schema = {
+            "type": "object",
+            "properties": {"id": {"type": "string"}, "url": {"type": "string"}},
+            "required": ["id", "url"],
+        }
+        validate(instance=request_body, schema=schema)
+        model_download_id = request_body["id"]
+        model_download_url = request_body["url"]
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+
+    # Start the model installation process
+    response = StreamingResponse(
+        install_generator(model_download_id, model_download_url, installation_manager),
+        media_type="text/event-stream",
+    )
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
+    return response
+
+
+@app.post("/model/run", response_class=StreamingResponse)
+async def run_model(request: Request):
+    # Validate the request body and get the model IDs
+    request_body = await request.json()
+
+    try:
+        schema = {
+            "type": "object",
+            "properties": {"model_ids": {"type": "array", "items": {"type": "string"}}},
+            "required": ["model_ids"],
+        }
+        validate(instance=request_body, schema=schema)
+        model_ids = request_body["model_ids"]
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+
+    # Start the model running process
+    response = StreamingResponse(
+        run_models_generator(model_ids, installation_manager),
+        media_type="text/event-stream",
+    )
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
+    return response
 
 
 @app.post("/model/stop")
-async def stop_model():
-    pass
+async def stop_model(request: Request):
+    # Validate the request body and get the model ID + instance number
+    request_body = await request.json()
+
+    try:
+        schema = {
+            "type": "object",
+            "properties": {
+                "model_id": {"type": "string"},
+                "instance": {"type": "integer"},
+            },
+            "required": ["model_id", "instance"],
+        }
+        validate(instance=request_body, schema=schema)
+        stop_model_handler(request_body["model_id"], request_body["instance"])
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request body: {e}")
+
+    return {}
 
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    pass
+    try:
+        delete_model_handler(model_id)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Model directory not found")
+
+    return {}
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8899)

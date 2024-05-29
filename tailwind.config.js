@@ -40,7 +40,6 @@ module.exports = {
         'warning-regular': '#FFD609',
         'warning-light': '#FFD426',
       },
-      }
     },
   },
   plugins: [],

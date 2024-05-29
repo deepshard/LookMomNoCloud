@@ -27,7 +27,6 @@ installation_manager = None
 
 @asynccontextmanager
 async def init_db():
-
     if not db.is_connected():
         logger.info(f"Connecting to DB at: {db._datasource}")
         await db.connect()
@@ -78,7 +77,7 @@ async def new():
 async def install_model(request: InstallRequest):
     # Start the model installation process
     response = StreamingResponse(
-        install_generator(request.url, installation_manager),
+        install_generator(request.id, request.url, installation_manager),
         media_type="text/event-stream",
     )
     response.headers["Cache-Control"] = "no-cache"

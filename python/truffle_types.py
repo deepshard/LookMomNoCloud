@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
+from pydantic import BaseModel
 from typing import List, Dict, Literal
 from uuid import UUID
 
@@ -65,3 +67,17 @@ class Model:
     description: str
     instance: int
     progress: int
+
+
+# Request Schemas
+class InstallRequest(BaseModel):
+    url: str
+
+
+class RunRequest(BaseModel):
+    ids: List[str]
+
+
+class StopRequest(BaseModel):
+    id: str
+    instance: int

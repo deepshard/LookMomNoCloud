@@ -57,7 +57,8 @@ app.add_middleware(
 
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response = StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
+    response = StreamingResponse(
+        sysinfo_generator(), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -78,7 +79,7 @@ async def new():
 async def install_model(request: InstallRequest):
     # Start the model installation process
     response = StreamingResponse(
-        install_generator(request.url, installation_manager),
+        install_generator(request.id, request.url, installation_manager),
         media_type="text/event-stream",
     )
     response.headers["Cache-Control"] = "no-cache"

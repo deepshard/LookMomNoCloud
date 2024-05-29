@@ -40,6 +40,7 @@ const useInstallModel = () => {
                   }
                   // Decode and process the chunk
                   const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
+                  console.log(text);
                   const downloadResponse: Partial<TModel> = JSON.parse(text);
                   setDownloads({
                     ...model,

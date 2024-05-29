@@ -6,5 +6,6 @@ export const useGetHighlights = () => {
     queryKey: ["highlights"],
     queryFn: () => getHighlights(),
     retry: 3,
+    retryOnMount: false,
   });
 };

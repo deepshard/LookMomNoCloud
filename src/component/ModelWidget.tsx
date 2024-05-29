@@ -28,7 +28,6 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
         console.log("TODO: downloading");
         break;
       case "NOT_DOWNLOADED":
-        console.log("TODO: not-installed");
         installModel(model);
         break;
       case "RUNNING":
@@ -57,6 +56,12 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
             />
           </div>
         );
+      case 'INSTALLING':
+        return (
+          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+            <p>INSTALLING</p>
+          </div>
+        )
       case "NOT_DOWNLOADED":
         return (
           <div

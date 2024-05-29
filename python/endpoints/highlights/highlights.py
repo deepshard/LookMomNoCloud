@@ -3,13 +3,13 @@ from truffle_types import Model, ModelStatus
 data = [
     {
         "id": "aaaa-bbbb-cccc-dddd",
-        "url": "https://huggingface.co/gradientai/Llama-3-8B-Instruct-Gradient-1048k",
+        "url": "https://huggingface.co/openai-community/gpt2",
         "status": ModelStatus.NOT_DOWNLOADED,
         "background_image": "",
-        "author": "Gradient AI",
-        "name": "Llama-3-8B-Instruct-Gradient-1048k",
-        "params": 8_030_000_000,
-        "description": "Gradient AI's 8B parameter model for instruction following.",
+        "author": "Open AI",
+        "name": "gpt2",
+        "params": 117_000_000,
+        "description": "Open AI's 8B parameter model for instruction following.",
         "instance": None,
         "progress": 0,
     },

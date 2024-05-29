@@ -64,7 +64,8 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
             raise ValueError(f"Missing rfilename for {file}")
 
         tasks.append(
-            get_file_size_hf(f"https://huggingface.co/{model_name}", file["rfilename"])
+            get_file_size_hf(
+                f"https://huggingface.co/{model_name}", file["rfilename"])
         )
 
     # Get the file sizes
@@ -80,7 +81,9 @@ def get_local_files(directory: str) -> list[FileInfo]:
         for filename in filenames:
             file_path = os.path.join(root, filename)
             size = os.path.getsize(file_path)
-            files.append(FileInfo(file=filename, size=size))
+
+            relative_path = os.path.relpath(file_path, directory)
+            files.append(FileInfo(file=relative_path, size=size))
 
     return files
 
@@ -94,7 +97,7 @@ def get_files_to_download(
 
     files_to_download = []
     for file, size in remote_files_dict.items():
-        if file not in local_files_dict or local_files_dict[file] != size:
+        if file not in local_files_dict or local_files_dict[file] < size:
             files_to_download.append(FileInfo(file=file, size=size))
 
     return files_to_download
@@ -273,7 +276,8 @@ async def install_generator(
         return
 
     # Check that there is enough space to download the model
-    _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
+    _, disk_space, total_bytes_remaining = get_space_check_info(
+        installation_manager)
     if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
@@ -307,7 +311,8 @@ async def install_generator(
             download_tasks = asyncio.gather(*tasks)
 
             while not download_tasks.done():
-                progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
+                progress = int(
+                    100 * progress_tracker["downloaded_bytes"] / total_size)
                 installation_manager.set_download(
                     model_id, total_size - progress_tracker["downloaded_bytes"]
                 )
@@ -350,7 +355,8 @@ async def install_generator(
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
     quantization = get_base_quantization_decision(install_path)
-    model_size, compressed_size = get_model_size_info(install_path, quantization)
+    model_size, compressed_size = get_model_size_info(
+        install_path, quantization)
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
     )
@@ -366,10 +372,13 @@ async def install_generator(
         await asyncio.sleep(5)
 
     installation_manager.remove_from_conversion_queue()
+    # If you return too quickly, the frontend receives the last two events as one
+    await asyncio.sleep(3)
 
     # Return early if the quantization is alrady built
     if does_quantization_exist(model_id, quantization):
-        logger.info(f"Conversion and quantization already done for {model_dir}")
+        logger.info(
+            f"Conversion and quantization already done for {model_dir}")
         progress_event = {
             "id": model_id,
             "status": "DONE",
@@ -398,7 +407,8 @@ async def install_generator(
         installation_manager
     )
     if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):
-        logger.info(f"Not enough space or memory to convert and quantize {model_dir}")
+        logger.info(
+            f"Not enough space or memory to convert and quantize {model_dir}")
         progress_event = {
             "id": model_id,
             "status": "INSTALLING",
@@ -414,7 +424,8 @@ async def install_generator(
     convert_and_quantize(install_path, quant_path, quantization)
 
     logger.info(f"Conversion and quantization complete for {model_dir}")
-    progress_event = {"id": model_id, "status": "DONE", "progress": 100, "error": None}
+    progress_event = {"id": model_id, "status": "DONE",
+                      "progress": 100, "error": None}
     yield f"data: {json.dumps(progress_event)}\n\n"
     installation_manager.complete_conversion()
     return

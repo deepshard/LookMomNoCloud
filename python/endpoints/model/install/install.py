@@ -363,8 +363,13 @@ async def install_generator(
     yield f"data: {json.dumps(progress_event)}\n\n"
 
     while not installation_manager.is_models_conversion_turn(model_dir, quantization):
+        logger.info(
+            f"""Waiting for {model_dir} to be converted.\nCurrent conversion queue: {
+                    installation_manager.conversion_queue()}\nCurrent conversion in progress: {installation_manager.current_conversion}"""
+        )
         await asyncio.sleep(5)
 
+    logger.info(f"Model's turn to be converted.")
     installation_manager.remove_from_conversion_queue()
 
     # Return early if the quantization is alrady built
@@ -394,6 +399,7 @@ async def install_generator(
         return
 
     # Check that there is enough space and memory to convert and quantize the model
+    logger.info(f"Checking space and memory for {model_dir}")
     available_ram, disk_space, bytes_remaining = get_space_check_info(
         installation_manager
     )
@@ -410,6 +416,7 @@ async def install_generator(
         return
 
     # Convert and quantize the model
+    logger.info(f"Converting and quantizing {model_dir}")
     quant_path = model_dir / quantization.value
     convert_and_quantize(install_path, quant_path, quantization)
 

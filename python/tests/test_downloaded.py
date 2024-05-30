@@ -6,7 +6,10 @@ from uuid import uuid4
 import shutil
 from pathlib import Path
 from aioresponses import aioresponses
-from endpoints.model.downloaded.downloaded import is_model_downloaded, get_downloaded_models
+from endpoints.model.downloaded.downloaded import (
+    is_model_downloaded,
+    get_downloaded_models,
+)
 
 
 # Test the get_downloaded_models logic
@@ -56,8 +59,7 @@ def app_data_path_mock():
 @pytest.fixture
 def api_mock():
     with aioresponses() as mocked:
-        mocked.get(HF_API_URL, status=200,
-                   payload=MOCK_API_RESPONSE, repeat=True)
+        mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE, repeat=True)
         yield mocked
 
 
@@ -85,7 +87,9 @@ async def test_no_models_downloaded(app_data_path_mock):
 
 
 @pytest.mark.asyncio
-async def test_one_model_downloaded(app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers):
+async def test_one_model_downloaded(
+    app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
+):
     clear_path()
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -114,7 +118,9 @@ async def test_one_model_downloaded(app_data_path_mock, api_mock, mock_aiohttp_h
 
 
 @pytest.mark.asyncio
-async def test_multiple_models_downloaded(app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers):
+async def test_multiple_models_downloaded(
+    app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
+):
     clear_path()
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -158,7 +164,9 @@ async def test_multiple_models_downloaded(app_data_path_mock, api_mock, mock_aio
 
 
 @pytest.mark.asyncio
-async def test_one_model_downloaded_not_fully(app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers):
+async def test_one_model_downloaded_not_fully(
+    app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
+):
     clear_path()
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
@@ -182,7 +190,9 @@ async def test_one_model_downloaded_not_fully(app_data_path_mock, api_mock, mock
 
 
 @pytest.mark.asyncio
-async def test_one_model_downloaded_fully_another_not_fully(app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers):
+async def test_one_model_downloaded_fully_another_not_fully(
+    app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
+):
     clear_path()
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(

@@ -1,11 +1,15 @@
 import os
-from endpoints.model.install.install import get_hf_repo_info, get_local_files, get_files_to_download
+from endpoints.model.install.install import (
+    get_hf_repo_info,
+    get_local_files,
+    get_files_to_download,
+)
 from utils import get_app_data_path
 from truffle_types import Model, ModelStatus
 
 
 async def is_model_downloaded(model_id: str) -> bool:
-    """ Checks if a model is fully downloaded. """
+    """Checks if a model is fully downloaded."""
 
     model_path = get_app_data_path() / "models" / model_id / "base"
 
@@ -23,7 +27,7 @@ async def is_model_downloaded(model_id: str) -> bool:
 
 
 async def get_downloaded_models():
-    """ Returns a list of all downloaded models. """
+    """Returns a list of all downloaded models."""
 
     base_dir = get_app_data_path() / "models"
     models = []

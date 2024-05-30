@@ -54,9 +54,11 @@ def get_quantization_compression(quant: Quantization) -> float:
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
-    pytorch_json_path = os.path.join(base_weights_path, "pytorch_model.bin.index.json")
+    pytorch_json_path = os.path.join(
+        base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
-    safetensors_path = os.path.join(base_weights_path, "model.safetensors.index.json")
+    safetensors_path = os.path.join(
+        base_weights_path, "model.safetensors.index.json")
     safetensors_bin_path = os.path.join(base_weights_path, "model.safetensors")
 
     if (

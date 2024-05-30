@@ -15,6 +15,7 @@ from endpoints import (
     stop_model_handler,
     get_highlights,
     get_new,
+    get_downloaded_models,
 )
 from endpoints.model.install import InstallationManager
 from truffle_types import InstallRequest, RunRequest, StopRequest
@@ -56,7 +57,8 @@ app.add_middleware(
 
 @app.get("/sysinfo", response_class=StreamingResponse)
 async def sysinfo():
-    response = StreamingResponse(sysinfo_generator(), media_type="text/event-stream")
+    response = StreamingResponse(
+        sysinfo_generator(), media_type="text/event-stream")
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["Connection"] = "keep-alive"
@@ -71,6 +73,11 @@ async def highlights():
 @app.get("/new")
 async def new():
     return get_new()
+
+
+@app.get("/model/downloaded")
+async def downloaded():
+    return await get_downloaded_models()
 
 
 @app.post("/model/install", response_class=StreamingResponse)

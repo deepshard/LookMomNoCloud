@@ -3,6 +3,8 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
 import useInstallModel from "../hooks/installModel/useInstallModel";
+import { startInstallModel } from "../api/model";
+import { useStore } from "../store/store";
 
 interface ModelWidgetProps {
   model: TModel;
@@ -14,7 +16,8 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
 
-  const { installModel, disconnect } = useInstallModel();
+  const { setDownloads } = useStore();
+  const { installModel, disconnect } = useInstallModel({ streamFn: startInstallModel });
 
   useEffect(() => {
     return () => {
@@ -28,7 +31,12 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
         console.log("TODO: downloading");
         break;
       case "NOT_DOWNLOADED":
-        installModel(model);
+        installModel(model, new AbortController(), (progress) => {
+          setDownloads({
+            ...model,
+            ...progress,
+          });
+        });
         break;
       case "RUNNING":
         console.log("TODO: running");
@@ -47,7 +55,7 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <CircularProgressbar
-              value={model.progress}
+              value={model.progress || 0}
               text={`${model.progress}%`}
               styles={{
                 path: { stroke: "#00C920" },
@@ -56,26 +64,25 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
             />
           </div>
         );
-      case 'INSTALLING':
+      case "INSTALLING":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <p>INSTALLING</p>
           </div>
-        )
+        );
       case "NOT_DOWNLOADED":
         return (
           <div
             onClick={() => {
               handleAction();
             }}
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
-          >
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={downloadIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
       case "STOPPED":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );

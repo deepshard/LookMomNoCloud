@@ -366,13 +366,14 @@ async def install_generator(
         await asyncio.sleep(5)
 
     installation_manager.remove_from_conversion_queue()
+    await asyncio.sleep(3)
 
     # Return early if the quantization is alrady built
     if does_quantization_exist(model_id, quantization):
         logger.info(f"Conversion and quantization already done for {model_dir}")
         progress_event = {
             "id": model_id,
-            "status": "DONE",
+            "status": "STOPPED",
             "progress": 100,
             "error": None,
         }

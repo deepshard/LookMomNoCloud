@@ -15,6 +15,7 @@ function App() {
   useSysInfo({
     rootUrl: ROOTURL,
     addSysInfo,
+    EventSourceFactory: EventSource
   });
 
   return (

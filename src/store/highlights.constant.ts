@@ -1,4 +1,4 @@
-import { TModel } from "src/types/schemas";
+import { TModel } from "../types/schemas";
 
 export const MODEL_LIST: TModel[] = [
     {

@@ -9,16 +9,9 @@ import StorageIcon from "/assets/icons/storage.png";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import { motion } from 'framer-motion';
 import 'react-circular-progressbar/dist/styles.css';
+import { bytesToHumanReadable } from "../utils/sysUtils";
 
 type OptionType = 'memory' | 'storage';
-
-const bytesToHumanReadable = (bytes?: number, withUnit = true): string => {
-  if (!bytes) return ' - ';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-  const exponent = bytes > 0 ? Math.floor(Math.log(bytes) / Math.log(1024)) : 0;
-  const result = (bytes / Math.pow(1024, exponent)).toFixed(2);
-  return withUnit ? `${result} ${units[exponent]}` : result;
-};
 
 const OptionSelector = ({ selectedOption, onSelect }: { selectedOption: OptionType; onSelect: (option: OptionType) => void }) => (
   <div className="absolute w-32 bg-gray-400">
@@ -47,7 +40,7 @@ const ModelsList = () => {
   );
 };
 
-const SysInfoHover = ({ option, usedPercentage }: { option: OptionType, usedPercentage: number }) => {
+const SysInfoOverview = ({ option, usedPercentage }: { option: OptionType, usedPercentage: number }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       <p>{option === 'memory' ? 'Memory usage' : 'Storage Used'}</p>
@@ -96,7 +89,7 @@ const SysInfo = () => {
         animate={!isHovered ? "visible" : "hidden"}
         className="absolute w-full bottom-0 h-80 bg-gray-400"
       >
-        <SysInfoHover option={selectedOption} usedPercentage={usedPercentage} />
+        <SysInfoOverview option={selectedOption} usedPercentage={usedPercentage} />
       </motion.div>
 
       <div className="w-full h-full p-2 flex items-start justify-between">

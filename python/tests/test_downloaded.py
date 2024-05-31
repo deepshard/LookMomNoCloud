@@ -59,8 +59,7 @@ def app_data_path_mock():
 @pytest.fixture
 def api_mock():
     with aioresponses() as mocked:
-        mocked.get(HF_API_URL, status=200,
-                   payload=MOCK_API_RESPONSE, repeat=True)
+        mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE, repeat=True)
         yield mocked
 
 

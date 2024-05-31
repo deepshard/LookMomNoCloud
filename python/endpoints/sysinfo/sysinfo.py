@@ -22,13 +22,6 @@ CHANGE_THRESHOLD = 3
 
 async def get_sysinfo() -> SystemInfo:
     models_data = await get_models_data()
-    models_data = [
-        ModelResourceDetails(id="aaa-bbb-ccc-ddd", ram=100000, disk=100000),
-        ModelResourceDetails(id="aaa-bbb-ccc-eee", ram=4535123, disk=903403),
-        ModelResourceDetails(id="aaa-bbb-ccc-fff", ram=4535123, disk=903403),
-        ModelResourceDetails(id="aaa-bbb-ccc-ggg", ram=4535123, disk=903403),
-        ModelResourceDetails(id="aaa-bbb-ccc-hhh", ram=4535123, disk=903403),
-    ]
     resources = SystemResources(
         available=SystemResourceDetails(
             ram=psutil.virtual_memory().available,

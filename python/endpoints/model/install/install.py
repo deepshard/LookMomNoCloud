@@ -237,7 +237,7 @@ async def install_generator(
     Yields:
         {
             "id": str,
-            "status": str (DOWNLOADING, INSTALLING, DONE),
+            "status": str (DOWNLOADING, INSTALLING, STOPPED),
             "progress": int,
             "error": str (optional)
         }
@@ -246,15 +246,7 @@ async def install_generator(
     model_dir = get_app_data_path() / "models" / model_id
     install_path = model_dir / "base"
 
-    # Send initial install progress
     logger.info(f"Starting install for {model_url}")
-    initial_progress = {
-        "id": model_id,
-        "status": "DOWNLOADING",
-        "progress": 0,
-        "error": None,
-    }
-    yield f"data: {json.dumps(initial_progress)}\n\n"
 
     # Get files to download
     try:
@@ -286,6 +278,15 @@ async def install_generator(
         return
 
     try:
+        # Send initial progress event
+        initial_progress = {
+            "id": model_id,
+            "status": "DOWNLOADING",
+            "progress": 0,
+            "error": None,
+        }
+        yield f"data: {json.dumps(initial_progress)}\n\n"
+
         # Mark as downloading and send to InstallSystemManager
         installation_manager.set_download(model_id, total_size)
 
@@ -347,9 +348,22 @@ async def install_generator(
             len(files_to_download)} files. Beginning weight conversion and quantization."""
     )
 
+    # Return early if the quantization is alrady built
+    quantization = get_base_quantization_decision(install_path)
+    if does_quantization_exist(model_id, quantization):
+        logger.info(f"Conversion and quantization already exists for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "STOPPED",
+            "progress": 100,
+            "error": None,
+        }
+        yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
+        return
+
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    quantization = get_base_quantization_decision(install_path)
     model_size, compressed_size = get_model_size_info(install_path, quantization)
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
@@ -363,23 +377,15 @@ async def install_generator(
     yield f"data: {json.dumps(progress_event)}\n\n"
 
     while not installation_manager.is_models_conversion_turn(model_dir, quantization):
+        logger.info(
+            f"""Waiting for {model_dir} to be converted.\nCurrent conversion queue: {
+                installation_manager.conversion_queue()}\nCurrent conversion in progress: {installation_manager.current_conversion}"""
+        )
         await asyncio.sleep(5)
 
+    logger.info(f"Model's turn to be converted.")
     installation_manager.remove_from_conversion_queue()
     await asyncio.sleep(3)
-
-    # Return early if the quantization is alrady built
-    if does_quantization_exist(model_id, quantization):
-        logger.info(f"Conversion and quantization already done for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "STOPPED",
-            "progress": 100,
-            "error": None,
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
-        return
 
     # Check if the format is convertable
     if not is_convertable_format(install_path):
@@ -395,6 +401,7 @@ async def install_generator(
         return
 
     # Check that there is enough space and memory to convert and quantize the model
+    logger.info(f"Checking space and memory for {model_dir}")
     available_ram, disk_space, bytes_remaining = get_space_check_info(
         installation_manager
     )
@@ -411,11 +418,17 @@ async def install_generator(
         return
 
     # Convert and quantize the model
+    logger.info(f"Converting and quantizing {model_dir}")
     quant_path = model_dir / quantization.value
     convert_and_quantize(install_path, quant_path, quantization)
 
     logger.info(f"Conversion and quantization complete for {model_dir}")
-    progress_event = {"id": model_id, "status": "DONE", "progress": 100, "error": None}
+    progress_event = {
+        "id": model_id,
+        "status": "STOPPED",
+        "progress": 100,
+        "error": None,
+    }
     yield f"data: {json.dumps(progress_event)}\n\n"
     installation_manager.complete_conversion()
     return

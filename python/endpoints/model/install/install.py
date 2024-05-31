@@ -239,16 +239,23 @@ async def install_generator(
     Yields:
         {
             "id": str,
-            "status": str (DOWNLOADING, INSTALLING, STOPPED),
+            "status": str (ACKNOWLEDGED, DOWNLOADING, INSTALLING, STOPPED),
             "progress": int,
             "error": str (optional)
         }
     """
 
+    logger.info(f"Starting install for {model_url}")
+    progress_event = {
+        "id": model_id,
+        "status": "ACKNOWLEDGED",
+        "progress": 0,
+        "error": None,
+    }
+    yield f"data: {json.dumps(progress_event)}\n\n"
+
     model_dir = get_app_data_path() / "models" / model_id
     install_path = model_dir / "base"
-
-    logger.info(f"Starting install for {model_url}")
 
     # Get files to download
     try:

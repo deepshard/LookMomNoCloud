@@ -3,7 +3,6 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
-import DiscoverButton from "./component/common/DiscoverButton";
 import SysInfo from "./component/SysInfo";
 import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
 import { useEffect } from "react";

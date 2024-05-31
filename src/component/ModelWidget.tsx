@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
 import useInstallModel from "../hooks/installModel/useInstallModel";
 import { startInstallModel } from "../api/model";
 import { useStore } from "../store/store";
+import { motion } from "framer-motion"
 
 interface ModelWidgetProps {
   model: TModel;
@@ -15,6 +16,7 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
+  const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
   const { setDownloads } = useStore();
   const { installModel, disconnect } = useInstallModel({ streamFn: startInstallModel });
@@ -39,10 +41,10 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
         });
         break;
       case "RUNNING":
-        console.log("TODO: running");
+        console.log("TODO: trying to stop");
         break;
       case "STOPPED":
-        console.log("TODO: stopped");
+        console.log("TODO: trying to run");
         break;
       default:
         break;
@@ -51,9 +53,18 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
 
   const getWidgetButton = () => {
     switch (model.status) {
+      case 'ACKNOWLEDGED':
+        return (
+          <p>To-Do: ACKNOWLEDGED</p>        
+        )
       case "DOWNLOADING":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <motion.div 
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
+            initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
+            animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
+            transition={{ duration: 0.1, ease: "easeInOut" }} // duration and timing function
+          >
             <CircularProgressbar
               value={model.progress || 0}
               text={`${model.progress}%`}
@@ -62,12 +73,12 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
                 text: { fill: "#00C920" },
               }}
             />
-          </div>
+          </motion.div>
         );
       case "INSTALLING":
         return (
           <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <p>INSTALLING</p>
+            <img src={installIcon} alt="" className="h-[32.73px] w-[32.73px] animate-spin" />
           </div>
         );
       case "NOT_DOWNLOADED":
@@ -76,7 +87,8 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
             onClick={() => {
               handleAction();
             }}
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
+          >
             <img src={downloadIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -97,6 +109,14 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
         break;
     }
   };
+
+  if(model.error) {
+    return (
+      <div className="model-widget base-regular">
+        <p className="opacity-75">"To-do: Error design goes here"</p>
+      </div>
+    )
+  }
 
   return (
     <div className="model-widget base-regular">

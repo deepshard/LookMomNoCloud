@@ -91,6 +91,7 @@ async def test_one_model_downloaded(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
     clear_path()
+    os.makedirs("/tmp/models")
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -122,6 +123,7 @@ async def test_multiple_models_downloaded(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
     clear_path()
+    os.makedirs("/tmp/models")
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -168,6 +170,7 @@ async def test_one_model_downloaded_not_fully(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
     clear_path()
+    os.makedirs("/tmp/models")
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -194,6 +197,7 @@ async def test_one_model_downloaded_fully_another_not_fully(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
     clear_path()
+    os.makedirs("/tmp/models")
 
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}

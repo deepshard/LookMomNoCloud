@@ -10,6 +10,7 @@ import { CircularProgressbar } from 'react-circular-progressbar';
 import { motion } from 'framer-motion';
 import 'react-circular-progressbar/dist/styles.css';
 import { bytesToHumanReadable } from "../utils/sysUtils";
+import { TSysInfo } from "../types/schemas";
 
 type OptionType = 'memory' | 'storage';
 
@@ -26,9 +27,7 @@ const OptionSelector = ({ selectedOption, onSelect }: { selectedOption: OptionTy
   </div>
 );
 
-const ModelsList = () => {
-  const sysInfo = useStore(state => state.sysInfo);
-
+const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo }) => {
   if (!sysInfo) return <></>;
 
   return (
@@ -112,7 +111,7 @@ const SysInfo = () => {
       </div>
 
       <div className="h-56 overflow-y-scroll bg-blue-500">
-        <ModelsList />
+        <ModelsList sysInfo={sysInfo} />
       </div>
 
     </div>

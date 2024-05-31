@@ -126,7 +126,7 @@ export default function Home() {
               customDot={<CustomCarouselDot />}
               dotListClass="order-truffle-carousel-dots"
             >
-              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
+              <div className="w-full bg-red-400">
                 <SysInfo />
               </div>
               <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] ">
@@ -146,16 +146,6 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="w-screen h-screen absolute left-0 bottom-[-94vh] snap-start snap-always">
-        <span className="cursor-pointer w-full flex-center sticky top-8 mb-4 z-10">
-          <DiscoverButton />
-        </span>
-        <div className="w-full h-full relative">
-          <div className="backdrop-blur-2xl bg-white/20 w-full h-full rounded-lg overflow-hidden "></div>
-          <div className="absolute top-0 backdrop-blur-xl  w-full h-full rounded-lg overflow-hidden "></div>
-          <div className="absolute top-0 backdrop-blur-xl  w-full h-full rounded-lg border-t-[0.9px] overflow-hidden "></div>
-        </div>
-      </div>
     </div>
   );
 }

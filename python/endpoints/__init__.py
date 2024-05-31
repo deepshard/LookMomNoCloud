@@ -3,6 +3,7 @@ from .model import (
     install_generator,
     run_models_generator,
     stop_model_handler,
+    get_downloaded_models,
 )
 from .sysinfo import sysinfo_generator
 from .highlights import get_highlights

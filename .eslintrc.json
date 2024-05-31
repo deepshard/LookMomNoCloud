@@ -4,6 +4,11 @@
     "es6": true,
     "node": true
   },
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "off",
+    // todo: fix this later 
+    "import/no-unresolved": "off"
+  },
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",

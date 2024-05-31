@@ -40,8 +40,6 @@ markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 mdurl==0.1.2
 ml-dtypes==0.4.0
-mlc-ai-nightly==0.15.dev315
--e git+ssh://git@github.com/deepshard/mlc-llm.git@97ce1fbf8e8d8889ece86b05f41e99cb674d2c63#egg=mlc_llm&subdirectory=python
 mpmath==1.3.0
 multidict==6.0.5
 networkx==3.3

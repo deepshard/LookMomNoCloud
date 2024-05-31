@@ -22,7 +22,7 @@ schema = {
     "type": "object",
     "properties": {
         "id": {"type": "string"},
-        "status": {"type": "string", "enum": ["DOWNLOADING", "INSTALLING", "DONE"]},
+        "status": {"type": "string", "enum": ["DOWNLOADING", "INSTALLING", "STOPPED"]},
         "progress": {"type": "integer"},
         "error": {"type": "string"},
     },
@@ -136,7 +136,7 @@ async def test_install_single_model_from_scratch(
 
     assert progress_updates[0]["status"] == "DOWNLOADING"
     assert progress_updates[-2]["status"] == "INSTALLING"
-    assert progress_updates[-1]["status"] == "DONE"
+    assert progress_updates[-1]["status"] == "STOPPED"
     assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
 
     assert mock_mlc.call_count == 1
@@ -424,7 +424,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
             manager.complete_conversion()
 
     assert progress_updates[0]["status"] == "DOWNLOADING"
-    assert progress_updates[-1]["status"] == "DONE"
+    assert progress_updates[-1]["status"] == "STOPPED"
     assert mock_mlc.call_count == 1
 
     # Check that queue is empty
@@ -471,7 +471,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
         progress_updates.append(json.loads(progress[5:]))
 
     assert progress_updates[0]["status"] == "DOWNLOADING"
-    assert progress_updates[-1]["status"] == "DONE"
+    assert progress_updates[-1]["status"] == "STOPPED"
     assert mock_mlc.call_count == 0  # Conversion and quantization should be skipped
 
     # Check that queue is empty
@@ -638,7 +638,7 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
             # Complete conversion and quantization
             manager.complete_conversion()
 
-    assert progress_updates[-1]["status"] == "DONE"
+    assert progress_updates[-1]["status"] == "STOPPED"
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0

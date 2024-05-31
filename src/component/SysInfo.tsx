@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import ProgressBar from "./common/ProgressBar";
-import SysInfoModelComponent from "./SysInfoModelComponent";
 import { useStore } from "../store/store";
 //@ts-ignore
 import MemoryIcon from "/assets/icons/memory.png";
-//@ts-ignore
+
 import StorageIcon from "/assets/icons/storage.png";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import { motion } from 'framer-motion';
@@ -14,7 +12,7 @@ import { TSysInfo } from "../types/schemas";
 
 type OptionType = 'memory' | 'storage';
 
-const OptionSelector = ({ selectedOption, onSelect }: { selectedOption: OptionType; onSelect: (option: OptionType) => void }) => (
+const OptionSelector = ({  onSelect }: { onSelect: (option: OptionType) => void }) => (
   <div className="absolute w-32 bg-gray-400">
     <div className="flex items-center p-2 cursor-pointer" onClick={() => onSelect('memory')}>
       <img src={MemoryIcon} alt="Memory" className="w-10 h-10 mr-2" />
@@ -27,7 +25,7 @@ const OptionSelector = ({ selectedOption, onSelect }: { selectedOption: OptionTy
   </div>
 );
 
-const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo }) => {
+const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo | null }) => {
   if (!sysInfo) return <></>;
 
   return (
@@ -97,12 +95,12 @@ const SysInfo = () => {
           <img src={selectedOption === 'memory' ? MemoryIcon : StorageIcon} alt={selectedOption} className="w-10 h-10 mr-2" />
           {selectedOption === 'memory' ? 'Memory' : 'Storage'}
         </div>
-        {isOpen && <OptionSelector selectedOption={selectedOption} onSelect={handleSelectChange} />}
+        {isOpen && <OptionSelector onSelect={handleSelectChange} />}
         <div>
           {selectedOption === 'memory' ? (
-            <div>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
+            <div>{bytesToHumanReadable((sysInfo?.resources.total.ram || 0) - (sysInfo?.resources.available.ram || 0), false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
           ) : (
-            <div>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
+            <div>{bytesToHumanReadable((sysInfo?.resources?.total?.disk || 0) - (sysInfo?.resources?.available?.disk || 0), false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
           )}
         </div>
       </div>

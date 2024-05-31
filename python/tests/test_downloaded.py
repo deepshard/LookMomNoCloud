@@ -59,7 +59,8 @@ def app_data_path_mock():
 @pytest.fixture
 def api_mock():
     with aioresponses() as mocked:
-        mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE, repeat=True)
+        mocked.get(HF_API_URL, status=200,
+                   payload=MOCK_API_RESPONSE, repeat=True)
         yield mocked
 
 
@@ -82,6 +83,7 @@ def mock_headers():
 # Tests
 @pytest.mark.asyncio
 async def test_no_models_downloaded(app_data_path_mock):
+    os.makedirs("/tmp/models")
     models = await get_downloaded_models()
     assert len(models) == 0
 

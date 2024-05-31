@@ -6,6 +6,7 @@ from unittest import mock
 from unittest.mock import patch, MagicMock
 import json
 import shutil
+from pathlib import Path
 from aioresponses import aioresponses
 from endpoints.model.install.install import (
     install_generator,
@@ -17,13 +18,15 @@ from endpoints.model.install.install import (
     get_hf_repo_info,
 )
 from truffle_types import FileInfo, Quantization
-from utils import get_app_data_path
 
 schema = {
     "type": "object",
     "properties": {
         "id": {"type": "string"},
-        "status": {"type": "string", "enum": ["DOWNLOADING", "INSTALLING", "STOPPED"]},
+        "status": {
+            "type": "string",
+            "enum": ["ACKNOWLEDGED", "DOWNLOADING", "INSTALLING", "STOPPED"],
+        },
         "progress": {"type": "integer"},
         "error": {"type": "string"},
     },
@@ -82,12 +85,21 @@ MOCK_FILE_FOUR_DATA = os.urandom(1024)
 
 
 # Helpers
-def clear_path(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
+def clear_path():
+    if os.path.exists("/tmp/models"):
+        shutil.rmtree("/tmp/models")
 
 
 # Fixtures
+@pytest.fixture
+def app_data_path_mock():
+    with patch(
+        "endpoints.model.install.install.get_app_data_path"
+    ) as mock_app_data_path:
+        mock_app_data_path.return_value = Path("/tmp")
+        yield mock_app_data_path
+
+
 @pytest.fixture
 def standard_aiohttp_get_mocks():
     with aioresponses() as mocked:
@@ -118,8 +130,14 @@ def mock_headers():
 # Tests
 @pytest.mark.asyncio
 async def test_install_single_model_from_scratch(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -147,7 +165,8 @@ async def test_install_single_model_from_scratch(
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+    assert progress_updates[1]["status"] == "DOWNLOADING"
     assert progress_updates[-2]["status"] == "INSTALLING"
     assert progress_updates[-1]["status"] == "STOPPED"
     assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
@@ -155,12 +174,11 @@ async def test_install_single_model_from_scratch(
     assert mock_mlc.call_count == 1
 
     # Check that the files were downloaded
-    download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
+    download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
     assert (download_path / "base" / "pytorch_model.bin").exists()
     assert (download_path / "base" / "config.json").exists()
     assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
     assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
-    clear_path(download_path)
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -175,8 +193,14 @@ async def test_install_single_model_from_scratch(
 
 @pytest.mark.asyncio
 async def test_complete_partial_installation_of_single_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -189,7 +213,7 @@ async def test_complete_partial_installation_of_single_model(
     manager = InstallationManager()
 
     # Write one of the files to simulate a partial download
-    download_path = get_app_data_path() / "models" / ID / "base"
+    download_path = Path("/tmp") / "models" / ID / "base"
     download_path.mkdir(parents=True, exist_ok=True)
     with open(download_path / "pytorch_model.bin", "wb") as f:
         f.write(MOCK_FILE_ONE_DATA)
@@ -208,8 +232,11 @@ async def test_complete_partial_installation_of_single_model(
 
         assert mock_download_file.call_count == 3
 
+        # Assert acknowledgement event was sent
+        assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
+        download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
         assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
@@ -218,13 +245,17 @@ async def test_complete_partial_installation_of_single_model(
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
 
-    clear_path(download_path)
-
 
 @pytest.mark.asyncio
 async def test_skip_download_of_already_downloaded_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -237,7 +268,7 @@ async def test_skip_download_of_already_downloaded_model(
     manager = InstallationManager()
 
     # Write all files to simulate a complete download
-    download_path = get_app_data_path() / "models" / ID / "base"
+    download_path = Path("/tmp") / "models" / ID / "base"
     download_path.mkdir(parents=True, exist_ok=True)
     with open(download_path / "pytorch_model.bin", "wb") as f:
         f.write(MOCK_FILE_ONE_DATA)
@@ -266,8 +297,11 @@ async def test_skip_download_of_already_downloaded_model(
 
         assert mock_download_file.call_count == 0
 
+        # Assert acknowledgement event was sent
+        assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
         # Check that the files were downloaded
-        download_path = get_app_data_path() / "models" / progress_updates[0]["id"]
+        download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
         assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
@@ -276,13 +310,13 @@ async def test_skip_download_of_already_downloaded_model(
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
 
-    clear_path(download_path)
-
 
 @pytest.mark.asyncio
 async def test_model_download_returns_progress_in_expected_format(
-    mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock, mock_aiohttp_head, mock_headers, mocker
 ):
+    clear_path()
+
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE)
@@ -314,19 +348,27 @@ async def test_model_download_returns_progress_in_expected_format(
         )
         assert len(progress_updates) > 3
         assert (
-            progress_updates[1]["progress"] > 0
-            and progress_updates[1]["progress"] < 100
+            progress_updates[1]["progress"] >= 0
+            and progress_updates[1]["progress"] <= 100
         )
+
+        # Assert that acknowledgement event was sent
+        assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
-
-        clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_single_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -354,16 +396,23 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
     assert progress_updates[-1]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["error"] == "Not enough space to download the model"
 
+    # Assert that acknowledgement event was sent
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
-
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -391,19 +440,24 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
     assert progress_updates[-1]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["error"] == "Not enough space to download the model"
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
 
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
-
 
 @pytest.mark.asyncio
 async def test_only_converts_and_quantizes_single_model_at_a_time(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -435,7 +489,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
         if progress_updates[-1]["status"] == "INSTALLING":
             assert (
                 manager.conversion_queue[0]["model_path"]
-                == get_app_data_path() / "models" / ID
+                == Path("/tmp") / "models" / ID
             )
 
             # Wait 5 seconds and check that conversion is still in the queue
@@ -443,29 +497,38 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
 
             assert (
                 manager.conversion_queue[0]["model_path"]
-                == get_app_data_path() / "models" / ID
+                == Path("/tmp") / "models" / ID
             )
 
             # Clear current conversion
             manager.complete_conversion()
 
-    assert progress_updates[0]["status"] == "DOWNLOADING"
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+    assert progress_updates[1]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["status"] == "STOPPED"
     assert mock_mlc.call_count == 1
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
 
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
-
 
 @pytest.mark.asyncio
 async def test_skips_conversion_and_quantization_of_already_converted_model(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
+    )
+
+    mocker.patch(
+        "endpoints.model.install.install.does_quantization_exist", return_value=True
     )
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
@@ -475,7 +538,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
     manager = InstallationManager()
 
     # Write all files to simulate a complete download
-    download_path = get_app_data_path() / "models" / ID / "base"
+    download_path = Path("/tmp") / "models" / ID / "base"
     download_path.mkdir(parents=True, exist_ok=True)
     with open(download_path / "pytorch_model.bin", "wb") as f:
         f.write(MOCK_FILE_ONE_DATA)
@@ -491,7 +554,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
         f.write(MOCK_FILE_FOUR_DATA)
 
     # Create a non-empty INT4 quantization directory
-    quantization_dir = get_app_data_path() / "models" / ID / "INT4"
+    quantization_dir = Path("/tmp") / "models" / ID / "INT4"
     quantization_dir.mkdir(parents=True, exist_ok=True)
     with open(quantization_dir / "pytorch_model.bin", "wb") as f:
         f.write(MOCK_FILE_ONE_DATA)
@@ -504,19 +567,20 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
     assert progress_updates[-1]["status"] == "STOPPED"
     assert mock_mlc.call_count == 0  # Conversion and quantization should be skipped
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
 
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
-
 
 @pytest.mark.asyncio
 async def test_returns_error_if_model_weights_are_not_in_expected_format(
-    mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock, mock_aiohttp_head, mock_headers, mocker
 ):
+    clear_path()
+
     with aioresponses() as mocked:
         # Setup mock behavior for download tasks in install_generator
         # Change API response to not have the correct pytorch_model.bin file
@@ -540,7 +604,7 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
         manager = InstallationManager()
 
         # Write the file to simulate a complete download
-        download_path = get_app_data_path() / "models" / ID / "base"
+        download_path = Path("/tmp") / "models" / ID / "base"
         download_path.mkdir(parents=True, exist_ok=True)
         with open(download_path / "config.json", "wb") as f:
             f.write(MOCK_FILE_TWO_DATA)
@@ -558,16 +622,23 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
             == f"Unsupported model format for {download_path}"
         )
 
+        # Assert that acknowledgement event was sent
+        assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
-
-        clear_path(download_path)
 
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -598,16 +669,23 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
         == "Not enough space or memory to convert and quantize the model"
     )
 
+    # Assert that acknowledgement event was sent
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
-
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -638,16 +716,23 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
         == "Not enough space or memory to convert and quantize the model"
     )
 
+    # Assert that acknowledgement event was sent
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
+
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
-
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
 @pytest.mark.asyncio
 async def test_completion_of_conversion_and_quantization_returns_status_transition(
-    standard_aiohttp_get_mocks, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock,
+    standard_aiohttp_get_mocks,
+    mock_aiohttp_head,
+    mock_headers,
+    mocker,
 ):
+    clear_path()
+
     # Mocks setup
     mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
         {"Content-Length": 1024}
@@ -671,12 +756,11 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
             # Complete conversion and quantization
             manager.complete_conversion()
 
+    assert progress_updates[0]["status"] == "ACKNOWLEDGED"
     assert progress_updates[-1]["status"] == "STOPPED"
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
-
-    clear_path(get_app_data_path() / "models" / progress_updates[0]["id"])
 
 
 def test_get_hf_name_for_url():

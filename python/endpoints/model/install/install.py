@@ -246,15 +246,7 @@ async def install_generator(
     model_dir = get_app_data_path() / "models" / model_id
     install_path = model_dir / "base"
 
-    # Send initial install progress
     logger.info(f"Starting install for {model_url}")
-    initial_progress = {
-        "id": model_id,
-        "status": "DOWNLOADING",
-        "progress": 0,
-        "error": None,
-    }
-    yield f"data: {json.dumps(initial_progress)}\n\n"
 
     # Get files to download
     try:
@@ -286,6 +278,15 @@ async def install_generator(
         return
 
     try:
+        # Send initial progress event
+        initial_progress = {
+            "id": model_id,
+            "status": "DOWNLOADING",
+            "progress": 0,
+            "error": None,
+        }
+        yield f"data: {json.dumps(initial_progress)}\n\n"
+
         # Mark as downloading and send to InstallSystemManager
         installation_manager.set_download(model_id, total_size)
 
@@ -347,9 +348,22 @@ async def install_generator(
             len(files_to_download)} files. Beginning weight conversion and quantization."""
     )
 
+    # Return early if the quantization is alrady built
+    quantization = get_base_quantization_decision(install_path)
+    if does_quantization_exist(model_id, quantization):
+        logger.info(f"Conversion and quantization already exists for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "STOPPED",
+            "progress": 100,
+            "error": None,
+        }
+        yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
+        return
+
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    quantization = get_base_quantization_decision(install_path)
     model_size, compressed_size = get_model_size_info(install_path, quantization)
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
@@ -372,19 +386,6 @@ async def install_generator(
     logger.info(f"Model's turn to be converted.")
     installation_manager.remove_from_conversion_queue()
     await asyncio.sleep(3)
-
-    # Return early if the quantization is alrady built
-    if does_quantization_exist(model_id, quantization):
-        logger.info(f"Conversion and quantization already exists for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "STOPPED",
-            "progress": 100,
-            "error": None,
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
-        return
 
     # Check if the format is convertable
     if not is_convertable_format(install_path):

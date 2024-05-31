@@ -323,7 +323,6 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["error"] == "Not enough space to download the model"
 
@@ -364,7 +363,6 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["error"] == "Not enough space to download the model"
 
@@ -470,7 +468,6 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    assert progress_updates[0]["status"] == "DOWNLOADING"
     assert progress_updates[-1]["status"] == "STOPPED"
     assert mock_mlc.call_count == 0  # Conversion and quantization should be skipped
 

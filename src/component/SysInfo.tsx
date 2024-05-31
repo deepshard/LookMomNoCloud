@@ -1,41 +1,127 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import ProgressBar from "./common/ProgressBar";
 import SysInfoModelComponent from "./SysInfoModelComponent";
 import { useStore } from "../store/store";
+//@ts-ignore
+import MemoryIcon from "/assets/icons/memory.png";
+//@ts-ignore
+import StorageIcon from "/assets/icons/storage.png";
+import { CircularProgressbar } from 'react-circular-progressbar';
+import { motion } from 'framer-motion';
+import 'react-circular-progressbar/dist/styles.css';
+
+type OptionType = 'memory' | 'storage';
+
+const bytesToHumanReadable = (bytes?: number, withUnit = true): string => {
+  if (!bytes) return ' - ';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  const exponent = bytes > 0 ? Math.floor(Math.log(bytes) / Math.log(1024)) : 0;
+  const result = (bytes / Math.pow(1024, exponent)).toFixed(2);
+  return withUnit ? `${result} ${units[exponent]}` : result;
+};
+
+const OptionSelector = ({ selectedOption, onSelect }: { selectedOption: OptionType; onSelect: (option: OptionType) => void }) => (
+  <div className="absolute w-32 bg-gray-400">
+    <div className="flex items-center p-2 cursor-pointer" onClick={() => onSelect('memory')}>
+      <img src={MemoryIcon} alt="Memory" className="w-10 h-10 mr-2" />
+      Memory
+    </div>
+    <div className="flex items-center p-2 cursor-pointer" onClick={() => onSelect('storage')}>
+      <img src={StorageIcon} alt="Storage" className="w-10 h-10 mr-2" />
+      Storage
+    </div>
+  </div>
+);
+
+const ModelsList = () => {
+  const sysInfo = useStore(state => state.sysInfo);
+
+  if (!sysInfo) return <></>;
+
+  return (
+    <div className="p-5">
+      {sysInfo.resources.models.map((model) => (
+        <div key={model.id} className="bg-gray-300 my-2 p-5 rounded-sm">{model.id} |  {bytesToHumanReadable(model.ram)} | {bytesToHumanReadable(model.disk)}</div>
+      ))}
+    </div>
+  );
+};
+
+const SysInfoHover = ({ option, usedPercentage }: { option: OptionType, usedPercentage: number }) => {
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <p>{option === 'memory' ? 'Memory usage' : 'Storage Used'}</p>
+      <p className="text-4xl">{usedPercentage.toFixed(0)}%</p>
+    </div>
+  );
+};
 
 const SysInfo = () => {
-  const { sysInfo } = useStore();
+  const sysInfo = useStore(state => state.sysInfo);
+  const [selectedOption, setSelectedOption] = useState<OptionType>('memory');
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false); // State to track hover
 
-  const calculateMemoryStorageUsage = () => {
-    if (!sysInfo) return { memoryUsed: 0, storageUsed: 0 };
-    const memoryUsed = ((sysInfo?.resources.total.ram - sysInfo?.resources.available.ram) / sysInfo?.resources.total.ram) * 100;
-    const storageUsed = ((sysInfo?.resources.total.disk - sysInfo?.resources.available.disk) / sysInfo?.resources.total.disk) * 100;
-    return { memoryUsed, storageUsed };
+  const handleSelectChange = (value: OptionType) => {
+    setSelectedOption(value);
+    setIsOpen(false);
+  };
+
+  const calculateUsedPercentage = (): number => {
+    if (!sysInfo) return 0;
+    let total = 0;
+    let available = 0;
+    if (selectedOption === 'memory') {
+      total = sysInfo.resources.total.ram;
+      available = sysInfo.resources.available.ram;
+    } else {
+      total = sysInfo.resources.total.disk;
+      available = sysInfo.resources.available.disk;
+    }
+    return ((total - available) / total) * 100;
+  };
+
+  const usedPercentage = calculateUsedPercentage();
+
+  const hoverVariants = {
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+    hidden: { opacity: 1, y: 500, transition: { duration: 0.2 } }
   };
 
   return (
-    <div className=" w-full h-full px-[18px] py-[14px]">
-      <span className="flex justify-between mb-[14px]">
-        <p className="base-regular">{sysInfo?.os}</p>
-        <p className="base-regular text-[10px]">
-          1 app • {sysInfo?.resources.models.length} model{sysInfo?.resources.models.length > 1 ? "s" : ""}
-        </p>
-      </span>
-      <div className="w-full">
-        <div className="w-full h-[26px] flex items-center rounded-[12px] relative mb-[14px]">
-          <ProgressBar progress={calculateMemoryStorageUsage().memoryUsed} />
-          <p className="absolute right-0 base-regular pr-[9px] mb-[2px] text-[#A7A7A7]  mix-blend-difference">Memory</p>
+    <div className="" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <motion.div
+        variants={hoverVariants}
+        initial="visible"
+        animate={!isHovered ? "visible" : "hidden"}
+        className="absolute w-full bottom-0 h-80 bg-gray-400"
+      >
+        <SysInfoHover option={selectedOption} usedPercentage={usedPercentage} />
+      </motion.div>
+
+      <div className="w-full h-full p-2 flex items-start justify-between">
+        <div className="w-32 bg-transparent flex items-center color-black outline-none cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}>
+          <img src={selectedOption === 'memory' ? MemoryIcon : StorageIcon} alt={selectedOption} className="w-10 h-10 mr-2" />
+          {selectedOption === 'memory' ? 'Memory' : 'Storage'}
         </div>
-        <div className="w-full h-[26px] flex items-center rounded-[12px] relative">
-          <ProgressBar progress={calculateMemoryStorageUsage().storageUsed} />
-          <p className="absolute right-0 base-regular pr-[9px] mb-[2px] text-[#A7A7A7]  mix-blend-difference">Storage</p>
+        {isOpen && <OptionSelector selectedOption={selectedOption} onSelect={handleSelectChange} />}
+        <div>
+          {selectedOption === 'memory' ? (
+            <div>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
+          ) : (
+            <div>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
+          )}
         </div>
       </div>
-      <div>
-        <SysInfoModelComponent />
-        <SysInfoModelComponent />
-        <SysInfoModelComponent />
+      <div className="w-36 mx-auto">
+        <CircularProgressbar value={usedPercentage} text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '} />
       </div>
+
+      <div className="h-56 overflow-y-scroll bg-blue-500">
+        <ModelsList />
+      </div>
+
     </div>
   );
 };

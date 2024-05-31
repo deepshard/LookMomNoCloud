@@ -80,7 +80,9 @@ def get_local_files(directory: str) -> list[FileInfo]:
         for filename in filenames:
             file_path = os.path.join(root, filename)
             size = os.path.getsize(file_path)
-            files.append(FileInfo(file=filename, size=size))
+
+            relative_path = os.path.relpath(file_path, directory)
+            files.append(FileInfo(file=relative_path, size=size))
 
     return files
 
@@ -94,7 +96,7 @@ def get_files_to_download(
 
     files_to_download = []
     for file, size in remote_files_dict.items():
-        if file not in local_files_dict or local_files_dict[file] != size:
+        if file not in local_files_dict or local_files_dict[file] < size:
             files_to_download.append(FileInfo(file=file, size=size))
 
     return files_to_download

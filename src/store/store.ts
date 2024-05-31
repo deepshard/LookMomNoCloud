@@ -13,7 +13,7 @@ interface State {
 
 export const useStore = create<State>((set) => ({
   sysInfo: null,
-  addSysInfo: (info) => set((state) => ({ sysInfo: info })),
+  addSysInfo: (info) => set((_store) => ({ sysInfo: info })),
   highlights: [],
   setHighlights: (highlights) => set({ highlights }),
   downloads: {},

@@ -1,9 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useStore } from "../store/store";
-//@ts-ignore
-import MemoryIcon from "/assets/icons/memory.png";
-
-import StorageIcon from "/assets/icons/storage.png";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import { motion } from 'framer-motion';
 import 'react-circular-progressbar/dist/styles.css';
@@ -15,11 +11,11 @@ type OptionType = 'memory' | 'storage';
 const OptionSelector = ({  onSelect }: { onSelect: (option: OptionType) => void }) => (
   <div className="absolute w-32 bg-gray-400">
     <div className="flex items-center p-2 cursor-pointer" onClick={() => onSelect('memory')}>
-      <img src={MemoryIcon} alt="Memory" className="w-10 h-10 mr-2" />
+      <img src={'/assets/icons/memory.png'} alt="Memory" className="w-10 h-10 mr-2" />
       Memory
     </div>
     <div className="flex items-center p-2 cursor-pointer" onClick={() => onSelect('storage')}>
-      <img src={StorageIcon} alt="Storage" className="w-10 h-10 mr-2" />
+      <img src={'/assets/icons/storage.png'} alt="Storage" className="w-10 h-10 mr-2" />
       Storage
     </div>
   </div>
@@ -92,7 +88,7 @@ const SysInfo = () => {
       <div className="w-full h-full p-2 flex items-start justify-between">
         <div className="w-32 bg-transparent flex items-center color-black outline-none cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}>
-          <img src={selectedOption === 'memory' ? MemoryIcon : StorageIcon} alt={selectedOption} className="w-10 h-10 mr-2" />
+          <img src={selectedOption === 'memory' ? '/assets/icons/memory.png' : '/assets/icons/storage.png'} alt={selectedOption} className="w-10 h-10 mr-2" />
           {selectedOption === 'memory' ? 'Memory' : 'Storage'}
         </div>
         {isOpen && <OptionSelector onSelect={handleSelectChange} />}

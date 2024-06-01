@@ -228,7 +228,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative">
+          {/* HARDWARE MWIDGET – CAROUSEL */}
+          <div className="relative overflow-hidden widget-3d w-80 h-80">
             <Carousel
               responsive={{
                 desktop: {
@@ -244,14 +245,17 @@ export default function Home() {
               // autoPlay
               showDots
               infinite
-              className="rounded-md overflow-hidden bg-[#D9D9D94D]"
+              className="w-full h-full items-center"
               customDot={<CustomCarouselDot />}
               dotListClass="order-truffle-carousel-dots"
             >
-              <div className="w-full bg-red-400">
+              {/* System Info */}
+              <div className="w-full h-full">
                 <SysInfo />
               </div>
-              <div className="col-span-1 min-w-[263px] w-full h-[280px] lg:h-[353.19px] ">
+
+              {/* Truffle Hardware Slide */}
+              <div className="col-span-1 w-full h-full ">
                 <div className="flex flex-col w-full h-full">
                   <div className="w-full h-full flex justify-center flex-1 ">
                     <img

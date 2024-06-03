@@ -126,7 +126,7 @@ button.ant-btn.preorder-btn {
   }
 
   .model-widget {
-    @apply min-h-[78px] min-w-[124px] rounded-sm overflow-hidden border-[#D9D9D94D] border-4 cursor-pointer relative !important;
+    @apply min-h-[78px] min-w-[124px] rounded-sm overflow-hidden cursor-pointer relative !important;
   }
 
   .blurred-bg-img {

@@ -106,8 +106,8 @@ const SysInfo = () => {
   return (
     <div className="w-full h-full flex flex-col justify-start items-center p-4 gap-7" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <div className="flex justify-between">
-        <MemoryChipIcon color={"white"} height={20} width={20} onClick={() => setSelectedOption("memory")} />
-        <ExternalDriveIcon color={"white"} height={20} width={20} onClick={() => setSelectedOption("storage")} />
+        <MemoryChipIcon className="cursor-pointer fill-current text-red-400" height={20} width={20} onClick={() => setSelectedOption("memory")} />
+        <ExternalDriveIcon className="cursor-pointer text-green-400 fill-current" height={20} width={20} onClick={() => setSelectedOption("storage")} />
         <span className="text-surface-750 text-sm">{selectedOption}</span>
       </div>
 

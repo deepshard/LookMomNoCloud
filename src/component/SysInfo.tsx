@@ -104,19 +104,48 @@ const SysInfo = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-start items-center p-4 gap-7" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-      <div className="flex justify-between">
-        <MemoryChipIcon color={"white"} height={20} width={20} onClick={() => setSelectedOption("memory")} />
-        <ExternalDriveIcon color={"white"} height={20} width={20} onClick={() => setSelectedOption("storage")} />
-        <span className="text-surface-750 text-sm">{selectedOption}</span>
-      </div>
+    <div className="w-full h-full flex flex-col justify-start items-center p-3.5 gap-7" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      
+      <div className="flex w-full items-center justify-between gap-2">
 
-      <div className="text-surface-750 text-sm">
-        {selectedOption === 'memory' ? (
-          <div>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
-        ) : (
-          <div>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
-        )}
+        <div className="flex items-center justify-start gap-1">
+          <div className="flex justify-start items-center gap-1">
+            <div className={`${selectedOption=="memory" ? "" : ""} p-1.5 rounded-[5px] cursor-pointer`}>
+              <MemoryChipIcon color={"white"} height={14} width={14} onClick={() => setSelectedOption("memory")} />
+            </div>
+
+            {/* DIVIDER */}
+            <div className="w-[1px] h-[12px] bg-surface-100" />
+
+            <div className={`${selectedOption=="storage" ? "" : ""} p-1.5 rounded-[5px] cursor-pointer`}>
+              <ExternalDriveIcon color={"white"} height={14} width={14} onClick={() => setSelectedOption("storage")} />
+            </div>
+          </div>
+
+          {/* <span className="text-surface-750 capitalize">{selectedOption}</span> */}
+        </div>
+
+        <div className="text-surface-750 text-sm">
+          {selectedOption === 'memory' ? (
+            <div className="flex justify-start items-center gap-2.5">
+              <p>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)}</p>
+              
+              {/* DIVIDER */}
+              <div className="w-[1px] h-[12px] bg-surface-100" />
+
+              <p>{bytesToHumanReadable(sysInfo?.resources.total.ram)}</p>
+            </div>
+          ) : (
+            <div className="flex justify-start items-center gap-2.5">
+              <p>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)}</p>
+              
+              {/* DIVIDER */}
+              <div className="w-[1px] h-[12px] bg-surface-100" />
+
+              <p>{bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* <div className="w-full gap-2 flex items-start justify-between">
@@ -170,7 +199,7 @@ const SysInfo = () => {
         <CircularProgressbar
           value={usedPercentage}
           text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
-          strokeWidth={16}
+          strokeWidth={14}
           styles={buildStyles({
             textColor: 'rgba(255, 255, 255, 0.75)',
             pathColor: 'rgba(255, 255, 255, 1)',

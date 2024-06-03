@@ -124,18 +124,19 @@ const SysInfo = () => {
           <PopoverTrigger asChild>
             <button
               role="combobox"
-              className="bg-white"
+              className="text-surface-750 capitalize outline-none"
             >
               {selectedOption}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
+          <PopoverContent align="start" alignOffset={-6} sideOffset={12} className="w-[200px] p-0 widget-3d outline-none border-none">
+            <Command className="rounded-sm">
               <CommandList>
-                <CommandGroup>
+                <CommandGroup className="flex flex-col gap-4 p-0">
                   <CommandItem
                     key={"memory"}
                     value={"memory"}
+                    className={`px-4 py-3 ${selectedOption=="memory" ? "text-surface-750" : "text-surface-500 hover:text-surface-750 hover:bg-surface-100"} rounded-none cursor-pointer`}
                     onSelect={(currentValue) => {
                       setSelectedOption("memory")
                       setIsOpen(false)
@@ -143,9 +144,13 @@ const SysInfo = () => {
                   >
                     Memory
                   </CommandItem>
+
+                  <div className="w-full h-[1px] bg-surface-100" />
+
                   <CommandItem
                     key={"storage"}
                     value={"storage"}
+                    className={`px-4 py-3 ${selectedOption=="storage" ? "text-surface-750" : "text-surface-500 hover:text-surface-750 hover:bg-surface-100"} rounded-none cursor-pointer`}
                     onSelect={(currentValue) => {
                       setSelectedOption("storage")
                       setIsOpen(false)

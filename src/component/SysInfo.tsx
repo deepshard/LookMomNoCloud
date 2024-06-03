@@ -110,6 +110,15 @@ const SysInfo = () => {
         <ExternalDriveIcon color={"white"} height={20} width={20} onClick={() => setSelectedOption("storage")} />
         <span className="text-surface-750 text-sm">{selectedOption}</span>
       </div>
+
+      <div className="text-surface-750 text-sm">
+        {selectedOption === 'memory' ? (
+          <div>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
+        ) : (
+          <div>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
+        )}
+      </div>
+
       {/* <div className="w-full gap-2 flex items-start justify-between">
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
@@ -149,14 +158,8 @@ const SysInfo = () => {
             </Command>
           </PopoverContent>
         </Popover>
-        <div className="text-surface-750 text-sm">
-          {selectedOption === 'memory' ? (
-            <div>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
-          ) : (
-            <div>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
-          )}
-        </div>
       </div> */}
+
 
       <div className="w-32 -mt-8 mx-auto">
         <CircularProgressbar

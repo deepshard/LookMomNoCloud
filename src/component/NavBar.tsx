@@ -6,11 +6,11 @@ const NavBar = () => {
   return (
     <div className="navbar">
       <img src={appIcon} alt="its all truffle" />
-      <div className="w-[660px] h-8 rounded-sm flex-center-y px-2">
+      <div className="w-[660px] h-8 flex-center-y gap-2 items-center">
         <img
           src={searchIcon}
           alt="search"
-          className="w-3 h-3 mr-2 text-surface-400"
+          className="w-3 h-3 text-surface-400"
         />
         <input
           type="text"

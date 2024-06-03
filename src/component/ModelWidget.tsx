@@ -91,9 +91,9 @@ const ModelWidget = ({
     <div className="model-widget base-regular">
       <img src={llamaIcon} alt="" />
       <div className="absolute top-0 left-0 p-2">
-        <p className="opacity-75 w-[60%]">{model.author}</p>
+        <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
       </div>
-      <p className="opacity-75 absolute bottom-0 left-0 p-2"></p>
+      <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2"></p>
       {getWidgetButton()}
     </div>
   );

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios'
 
-export const ROOTURL = 'http://0.0.0.0:8899';
+export const ROOTURL = 'http://192.168.1.134:8899';
 
 export class ApiClient {
   client: AxiosInstance

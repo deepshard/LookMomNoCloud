@@ -9,8 +9,10 @@ import StorageIcon from "/assets/icons/storage.png";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import { motion } from 'framer-motion';
 import 'react-circular-progressbar/dist/styles.css';
-import { bytesToHumanReadable } from "../utils/sysUtils";
+import { bytesToHumanReadable } from "../utils";
 import { TSysInfo } from "../types/schemas";
+import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
+import { Command, CommandGroup, CommandItem, CommandList } from "./Command";
 
 type OptionType = 'memory' | 'storage';
 
@@ -46,15 +48,15 @@ const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo }) => {
         <div className='flex w-full  items-center py-2.5 pl-2.5 pr-3.5 gap-2 bg-surface-100 rounded-sm'>
           <img src="/assets/images/llama1.png" alt="" className='w-[30px] h-[30px] rounded-xs ' />
           <div className='flex flex-col justify-center items-start grow'>
-              <p className='text-surface-750 title-sm'>Llama-3</p>
-              <span className='flex gap-1 items-center -mt-1'>
-                  <div className='w-1.5 h-1.5 bg-success-regular rounded-full' />
-                  <p className='text-surface-500 callout-sm'>750 MB</p>
-                  {/* <p key={model.id} className="bg-gray-300 my-2 p-5 rounded-sm">{model.id} |  {bytesToHumanReadable(model.ram)} | {bytesToHumanReadable(model.disk)}</p> */}
-              </span>
+            <p className='text-surface-750 title-sm'>Llama-3</p>
+            <span className='flex gap-1 items-center -mt-1'>
+              <div className='w-1.5 h-1.5 bg-success-regular rounded-full' />
+              <p className='text-surface-500 callout-sm'>750 MB</p>
+              {/* <p key={model.id} className="bg-gray-300 my-2 p-5 rounded-sm">{model.id} |  {bytesToHumanReadable(model.ram)} | {bytesToHumanReadable(model.disk)}</p> */}
+            </span>
           </div>
           <p className='text-surface-500 callout-sm'>30%</p>
-    </div>
+        </div>
       ))}
     </div>
   );
@@ -64,18 +66,18 @@ const SysInfoOverview = ({ option, usedPercentage }: { option: OptionType, usedP
   return (
     <div className="relative flex flex-col items-center justify-between p-3 h-44 bg-surface-100 backdrop-blur-2xl rounded-md border-t-4 border-surface-500">
       <p className="title-base text-surface-400">{option === 'memory' ? 'PC Memory Usage' : 'PC Storage Used'}</p>
-      
+
       <div className="relative -mt-6 flex items-center justify-center gap-1.5 text-surface-750">
         <p className="text-6xl">{usedPercentage.toFixed(0)}</p>
         <p className="absolute -right-6 text-lg">%</p>
       </div>
-      
+
       {/* DON'T DELETE :: Meant only for perfect alignment purposes */}
       <div />
 
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md"/>
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md"/>
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md"/>
+      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md" />
+      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md" />
+      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md" />
     </div>
   );
 };
@@ -116,12 +118,44 @@ const SysInfo = () => {
     <div className="w-full h-full flex flex-col justify-start items-center p-4 gap-7" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
 
       <div className="w-full gap-2 flex items-start justify-between">
-        <div className="bg-transparent flex gap-2 items-center text-surface-750 text-sm outline-none cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}>
-          <img src={selectedOption === 'memory' ? MemoryIcon : StorageIcon} alt={selectedOption} className="h-3.5" />
-          {selectedOption === 'memory' ? 'Memory' : 'Storage'}
-        </div>
-        {isOpen && <OptionSelector selectedOption={selectedOption} onSelect={handleSelectChange} />}
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <button
+              role="combobox"
+              className="bg-white"
+            >
+              {selectedOption}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <CommandList>
+                <CommandGroup>
+                  <CommandItem
+                    key={"memory"}
+                    value={"memory"}
+                    onSelect={(currentValue) => {
+                      setSelectedOption("memory")
+                      setIsOpen(false)
+                    }}
+                  >
+                    Memory
+                  </CommandItem>
+                  <CommandItem
+                    key={"storage"}
+                    value={"storage"}
+                    onSelect={(currentValue) => {
+                      setSelectedOption("storage")
+                      setIsOpen(false)
+                    }}
+                  >
+                    Storage
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
         <div className="text-surface-750 text-sm">
           {selectedOption === 'memory' ? (
             <div>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)} / {bytesToHumanReadable(sysInfo?.resources.total.ram)}</div>
@@ -132,8 +166,8 @@ const SysInfo = () => {
       </div>
 
       <div className="w-32 -mt-8 mx-auto">
-        <CircularProgressbar 
-          value={usedPercentage} 
+        <CircularProgressbar
+          value={usedPercentage}
           text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
           strokeWidth={16}
           styles={buildStyles({

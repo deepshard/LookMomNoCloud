@@ -147,3 +147,19 @@ button.ant-btn.preorder-btn {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
   }
 }
+
+/* Hide scrollbars for all browsers */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.hide-scrollbar::-webkit-scrollbar { 
+  width: 0;
+  height: 0;
+}
+
+/* Additional styling to make sure content is still scrollable */
+.hide-scrollbar {
+  overflow: auto;
+}

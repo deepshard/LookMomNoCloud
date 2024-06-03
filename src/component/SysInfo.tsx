@@ -104,28 +104,28 @@ const SysInfo = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-start items-center p-3.5 gap-7" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+    <div className="w-full h-full flex flex-col justify-start items-center px-3.5 pt-3.5 gap-7 overflow-y-scroll hide-scrollbar" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
 
-      <div className="flex w-full items-center justify-between gap-2">
+      <div className="fixed top-0 p-3.5 flex w-full items-center justify-between gap-2">
 
         <div className="flex items-center justify-start gap-1">
           <div className="flex justify-start items-center gap-1">
-            <div className={`${selectedOption == "memory" ? "" : ""} p-1.5 rounded-[5px] cursor-pointer`}>
-              <MemoryChipIcon className="fill-current text-red-400" height={14} width={14} onClick={() => setSelectedOption("memory")} />
+            <div className={`${selectedOption == "memory" ? "text-surface-750" : "text-surface-500"} p-1.5 rounded-[5px] cursor-pointer`}>
+              <MemoryChipIcon className="fill-current " height={14} width={14} onClick={() => setSelectedOption("memory")} />
             </div>
 
             {/* DIVIDER */}
             <div className="w-[1px] h-[12px] bg-surface-100" />
 
-            <div className={`${selectedOption == "storage" ? "" : ""} p-1.5 rounded-[5px] cursor-pointer`}>
-              <ExternalDriveIcon className="fill-current text-red-400" height={14} width={14} onClick={() => setSelectedOption("storage")} />
+            <div className={`${selectedOption == "storage" ? "text-surface-750" : "text-surface-500"} p-1.5 rounded-[5px] cursor-pointer`}>
+              <ExternalDriveIcon className="fill-current" height={14} width={14} onClick={() => setSelectedOption("storage")} />
             </div>
           </div>
 
           {/* <span className="text-surface-750 capitalize">{selectedOption}</span> */}
         </div>
 
-        <div className="text-surface-750 text-sm">
+        <div className="mr-1 text-surface-750 text-xs">
           {selectedOption === 'memory' ? (
             <div className="flex justify-start items-center gap-2.5">
               <p>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)}</p>
@@ -148,54 +148,7 @@ const SysInfo = () => {
         </div>
       </div>
 
-      {/* <div className="w-full gap-2 flex items-start justify-between">
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
-            <button
-              role="combobox"
-              className="text-surface-750 capitalize outline-none"
-            >
-              {selectedOption}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="start" alignOffset={-6} sideOffset={12} className="w-[200px] p-0 widget-3d outline-none border-none">
-            <Command className="rounded-sm">
-              <CommandList>
-                <CommandGroup className="flex flex-col gap-4 p-0">
-                  <CommandItem
-                    key={"memory"}
-                    value={"memory"}
-                    className={`px-4 py-3 ${selectedOption=="memory" ? "text-surface-750" : "text-surface-500 hover:text-surface-750 hover:bg-surface-100"} rounded-none cursor-pointer`}
-                    onSelect={(currentValue) => {
-                      setSelectedOption("memory")
-                      setIsOpen(false)
-                    }}
-                  >
-                    Memory
-                  </CommandItem>
-
-                  <div className="w-full h-[1px] bg-surface-100" />
-
-                  <CommandItem
-                    key={"storage"}
-                    value={"storage"}
-                    className={`px-4 py-3 ${selectedOption=="storage" ? "text-surface-750" : "text-surface-500 hover:text-surface-750 hover:bg-surface-100"} rounded-none cursor-pointer`}
-                    onSelect={(currentValue) => {
-                      setSelectedOption("storage")
-                      setIsOpen(false)
-                    }}
-                  >
-                    Storage
-                  </CommandItem>
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div> */}
-
-
-      <div className="w-32 -mt-8 mx-auto">
+      <div className="w-32 mt-10 mx-auto">
         <CircularProgressbar
           value={usedPercentage}
           text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
@@ -210,7 +163,7 @@ const SysInfo = () => {
         />
       </div>
 
-      <div className="flex flex-col flex-grow w-full h-full overflow-y-scroll">
+      <div className="pb-3.5 flex flex-col flex-grow w-full h-full">
         <ModelsList sysInfo={sysInfo} />
       </div>
 

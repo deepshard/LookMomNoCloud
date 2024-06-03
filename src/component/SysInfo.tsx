@@ -13,6 +13,8 @@ import { bytesToHumanReadable } from "../utils";
 import { TSysInfo } from "../types/schemas";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import { Command, CommandGroup, CommandItem, CommandList } from "./Command";
+import MemoryChipIcon from "../icons/MemoryChip";
+import ExternalDriveIcon from "../icons/ExternalDrive";
 
 type OptionType = 'memory' | 'storage';
 
@@ -103,8 +105,11 @@ const SysInfo = () => {
 
   return (
     <div className="w-full h-full flex flex-col justify-start items-center p-4 gap-7" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-
-      <div className="w-full gap-2 flex items-start justify-between">
+      <div>
+        <MemoryChipIcon color={"white"} height={100} width={20} onClick={() => setSelectedOption("memory")} />
+        <ExternalDriveIcon color={"white"} height={100} width={20} onClick={() => setSelectedOption("storage")} />
+      </div>
+      {/* <div className="w-full gap-2 flex items-start justify-between">
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <button
@@ -155,7 +160,7 @@ const SysInfo = () => {
             <div>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)} / {bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</div>
           )}
         </div>
-      </div>
+      </div> */}
 
       <div className="w-32 -mt-8 mx-auto">
         <CircularProgressbar

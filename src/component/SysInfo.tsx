@@ -72,10 +72,6 @@ const SysInfoOverview = ({ option, usedPercentage }: { option: OptionType, usedP
       
       {/* DON'T DELETE :: Meant only for perfect alignment purposes */}
       <div />
-
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md"/>
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md"/>
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md"/>
     </div>
   );
 };

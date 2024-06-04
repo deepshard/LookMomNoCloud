@@ -28,21 +28,11 @@ const OptionSelector = ({ selectedOption, onSelect }: { selectedOption: OptionTy
 );
 
 const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo }) => {
-  // if (!sysInfo) return <></>;
-
-  let sysInfoTemporary = {
-    resources: {
-      models: [
-        { id: '1', ram: 1024, disk: 2048 },
-        { id: '2', ram: 2048, disk: 4096 },
-        { id: '3', ram: 4096, disk: 8192 },
-      ]
-    }
-  }
+  if (!sysInfo) return <></>;
 
   return (
     <div className="flex flex-col gap-2">
-      {sysInfoTemporary.resources.models.map((model) => (
+      {sysInfo.resources.models.map((model) => (
         <div className='flex w-full  items-center py-2.5 pl-2.5 pr-3.5 gap-2 bg-surface-100 rounded-sm'>
           <img src="/assets/images/llama1.png" alt="" className='w-[30px] h-[30px] rounded-xs ' />
           <div className='flex flex-col justify-center items-start grow'>

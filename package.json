@@ -66,6 +66,7 @@
     "react-multi-carousel": "^2.8.5",
     "react-router-dom": "^6.23.1",
     "react-spinners": "^0.13.8",
+    "swr": "^2.2.5",
     "uuid": "^9.0.1",
     "winston": "^3.13.0",
     "zod": "^3.23.8",

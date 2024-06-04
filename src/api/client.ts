@@ -11,6 +11,14 @@ export class ApiClient {
       headers: {}
     });
   }
+
+  get = async (url: string) => {
+    const response = await this.client.get(url);
+    return response.data;
+  }
 }
 
-export default ApiClient
+const client = new ApiClient("")
+
+export default client
+

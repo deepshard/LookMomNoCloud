@@ -8,6 +8,7 @@ import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
 import SysInfo from "./component/SysInfo";
+import Highlights from "./component/Highlights";
 
 const MODEL_LIST = [
   {
@@ -95,16 +96,17 @@ export default function Home() {
     <div className="snap-y snap-mandatory">
       <div className="home-layout w-full h-full flex flex-col justify-between items-center gap-5 p-14">
         {/* DON'T DELETE – Meant for alignment purposes */}
-        <div/>
-        
+        <div />
+
         {/* HOME WIDGETS */}
         <div className="w-[660px] flex flex-col justify-start items-center gap-5">
           {/* TITLE */}
           <h1 className="title-base text-surface-750 w-full">Welcome, Peter</h1>
-          
+
           {/* FREQUENTLY USED WIDGETS */}
           <div className="flex gap-1.5 w-[660px]">
-            {MODEL_LIST.map((model) => (
+            <Highlights />
+            {/* {MODEL_LIST.map((model) => (
               <ModelWidget
                 model={model}
                 key={model.id}
@@ -113,14 +115,14 @@ export default function Home() {
                   return null;
                 }}
               />
-            ))}
+            ))} */}
           </div>
 
           {/* FIXED WIDGETS – News, Apps, Models & Hardware */}
           <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
             {/* New Explore and Apps container */}
             <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
-              
+
               {/* NEWS CAROUSEL */}
               <div className="relative widget-3d rounded-lg w-80 h-[150px]">
                 <Carousel
@@ -286,7 +288,7 @@ export default function Home() {
         </div>
 
         {/* DON'T DELETE – Meant for alignment purposes */}
-        <div/>
+        <div />
       </div>
 
     </div>

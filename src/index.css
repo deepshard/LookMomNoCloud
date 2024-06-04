@@ -55,7 +55,7 @@ button.ant-btn.preorder-btn {
 
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply flex justify-between items-center fixed w-full top-0 p-5;
+    @apply flex justify-between items-center z-10 fixed w-full top-0 p-5;
   }
 
   

@@ -7,7 +7,10 @@ body {
   font-size: 14px;
   line-height: 1.3;
   font-weight: 400;  /* Regular */
-  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  /* give me a gradient background below */
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(211, 13, 13, 0.5) 100%);
+  /* background-color: rgba(0, 0, 0); */
 }
 
 .react-multi-carousel-track {
@@ -42,6 +45,23 @@ button.ant-btn.preorder-btn {
     }
   }
 }
+
+
+.carousel-container {
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+}
+.carousel-item {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+.carousel-content {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+
 
 @layer base {
   
@@ -146,6 +166,26 @@ button.ant-btn.preorder-btn {
   .widget-3d {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
   }
+
+  .sysinfo-carousel-wrapper {
+    @apply w-full h-full relative !important;
+  }
+  .sysinfo-carousel-wrapper::before {
+    z-index: -9 !important;
+    content: '';
+    @apply absolute w-full h-full !important;
+    backdrop-filter: blur(20px);
+  }
+
+  /* .test-overlay {
+    @apply relative top-0 h-[60px] w-full !important;
+  }
+  .test-overlay::before {
+    content: '';
+    @apply absolute -top-20 bg-yellow-300/30 w-full h-full  !important;
+    backdrop-filter: blur(5px);
+  } */
+
 }
 
 /* Hide scrollbars for all browsers */

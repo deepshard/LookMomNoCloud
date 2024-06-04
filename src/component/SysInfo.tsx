@@ -21,7 +21,7 @@ type OptionType = 'memory' | 'storage';
 const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo }) => {
   // if (!sysInfo) return <></>;
 
-  let sysInfoTemporary = {
+  const sysInfoTemporary = {
     resources: {
       models: [
         { id: '1', ram: 1024, disk: 2048 },
@@ -63,10 +63,6 @@ const SysInfoOverview = ({ option, usedPercentage }: { option: OptionType, usedP
 
       {/* DON'T DELETE :: Meant only for perfect alignment purposes */}
       <div />
-
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md" />
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md" />
-      <div className="absolute top-0 backdrop-blur-3xl w-full h-full rounded-md" />
     </div>
   );
 };
@@ -104,80 +100,85 @@ const SysInfo = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-start items-center px-3.5 pt-3.5 gap-7 overflow-y-scroll hide-scrollbar" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-
-      <div className="fixed top-0 p-3.5 flex w-full items-center justify-between gap-2">
-
-        <div className="flex items-center justify-start gap-1">
-          <div className="flex justify-start items-center gap-1">
-            <div className={`${selectedOption == "memory" ? "text-surface-750" : "text-surface-500"} p-1.5 rounded-[5px] cursor-pointer`}>
-              <MemoryChipIcon className="fill-current " height={14} width={14} onClick={() => setSelectedOption("memory")} />
-            </div>
-
-            {/* DIVIDER */}
-            <div className="w-[1px] h-[12px] bg-surface-100" />
-
-            <div className={`${selectedOption == "storage" ? "text-surface-750" : "text-surface-500"} p-1.5 rounded-[5px] cursor-pointer`}>
-              <ExternalDriveIcon className="fill-current" height={14} width={14} onClick={() => setSelectedOption("storage")} />
-            </div>
-          </div>
-
-          {/* <span className="text-surface-750 capitalize">{selectedOption}</span> */}
-        </div>
-
-        <div className="mr-1 text-surface-750 text-xs">
-          {selectedOption === 'memory' ? (
-            <div className="flex justify-start items-center gap-2.5">
-              <p>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)}</p>
-
-              {/* DIVIDER */}
-              <div className="w-[1px] h-[12px] bg-surface-100" />
-
-              <p>{bytesToHumanReadable(sysInfo?.resources.total.ram)}</p>
-            </div>
-          ) : (
-            <div className="flex justify-start items-center gap-2.5">
-              <p>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)}</p>
-
-              {/* DIVIDER */}
-              <div className="w-[1px] h-[12px] bg-surface-100" />
-
-              <p>{bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</p>
-            </div>
-          )}
-        </div>
+    <div className="relative w-full h-full">
+      <div className="absolute bottom-0 w-full h-[80px] flex justify-between items-center p-2 ">
+        <div className="bg-pink-400 w-[50px] h-[25px]"/>
+        <div className="bg-pink-400 w-[20px] h-[20px]"/>
       </div>
-
-      <div className="w-32 mt-10 mx-auto">
-        <CircularProgressbar
-          value={usedPercentage}
-          text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
-          strokeWidth={14}
-          styles={buildStyles({
-            textColor: 'rgba(255, 255, 255, 0.75)',
-            pathColor: 'rgba(255, 255, 255, 1)',
-            trailColor: 'rgba(255, 255, 255, 0.1)',
-            textSize: '12px',
-            pathTransitionDuration: 0.5,
-          })}
-        />
-      </div>
-
-      <div className="pb-3.5 flex flex-col flex-grow w-full h-full">
-        <ModelsList sysInfo={sysInfo} />
-      </div>
-
-
-      <motion.div
-        variants={hoverVariants}
-        initial="visible"
-        animate={!isHovered ? "visible" : "hidden"}
-        className="absolute w-full bottom-0 p-2"
-      >
-        <SysInfoOverview option={selectedOption} usedPercentage={usedPercentage} />
-
-      </motion.div>
     </div>
+    // <div className=" w-full h-full flex flex-col justify-start items-center px-3.5 pt-3.5 gap-7 overflow-y-scroll hide-scrollbar" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+
+    //   <div className="fixed top-0 p-3.5 flex w-full items-center justify-between gap-2">
+
+    //     <div className="flex items-center justify-start gap-1">
+    //       <div className="flex justify-start items-center gap-1">
+    //         <div className={`${selectedOption == "memory" ? "text-surface-750" : "text-surface-500"} p-1.5 rounded-[5px] cursor-pointer`}>
+    //           <MemoryChipIcon className="fill-current " height={14} width={14} onClick={() => setSelectedOption("memory")} />
+    //         </div>
+
+    //         {/* DIVIDER */}
+    //         <div className="w-[1px] h-[12px] bg-surface-100" />
+
+    //         <div className={`${selectedOption == "storage" ? "text-surface-750" : "text-surface-500"} p-1.5 rounded-[5px] cursor-pointer`}>
+    //           <ExternalDriveIcon className="fill-current" height={14} width={14} onClick={() => setSelectedOption("storage")} />
+    //         </div>
+    //       </div>
+
+    //       {/* <span className="text-surface-750 capitalize">{selectedOption}</span> */}
+    //     </div>
+
+    //     <div className="mr-1 text-surface-750 text-xs">
+    //       {selectedOption === 'memory' ? (
+    //         <div className="flex justify-start items-center gap-2.5">
+    //           <p>{bytesToHumanReadable(sysInfo?.resources.total.ram - sysInfo?.resources.available.ram, false)}</p>
+
+    //           {/* DIVIDER */}
+    //           <div className="w-[1px] h-[12px] bg-surface-100" />
+
+    //           <p>{bytesToHumanReadable(sysInfo?.resources.total.ram)}</p>
+    //         </div>
+    //       ) : (
+    //         <div className="flex justify-start items-center gap-2.5">
+    //           <p>{bytesToHumanReadable(sysInfo?.resources?.total?.disk - sysInfo?.resources?.available?.disk, false)}</p>
+
+    //           {/* DIVIDER */}
+    //           <div className="w-[1px] h-[12px] bg-surface-100" />
+
+    //           <p>{bytesToHumanReadable(sysInfo?.resources?.total?.disk)}</p>
+    //         </div>
+    //       )}
+    //     </div>
+    //   </div>
+
+    //   <div className="w-32 -mt-8 mx-auto">
+    //     <CircularProgressbar 
+    //       value={usedPercentage} 
+    //       text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
+    //       strokeWidth={14}
+    //       styles={buildStyles({
+    //         textColor: 'rgba(255, 255, 255, 0.75)',
+    //         pathColor: 'rgba(255, 255, 255, 1)',
+    //         trailColor: 'rgba(255, 255, 255, 0.1)',
+    //         textSize: '12px',
+    //         pathTransitionDuration: 0.5,
+    //       })}
+    //     />
+    //   </div>
+
+    //   <div className="pb-3.5 flex flex-col flex-grow w-full h-full">
+    //     <ModelsList sysInfo={sysInfo} />
+    //   </div>
+
+    //   <motion.div
+    //     variants={hoverVariants}
+    //     initial="visible"
+    //     animate={!isHovered ? "visible" : "hidden"}
+    //     className="w-full h-full absolute bottom-0"
+    //   >
+    //     <SysInfoOverview option={selectedOption} usedPercentage={usedPercentage} />
+
+    //   </motion.div>
+    // </div>
   );
 };
 

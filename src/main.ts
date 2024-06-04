@@ -14,8 +14,8 @@ const createWindow = () => {
     // height: 600,
     minWidth: 850,
     minHeight: 600,
-    backgroundMaterial: "acrylic",
-    vibrancy: "fullscreen-ui",
+    // backgroundMaterial: "acrylic",
+    // vibrancy: "fullscreen-ui",
     webPreferences: {
       // devTools: process.env.NODE_ENV === "development",
       nodeIntegration: true,

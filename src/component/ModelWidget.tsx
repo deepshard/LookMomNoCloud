@@ -44,7 +44,7 @@ const ModelWidget = ({
         return;
       case "downloading":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <div className="h-8 w-8 absolute bottom-0 right-0 m-2 bg-surface-100 rounded-full">
             <CircularProgressbar
               value={model.progress}
               text={`${model.progress}%`}
@@ -61,25 +61,25 @@ const ModelWidget = ({
             onClick={() => {
               downloadModel && downloadModel(model);
             }}
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
+            className="h-8 w-8 absolute bottom-0 right-0 m-2 bg-surface-100 rounded-full"
           >
             <img
               src={downloadIcon}
               alt=""
-              className="h-[32.73px] w-[32.73px]"
+              className="h-8 w-8"
             />
           </div>
         );
       case "paused":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
+          <div className="h-8 w-8 absolute bottom-0 right-0 m-2 bg-surface-100 rounded-full">
+            <img src={playIcon} alt="" className="h-8 w-8" />
           </div>
         );
       case "running":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
+          <div className="h-8 w-8 absolute bottom-0 right-0 m-2 bg-surface-100 rounded-full">
+            <img src={pauseIcon} alt="" className="h-8 w-8" />
           </div>
         );
 
@@ -90,10 +90,11 @@ const ModelWidget = ({
   return (
     <div className="model-widget base-regular">
       <img src={llamaIcon} alt="" />
-      <div className="absolute top-0 left-0 p-2">
-        <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
+      <div className="absolute top-0 left-0 p-2 w-[60%]">
+        <p className="text-surface-main">{model.name}</p>
+        <p className="text-surface-750">{model.author}</p>
       </div>
-      <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2"></p>
+      <p className="text-surface-750 absolute bottom-0 left-0 p-2 w-[60%]"></p>
       {getWidgetButton()}
     </div>
   );

@@ -18,9 +18,9 @@ module.exports = {
       colors: {
         'bg-window': 'rgba(0, 0, 0, 0.3)',
         'bg-searchbar': 'rgba(0, 0, 0, 0.075)',
-        'bg-wdget': 'rgba(0, 0, 0, 0.1)',
-        'bg-wdget-hover': 'rgba(0, 0, 0, 0.2)',
-        'bg-wdget-active': 'rgba(0, 0, 0, 0.3)',
+        'bg-widget': 'rgba(0, 0, 0, 0.1)',
+        'bg-widget-hover': 'rgba(0, 0, 0, 0.2)',
+        'bg-widget-active': 'rgba(0, 0, 0, 0.3)',
         // -------------------------------------
         'surface-main': 'rgba(255, 255, 255, 1)',
         'surface-750': 'rgba(255, 255, 255, 0.75)',

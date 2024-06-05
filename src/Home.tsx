@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import {default as CustomCarousel} from './component/common/Carousel';
+import { default as CustomCarousel } from "./component/common/Carousel";
 import { Button } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
 import SysInfo from "./component/SysInfo";
 import NewSysInfo from "./component/SysInfo/NewSysInfo";
+import { Carousel as AntdCarousel } from "antd";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import SysInfoModelListItem from "./component/SysInfo/SysInfoModelListItem";
 
 const MODEL_LIST = [
   {
@@ -17,14 +20,10 @@ const MODEL_LIST = [
     author: "Meta",
     size: 3000000000,
     downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -33,14 +32,10 @@ const MODEL_LIST = [
     author: "Openai",
     size: 3000000000,
     downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -49,14 +44,10 @@ const MODEL_LIST = [
     author: "Microsoft",
     size: 3000000000,
     downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
   {
@@ -65,32 +56,34 @@ const MODEL_LIST = [
     author: "Databricks",
     size: 3000000000,
     downloads: 120,
-    risks:
-      "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    capabilities:
-      "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    intro:
-      "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
-    hfLink:
-      "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
+    risks: "Risks: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    capabilities: "Capabilities:Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    intro: "Intro: Llama 3B is a detailed model designed by Meta. This model is designed to be fine-tuned for a wide range of natural language understanding and generation tasks.",
+    hfLink: "https://huggingface.co/togethercomputer/RedPajama-INCITE-Instruct-3B-v1",
     likes: 70,
   },
 ];
 
 export default function Home() {
-  const llamaImage =
-    process.env.NODE_ENV === "development"
-      ? "/assets/images/llama1.png"
-      : "../../renderer/main_window/assets/images/llama1.png";
-  const truffleHardwareImage =
-    process.env.NODE_ENV === "development"
-      ? "/assets/icons/truffle-hardware.svg"
-      : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
+  const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
+  const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
 
   const getWidgetState = (model: any): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
     return "not-downloaded";
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const appModel = document.getElementById("app-model-card");
+      const sysinfo = document.getElementsByClassName("slick-list")[0];
+      sysinfo.setAttribute("style", `max-height: ${appModel.offsetHeight}px !important; overflow-y: auto;`);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="snap-y snap-mandatory">
@@ -110,7 +103,7 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 gap-2 lg:gap-10 mt-[34.89px]">
           {/* New Explore and Apps container */}
-          <div className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
+          <div id="app-model-card" className="col-span-1 flex flex-col gap-4 justify-between min-w-[263px] w-full h-[280px] lg:h-[353.19px]">
             <div className="relative">
               <Carousel
                 responsive={{
@@ -129,65 +122,32 @@ export default function Home() {
                 infinite
                 className="border-[#D9D9D94D] border-4 rounded-md"
                 customDot={<CustomCarouselDot />}
-                dotListClass="discover-carousel-dots"
-              >
+                dotListClass="discover-carousel-dots">
                 <div className="w-full h-[158px] relative overflow-hidden ">
-                  <img
-                    src={llamaImage}
-                    alt=""
-                    className="blurred-bg-img backdrop-blur-md"
-                  />
+                  <img src={llamaImage} alt="" className="blurred-bg-img backdrop-blur-md" />
                   <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                   <div className="absolute top-0 left-0 p-[16px]">
-                    <img
-                      src={llamaImage}
-                      alt=""
-                      className="discover-model-img w-[44px] h-[44px] rounded-md"
-                    />
-                    <h3 className="base-regular mt-[10px] mb-[3px]">
-                      DeepSeek
-                    </h3>
+                    <img src={llamaImage} alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                    <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
                     <p className="break-words line-clamp-2 base-regular">
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
+                      lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur
+                      adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur
+                      elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate
+                      consectetur etiam consectetur
                     </p>
                   </div>
                 </div>
                 <div className="w-full h-[158px] relative overflow-hidden ">
-                  <img
-                    src={llamaImage}
-                    alt=""
-                    className="blurred-bg-img backdrop-blur-md"
-                  />
+                  <img src={llamaImage} alt="" className="blurred-bg-img backdrop-blur-md" />
                   <div className="absolute top-0 left-0 bg-white/20 w-full h-full backdrop-blur-lg" />
                   <div className="absolute top-0 left-0 p-[16px]">
-                    <img
-                      src={llamaImage}
-                      alt=""
-                      className="discover-model-img w-[44px] h-[44px] rounded-md"
-                    />
-                    <h3 className="base-regular mt-[10px] mb-[3px]">
-                      DeepSeek
-                    </h3>
+                    <img src={llamaImage} alt="" className="discover-model-img w-[44px] h-[44px] rounded-md" />
+                    <h3 className="base-regular mt-[10px] mb-[3px]">DeepSeek</h3>
                     <p className="break-words line-clamp-2 base-regular">
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
+                      lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur
+                      adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur
+                      elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate
+                      consectetur etiam consectetur
                     </p>
                   </div>
                 </div>
@@ -207,9 +167,7 @@ export default function Home() {
                     <div className="h-[38px] w-[38px] bg-[#457efb] rounded-md"></div>
                   </div>
                 </div>
-                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">
-                  App
-                </p>
+                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">App</p>
               </div>
               <div className="min-w-[153.71px] md:w-[263.71px] h-full bg-[#D9D9D94D] rounded-md relative">
                 <div className="grid grid-cols-2 gap-[21px] w-full h-full p-5">
@@ -222,48 +180,59 @@ export default function Home() {
                     <div className="h-[38px] w-[38px] bg-[#457efb] rounded-md"></div>
                   </div>
                 </div>
-                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">
-                  Models
-                </p>
+                <p className="absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
               </div>
             </div>
           </div>
 
           {/* HARDWARE MWIDGET – CAROUSEL */}
-          <div className="widget-3d w-80 h-80">
-            <div className="sysinfo-carousel-wrapper ">
-              <CustomCarousel
-                items={[
-                  // <SysInfo key={'1'}/>,
-                  <NewSysInfo key={'1'}/>,
-                  <div key={'2'} className="col-span-1 w-full h-full ">
-                    <div className="flex flex-col w-full h-full">
-                      <div className="w-full h-full flex justify-center flex-1 ">
-                        <img
-                          src={truffleHardwareImage}
-                          alt=""
-                          className="self-end"
-                        />
-                      </div>
-                      <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#D9D9D9]/50 from-[20%] via-[#D9D9D9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                        <Button
-                          type="primary"
-                          className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817F7F] text-white"
-                        >
-                          <span className="base-medium ">Pre Order Truffle–1</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>,
-                ]}
-                
-                interval={3000}
-              />
+          <AntdCarousel infinite easing="linear" waitForAnimate className="sysinfo-carousel-wrapper">
+            <div className="w-full h-full relative">
+              <div className="sticky top-0">
+                <div className="flex justify-between items-center">
+                  <span className="flex">
+                    <img src="/assets/icons/memory.svg" alt="memory" />
+                    <div className="h-[12px] w-[0.5px] bg-white/10 mx-[10px]" />
+                    <img src="/assets/icons/memory.svg" alt="memory" />
+                  </span>
+                  <span>1/16GB</span>
+                </div>
+                <CircularProgressbar
+                  // value={usedPercentage}
+                  value={75}
+                  // text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
+                  text="75%"
+                  strokeWidth={14}
+                  styles={buildStyles({
+                    textColor: "rgba(255, 255, 255, 0.75)",
+                    pathColor: "rgba(255, 255, 255, 1)",
+                    trailColor: "rgba(255, 255, 255, 0.1)",
+                    textSize: "12px",
+                    pathTransitionDuration: 0.5,
+                  })}
+                  className="h-[133px] w-[133px] mt-[14px]"
+                />
+              </div>
+              <div className="">
+                <SysInfoModelListItem />
+                <SysInfoModelListItem />
+                <SysInfoModelListItem />
+                <SysInfoModelListItem />
+              </div>
+              <div className="sysinfo-overlay">
+                <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center">
+                  <span className="flex gap-[8px] mt-[22px]">
+                    <img src="/public/assets/icons/desktop.svg" alt="" />
+                    PC Memory Usage
+                  </span>
+                  <span className="sysinfo-overlay-text">75<p>%</p></span>
+                </div>
+              </div>
             </div>
-          </div>
+            <div className="w-full h-full bg-pink-950 "></div>
+          </AntdCarousel>
         </div>
       </div>
-
     </div>
   );
 }

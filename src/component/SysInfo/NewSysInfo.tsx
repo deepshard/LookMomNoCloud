@@ -6,7 +6,7 @@ import SysInfoOverviewCard from './SysInfoOverviewCard'
 
 function NewSysInfo() {
   return (
-    <div className='relative w-full h-full flex flex-col justify-start items-center px-3.5 pt-14 gap-7 overflow-y-scroll hide-scrollbar'>
+    <div className='w-full h-full flex flex-col justify-start items-center px-3.5 pt-14 gap-7 overflow-y-scroll hide-scrollbar'>
       {/* TOP BAR */}
       <SysInfoTopBar />
 
@@ -18,9 +18,12 @@ function NewSysInfo() {
       {/* MODELS INFO */}
       <SysInfoModelsList />
 
-      {/* OVERVIEW CARD */}
-      <div className="z-1 w-full p-1.5 fixed bottom-0" >
-        <SysInfoOverviewCard />
+      {/* OVERFLOW CARD */}
+      <div className="w-full h-[60%] px-1.5 pb-1.5 absolute mx-10 !bottom-0 bg-red-500" >
+        <div className="sysinfo-overflow ">
+
+        </div>
+        {/* <SysInfoOverviewCard /> */}
       </div>
     </div>
   )

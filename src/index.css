@@ -6,11 +6,11 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.3;
-  font-weight: 400;  /* Regular */
+  font-weight: 400; /* Regular */
   color: #fff;
   /* give me a gradient background below */
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(211, 13, 13, 0.5) 100%);
-  /* background-color: rgba(0, 0, 0); */
+  /* background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(211, 13, 13, 0.5) 100%); */
+  background-color: rgb(91, 28, 28);
 }
 
 .react-multi-carousel-track {
@@ -46,7 +46,6 @@ button.ant-btn.preorder-btn {
   }
 }
 
-
 .carousel-container {
   overflow: hidden;
   display: flex;
@@ -61,14 +60,25 @@ button.ant-btn.preorder-btn {
   width: 100%;
 }
 
+div.slick-list,
+div.slick-track,
+div.slick-slide > div {
+  height: 100% !important;
+}
 
+div.slick-slide > div {
+  padding: 0 8px !important;
+  overflow: overlay !important;
+}
+
+div.slick-slide:nth-child(2) {
+  padding: 6px !important;
+}
 
 @layer base {
-  
 }
 
 @layer utilities {
-
   .home-layout {
     @apply lg:mx-[128px] fixed;
   }
@@ -78,7 +88,6 @@ button.ant-btn.preorder-btn {
     @apply flex justify-between items-center fixed w-full top-[10px];
   }
 
-  
   /* --------  TYPOGRAPHY  -------- */
 
   /* Heading Large class */
@@ -159,7 +168,8 @@ button.ant-btn.preorder-btn {
 
   .glass-3d {
     @apply !important;
-    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.10) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+      0px 0px 15px 0px rgba(85, 85, 85, 0.1);
     backdrop-filter: blur(50px);
   }
 
@@ -168,24 +178,36 @@ button.ant-btn.preorder-btn {
   }
 
   .sysinfo-carousel-wrapper {
-    @apply w-full h-full relative !important;
+    @apply w-full h-full relative overflow-hidden text-white !important;
   }
   .sysinfo-carousel-wrapper::before {
     z-index: -9 !important;
-    content: '';
+    content: "";
+    @apply absolute w-full h-full rounded-lg overflow-hidden glass-3d !important;
+    /* backdrop-filter: blur(20px); */
+  }
+
+  .sysinfo-overlay {
+    @apply w-full h-[60%] absolute bottom-0 !important;
+  }
+  .sysinfo-overlay::before {
+    content: "";
     @apply absolute w-full h-full !important;
-    backdrop-filter: blur(20px);
+    border-radius: 10px 10px 16px 16px;
+    border-top: 4px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+      0px 0px 15px 0px rgba(85, 85, 85, 0.1);
+    backdrop-filter: blur(50px);
   }
 
-  /* .test-overlay {
-    @apply relative top-0 h-[60px] w-full !important;
+  .sysinfo-overlay-text {
+    @apply flex flex-center gap-[6px] text-[68px] font-bold mt-[13px]  !important;
+    line-height: normal;
+    p {
+      @apply text-[20px] !important;
+    }
   }
-  .test-overlay::before {
-    content: '';
-    @apply absolute -top-20 bg-yellow-300/30 w-full h-full  !important;
-    backdrop-filter: blur(5px);
-  } */
-
 }
 
 /* Hide scrollbars for all browsers */
@@ -194,7 +216,7 @@ button.ant-btn.preorder-btn {
   -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-.hide-scrollbar::-webkit-scrollbar { 
+.hide-scrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
 }

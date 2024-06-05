@@ -2,7 +2,7 @@ import React from 'react'
 
 function SysInfoOverviewCard() {
   return (
-    <div className="flex flex-col items-center justify-between p-3 h-44 bg-surface-100 backdrop-blur-2xl rounded-md border-t-4 border-surface-500">
+    <div className="flex flex-col items-center justify-between p-3 h-44 bg-surface-100 rounded-md border-t-4 border-surface-500">
       {/* <p className="title-base text-surface-400">{option === 'memory' ? 'PC Memory Usage' : 'PC Storage Used'}</p> */}
       <p className="title-base text-surface-400">PC Memory Usage</p>
 

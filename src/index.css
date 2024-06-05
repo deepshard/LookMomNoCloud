@@ -69,6 +69,10 @@ div.slick-slide > div {
 div.slick-slide > div {
   padding: 0 8px !important;
   overflow: overlay !important;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 div.slick-slide:nth-child(2) {
@@ -184,7 +188,6 @@ div.slick-slide:nth-child(2) {
     z-index: -9 !important;
     content: "";
     @apply absolute w-full h-full rounded-lg overflow-hidden glass-3d !important;
-    /* backdrop-filter: blur(20px); */
   }
 
   .sysinfo-overlay {

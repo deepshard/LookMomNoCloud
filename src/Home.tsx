@@ -3,15 +3,14 @@ import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { default as CustomCarousel } from "./component/common/Carousel";
-import { Button } from "antd";
+import { Button, Carousel as AntdCarousel } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
-import SysInfo from "./component/SysInfo";
 import NewSysInfo from "./component/SysInfo/NewSysInfo";
-import { Carousel as AntdCarousel } from "antd";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import SysInfoModelListItem from "./component/SysInfo/SysInfoModelListItem";
+import SysInfoModelListItem from "./component/SysInfo2/SysInfoModelListItem";
+import Sysinfo from "./component/SysInfo2/Sysinfo";
 
 const MODEL_LIST = [
   {
@@ -77,7 +76,12 @@ export default function Home() {
     const handleResize = () => {
       const appModel = document.getElementById("app-model-card");
       const sysinfo = document.getElementsByClassName("slick-list")[0];
-      sysinfo.setAttribute("style", `max-height: ${appModel.offsetHeight}px !important; overflow-y: auto;`);
+      sysinfo.setAttribute("style", `
+          max-height: ${appModel.offsetHeight}px !important; 
+
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+      `);
     };
 
     handleResize();
@@ -187,48 +191,7 @@ export default function Home() {
 
           {/* HARDWARE MWIDGET – CAROUSEL */}
           <AntdCarousel infinite easing="linear" waitForAnimate className="sysinfo-carousel-wrapper">
-            <div className="w-full h-full relative">
-              <div className="sticky top-0">
-                <div className="flex justify-between items-center">
-                  <span className="flex">
-                    <img src="/assets/icons/memory.svg" alt="memory" />
-                    <div className="h-[12px] w-[0.5px] bg-white/10 mx-[10px]" />
-                    <img src="/assets/icons/memory.svg" alt="memory" />
-                  </span>
-                  <span>1/16GB</span>
-                </div>
-                <CircularProgressbar
-                  // value={usedPercentage}
-                  value={75}
-                  // text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
-                  text="75%"
-                  strokeWidth={14}
-                  styles={buildStyles({
-                    textColor: "rgba(255, 255, 255, 0.75)",
-                    pathColor: "rgba(255, 255, 255, 1)",
-                    trailColor: "rgba(255, 255, 255, 0.1)",
-                    textSize: "12px",
-                    pathTransitionDuration: 0.5,
-                  })}
-                  className="h-[133px] w-[133px] mt-[14px]"
-                />
-              </div>
-              <div className="">
-                <SysInfoModelListItem />
-                <SysInfoModelListItem />
-                <SysInfoModelListItem />
-                <SysInfoModelListItem />
-              </div>
-              <div className="sysinfo-overlay">
-                <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center">
-                  <span className="flex gap-[8px] mt-[22px]">
-                    <img src="/public/assets/icons/desktop.svg" alt="" />
-                    PC Memory Usage
-                  </span>
-                  <span className="sysinfo-overlay-text">75<p>%</p></span>
-                </div>
-              </div>
-            </div>
+            <Sysinfo />
             <div className="w-full h-full bg-pink-950 "></div>
           </AntdCarousel>
         </div>

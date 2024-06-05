@@ -1,18 +1,17 @@
-import React from 'react'
-import SysInfoModelListItem from './SysInfoModelListItem'
+import React from "react";
+import SysInfoModelListItem from "../SysInfo2/SysInfoModelListItem";
 
 function SysInfoModelsList() {
+  const sysInfoTemporary = {
+    resources: {
+      models: [
+        { id: "1", ram: 1024, disk: 2048 },
+        { id: "2", ram: 2048, disk: 4096 },
+        { id: "3", ram: 4096, disk: 8192 },
+      ],
+    },
+  };
 
-    const sysInfoTemporary = {
-        resources: {
-            models: [
-            { id: '1', ram: 1024, disk: 2048 },
-            { id: '2', ram: 2048, disk: 4096 },
-            { id: '3', ram: 4096, disk: 8192 },
-            ]
-        }
-    }
-    
   return (
     <div className="flex flex-col gap-2 w-full">
       {sysInfoTemporary.resources.models.map((model) => (
@@ -21,7 +20,7 @@ function SysInfoModelsList() {
         <SysInfoModelListItem />
       ))}
     </div>
-  )
+  );
 }
 
-export default SysInfoModelsList
+export default SysInfoModelsList;

@@ -16,7 +16,9 @@ function NewSysInfo() {
       </div>
 
       {/* MODELS INFO */}
-      <SysInfoModelsList />
+      <div className='w-full pb-3.5'>
+        <SysInfoModelsList />
+      </div>
 
       {/* OVERFLOW CARD */}
       <div className="w-full h-[60%] px-1.5 pb-1.5 absolute mx-10 !bottom-0 bg-red-500" >

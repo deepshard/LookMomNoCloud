@@ -203,12 +203,40 @@ div.slick-slide:nth-child(2) {
       0px 0px 15px 0px rgba(85, 85, 85, 0.1);
     backdrop-filter: blur(50px);
   }
+  .sysinfo-overlay[data-ishovered="true"] {
+    /* display: none !important; */
+    animation: slideOut 0.3s ease-out forwards;
+  }
 
   .sysinfo-overlay-text {
     @apply flex flex-center gap-[6px] text-[68px] font-bold mt-[13px]  !important;
     line-height: normal;
     p {
       @apply text-[20px] !important;
+    }
+  }
+
+  /* Keyframes for moving the element to hidden position */
+  @keyframes slideOut {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(500px);
+      opacity: 1;
+    }
+  }
+
+  /* Keyframes for moving the element back to visible position */
+  @keyframes slideIn {
+    from {
+      transform: translateY(500px);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 }

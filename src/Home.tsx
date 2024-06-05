@@ -1,16 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, } from "react";
 import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { default as CustomCarousel } from "./component/common/Carousel";
-import { Button, Carousel as AntdCarousel } from "antd";
+import { Carousel as AntdCarousel } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
-import { uniqBy } from "lodash";
-import DiscoverButton from "./component/common/DiscoverButton";
-import NewSysInfo from "./component/SysInfo/NewSysInfo";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import SysInfoModelListItem from "./component/SysInfo2/SysInfoModelListItem";
-import Sysinfo from "./component/SysInfo2/Sysinfo";
+import Sysinfo from "./component/SysInfo/Sysinfo";
 
 const MODEL_LIST = [
   {

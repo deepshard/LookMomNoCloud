@@ -1,9 +1,5 @@
 import { useState } from "react";
 import { useStore } from "../store/store";
-//@ts-ignore
-import MemoryIcon from "/assets/icons/memory.png";
-//@ts-ignore
-import StorageIcon from "/assets/icons/storage.png";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import { motion } from 'framer-motion';
 import 'react-circular-progressbar/dist/styles.css';
@@ -15,11 +11,11 @@ type OptionType = 'memory' | 'storage';
 const OptionSelector = ({  onSelect }: { onSelect: (option: OptionType) => void }) => (
   <div className="absolute w-32 bg-gray-400">
     <div className="flex items-center p-2 gap-2 cursor-pointer" onClick={() => onSelect('memory')}>
-      <img src={MemoryIcon} alt="Memory" className="w-10 h-10" />
+      <img src={'/assets/icons/memory.png'} alt="Memory" className="w-10 h-10" />
       Memory
     </div>
     <div className="flex items-center p-2 gap-2 cursor-pointer" onClick={() => onSelect('storage')}>
-      <img src={StorageIcon} alt="Storage" className="w-10 h-10" />
+      <img src={'/assets/icons/storage.png'} alt="Storage" className="w-10 h-10" />
       Storage
     </div>
   </div>
@@ -30,7 +26,7 @@ const ModelsList = ({ sysInfo }: { sysInfo: TSysInfo | null }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      {sysInfo.resources.models.map((model) => (
+      {sysInfo.resources.models.map((_) => (
         <div className='flex w-full  items-center py-2.5 pl-2.5 pr-3.5 gap-2 bg-surface-100 rounded-sm'>
           <img src="/assets/images/llama1.png" alt="" className='w-[30px] h-[30px] rounded-xs ' />
           <div className='flex flex-col justify-center items-start grow'>
@@ -102,7 +98,7 @@ const SysInfo = () => {
       <div className="w-full gap-2 flex items-start justify-between">
         <div className="bg-transparent flex gap-2 items-center text-surface-750 text-sm outline-none cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}>
-          <img src={selectedOption === 'memory' ? MemoryIcon : StorageIcon} alt={selectedOption} className="h-3.5" />
+          <img src={selectedOption === 'memory' ? '/assets/icons/memory.png' : '/assets/icons/storage.png'} alt={selectedOption} className="h-3.5" />
           {selectedOption === 'memory' ? 'Memory' : 'Storage'}
         </div>
         {isOpen && <OptionSelector onSelect={handleSelectChange} />}

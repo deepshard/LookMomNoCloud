@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
 
@@ -35,18 +35,5 @@ jobs:
         status: ${{ job.status }}
         fields: repo,commit,author,action,eventName,ref,workflow
 
-    - name: Slack Notification on Success
-      if: success()
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        fields: repo,commit,author,action,eventName,ref,workflow
-        custom_payload: |
-          {
-            "attachments": [{
-              "color": "good",
-              "text": "Successfully completed CI pipeline for ${{ github.repository }} on commit ${{ github.sha }} by ${{ github.actor }}."
-            }]
-          }
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

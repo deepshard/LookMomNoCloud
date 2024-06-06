@@ -79,6 +79,25 @@ div.slick-slide:nth-child(2) {
   padding: 6px !important;
 }
 
+.slick-dots-bottom {
+  width: 60px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  li, button {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .slick-active > button {
+    background-color: rgba(255, 255, 255, 0.50) !important;
+  }
+
+  :not(.slick-active) > button:hover {
+    background-color: rgba(255, 255, 255, 0.50) !important;
+  }
+}
+
 @layer base {
 }
 
@@ -205,7 +224,7 @@ div.slick-slide:nth-child(2) {
   }
   .sysinfo-overlay[data-ishovered="true"] {
     /* display: none !important; */
-    animation: slideOut 0.3s ease-out forwards;
+    animation: slideOut 0.6s ease-out forwards;
   }
 
   .sysinfo-overlay-text {

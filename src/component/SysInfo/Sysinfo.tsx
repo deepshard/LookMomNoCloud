@@ -7,8 +7,8 @@ const Sysinfo = () => {
   const [isHovered, setIsHovered] = React.useState(false);
   const elementRef = useRef(null);
   const hoverVariants = {
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-    hidden: { opacity: 1, y: 500, transition: { duration: 0.3 } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    hidden: { opacity: 1, y: 500, transition: { duration: 0.6 } },
   };
 
   useEffect(() => {

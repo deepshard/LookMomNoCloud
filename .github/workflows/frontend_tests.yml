@@ -6,11 +6,8 @@ on:
       - main
 
 jobs:
-  build:
+  frontend_tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
 
@@ -27,7 +24,7 @@ jobs:
 
     - name: Run tests
       run: bun test
-
+  
     - name: Slack Notification on Failure
       if: failure()
       uses: 8398a7/action-slack@v3

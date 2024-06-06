@@ -27,11 +27,42 @@ const Status = ({ status }: { status: Highlight['status'] }) => {
         })
     }
 
-    if (status === "NOT_DOWNLOADED") return <button className="relative" onClick={installModel}>INSTALL</button>;
-    if (status === "DOWNLOADING") return <div className="relative">DOWNLOADING</div>;
-    if (status === "INSTALLING") return <div className="relative">INSTALLING</div>;
-    if (status === "RUNNING") return <div className="relative">RUNNING</div>;
-    if (status === "STOPPED") return <div className="relative">STOPPED</div>;
+    const downloadIcon =
+        process.env.NODE_ENV === "development"
+        ? "/assets/icons/download-fill.svg"
+        : "../../renderer/main_window/assets/icons/download-fill.svg";
+    const playIcon =
+        process.env.NODE_ENV === "development"
+        ? "/assets/icons/play.svg"
+        : "../../renderer/main_window/assets/icons/play.svg";
+    const pauseIcon =
+        process.env.NODE_ENV === "development"
+        ? "/assets/icons/pause.svg"
+        : "../../renderer/main_window/assets/icons/pause.svg";
+
+    if (status === "NOT_DOWNLOADED")
+        return (
+            <div onClick={installModel} className="h-8 w-8 absolute bottom-0 right-0 m-2 bg-surface-100 rounded-full">
+                <img src={downloadIcon} alt="" className="h-8 w-8" />
+            </div>
+        ) 
+
+    if (status === "DOWNLOADING") return <div className="relative"></div>;
+    if (status === "INSTALLING") return <div className="relative"></div>;
+    
+    if (status === "RUNNING") 
+        return (
+            <div className="h-8 w-8 absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] bg-surface-100 rounded-full">
+                <img src={pauseIcon} alt="" className="h-8 w-8" />
+            </div>
+        )   
+    
+    if (status === "STOPPED") 
+        return (
+            <div className="h-8 w-8 absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] bg-surface-100 rounded-full">
+                <img src={playIcon} alt="" className="h-8 w-8" />
+            </div>
+        )       
 };
 
 export default function Highlights() {
@@ -41,13 +72,15 @@ export default function Highlights() {
     if (!data) return <div>Loading...</div>;
 
     return (
-        <div className="flex gap-2">
+        <div className="flex gap-2.5">
             {data.map((highlight) => (
-                <div key={highlight.id} className="relative w-32 h-20 rounded-sm overflow-hidden">
-                    <img src={highlight.background_image} alt={highlight.name} className="absolute w-full h-full object-cover" />
-                    <div className="relative">{highlight.name}</div>
-                    <div className="relative"><Status status={highlight.status} /></div>
-                    <div className="relative">{highlight.progress}</div>
+                <div key={highlight.id} className="glass-3d relative flex flex-col justify-start items-start w-[124px] h-20 p-2 rounded-sm overflow-hidden cursor-pointer">
+                    <img src={highlight.background_image} alt={highlight.name} className="z-0 absolute top-0 left-0 w-full h-full object-cover" />
+                    <div className="z-1 absolute top-0 left-0 w-full h-full bg-black bg-opacity-10 hover:bg-opacity-30" />
+                    <p className="z-2 relative title-xs text-surface-main w-[75%] truncate">{highlight.name}</p>
+                    <p className="z-2 relative title-xs text-surface-750 w-3/5 truncate">{highlight.author}</p>
+                    <button className="z-2"><Status status={highlight.status} /></button>
+                    <div className="z-2 absolute bottom-2 left-2 title-xs text-surface-750 w-3/5">{highlight.progress}</div>
                 </div>
             ))}
         </div>

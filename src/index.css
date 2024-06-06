@@ -67,12 +67,17 @@ div.slick-slide > div {
 }
 
 div.slick-slide > div {
-  padding: 0 8px !important;
+  padding: 0 !important;
   overflow: overlay !important;
 
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+div.slick-slide {
+  overflow: hidden;
+  border-radius: 20px !important;
 }
 
 div.slick-slide:nth-child(2) {

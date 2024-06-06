@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import SysInfoModelListItem from "./SysInfoModelListItem";
 import { motion, AnimatePresence } from "framer-motion";
+import MemoryChip from "../../icons/MemoryChip";
+import ExternalDrive from "../../icons/ExternalDrive";
 
 const Sysinfo = () => {
   const [isHovered, setIsHovered] = React.useState(false);
@@ -9,6 +11,12 @@ const Sysinfo = () => {
   const hoverVariants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
     hidden: { opacity: 1, y: 500, transition: { duration: 0.6 } },
+  };
+
+  const [selection, setSelection] = React.useState<'memory' | 'hard-drive'>('memory');
+
+  const onSelectionChange = (value: 'memory' | 'hard-drive') => {
+    setSelection(value);
   };
 
   useEffect(() => {
@@ -41,19 +49,27 @@ const Sysinfo = () => {
   return (
     <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} className="w-full h-full relative">
       <div className="sticky top-0">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mx-[8px]">
           <span className="flex">
-            <img src="/assets/icons/memory.svg" alt="memory" />
+            <MemoryChip 
+              height={16} 
+              width={11} 
+              className={`cursor-pointer w-[16px] h-[11px] ${selection === 'memory' ? 'fill-surface-750' : 'fill-surface-500'}`}
+              onClick={() => onSelectionChange('memory')}
+            />
             <div className="h-[12px] w-[0.5px] bg-white/10 mx-[10px]" />
-            <img src="/assets/icons/memory.svg" alt="memory" />
+            <ExternalDrive 
+              height={16} 
+              width={11} 
+              className={`cursor-pointer w-[16px] h-[11px] ${selection === 'hard-drive' ? 'fill-surface-750' : 'fill-surface-500'}`}
+              onClick={() => onSelectionChange('hard-drive')}/>
           </span>
           <span>1/16GB</span>
         </div>
         <CircularProgressbar
           // value={usedPercentage}
           value={75}
-          // text={isHovered ? `${usedPercentage.toFixed(0)}%` : ' '}
-          text="75%"
+          text={isHovered ? `75%` : ' '}
           strokeWidth={14}
           styles={buildStyles({
             textColor: "rgba(255, 255, 255, 0.75)",

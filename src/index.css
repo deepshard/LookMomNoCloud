@@ -10,7 +10,9 @@ body {
   color: #fff;
   /* give me a gradient background below */
   /* background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(211, 13, 13, 0.5) 100%); */
-  background-color: rgb(91, 28, 28);
+  /* background-color: rgb(12, 12, 12); */
+  background: url(/assets/images/main-background.png);
+  background-size: cover;
 }
 
 .react-multi-carousel-track {
@@ -81,7 +83,7 @@ div.slick-slide {
 }
 
 div.slick-slide:nth-child(2) {
-  padding: 6px !important;
+  padding: 16px 8px 8px !important;
 }
 
 .slick-dots-bottom {
@@ -206,7 +208,7 @@ div.slick-slide:nth-child(2) {
   }
 
   .sysinfo-carousel-wrapper {
-    @apply w-full h-full relative overflow-hidden text-white !important;
+    @apply w-full h-full relative overflow-hidden text-surface-750 !important;
   }
   .sysinfo-carousel-wrapper::before {
     z-index: -9 !important;

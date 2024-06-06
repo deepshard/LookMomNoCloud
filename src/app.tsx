@@ -5,12 +5,12 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
 import { useEffect } from "react";
 import { ROOTURL } from "./api/client";
-import { useStore } from "./store/store";
+import { useAppStore } from "./store/store";
 
 const root = createRoot(document.getElementById("root"));
 
 function App() {
-  const { addSysInfo } = useStore((state) => state);
+  const { addSysInfo } = useAppStore();
 
   useEffect(() => {
     const eventSource = new EventSource(ROOTURL + "/sysinfo");

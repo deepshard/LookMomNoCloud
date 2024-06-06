@@ -9,10 +9,12 @@ interface State {
   clearData: () => void;
 }
 
-export const useStore = create<State>((set) => ({
+const useStore = create<State>((set) => ({
   sysInfo: null,
   addSysInfo: (info) => set((state) => ({ sysInfo: info })),
   highlights: [],
   setHighlights: (highlights) => set({ highlights }),
   clearData: () => set({ sysInfo: null, highlights: [] }),
 }));
+
+export const useAppStore = () => useStore((state) => state);

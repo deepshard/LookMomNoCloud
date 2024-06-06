@@ -6,6 +6,7 @@ import { Carousel as AntdCarousel } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import Sysinfo from "./component/SysInfo/Sysinfo";
 import TruffleHardware from "./component/SysInfo/TruffleHardware";
+import { useAppStore } from "./store/store";
 
 const MODEL_LIST = [
   {
@@ -60,7 +61,6 @@ const MODEL_LIST = [
 
 export default function Home() {
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
-  
 
   const getWidgetState = (model: any): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");

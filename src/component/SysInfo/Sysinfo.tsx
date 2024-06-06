@@ -1,19 +1,19 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import SysInfoModelListItem from "./SysInfoModelListItem";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, } from "framer-motion";
 import MemoryChip from "../../icons/MemoryChip";
 import ExternalDrive from "../../icons/ExternalDrive";
 
 const Sysinfo = () => {
-  const [isHovered, setIsHovered] = React.useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const elementRef = useRef(null);
   const hoverVariants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
     hidden: { opacity: 1, y: 500, transition: { duration: 0.6 } },
   };
 
-  const [selection, setSelection] = React.useState<'memory' | 'hard-drive'>('memory');
+  const [selection, setSelection] = useState<'memory' | 'hard-drive'>('memory');
 
   const onSelectionChange = (value: 'memory' | 'hard-drive') => {
     setSelection(value);
@@ -21,7 +21,7 @@ const Sysinfo = () => {
 
   useEffect(() => {
     const element = elementRef.current;
-    const handleAnimationEnd = (event: any) => {
+    const handleAnimationEnd = (event: AnimationEvent) => {
       if (event.animationName === "slideOut") {
         element.style.display = "none";
       }

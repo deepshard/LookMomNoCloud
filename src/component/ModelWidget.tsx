@@ -19,7 +19,6 @@ const ModelWidget = ({
   downloadModel,
   widgetState = "idle",
 }: ModelWidgetProps) => {
-  // const { downloadProgress } = useStore((state) => state);
 
   const downloadIcon =
     process.env.NODE_ENV === "development"

@@ -5,10 +5,10 @@ import { Outlet } from "react-router-dom";
 const Layout = () => {
   return (
     <div>
-      <section className="mb-[71.2px]">
+      <section>
         <NavBar />
       </section>
-      <section className="">
+      <section>
         <Outlet />
       </section>
     </div>

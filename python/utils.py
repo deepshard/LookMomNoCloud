@@ -4,7 +4,6 @@ import platform
 import socket
 from pathlib import Path
 from truffle_types import Quantization
-from .db import db
 
 
 def get_disk_usage(folder_path: str) -> int:
@@ -80,21 +79,9 @@ def get_model_size_info(
     return model_size, compressed_size
 
 
-async def get_usable_memory() -> int:
+def get_usable_memory() -> int:
     """
     This is the memory that is currently available or could be quickly made available.
     That is, the maximum memory a new process could use without trigger an OOM error.
     """
-    models = await db.runningmodels.find_many()
-    total_model_ram_usage = sum(
-        [
-            memory_info.rss
-            for memory_info in [
-                psutil.Process(model.pid).memory_info() for model in models
-            ]
-        ]
-    )
-    available_unswappable_memory = psutil.virtual_memory().available
-    return (
-        available_unswappable_memory - total_model_ram_usage
-    ) * 0.9  # 10% is the margin of error
+    return psutil.virtual_memory().total - psutil.virtual_memory().used

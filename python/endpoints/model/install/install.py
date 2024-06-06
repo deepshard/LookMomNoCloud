@@ -151,10 +151,10 @@ def get_quantization_object(quantization: Quantization, model):
         return filtered_quantization_options[0]
 
 
-async def get_space_check_info(
+def get_space_check_info(
     installation_manager: InstallationManager,
 ) -> tuple[int, int, int]:
-    available_ram = await get_usable_memory()
+    available_ram = get_usable_memory()
     disk_space = psutil.disk_usage("/").free
     bytes_remaining = installation_manager.get_total_bytes_remaining()
     return available_ram, disk_space, bytes_remaining
@@ -274,9 +274,7 @@ async def install_generator(
         return
 
     # Check that there is enough space to download the model
-    _, disk_space, total_bytes_remaining = await get_space_check_info(
-        installation_manager
-    )
+    _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
     if total_size + total_bytes_remaining > disk_space:
         logger.error(f"Not enough space to download {model_dir}")
         progress_event = {
@@ -413,7 +411,7 @@ async def install_generator(
 
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")
-    available_ram, disk_space, bytes_remaining = await get_space_check_info(
+    available_ram, disk_space, bytes_remaining = get_space_check_info(
         installation_manager
     )
     if (compressed_size + bytes_remaining > disk_space) or (model_size > available_ram):

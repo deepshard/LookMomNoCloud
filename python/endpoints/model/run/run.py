@@ -142,7 +142,13 @@ async def run_model(
         }
     )
 
-    return {"id": model_id, "instance": instance, "port": port, "error": None}
+    return {
+        "id": model_id,
+        "status": "RUNNING",
+        "instance": instance,
+        "port": port,
+        "error": None,
+    }
 
 
 async def kill_models(models: list[dict]):
@@ -168,11 +174,22 @@ async def run_models_generator(
     Yields:
         {
             "id": str,
+            "status": str (ACKNOWLEDGED, QUANTIZING, RUNNING)
             "instance": int,
             "port": int,
             "error": str
         }
     """
+
+    for model_id in model_ids:
+        acknowledgement_event = {
+            "id": model_id,
+            "status": "ACKNOWLEDGED",
+            "instance": None,
+            "port": None,
+            "error": None,
+        }
+        yield f"data: {json.dumps(acknowledgement_event)}\n\n"
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
@@ -193,6 +210,7 @@ async def run_models_generator(
         if not is_convertable_format(weights_path):
             error_event = {
                 "id": model_id,
+                "status": "QUANTIZING",
                 "instance": None,
                 "port": None,
                 "error": "Model is not in a convertable format",
@@ -219,6 +237,7 @@ async def run_models_generator(
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
             "id": None,
+            "status": "QUANTIZING",
             "instance": None,
             "port": None,
             "error": "Not enough space to convert and quantize the models",
@@ -258,6 +277,7 @@ async def run_models_generator(
             )
             error_event = {
                 "id": model_id,
+                "status": "QUANTIZING",
                 "instance": None,
                 "port": None,
                 "error": "Not enough memory to convert and quantize the model",
@@ -274,6 +294,16 @@ async def run_models_generator(
             ]
             installation_manager.cancel_conversions(models_to_cancel)
             return
+
+        # Send quantization event
+        quantization_event = {
+            "id": model_id,
+            "status": "QUANTIZING",
+            "instance": None,
+            "port": None,
+            "error": None,
+        }
+        yield f"data: {json.dumps(quantization_event)}\n\n"
 
         # Perform the conversion and quantization
         installation_manager.remove_from_conversion_queue()
@@ -296,6 +326,7 @@ async def run_models_generator(
         if model_size > available_ram:
             error_event = {
                 "id": model_id,
+                "status": "RUNNING",
                 "instance": instance,
                 "port": None,
                 "error": "Not enough memory to run the model",
@@ -314,6 +345,7 @@ async def run_models_generator(
             logger.error(f"Error running model {model_id}: {e}")
             error_event = {
                 "id": model_id,
+                "status": "RUNNING",
                 "instance": instance,
                 "port": None,
                 "error": str(e),

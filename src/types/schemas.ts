@@ -17,9 +17,10 @@ export const SysinfoSchema = z.object({
 
 export const ModelSchema = z.object({
     id: z.string(),
-    instance: z.number(),
+    instance: z.number().optional(),
     url: z.string(), //hflink
-    status: z.enum(["downloading", "installing", "running", "stopped"]),
+    status: z.enum([ "ACKNOWLEDGED", "DOWNLOADING", "INSTALLING", "RUNNING", "STOPPED", "NOT_DOWNLOADED"]),
+    description: z.string(),
     progress: z.number().optional(),
     backgroundImage: z.string(),
     author: z.string(),

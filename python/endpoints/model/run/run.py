@@ -232,7 +232,7 @@ async def run_models_generator(
 
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
-    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
+    _, disk_space, bytes_remaining = await get_space_check_info(installation_manager)
     if total_compressed_size + bytes_remaining > disk_space:
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
@@ -270,7 +270,7 @@ async def run_models_generator(
 
         # Check if there is enough memory to convert and quantize the model
         model_size, _ = get_model_size_info(weights_path, quant)
-        available_ram = get_usable_memory()
+        available_ram = await get_usable_memory()
         if model_size > available_ram:
             logger.error(
                 f"Not enough memory to convert and quantize the model {model_id}"
@@ -319,7 +319,7 @@ async def run_models_generator(
         instance = instance_obj["instance"]
 
         # Check if there is enough memory to run the model
-        available_ram = get_usable_memory()
+        available_ram = await get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
         model_size, _ = get_model_size_info(weights_path, quant)

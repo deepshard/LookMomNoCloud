@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import ModelWidget, { ModelWidgetState } from "./component/ModelWidget";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { Carousel as AntdCarousel, Button } from "antd";
+import { Carousel as AntdCarousel } from "antd";
 import CustomCarouselDot from "./component/CustomCarouselDot";
 import Sysinfo from "./component/SysInfo/Sysinfo";
+import TruffleHardware from "./component/SysInfo/TruffleHardware";
 
 const MODEL_LIST = [
   {
@@ -59,7 +60,7 @@ const MODEL_LIST = [
 
 export default function Home() {
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
-  const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
+  
 
   const getWidgetState = (model: any): ModelWidgetState => {
     const modelPathName = model.hfLink.split("/").slice(3).join("/");
@@ -189,19 +190,7 @@ export default function Home() {
           {/* HARDWARE MWIDGET – CAROUSEL */}
           <AntdCarousel infinite easing="linear" waitForAnimate className="sysinfo-carousel-wrapper">
             <Sysinfo />
-            {/* Truffle Hardware Slide */}
-            <div className="col-span-1 w-full h-full " onClick={() => {debugger}}>
-              <div className="flex flex-col w-full h-full">
-                <div className="w-full h-full flex justify-center flex-1 ">
-                  <img src={truffleHardwareImage} alt="" className="self-end" />
-                </div>
-                <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                  <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
-                    <span className="base-medium ">Pre Order Truffle–1</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <TruffleHardware />
           </AntdCarousel>
         </div>
       </div>

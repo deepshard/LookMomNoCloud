@@ -177,6 +177,7 @@ async def test_install_single_model_from_scratch(
     download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
     assert (download_path / "base" / "pytorch_model.bin").exists()
     assert (download_path / "base" / "config.json").exists()
+    assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -884,3 +885,11 @@ async def test_hf_repo_files():
     files = await get_hf_repo_info("mistralai/Mixtral-8x7B-Instruct-v0.1")
     assert any(file.file.endswith("safetensors") for file in files)
     assert not any(file.file.endswith(".pt") for file in files)
+
+    files = await get_hf_repo_info("openai-community/gpt2")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith("tflite") for file in files)
+    assert not any(file.file.endswith("msgpack") for file in files)
+    assert not any(file.file.endswith("bin") for file in files)
+    assert not any(file.file.endswith("h5") for file in files)
+    assert not any(file.file.startswith("onnx") for file in files)

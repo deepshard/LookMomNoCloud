@@ -47,10 +47,14 @@ async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
             return file, int(response.headers["Content-Length"])
 
 
-async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
-    def is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
-        return not any(file.endswith(pattern) for pattern in ignore_patterns)
+def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
+    return not any(
+        file.endswith(pattern) or file.startswith(pattern)
+        for pattern in ignore_patterns
+    )
 
+
+async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     # Query the HF API to get the requisite info
     url = f"https://huggingface.co/api/models/{model_name}?"
     async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
@@ -82,7 +86,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     files = [
         file
         for file in files
-        if is_convertable_file(file["rfilename"], base_ignore_patterns)
+        if _is_convertable_file(file["rfilename"], base_ignore_patterns)
     ]
 
     tasks = []
@@ -300,6 +304,19 @@ async def install_generator(
         yield f"data: {json.dumps(progress_event)}\n\n"
         return
 
+    # Check if the format is convertable
+    if not is_convertable_format(install_path):
+        logger.info(f"Unsupported model format for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "INSTALLING",
+            "progress": 100,
+            "error": f"Unsupported model format for {install_path}",
+        }
+        yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
+        return
+
     # Check that there is enough space to download the model
     _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
     if total_size + total_bytes_remaining > disk_space:
@@ -422,19 +439,6 @@ async def install_generator(
     logger.info(f"Model's turn to be converted.")
     installation_manager.remove_from_conversion_queue()
     await asyncio.sleep(3)
-
-    # Check if the format is convertable
-    if not is_convertable_format(install_path):
-        logger.info(f"Unsupported model format for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": f"Unsupported model format for {install_path}",
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
-        return
 
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")

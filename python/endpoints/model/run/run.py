@@ -5,6 +5,7 @@ import asyncio
 import aiohttp
 import psutil
 import json
+from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
@@ -63,13 +64,13 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     return [1 / len(model_ids) for _ in model_ids]
 
 
-def serve_model(model_path: str, mem_share: float, port: int):
+def serve_model(model_path: Path, mem_share: float, port: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
         model=str(model_path),
         device="auto",
-        model_lib=None,
+        model_lib=str(model_path / "compilation.so"),
         mode="local",
         additional_models=[],  # Not relevant
         max_batch_size=1,
@@ -174,7 +175,7 @@ async def run_models_generator(
     Yields:
         {
             "id": str,
-            "status": str (ACKNOWLEDGED, QUANTIZING, RUNNING)
+            "status": str (ACKNOWLEDGED, QUANTIZING, COMPILING, RUNNING)
             "instance": int,
             "port": int,
             "error": str
@@ -273,7 +274,8 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {model_id}"
+                f"Not enough memory to convert and quantize the model {
+                    model_id}"
             )
             error_event = {
                 "id": model_id,
@@ -309,6 +311,19 @@ async def run_models_generator(
         installation_manager.remove_from_conversion_queue()
         convert_and_quantize(weights_path, quant_path, quant)
         installation_manager.complete_conversion()
+
+        # Send compilation event
+        compilation_event = {
+            "id": model_id,
+            "status": "COMPILING",
+            "instance": None,
+            "port": None,
+            "error": None,
+        }
+        yield f"data: {json.dumps(compilation_event)}\n\n"
+
+        # Compile the model
+        compile(model_path, quant)
 
     # Now that all missing quantizations have been created, run the models
     models_started = []

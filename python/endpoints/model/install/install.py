@@ -47,6 +47,13 @@ async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
             return file, int(response.headers["Content-Length"])
 
 
+def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
+    return not any(
+        file.endswith(pattern) or file.startswith(pattern)
+        for pattern in ignore_patterns
+    )
+
+
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     # Query the HF API to get the requisite info
     url = f"https://huggingface.co/api/models/{model_name}?"
@@ -59,6 +66,28 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     files = data.get("siblings", [])
     if not files:
         raise ValueError(f"Could not find any files for {model_name}")
+
+    base_ignore_patterns = ["tflite", "onnx", "msgpack", "txt", "ot", "h5"]
+
+    # Check if there is a safetensor file. If so, exclude PyTorch bin files (redundant)
+    contains_safetensor = any(
+        file["rfilename"].endswith("safetensors") for file in files
+    )
+    if contains_safetensor:
+        base_ignore_patterns.extend(["bin", "pth", "pt"])
+
+    contains_consolidated_weights = any(
+        file["rfilename"].endswith("consolidated.safetensors") for file in files
+    )
+    if contains_consolidated_weights:
+        base_ignore_patterns.extend(["consolidated.safetensors"])
+
+    # filter out files that are not convertable or redundant
+    files = [
+        file
+        for file in files
+        if _is_convertable_file(file["rfilename"], base_ignore_patterns)
+    ]
 
     tasks = []
     for file in files:
@@ -275,6 +304,35 @@ async def install_generator(
         yield f"data: {json.dumps(progress_event)}\n\n"
         return
 
+    def is_mlc_compatible(files: list[FileInfo]) -> bool:
+        # files must contain one of the following:
+        # - pytorch_model.bin.index.json
+        # - pytorch_model.bin
+        # - model.safetensors.index.json
+        # - model.safetensors
+        patterns = [
+            "pytorch_model.bin.index.json",
+            "pytorch_model.bin",
+            "model.safetensors.index.json",
+            "model.safetensors",
+        ]
+        for file in files:
+            if any(file.file.endswith(pattern) for pattern in patterns):
+                return True
+        return False
+
+    if not is_mlc_compatible(remote_files):
+        logger.info(f"Unsupported model format for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "DOWNLOADING",
+            "progress": 100,
+            "error": f"Unsupported model format for {install_path}",
+        }
+        yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
+        return
+
     # Check that there is enough space to download the model
     _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
     if total_size + total_bytes_remaining > disk_space:
@@ -397,19 +455,6 @@ async def install_generator(
     logger.info(f"Model's turn to be converted.")
     installation_manager.remove_from_conversion_queue()
     await asyncio.sleep(3)
-
-    # Check if the format is convertable
-    if not is_convertable_format(install_path):
-        logger.info(f"Unsupported model format for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": f"Unsupported model format for {install_path}",
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
-        return
 
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")

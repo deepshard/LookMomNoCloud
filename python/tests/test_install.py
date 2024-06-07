@@ -177,7 +177,6 @@ async def test_install_single_model_from_scratch(
     download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
     assert (download_path / "base" / "pytorch_model.bin").exists()
     assert (download_path / "base" / "config.json").exists()
-    assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
     assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
 
     # Check that queue is empty
@@ -230,7 +229,7 @@ async def test_complete_partial_installation_of_single_model(
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert mock_download_file.call_count == 3
+        assert mock_download_file.call_count == 2
 
         # Assert acknowledgement event was sent
         assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -239,8 +238,6 @@ async def test_complete_partial_installation_of_single_model(
         download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
-        assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
-        assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
 
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0
@@ -873,3 +870,26 @@ def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_
 
     for case, expected_outcome in zip(cases, expected_outcomes):
         assert get_files_to_download(case["remote"], case["local"]) == expected_outcome
+
+
+@pytest.mark.asyncio
+async def test_hf_repo_files():
+    files = await get_hf_repo_info("mistralai/Codestral-22B-v0.1")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith("consolidated.safetensors") for file in files)
+
+    files = await get_hf_repo_info("meta-llama/Meta-Llama-3-8B")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith(".pth") for file in files)
+
+    files = await get_hf_repo_info("mistralai/Mixtral-8x7B-Instruct-v0.1")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith(".pt") for file in files)
+
+    files = await get_hf_repo_info("openai-community/gpt2")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith("tflite") for file in files)
+    assert not any(file.file.endswith("msgpack") for file in files)
+    assert not any(file.file.endswith("bin") for file in files)
+    assert not any(file.file.endswith("h5") for file in files)
+    assert not any(file.file.startswith("onnx") for file in files)

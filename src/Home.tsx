@@ -8,6 +8,7 @@ import CustomCarouselDot from "./component/CustomCarouselDot";
 import { uniqBy } from "lodash";
 import DiscoverButton from "./component/common/DiscoverButton";
 import SysInfo from "./component/SysInfo";
+import dottedBg from "../public/assets/images/clear-dotted-bg.png";
 
 const MODEL_LIST = [
   {
@@ -94,13 +95,21 @@ export default function Home() {
   return (
     <div className="snap-y snap-mandatory">
       <div className="home-layout w-full h-full flex flex-col justify-between items-center gap-5 p-14">
+        <img src={dottedBg} alt="" className="w-full h-full absolute top-0 left-0 object-cover opacity-[15%]" />
+
         {/* DON'T DELETE – Meant for alignment purposes */}
         <div/>
         
         {/* HOME WIDGETS */}
-        <div className="w-[660px] flex flex-col justify-start items-center gap-5">
-          {/* TITLE */}
-          <h1 className="title-base text-surface-750 w-full">Welcome, Peter</h1>
+        <div className="no-select w-[660px] flex flex-col justify-start items-center gap-5">
+          
+          <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
+            {/* Should be <SunIcon /> */}
+            <div className="h-4 w-4 rounded-full bg-surface-750" />
+            
+            {/* TITLE */}
+            <h1 className="text-[15px] text-surface-750 w-full">Welcome, Peter</h1>
+          </div>
           
           {/* FREQUENTLY USED WIDGETS */}
           <div className="flex gap-1.5 w-[660px]">
@@ -144,16 +153,16 @@ export default function Home() {
                 >
                   {/* 1 */}
                   <div className="w-full h-[150px] relative overflow-hidden ">
-                    <div className="absolute top-0 left-0 p-4">
+                    <div className="absolute top-0 left-0 p-5">
                       <img
                         src={llamaImage}
                         alt=""
                         className="discover-model-img w-10 h-10 rounded-xs"
                       />
-                      <h3 className="title-base base-regular mt-[10px] mb-[1px] text-surface-main">
+                      <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">
                         DeepSeek
                       </h3>
-                      <p className="body-xs break-words line-clamp-2 base-regular text-surface-750">
+                      <p className="body-sm break-words line-clamp-2 base-regular text-surface-500">
                         lorem ipsum dolor sit amet consectetur adipiscing elit
                         etiam consectetur elementum mattis aliquam vulputate
                         consectetur etiam consectetur lorem ipsum dolor sit amet
@@ -170,16 +179,16 @@ export default function Home() {
 
                   {/* 2 */}
                   <div className="w-full h-[150px] relative overflow-hidden ">
-                    <div className="absolute top-0 left-0 p-4">
+                    <div className="absolute top-0 left-0 p-5">
                       <img
                         src={llamaImage}
                         alt=""
                         className="discover-model-img w-10 h-10 rounded-xs"
                       />
-                      <h3 className="title-base base-regular mt-[10px] mb-[1px] text-surface-main">
+                      <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">
                         DeepSeek
                       </h3>
-                      <p className="body-xs break-words line-clamp-2 base-regular text-surface-750">
+                      <p className="body-sm break-words line-clamp-2 base-regular text-surface-500">
                         lorem ipsum dolor sit amet consectetur adipiscing elit
                         etiam consectetur elementum mattis aliquam vulputate
                         consectetur etiam consectetur lorem ipsum dolor sit amet
@@ -199,35 +208,25 @@ export default function Home() {
               {/* APPS AND MODELS FOLDERS */}
               <div className="w-full flex justify-between gap-5">
                 {/* APPS FOLDER */}
-                <div className="min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
-                  <div className="grid grid-cols-2 gap-[21px] w-full h-full p-5">
-                    <div className="w-full h-full flex flex-col gap-[21px] items-end justify-center">
-                      <div className="h-[38px] w-[38px] bg-[#dc5656] rounded-md"></div>
-                      <div className="h-[38px] w-[38px] bg-[#D9D9D9] rounded-md"></div>
-                    </div>
-                    <div className="w-full h-full flex flex-col gap-[21px] items-start justify-center">
-                      <div className="h-[38px] w-[38px] bg-[#D9D9D9] rounded-md"></div>
-                      <div className="h-[38px] w-[38px] bg-[#457efb] rounded-md"></div>
-                    </div>
+                <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
+                  <div className="grid grid-cols-2 gap-5 p-5">
+                    {[...Array(4)].map((_, index) => (
+                      <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
+                    ))}
                   </div>
-                  <p className="callout-regular text-surface-500 absolute bottom-[-35px] right-[50%] translate-x-[50%]">
-                    App
+                  <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">
+                    Apps
                   </p>
                 </div>
 
                 {/* MODELS FOLDER */}
-                <div className="min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
-                  <div className="grid grid-cols-2 gap-[21px] w-full h-full p-5">
-                    <div className="w-full h-full flex flex-col gap-[21px] items-end justify-center">
-                      <div className="h-[38px] w-[38px] bg-[#dc5656] rounded-md"></div>
-                      <div className="h-[38px] w-[38px] bg-[#D9D9D9] rounded-md"></div>
-                    </div>
-                    <div className="w-full h-full flex flex-col gap-[21px] items-start justify-center">
-                      <div className="h-[38px] w-[38px] bg-[#D9D9D9] rounded-md"></div>
-                      <div className="h-[38px] w-[38px] bg-[#457efb] rounded-md"></div>
-                    </div>
+                <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
+                  <div className="grid grid-cols-2 gap-5 p-5">
+                    {[...Array(4)].map((_, index) => (
+                      <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
+                    ))}
                   </div>
-                  <p className="callout-regular text-surface-500 absolute bottom-[-35px] right-[50%] translate-x-[50%]">
+                  <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">
                     Models
                   </p>
                 </div>

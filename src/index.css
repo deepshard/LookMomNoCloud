@@ -7,7 +7,10 @@ body {
   font-size: 14px;
   line-height: 1.3;
   font-weight: 400;  /* Regular */
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.75);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
 }
 
 .react-multi-carousel-track {
@@ -51,6 +54,9 @@ button.ant-btn.preorder-btn {
 
   .home-layout {
     @apply fixed;
+
+    box-shadow: 0px 20px 50px 0px rgba(0, 0, 0, 0.25), 0px 0px 100px 0px rgba(255, 255, 255, 0.10) inset, 0px 3.59px 89.756px 0px rgba(0, 0, 0, 0.10), 0px 0px 44.878px 0px rgba(255, 255, 255, 0.10) inset;
+    backdrop-filter: blur(75px);
   }
 
   .navbar {
@@ -146,4 +152,24 @@ button.ant-btn.preorder-btn {
   .widget-3d {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
   }
+}
+
+:root {
+  --input-text-color: rgba(255, 255, 255, 0.75);
+  --input-placeholder-color: rgba(255, 255, 255, 0.4);
+}
+
+input {
+  color: var(--input-text-color);
+}
+
+input::placeholder {
+  color: var(--input-placeholder-color);
+}
+
+.no-select {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera, Firefox, Safari */
 }

@@ -42,12 +42,16 @@ def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
     mlc_chat_config_path = quant_path / "mlc-chat-config.json"
     ndarray_cache_path = quant_path / "ndarray-cache.json"
+    tokenizer_config_path = quant_path / "tokenizer_config.json"
+    tokenizer_path = quant_path / "tokenizer.json"
     shards = sum(1 for _ in quant_path.glob("params_shard_*.bin"))
     return (
         quant_path.exists()
         and mlc_chat_config_path.exists()
         and ndarray_cache_path.exists()
         and shards > 0
+        and tokenizer_config_path.exists()
+        and tokenizer_path.exists()
     )
 
 

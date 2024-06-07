@@ -120,10 +120,10 @@ def mock_quants():
 
 @pytest.fixture
 def mlc_mock():
-    # Mock convert_and_quantize, when called write some data to the model's quantization directory
+    # Mock convert_quantize_compile, when called write some data to the model's quantization directory
     with patch(
-        "endpoints.model.run.run.convert_and_quantize", return_value=None
-    ) as convert_and_quantize:
+        "endpoints.model.run.run.convert_quantize_compile", return_value=None
+    ) as cqc:
 
         def write_data(weights_path, quant_path, quant):
             print(f"Writing data to {quant_path}")
@@ -131,8 +131,8 @@ def mlc_mock():
             with open(quant_path / "model.bin", "wb") as f:
                 f.write("test".encode("utf-8"))
 
-        convert_and_quantize.side_effect = write_data
-        yield convert_and_quantize
+        cqc.side_effect = write_data
+        yield cqc
 
 
 # Tests

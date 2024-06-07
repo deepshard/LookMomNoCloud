@@ -8,11 +8,14 @@ from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
+from mlc_llm.interface.compile import compile as compile_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.support.auto_weight import detect_weight
+from mlc_llm.interface.compiler_flags import OptimizationFlags, ModelConfigOverride
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
+from mlc_llm.support.auto_target import detect_target_and_host
 from truffle_types import RepoType, FileInfo, Quantization
 from utils import (
     get_app_data_path,
@@ -209,7 +212,7 @@ async def download_file(
                 progress_tracker["downloaded_bytes"] += len(chunk)
 
 
-def convert_and_quantize(
+def convert_quantize_compile(
     base_weights_path: str, quant_weights_path: str, quantization: Quantization
 ):
     # Gather necessary info for conversion
@@ -223,6 +226,7 @@ def convert_and_quantize(
     device = detect_device("auto")
     conv_template = get_conv_template(base_weights_path)
     quantization_obj = get_quantization_object(quantization, model)
+    target, build_func = detect_target_and_host("auto", "auto")
 
     # Convert and quantize
     logger.info(f"Converting weights for {base_weights_path}")
@@ -235,6 +239,33 @@ def convert_and_quantize(
         source_format=source_format,
         output=quant_weights_path,
     )
+
+    compile_path = quant_weights_path / "compilation.so"
+    if not compile_path.exists():
+        logger.info(f"Compiling model at {quant_weights_path}")
+        compile_mlc(
+            config=config,
+            quantization=quantization_obj,
+            model_type=model,
+            target=target,
+            opt=OptimizationFlags.from_str("O2"),
+            build_func=build_func,
+            system_lib_prefix="auto",
+            output=quant_weights_path / "compilation.so",
+            overrides=ModelConfigOverride(
+                context_window_size=None,
+                sliding_window_size=None,
+                prefill_chunk_size=None,
+                attention_sink_size=None,
+                max_batch_size=1,
+                tensor_parallel_shards=(
+                    device.multi_processor_count if device.multi_processor_count else 1
+                ),
+            ),
+            debug_dump=None,
+        )
+    else:
+        logger.info(f"Already compiled. Skipping compilation for {quant_weights_path}")
 
     # Generate config
     logger.info(f"Generating config for {base_weights_path}")
@@ -476,9 +507,9 @@ async def install_generator(
     # Convert and quantize the model
     logger.info(f"Converting and quantizing {model_dir}")
     quant_path = model_dir / quantization.value
-    convert_and_quantize(install_path, quant_path, quantization)
+    convert_quantize_compile(install_path, quant_path, quantization)
 
-    logger.info(f"Conversion and quantization complete for {model_dir}")
+    logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")
     progress_event = {
         "id": model_id,
         "status": "STOPPED",

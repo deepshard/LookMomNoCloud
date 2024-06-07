@@ -145,7 +145,7 @@ async def test_install_single_model_from_scratch(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     mock_get_file_sizes = mocker.patch(
         "endpoints.model.install.install.get_file_size_hf"
@@ -207,7 +207,7 @@ async def test_complete_partial_installation_of_single_model(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -260,7 +260,7 @@ async def test_skip_download_of_already_downloaded_model(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -327,7 +327,8 @@ async def test_model_download_returns_progress_in_expected_format(
 
         # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
         mock_mlc = mocker.patch(
-            "endpoints.model.install.install.convert_and_quantize", return_value=None
+            "endpoints.model.install.install.convert_quantize_compile",
+            return_value=None,
         )
         manager = InstallationManager()
 
@@ -373,7 +374,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -417,7 +418,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
 
     # Mock manager to return bytes remaining for a model in progress
@@ -462,7 +463,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -530,7 +531,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -596,7 +597,8 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
 
         # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
         mock_mlc = mocker.patch(
-            "endpoints.model.install.install.convert_and_quantize", return_value=None
+            "endpoints.model.install.install.convert_quantize_compile",
+            return_value=None,
         )
         manager = InstallationManager()
 
@@ -643,7 +645,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -690,7 +692,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 
@@ -737,7 +739,7 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
 
     # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
     mock_mlc = mocker.patch(
-        "endpoints.model.install.install.convert_and_quantize", return_value=None
+        "endpoints.model.install.install.convert_quantize_compile", return_value=None
     )
     manager = InstallationManager()
 

@@ -9,7 +9,10 @@ from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
 from endpoints.model.install import InstallationManager
-from endpoints.model.install.install import get_space_check_info, convert_and_quantize
+from endpoints.model.install.install import (
+    get_space_check_info,
+    convert_quantize_compile,
+)
 from utils import (
     get_app_data_path,
     find_port,
@@ -307,7 +310,7 @@ async def run_models_generator(
 
         # Perform the conversion and quantization
         installation_manager.remove_from_conversion_queue()
-        convert_and_quantize(weights_path, quant_path, quant)
+        convert_quantize_compile(weights_path, quant_path, quant)
         installation_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models

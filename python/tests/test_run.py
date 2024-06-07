@@ -407,7 +407,7 @@ async def test_run_not_enough_memory_quantization(
 
         with patch(
             "psutil.virtual_memory",
-            return_value=MagicMock(total=0, used=0, available=0),
+            return_value=MagicMock(total=0, used=0, available=0, wired=0),
         ) as ram_mock:
             # Prepare JSON streaming responses as they would be sent from the generator
             stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
@@ -453,7 +453,7 @@ async def test_run_not_enough_memory_run(
 
         with patch(
             "psutil.virtual_memory",
-            return_value=MagicMock(total=0, used=0, available=0),
+            return_value=MagicMock(total=0, used=0, available=0, wired=0),
         ) as ram_mock:
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator

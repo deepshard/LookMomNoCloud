@@ -309,7 +309,7 @@ async def install_generator(
         logger.info(f"Unsupported model format for {model_dir}")
         progress_event = {
             "id": model_id,
-            "status": "INSTALLING",
+            "status": "DOWNLOADING",
             "progress": 100,
             "error": f"Unsupported model format for {install_path}",
         }

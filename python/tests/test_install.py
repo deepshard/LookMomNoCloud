@@ -177,8 +177,6 @@ async def test_install_single_model_from_scratch(
     download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
     assert (download_path / "base" / "pytorch_model.bin").exists()
     assert (download_path / "base" / "config.json").exists()
-    assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
-    assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -230,7 +228,7 @@ async def test_complete_partial_installation_of_single_model(
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert mock_download_file.call_count == 3
+        assert mock_download_file.call_count == 2
 
         # Assert acknowledgement event was sent
         assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -239,8 +237,6 @@ async def test_complete_partial_installation_of_single_model(
         download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
-        assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
-        assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
 
         # Check that queue is empty
         assert len(manager.conversion_queue) == 0

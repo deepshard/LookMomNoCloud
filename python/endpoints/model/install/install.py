@@ -23,6 +23,8 @@ from utils import (
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
+HF_AUTH_HEADER = {"Authorization": f"Bearer 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"}
+
 
 def get_url_type(url: str) -> RepoType:
     # TODO: Change this later when we may start accepting S3 URLs
@@ -38,7 +40,7 @@ def get_hf_name_for_url(url: str) -> str:
 
 
 async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
         async with session.head(
             f"{url}/resolve/main/{file}", allow_redirects=True
         ) as response:
@@ -46,9 +48,12 @@ async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
 
 
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
+    def is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
+        return not any(file.endswith(pattern) for pattern in ignore_patterns)
+
     # Query the HF API to get the requisite info
     url = f"https://huggingface.co/api/models/{model_name}?"
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
         async with session.get(url) as response:
             response.raise_for_status()
             data = await response.json()
@@ -57,6 +62,28 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     files = data.get("siblings", [])
     if not files:
         raise ValueError(f"Could not find any files for {model_name}")
+
+    base_ignore_patterns = ["tflite", "onnx", "msgpack", "txt", "ot", "h5"]
+
+    # Check if there is a safetensor file. If so, exclude PyTorch bin files (redundant)
+    contains_safetensor = any(
+        file["rfilename"].endswith("safetensors") for file in files
+    )
+    if contains_safetensor:
+        base_ignore_patterns.extend(["bin", "pth", "pt"])
+
+    contains_consolidated_weights = any(
+        file["rfilename"].endswith("consolidated.safetensors") for file in files
+    )
+    if contains_consolidated_weights:
+        base_ignore_patterns.extend(["consolidated.safetensors"])
+
+    # filter out files that are not convertable or redundant
+    files = [
+        file
+        for file in files
+        if is_convertable_file(file["rfilename"], base_ignore_patterns)
+    ]
 
     tasks = []
     for file in files:
@@ -303,7 +330,7 @@ async def install_generator(
         logger.info(f"Downloading {len(files_to_download)} files")
         progress_tracker = {"downloaded_bytes": 0}
         last_progress = 0
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
             tasks = [
                 download_file(
                     session,

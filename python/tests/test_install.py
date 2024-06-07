@@ -873,3 +873,18 @@ def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_
 
     for case, expected_outcome in zip(cases, expected_outcomes):
         assert get_files_to_download(case["remote"], case["local"]) == expected_outcome
+
+
+@pytest.mark.asyncio
+async def test_hf_repo_files():
+    files = await get_hf_repo_info("mistralai/Codestral-22B-v0.1")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith("consolidated.safetensors") for file in files)
+
+    files = await get_hf_repo_info("meta-llama/Meta-Llama-3-8B")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith(".pth") for file in files)
+
+    files = await get_hf_repo_info("mistralai/Mixtral-8x7B-Instruct-v0.1")
+    assert any(file.file.endswith("safetensors") for file in files)
+    assert not any(file.file.endswith(".pt") for file in files)

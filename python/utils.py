@@ -84,4 +84,10 @@ def get_usable_memory() -> int:
     This is the memory that is currently available or could be quickly made available.
     That is, the maximum memory a new process could use without trigger an OOM error.
     """
-    return psutil.virtual_memory().total - psutil.virtual_memory().used
+    system = platform.system()
+    mem = psutil.virtual_memory()
+    if system == "Darwin":
+        # macOS swaps to disk when memory is low, so we need to take that into account
+        return mem.total - mem.wired
+
+    return mem.available

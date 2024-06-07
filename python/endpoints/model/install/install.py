@@ -304,8 +304,24 @@ async def install_generator(
         yield f"data: {json.dumps(progress_event)}\n\n"
         return
 
-    # Check if the format is convertable
-    if not is_convertable_format(install_path):
+    def is_mlc_compatible(files: list[FileInfo]) -> bool:
+        # files must contain one of the following:
+        # - pytorch_model.bin.index.json
+        # - pytorch_model.bin
+        # - model.safetensors.index.json
+        # - model.safetensors
+        patterns = [
+            "pytorch_model.bin.index.json",
+            "pytorch_model.bin",
+            "model.safetensors.index.json",
+            "model.safetensors",
+        ]
+        for file in files:
+            if any(file.file.endswith(pattern) for pattern in patterns):
+                return True
+        return False
+
+    if not is_mlc_compatible(remote_files):
         logger.info(f"Unsupported model format for {model_dir}")
         progress_event = {
             "id": model_id,

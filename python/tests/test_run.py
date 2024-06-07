@@ -493,11 +493,11 @@ async def test_run_kill_previous_models(
         with patch("psutil.virtual_memory") as ram_mock:
 
             def mock_virtual_memory():
-                if ram_mock.call_count <= 6:
-                    return MagicMock(total=4096, used=0, available=0)
+                if ram_mock.call_count <= 3:
+                    return MagicMock(total=4096, used=0, available=0, wired=0)
 
                 # For model_id_3, there is not enough memory to run the model
-                return MagicMock(total=0, used=0, available=0)
+                return MagicMock(total=0, used=0, available=0, wired=0)
 
             ram_mock.side_effect = mock_virtual_memory
 

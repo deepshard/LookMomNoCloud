@@ -1,7 +1,11 @@
 import os
+import re
 import psutil
 import platform
 import socket
+import subprocess
+import tvm
+from tvm.runtime import Device
 from pathlib import Path
 from truffle_types import Quantization
 
@@ -54,9 +58,11 @@ def get_quantization_compression(quant: Quantization) -> float:
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
-    pytorch_json_path = os.path.join(base_weights_path, "pytorch_model.bin.index.json")
+    pytorch_json_path = os.path.join(
+        base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
-    safetensors_path = os.path.join(base_weights_path, "model.safetensors.index.json")
+    safetensors_path = os.path.join(
+        base_weights_path, "model.safetensors.index.json")
     safetensors_bin_path = os.path.join(base_weights_path, "model.safetensors")
 
     if (
@@ -79,6 +85,21 @@ def get_model_size_info(
     return model_size, compressed_size
 
 
+def get_devices() -> list[str]:
+    DEVICE_OPTIONS = ["cuda", "rocm", "vulkan"]
+
+    devices = []
+    for device_type in DEVICE_OPTIONS:
+        cur_device = tvm.device(dev_type=device_type, dev_id=0)
+        if cur_device.exist:
+            devices.append(device_type)
+
+    if len(devices) == 0:
+        raise ValueError("No GPUs found")
+
+    return devices
+
+
 def get_usable_memory() -> int:
     """
     This is the memory that is currently available or could be quickly made available.
@@ -89,5 +110,40 @@ def get_usable_memory() -> int:
     if system == "Darwin":
         # macOS swaps to disk when memory is low, so we need to take that into account
         return mem.total - mem.wired
+    elif system == "Linux":
+        # Get devices
+        device_types = get_devices()
 
-    return mem.available
+        # Handle NVIDIA GPUs
+        if "cuda" in device_types or "vulkan" in device_types:
+            command = "nvidia-smi --query-gpu=memory.free --format=csv"
+            memory_free_info = subprocess.check_output(
+                command.split()).decode('ascii').split('\n')[:-1][1:]
+            memory_free_values = [int(x.split()[0])
+                                  for i, x in enumerate(memory_free_info)]
+            total_gpu_memory = sum(memory_free_values)
+            return total_gpu_memory
+        # Handle AMD GPUs
+        elif "rocm" in device_types:
+            command = "rocm-smi --showmeminfo vram"
+            memory_info = subprocess.check_output(
+                command.split()).decode('ascii').split('\n')[:-1]
+
+            # Define the pattern to find memory usage
+            total_mem_pattern = re.compile(r"VRAM Total Memory \(B\): (\d+)")
+            used_mem_pattern = re.compile(
+                r"VRAM Total Used Memory \(B\): (\d+)")
+
+            # Search for the patterns in the output
+            total_mem_match = total_mem_pattern.search(memory_info)
+            used_mem_match = used_mem_pattern.search(memory_info)
+
+            if total_mem_match and used_mem_match:
+                # Extract and convert values to integers
+                total_memory = int(total_mem_match.group(1))
+                used_memory = int(used_mem_match.group(1))
+                return total_memory - used_memory
+            else:
+                raise Exception("Could not find memory info for AMD GPUs.")
+    else:
+        raise ValueError(f"Unsupported system: {system}")

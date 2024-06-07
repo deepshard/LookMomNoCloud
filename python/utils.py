@@ -40,7 +40,15 @@ def find_port(port: int = 8899) -> int:
 
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
-    return quant_path.exists() and len(os.listdir(quant_path)) > 0
+    mlc_chat_config_path = quant_path / "mlc-chat-config.json"
+    ndarray_cache_path = quant_path / "ndarray-cache.json"
+    shards = sum(1 for _ in quant_path.glob("params_shard_*.bin"))
+    return (
+        quant_path.exists()
+        and mlc_chat_config_path.exists()
+        and ndarray_cache_path.exists()
+        and shards > 0
+    )
 
 
 def get_quantization_compression(quant: Quantization) -> float:
@@ -85,9 +93,9 @@ def get_usable_memory() -> int:
     That is, the maximum memory a new process could use without trigger an OOM error.
     """
     system = platform.system()
+    mem = psutil.virtual_memory()
     if system == "Darwin":
         # macOS swaps to disk when memory is low, so we need to take that into account
-        mem = psutil.virtual_memory()
         return mem.total - mem.wired
 
-    return psutil.virtual_memory().available
+    return mem.available

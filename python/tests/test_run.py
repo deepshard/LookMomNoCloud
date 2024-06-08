@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import pytest
+from unittest import mock
 from unittest.mock import patch, MagicMock
 import shutil
 from pathlib import Path
@@ -87,6 +88,14 @@ def get_app_data_path_mock():
 
 
 @pytest.fixture
+def get_space_check_info_mock():
+    with patch(
+        "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
+    ) as get_space_check_info:
+        yield get_space_check_info
+
+
+@pytest.fixture
 def server_mock():
     with patch(
         "endpoints.model.run.run.is_server_running", return_value=True
@@ -138,13 +147,14 @@ def mlc_mock():
 # Tests
 @pytest.mark.asyncio
 async def test_run_quantization_does_not_exist(
-    base_fixture, get_app_data_path_mock, server_mock, subprocess_mock, mlc_mock
+    base_fixture,
+    get_app_data_path_mock,
+    server_mock,
+    subprocess_mock,
+    mlc_mock,
+    get_space_check_info_mock,
 ):
     async with init_db():
-        patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
-        )
-
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -177,13 +187,10 @@ async def test_run_quantization_exists(
     server_mock,
     subprocess_mock,
     mlc_mock,
+    get_space_check_info_mock,
     mocker,
 ):
     async with init_db():
-        patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
-        )
-
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -208,15 +215,16 @@ async def test_run_quantization_exists(
 
 @pytest.mark.asyncio
 async def test_run_multiple_models(
-    base_fixture, get_app_data_path_mock, server_mock, subprocess_mock, mlc_mock, mocker
+    base_fixture,
+    get_app_data_path_mock,
+    server_mock,
+    subprocess_mock,
+    mlc_mock,
+    get_space_check_info_mock,
+    mocker,
 ):
     async with init_db():
         with patch("endpoints.model.run.run.find_port", return_value=8899) as find_port:
-            patch(
-                "endpoints.model.run.run.get_space_check_info",
-                return_value=(8192, 8192, 0),
-            )
-
             manager = InstallationManager()
 
             # Prepare JSON streaming responses as they would be sent from the generator
@@ -305,12 +313,9 @@ async def test_run_instance_running(
     server_mock,
     subprocess_mock,
     mlc_mock,
+    get_space_check_info_mock,
 ):
     async with init_db():
-        patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
-        )
-
         manager = InstallationManager()
 
         # Insert a running model
@@ -348,13 +353,14 @@ async def test_run_instance_running(
 
 @pytest.mark.asyncio
 async def test_run_not_convertable_format(
-    base_fixture, get_app_data_path_mock, server_mock, subprocess_mock, mlc_mock
+    base_fixture,
+    get_app_data_path_mock,
+    server_mock,
+    subprocess_mock,
+    mlc_mock,
+    get_space_check_info_mock,
 ):
     async with init_db():
-        patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
-        )
-
         manager = InstallationManager()
 
         # Rename pytorch_model.bin to something else

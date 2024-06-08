@@ -88,10 +88,12 @@ def get_app_data_path_mock():
 
 
 @pytest.fixture
-def get_space_check_info_mock():
+def get_disk_and_memory_mock():
     with patch(
         "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
-    ) as get_space_check_info:
+    ) as get_space_check_info, patch(
+        "endpoints.model.run.run.get_usable_memory", return_value=8192
+    ):
         yield get_space_check_info
 
 
@@ -152,7 +154,7 @@ async def test_run_quantization_does_not_exist(
     server_mock,
     subprocess_mock,
     mlc_mock,
-    get_space_check_info_mock,
+    get_disk_and_memory_mock,
 ):
     async with init_db():
         manager = InstallationManager()
@@ -187,7 +189,7 @@ async def test_run_quantization_exists(
     server_mock,
     subprocess_mock,
     mlc_mock,
-    get_space_check_info_mock,
+    get_disk_and_memory_mock,
     mocker,
 ):
     async with init_db():
@@ -220,7 +222,7 @@ async def test_run_multiple_models(
     server_mock,
     subprocess_mock,
     mlc_mock,
-    get_space_check_info_mock,
+    get_disk_and_memory_mock,
     mocker,
 ):
     async with init_db():
@@ -313,7 +315,7 @@ async def test_run_instance_running(
     server_mock,
     subprocess_mock,
     mlc_mock,
-    get_space_check_info_mock,
+    get_disk_and_memory_mock,
 ):
     async with init_db():
         manager = InstallationManager()
@@ -358,7 +360,7 @@ async def test_run_not_convertable_format(
     server_mock,
     subprocess_mock,
     mlc_mock,
-    get_space_check_info_mock,
+    get_disk_and_memory_mock,
 ):
     async with init_db():
         manager = InstallationManager()

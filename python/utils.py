@@ -5,7 +5,6 @@ import platform
 import socket
 import subprocess
 import tvm
-from tvm.runtime import Device
 from pathlib import Path
 from truffle_types import Quantization
 

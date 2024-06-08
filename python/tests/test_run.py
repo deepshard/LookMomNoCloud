@@ -236,7 +236,6 @@ async def test_run_multiple_models(
             responses = []
             async for response in stream:
                 responses.append(json.loads(response[5:]))
-                print(responses[-1])
 
                 if len(responses) == 6:
                     find_port.return_value = 8900
@@ -399,7 +398,7 @@ async def test_run_not_enough_space(
         # Mock the disk usage
         with patch(
             "endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)
-        ):
+        ), patch("endpoints.model.run.run.get_usable_memory", return_value=8192):
             # Prepare JSON streaming responses as they would be sent from the generator
             stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
 
@@ -435,6 +434,8 @@ async def test_run_not_enough_memory_quantization(
         manager = InstallationManager()
 
         with patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(0, 8192, 0)
+        ), patch(
             "endpoints.model.run.run.get_usable_memory",
             return_value=0,
         ) as ram_mock:
@@ -481,6 +482,8 @@ async def test_run_not_enough_memory_run(
         manager = InstallationManager()
 
         with patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(0, 8192, 0)
+        ), patch(
             "endpoints.model.run.run.get_usable_memory",
             return_value=0,
         ) as ram_mock:
@@ -519,7 +522,9 @@ async def test_run_kill_previous_models(
     async with init_db():
         manager = InstallationManager()
 
-        with patch("endpoints.model.run.run.get_usable_memory") as ram_mock:
+        with patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(0, 8192, 0)
+        ), patch("endpoints.model.run.run.get_usable_memory") as ram_mock:
 
             def mock_virtual_memory():
                 if ram_mock.call_count <= 2:

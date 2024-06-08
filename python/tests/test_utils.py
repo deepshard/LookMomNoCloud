@@ -1,15 +1,19 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from utils import get_usable_memory
 
 # Test the utils logic
 # Cases:
 # - get_usable_memory Windows
 # - get_usable_memory Mac
-# - get_usable_memory single CUDA or Vulkan
-# - get_usable_memory multiple CUDA or Vulkan
+# - get_usable_memory single CUDA
+# - get_usable_memory multiple CUDA
 # - get_usable_memory single ROCM
 # - get_usable_memory multiple ROCM
+# - get_usable_memory single Vulkan
+# - get_usable_memory multiple Vulkan
+# - get_usable_memory single OpenCL
+# - get_usable_memory multiple OpenCL
 
 
 def test_get_usable_memory_windows():
@@ -27,37 +31,85 @@ def test_get_usable_memory_mac():
         assert get_usable_memory() == 900000000
 
 
-def test_get_usable_memory_single_cuda_or_vulkan():
+def test_get_usable_memory_single_cuda():
     with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=["cuda"]
-    ), patch("utils.subprocess.check_output") as mock_check_output:
-        mock_check_output.return_value = b"memory.free [MiB]\n24211 MiB"
-
+        "utils.get_devices", return_value=[{"type": "cuda", "id": 0}]
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
         assert get_usable_memory() == 25387073536
 
 
-def test_get_usable_memory_multiple_cuda_or_vulkan():
+def test_get_usable_memory_multiple_cuda():
     with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=["cuda", "vulkan"]
-    ), patch("utils.subprocess.check_output") as mock_check_output:
-        mock_check_output.return_value = b"memory.free [MiB]\n24211 MiB\n24211 MiB"
-
+        "utils.get_devices",
+        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
         assert get_usable_memory() == 50774147072
 
 
 def test_get_usable_memory_single_rocm():
     with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=["rocm"]
-    ), patch("utils.subprocess.check_output") as mock_check_output:
-        mock_check_output.return_value = b"======================= ROCm System Management Interface =======================\n============================= Memory Usage (Bytes) =============================\nGPU[0]          : VRAM Total Memory (B): 1000\nGPU[0]          : VRAM Total Used Memory (B): 100\n================================================================================\n============================= End of ROCm SMI Log =============================="
-
-        assert get_usable_memory() == 900
+        "utils.get_devices", return_value=[{"type": "rocm", "id": 0}]
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
+        assert get_usable_memory() == 25387073536
 
 
 def test_get_usable_memory_multiple_rocm():
     with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=["rocm"]
-    ), patch("utils.subprocess.check_output") as mock_check_output:
-        mock_check_output.return_value = b"======================= ROCm System Management Interface =======================\n============================= Memory Usage (Bytes) =============================\nGPU[0]          : VRAM Total Memory (B): 1000\nGPU[0]          : VRAM Total Used Memory (B): 100\nGPU[1]          : VRAM Total Memory (B): 1500\nGPU[1]          : VRAM Total Used Memory (B): 200\n================================================================================\n============================= End of ROCm SMI Log =============================="
+        "utils.get_devices",
+        return_value=[{"type": "rocm", "id": 0}, {"type": "rocm", "id": 1}],
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
+        assert get_usable_memory() == 50774147072
 
-        assert get_usable_memory() == 2200
+
+def test_get_usable_memory_single_vulkan():
+    with patch("utils.platform.system", return_value="Linux"), patch(
+        "utils.get_devices", return_value=[{"type": "vulkan", "id": 0}]
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
+        assert get_usable_memory() == 25387073536
+
+
+def test_get_usable_memory_multiple_vulkan():
+    with patch("utils.platform.system", return_value="Linux"), patch(
+        "utils.get_devices",
+        return_value=[{"type": "vulkan", "id": 0}, {"type": "vulkan", "id": 1}],
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
+        assert get_usable_memory() == 50774147072
+
+
+def test_get_usable_memory_single_opencl():
+    with patch("utils.platform.system", return_value="Linux"), patch(
+        "utils.get_devices", return_value=[{"type": "opencl", "id": 0}]
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
+        assert get_usable_memory() == 25387073536
+
+
+def test_get_usable_memory_multiple_opencl():
+    with patch("utils.platform.system", return_value="Linux"), patch(
+        "utils.get_devices",
+        return_value=[{"type": "opencl", "id": 0}, {"type": "opencl", "id": 1}],
+    ), patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(available_global_memory=25387073536),
+    ):
+        assert get_usable_memory() == 50774147072

@@ -83,18 +83,30 @@ def get_model_size_info(
 
 
 def get_devices() -> list[str]:
-    DEVICE_OPTIONS = ["cuda", "rocm", "vulkan"]
+    DEVICE_OPTIONS = ["cuda", "rocm", "metal", "vulkan", "opencl"]
 
     devices = []
     for device_type in DEVICE_OPTIONS:
-        cur_device = tvm.device(dev_type=device_type, dev_id=0)
-        try:
-            if cur_device.exist:
-                devices.append(device_type)
-        except Exception:
-            continue
+        i = 0
+        while True:
+            cur_device = tvm.device(dev_type=device_type, dev_id=i)
+            try:
+                if cur_device.exist:
+                    devices.append({"type": device_type, "id": i})
+            except Exception:
+                continue
 
     return devices
+
+
+def get_devices_memory(device_type: str, devices: list[any]) -> int:
+    total_available = 0
+    for device in [device for device in devices if device["type"] == device_type]:
+        total_available += tvm.runtime.device(
+            device_type=device["type"], dev_id=device["id"]
+        ).available_global_memory
+
+    return total_available
 
 
 def get_usable_memory() -> int:
@@ -109,41 +121,21 @@ def get_usable_memory() -> int:
         return mem.total - mem.wired
     elif system == "Linux":
         # Get devices
-        device_types = get_devices()
+        devices = get_devices()
 
-        # Handle NVIDIA GPUs
-        if "cuda" in device_types or "vulkan" in device_types:
-            command = "nvidia-smi --query-gpu=memory.free --format=csv"
-            memory_free_info = (
-                subprocess.check_output(command.split()).decode("ascii").split("\n")[1:]
-            )
-            print(memory_free_info)
-            memory_free_values = [
-                int(x.split()[0]) for i, x in enumerate(memory_free_info)
-            ]
-            total_gpu_memory = sum(memory_free_values) * 1024 * 1024
-            return total_gpu_memory
-        # Handle AMD GPUs
-        elif "rocm" in device_types:
-            command = "rocm-smi --showmeminfo vram"
-            memory_info = (
-                subprocess.check_output(command.split())
-                .decode("ascii")
-                .split("\n")[2:-2]
-            )
-
-            # Define the pattern to find memory usage
-            total_mem_pattern = re.compile(r"VRAM Total Memory \(B\): (\d+)")
-            used_mem_pattern = re.compile(r"VRAM Total Used Memory \(B\): (\d+)")
-
-            free_memory = 0
-            for i in range(len(memory_info) - 1):
-                if i % 2 == 0:
-                    total_mem = total_mem_pattern.search(memory_info[i])
-                    used_mem = used_mem_pattern.search(memory_info[i + 1])
-                    free_memory += int(total_mem.group(1)) - int(used_mem.group(1))
-
-            return free_memory
+        # Heirarchy is as follows:
+        # - CUDA
+        # - ROCM
+        # - Vulkan
+        # - OpenCL
+        if any(device["type"] == "cuda" for device in devices):
+            return get_devices_memory("cuda", devices)
+        elif any(device["type"] == "rocm" for device in devices):
+            return get_devices_memory("rocm", devices)
+        elif any(device["type"] == "vulkan" for device in devices):
+            return get_devices_memory("vulkan", devices)
+        elif any(device["type"] == "opencl" for device in devices):
+            return get_devices_memory("opencl", devices)
         else:
             return 0
     else:

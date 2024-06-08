@@ -58,11 +58,9 @@ def get_quantization_compression(quant: Quantization) -> float:
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
-    pytorch_json_path = os.path.join(
-        base_weights_path, "pytorch_model.bin.index.json")
+    pytorch_json_path = os.path.join(base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
-    safetensors_path = os.path.join(
-        base_weights_path, "model.safetensors.index.json")
+    safetensors_path = os.path.join(base_weights_path, "model.safetensors.index.json")
     safetensors_bin_path = os.path.join(base_weights_path, "model.safetensors")
 
     if (
@@ -117,33 +115,35 @@ def get_usable_memory() -> int:
         # Handle NVIDIA GPUs
         if "cuda" in device_types or "vulkan" in device_types:
             command = "nvidia-smi --query-gpu=memory.free --format=csv"
-            memory_free_info = subprocess.check_output(
-                command.split()).decode('ascii').split('\n')[:-1][1:]
-            memory_free_values = [int(x.split()[0])
-                                  for i, x in enumerate(memory_free_info)]
-            total_gpu_memory = sum(memory_free_values)
+            memory_free_info = (
+                subprocess.check_output(command.split()).decode("ascii").split("\n")[1:]
+            )
+            print(memory_free_info)
+            memory_free_values = [
+                int(x.split()[0]) for i, x in enumerate(memory_free_info)
+            ]
+            total_gpu_memory = sum(memory_free_values) * 1024 * 1024
             return total_gpu_memory
         # Handle AMD GPUs
         elif "rocm" in device_types:
             command = "rocm-smi --showmeminfo vram"
-            memory_info = subprocess.check_output(
-                command.split()).decode('ascii').split('\n')[:-1]
+            memory_info = (
+                subprocess.check_output(command.split())
+                .decode("ascii")
+                .split("\n")[2:-2]
+            )
 
             # Define the pattern to find memory usage
             total_mem_pattern = re.compile(r"VRAM Total Memory \(B\): (\d+)")
-            used_mem_pattern = re.compile(
-                r"VRAM Total Used Memory \(B\): (\d+)")
+            used_mem_pattern = re.compile(r"VRAM Total Used Memory \(B\): (\d+)")
 
-            # Search for the patterns in the output
-            total_mem_match = total_mem_pattern.search(memory_info)
-            used_mem_match = used_mem_pattern.search(memory_info)
+            free_memory = 0
+            for i in range(len(memory_info) - 1):
+                if i % 2 == 0:
+                    total_mem = total_mem_pattern.search(memory_info[i])
+                    used_mem = used_mem_pattern.search(memory_info[i + 1])
+                    free_memory += int(total_mem.group(1)) - int(used_mem.group(1))
 
-            if total_mem_match and used_mem_match:
-                # Extract and convert values to integers
-                total_memory = int(total_mem_match.group(1))
-                used_memory = int(used_mem_match.group(1))
-                return total_memory - used_memory
-            else:
-                raise Exception("Could not find memory info for AMD GPUs.")
+            return free_memory
     else:
         raise ValueError(f"Unsupported system: {system}")

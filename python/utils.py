@@ -88,8 +88,11 @@ def get_devices() -> list[str]:
     devices = []
     for device_type in DEVICE_OPTIONS:
         cur_device = tvm.device(dev_type=device_type, dev_id=0)
-        if cur_device.exist:
-            devices.append(device_type)
+        try:
+            if cur_device.exist:
+                devices.append(device_type)
+        except Exception:
+            continue
 
     if len(devices) == 0:
         raise ValueError("No GPUs found")
@@ -144,5 +147,7 @@ def get_usable_memory() -> int:
                     free_memory += int(total_mem.group(1)) - int(used_mem.group(1))
 
             return free_memory
+        else:
+            return 0
     else:
         raise ValueError(f"Unsupported system: {system}")

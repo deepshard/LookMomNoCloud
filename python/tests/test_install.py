@@ -694,12 +694,6 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     )
     manager = InstallationManager()
 
-    # Mock the disk usage function to return a value that is less than the size of the model
-    mocker.patch(
-        "psutil.virtual_memory",
-        return_value=MagicMock(total=1024, used=1024, available=0),
-    )
-
     # Prepare JSON streaming responses as they would be sent from the generator
     progress_stream = install_generator(ID, MODEL_URL, manager)
 
@@ -707,6 +701,13 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     progress_updates = []
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
+
+        if progress_updates[-1]["status"] == "INSTALLING":
+            # Mock the available RAM information to be less than the required amount
+            mocker.patch(
+                "endpoints.model.install.install.get_space_check_info",
+                return_value=(0, 1024, 1024),
+            )
 
     assert (
         progress_updates[-1]["error"]

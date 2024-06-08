@@ -141,6 +141,10 @@ async def test_run_quantization_does_not_exist(
     base_fixture, get_app_data_path_mock, server_mock, subprocess_mock, mlc_mock
 ):
     async with init_db():
+        patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
+        )
+
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -176,6 +180,10 @@ async def test_run_quantization_exists(
     mocker,
 ):
     async with init_db():
+        patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
+        )
+
         manager = InstallationManager()
 
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -204,6 +212,11 @@ async def test_run_multiple_models(
 ):
     async with init_db():
         with patch("endpoints.model.run.run.find_port", return_value=8899) as find_port:
+            patch(
+                "endpoints.model.run.run.get_space_check_info",
+                return_value=(8192, 8192, 0),
+            )
+
             manager = InstallationManager()
 
             # Prepare JSON streaming responses as they would be sent from the generator
@@ -294,6 +307,10 @@ async def test_run_instance_running(
     mlc_mock,
 ):
     async with init_db():
+        patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
+        )
+
         manager = InstallationManager()
 
         # Insert a running model
@@ -334,6 +351,10 @@ async def test_run_not_convertable_format(
     base_fixture, get_app_data_path_mock, server_mock, subprocess_mock, mlc_mock
 ):
     async with init_db():
+        patch(
+            "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
+        )
+
         manager = InstallationManager()
 
         # Rename pytorch_model.bin to something else
@@ -406,8 +427,8 @@ async def test_run_not_enough_memory_quantization(
         manager = InstallationManager()
 
         with patch(
-            "psutil.virtual_memory",
-            return_value=MagicMock(total=0, used=0, available=0, wired=0),
+            "endpoints.model.run.run.get_usable_memory",
+            return_value=0,
         ) as ram_mock:
             # Prepare JSON streaming responses as they would be sent from the generator
             stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
@@ -452,8 +473,8 @@ async def test_run_not_enough_memory_run(
         manager = InstallationManager()
 
         with patch(
-            "psutil.virtual_memory",
-            return_value=MagicMock(total=0, used=0, available=0, wired=0),
+            "endpoints.model.run.run.get_usable_memory",
+            return_value=0,
         ) as ram_mock:
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator
@@ -490,14 +511,14 @@ async def test_run_kill_previous_models(
     async with init_db():
         manager = InstallationManager()
 
-        with patch("psutil.virtual_memory") as ram_mock:
+        with patch("endpoints.model.run.run.get_usable_memory") as ram_mock:
 
             def mock_virtual_memory():
-                if ram_mock.call_count <= 3:
-                    return MagicMock(total=4096, used=0, available=4096, wired=0)
+                if ram_mock.call_count <= 2:
+                    return 8192
 
                 # For model_id_3, there is not enough memory to run the model
-                return MagicMock(total=0, used=0, available=0, wired=0)
+                return 0
 
             ram_mock.side_effect = mock_virtual_memory
 

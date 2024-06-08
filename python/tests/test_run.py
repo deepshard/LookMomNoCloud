@@ -207,8 +207,7 @@ async def test_run_multiple_models(
             manager = InstallationManager()
 
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_1, model_id_2], manager)
+            stream = run_models_generator([model_id_1, model_id_1, model_id_2], manager)
 
             # Collect the responses
             responses = []
@@ -339,8 +338,7 @@ async def test_run_not_convertable_format(
 
         # Rename pytorch_model.bin to something else
         model_path = Path("/tmp") / "models" / model_id_1 / "base"
-        os.rename(model_path / "pytorch_model.bin",
-                  model_path / "invalid_file.bin")
+        os.rename(model_path / "pytorch_model.bin", model_path / "invalid_file.bin")
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1], manager)
@@ -374,8 +372,7 @@ async def test_run_not_enough_space(
             "endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)
         ):
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_2, model_id_3], manager)
+            stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
 
             # Collect the responses
             responses = []
@@ -413,8 +410,7 @@ async def test_run_not_enough_memory_quantization(
             return_value=MagicMock(total=0, used=0, available=0, wired=0),
         ) as ram_mock:
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator(
-                [model_id_1, model_id_2, model_id_3], manager)
+            stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
 
             # Collect the responses
             responses = []

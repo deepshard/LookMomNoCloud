@@ -719,7 +719,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
             # Mock the available RAM information to be less than the required amount
             mocker.patch(
                 "endpoints.model.install.install.get_space_check_info",
-                return_value=(0, 1024, 1024),
+                return_value=(0, 8192, 0),
             )
 
     assert (

@@ -94,9 +94,6 @@ def get_devices() -> list[str]:
         except Exception:
             continue
 
-    if len(devices) == 0:
-        raise ValueError("No GPUs found")
-
     return devices
 
 

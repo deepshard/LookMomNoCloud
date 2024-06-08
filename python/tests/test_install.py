@@ -705,6 +705,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     mock_mlc = mocker.patch(
         "endpoints.model.install.install.convert_and_quantize", return_value=None
     )
+    mocker.patch("endpoints.model.install.install.get_usable_memory", return_value=8192)
     manager = InstallationManager()
 
     # Prepare JSON streaming responses as they would be sent from the generator

@@ -1,10 +1,8 @@
-import os
-import signal
 import multiprocessing
 import asyncio
 import aiohttp
-import psutil
 import json
+from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
@@ -66,13 +64,13 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     return [1 / len(model_ids) for _ in model_ids]
 
 
-def serve_model(model_path: str, mem_share: float, port: int):
+def serve_model(model_path: Path, mem_share: float, port: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
         model=str(model_path),
         device="auto",
-        model_lib=None,
+        model_lib=str(model_path / "compilation.so"),
         mode="local",
         additional_models=[],  # Not relevant
         max_batch_size=1,
@@ -177,7 +175,7 @@ async def run_models_generator(
     Yields:
         {
             "id": str,
-            "status": str (ACKNOWLEDGED, QUANTIZING, RUNNING)
+            "status": str (ACKNOWLEDGED, INSTALLING, RUNNING)
             "instance": int,
             "port": int,
             "error": str
@@ -213,7 +211,7 @@ async def run_models_generator(
         if not is_convertable_format(weights_path):
             error_event = {
                 "id": model_id,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": "Model is not in a convertable format",
@@ -240,7 +238,7 @@ async def run_models_generator(
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
             "id": None,
-            "status": "QUANTIZING",
+            "status": "INSTALLING",
             "instance": None,
             "port": None,
             "error": "Not enough space to convert and quantize the models",
@@ -258,7 +256,7 @@ async def run_models_generator(
     # Convert and quantize the models
     for i, conversion in enumerate(conversions):
         logger.info(
-            f"""Converting and quantizing model {
+            f"""Converting, quantizing, and compiling model {
                 conversion['model_id']}"""
         )
         model_id = conversion["model_id"]
@@ -276,11 +274,12 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {model_id}"
+                f"Not enough memory to convert and quantize the model {
+                    model_id}"
             )
             error_event = {
                 "id": model_id,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": "Not enough memory to convert and quantize the model",
@@ -301,7 +300,7 @@ async def run_models_generator(
         # Send quantization event
         quantization_event = {
             "id": model_id,
-            "status": "QUANTIZING",
+            "status": "INSTALLING",
             "instance": None,
             "port": None,
             "error": None,

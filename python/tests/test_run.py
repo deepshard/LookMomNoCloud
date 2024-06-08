@@ -157,7 +157,7 @@ async def test_run_quantization_does_not_exist(
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"
         assert responses[1]["id"] == model_id_1
-        assert responses[1]["status"] == "QUANTIZING"
+        assert responses[1]["status"] == "INSTALLING"
         assert responses[2]["id"] == model_id_1
         assert responses[2]["status"] == "RUNNING"
         assert responses[2]["instance"] == 1
@@ -207,7 +207,8 @@ async def test_run_multiple_models(
             manager = InstallationManager()
 
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator([model_id_1, model_id_1, model_id_2], manager)
+            stream = run_models_generator(
+                [model_id_1, model_id_1, model_id_2], manager)
 
             # Collect the responses
             responses = []
@@ -248,14 +249,14 @@ async def test_run_multiple_models(
 
             assert responses[3] == {
                 "id": model_id_1,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": None,
             }
             assert responses[4] == {
                 "id": model_id_2,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": None,
@@ -338,7 +339,8 @@ async def test_run_not_convertable_format(
 
         # Rename pytorch_model.bin to something else
         model_path = Path("/tmp") / "models" / model_id_1 / "base"
-        os.rename(model_path / "pytorch_model.bin", model_path / "invalid_file.bin")
+        os.rename(model_path / "pytorch_model.bin",
+                  model_path / "invalid_file.bin")
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1], manager)
@@ -354,7 +356,7 @@ async def test_run_not_convertable_format(
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"
         assert responses[-1]["id"] == model_id_1
-        assert responses[-1]["status"] == "QUANTIZING"
+        assert responses[-1]["status"] == "INSTALLING"
         assert responses[-1]["instance"] == None
         assert responses[-1]["port"] == None
         assert responses[-1]["error"] == "Model is not in a convertable format"
@@ -372,7 +374,8 @@ async def test_run_not_enough_space(
             "endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)
         ):
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
+            stream = run_models_generator(
+                [model_id_1, model_id_2, model_id_3], manager)
 
             # Collect the responses
             responses = []
@@ -389,7 +392,7 @@ async def test_run_not_enough_space(
             assert responses[2]["id"] == model_id_3
             assert responses[2]["status"] == "ACKNOWLEDGED"
             assert responses[3]["id"] == None
-            assert responses[3]["status"] == "QUANTIZING"
+            assert responses[3]["status"] == "INSTALLING"
             assert responses[3]["instance"] == None
             assert responses[3]["port"] == None
             assert (
@@ -410,7 +413,8 @@ async def test_run_not_enough_memory_quantization(
             return_value=MagicMock(total=0, used=0, available=0, wired=0),
         ) as ram_mock:
             # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
+            stream = run_models_generator(
+                [model_id_1, model_id_2, model_id_3], manager)
 
             # Collect the responses
             responses = []
@@ -427,7 +431,7 @@ async def test_run_not_enough_memory_quantization(
             assert responses[2]["id"] == model_id_3
             assert responses[2]["status"] == "ACKNOWLEDGED"
             assert responses[3]["id"] == model_id_1
-            assert responses[3]["status"] == "QUANTIZING"
+            assert responses[3]["status"] == "INSTALLING"
             assert responses[3]["instance"] == None
             assert responses[3]["port"] == None
             assert (

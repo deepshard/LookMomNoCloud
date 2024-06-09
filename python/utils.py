@@ -1,7 +1,10 @@
 import os
+import re
 import psutil
 import platform
 import socket
+import subprocess
+import tvm
 from pathlib import Path
 from truffle_types import Quantization
 
@@ -40,7 +43,19 @@ def find_port(port: int = 8899) -> int:
 
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
-    return quant_path.exists() and len(os.listdir(quant_path)) > 0
+    mlc_chat_config_path = quant_path / "mlc-chat-config.json"
+    ndarray_cache_path = quant_path / "ndarray-cache.json"
+    tokenizer_config_path = quant_path / "tokenizer_config.json"
+    tokenizer_path = quant_path / "tokenizer.json"
+    shards = sum(1 for _ in quant_path.glob("params_shard_*.bin"))
+    return (
+        quant_path.exists()
+        and mlc_chat_config_path.exists()
+        and ndarray_cache_path.exists()
+        and shards > 0
+        and tokenizer_config_path.exists()
+        and tokenizer_path.exists()
+    )
 
 
 def get_quantization_compression(quant: Quantization) -> float:
@@ -79,6 +94,33 @@ def get_model_size_info(
     return model_size, compressed_size
 
 
+def get_devices() -> list[str]:
+    DEVICE_OPTIONS = ["cuda", "rocm", "metal", "vulkan", "opencl"]
+
+    devices = []
+    for device_type in DEVICE_OPTIONS:
+        i = 0
+        while True:
+            cur_device = tvm.device(dev_type=device_type, dev_id=i)
+            try:
+                if cur_device.exist:
+                    devices.append({"type": device_type, "id": i})
+            except Exception:
+                continue
+
+    return devices
+
+
+def get_devices_memory(device_type: str, devices: list[any]) -> int:
+    total_available = 0
+    for device in [device for device in devices if device["type"] == device_type]:
+        total_available += tvm.runtime.device(
+            device_type=device["type"], dev_id=device["id"]
+        ).available_global_memory
+
+    return total_available
+
+
 def get_usable_memory() -> int:
     """
     This is the memory that is currently available or could be quickly made available.
@@ -89,5 +131,24 @@ def get_usable_memory() -> int:
     if system == "Darwin":
         # macOS swaps to disk when memory is low, so we need to take that into account
         return mem.total - mem.wired
+    elif system == "Linux":
+        # Get devices
+        devices = get_devices()
 
-    return mem.available
+        # Heirarchy is as follows:
+        # - CUDA
+        # - ROCM
+        # - Vulkan
+        # - OpenCL
+        if any(device["type"] == "cuda" for device in devices):
+            return get_devices_memory("cuda", devices)
+        elif any(device["type"] == "rocm" for device in devices):
+            return get_devices_memory("rocm", devices)
+        elif any(device["type"] == "vulkan" for device in devices):
+            return get_devices_memory("vulkan", devices)
+        elif any(device["type"] == "opencl" for device in devices):
+            return get_devices_memory("opencl", devices)
+        else:
+            return 0
+    else:
+        raise ValueError(f"Unsupported system: {system}")

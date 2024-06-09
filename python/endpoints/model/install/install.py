@@ -23,6 +23,7 @@ from utils import (
     is_convertable_format,
     get_model_size_info,
     get_usable_memory,
+    get_devices,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
@@ -258,9 +259,7 @@ def convert_quantize_compile(
                 prefill_chunk_size=None,
                 attention_sink_size=None,
                 max_batch_size=1,
-                tensor_parallel_shards=(
-                    device.multi_processor_count if device.multi_processor_count else 1
-                ),
+                tensor_parallel_shards=len(get_devices()),
             ),
             debug_dump=None,
         )

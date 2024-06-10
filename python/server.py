@@ -66,7 +66,11 @@ async def sysinfo():
 
 @app.get("/highlights")
 async def highlights():
-    return get_highlights()
+    try:
+        return get_highlights()
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Failed to fetch highlights")
 
 
 @app.get("/new")

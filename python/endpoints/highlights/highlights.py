@@ -3,7 +3,7 @@ import aiohttp
 from truffle_types import Model, ModelStatus
 from db import db
 
-HIGHLIGHTS_URL = "http://192.168.1.12:3000"
+HIGHLIGHTS_URL = "https://api.deepshard.org"
 
 
 async def get_highlights() -> list[Model]:
@@ -41,7 +41,7 @@ async def get_trending_models(session, num: int) -> list[Model]:
                 hf_link=model["hfLink"],
                 eval_id=model["evalId"],
                 status=ModelStatus.NOT_DOWNLOADED,
-                background_image="tmp",  # todo: fix this
+                background_image=model["backgroundImage"],
                 instance=0,
                 progress=0,
             )
@@ -67,7 +67,7 @@ async def fetch_model_data(session, model):
             hf_link=model_data["hfLink"],
             eval_id=model_data["evalId"],
             status=ModelStatus.RUNNING,
-            background_image="tmp",  # todo: fix this
+            background_image=model_data["backgroundImage"],
             instance=model.instance,
             progress=0,
         )

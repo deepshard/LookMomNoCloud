@@ -24,6 +24,7 @@ from utils import (
     get_model_size_info,
     get_usable_memory,
     get_devices,
+    get_tensor_parallelism,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
@@ -228,6 +229,7 @@ def convert_quantize_compile(
     conv_template = get_conv_template(base_weights_path)
     quantization_obj = get_quantization_object(quantization, model)
     target, build_func = detect_target_and_host("auto", "auto")
+    shards = get_tensor_parallelism(base_weights_path, quantization)
 
     # Convert and quantize
     logger.info(f"Converting weights for {base_weights_path}")
@@ -259,12 +261,15 @@ def convert_quantize_compile(
                 prefill_chunk_size=None,
                 attention_sink_size=None,
                 max_batch_size=1,
-                tensor_parallel_shards=len(get_devices()),
+                tensor_parallel_shards=shards,
             ),
             debug_dump=None,
         )
     else:
-        logger.info(f"Already compiled. Skipping compilation for {quant_weights_path}")
+        logger.info(
+            f"""Already compiled. Skipping compilation for {
+                    quant_weights_path}"""
+        )
 
     # Generate config
     logger.info(f"Generating config for {base_weights_path}")
@@ -277,7 +282,7 @@ def convert_quantize_compile(
         sliding_window_size=None,
         prefill_chunk_size=None,
         attention_sink_size=None,
-        tensor_parallel_shards=None,
+        tensor_parallel_shards=shards,
         max_batch_size=1,
         output=Path(quant_weights_path),
     )

@@ -18,6 +18,7 @@ from utils import (
     is_convertable_format,
     get_model_size_info,
     get_usable_memory,
+    get_tensor_parallelism,
 )
 from db import db
 from truffle_types import Quantization
@@ -64,7 +65,7 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     return [1 / len(model_ids) for _ in model_ids]
 
 
-def serve_model(model_path: Path, mem_share: float, port: int):
+def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
@@ -73,6 +74,7 @@ def serve_model(model_path: Path, mem_share: float, port: int):
         model_lib=str(model_path / "compilation.so"),
         mode="local",
         additional_models=[],  # Not relevant
+        tensor_parallel_shards=shards,
         max_batch_size=1,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
@@ -117,10 +119,14 @@ async def run_model(
     model_path = get_app_data_path() / "models" / model_id / quantization.value
     model_info = await get_model_info(model_id)
     port = find_port()
+    shards = get_tensor_parallelism(
+        get_app_data_path() / "models" / model_id / "base",
+        quantization,
+    )
 
     # Start the model server as a separate process
     proc = multiprocessing.Process(
-        target=serve_model, args=(model_path, mem_share, port)
+        target=serve_model, args=(model_path, mem_share, port, shards)
     )
     proc.start()
 

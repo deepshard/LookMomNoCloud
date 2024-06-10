@@ -11,6 +11,10 @@ from endpoints.model.install.install import (
     get_space_check_info,
     convert_quantize_compile,
 )
+from endpoints.model.run.adaptive_quntization_decision import (
+    get_score,
+    get_adaptive_quantization_decision,
+)
 from utils import (
     get_app_data_path,
     find_port,
@@ -54,15 +58,12 @@ async def get_model_info(model_id: str) -> dict:
     return {"name": "meta-llama/Meta-Llama-3-8B", "size": 8000000000}
 
 
-def adaptive_quantization_decision(model_ids: list[str]) -> list[Quantization]:
-    # NOTE: We will make this more sophisticated in the future
-    return [Quantization.INT4 for _ in model_ids]
-
-
-def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
-    # NOTE: We will make this more sophisticated in the future and potentially combine
-    # this with the adaptive_quantization_decision function
-    return [1 / len(model_ids) for _ in model_ids]
+def get_gpu_memory_shares(
+    configurations: list[str, Quantization], total_score: float
+) -> list[float]:
+    return [
+        get_score([configuration]) / total_score for configuration in configurations
+    ]
 
 
 def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
@@ -200,7 +201,12 @@ async def run_models_generator(
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
-    quantizations = adaptive_quantization_decision(model_ids)
+    quantizations = [
+        configuration[1]
+        for configuration in get_adaptive_quantization_decision(
+            model_ids, installation_manager
+        )
+    ]
     mem_shares = get_gpu_memory_shares(model_ids)
     instance_numbers = await get_instances(model_ids)
 

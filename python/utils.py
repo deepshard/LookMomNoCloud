@@ -59,11 +59,14 @@ def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
 
 
 def get_quantization_compression(quant: Quantization) -> float:
-    # NOTE: We can replace this with a more sophisticated calculation later
     quantization_compression_table = {
-        Quantization.INT3: 0.25,
-        Quantization.INT4: 0.33,
-        Quantization.INT8: 0.55,
+        Quantization.Q0F16: 1,
+        Quantization.Q4F16_0: 0.28,
+        Quantization.Q4F16_1: 0.28,
+        Quantization.Q4F16_2: 0.38,
+        Quantization.Q4F16_FT: 0.26,
+        Quantization.Q3F16_0: 0.23,
+        Quantization.Q3F16_1: 0.23,
     }
     return quantization_compression_table[quant]
 

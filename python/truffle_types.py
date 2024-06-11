@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from typing import List, Dict, Literal
 from uuid import UUID
@@ -63,13 +63,19 @@ class SystemInfo:
 @dataclass
 class Model:
     id: str
-    url: str
+    name: str
+    title: str
+    size: int
+    author: str
+    downloads: int
+    likes: int
+    intro: str
+    capabilities: str
+    risks: str
+    hf_link: str
+    eval_id: str | None
     status: ModelStatus
     background_image: str
-    author: str
-    name: str
-    params: int
-    description: str
     instance: int
     progress: int
 

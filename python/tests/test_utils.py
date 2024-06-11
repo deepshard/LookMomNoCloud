@@ -1,19 +1,25 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from utils import get_usable_memory
+from truffle_types import Quantization
+from utils import get_usable_memory, get_tensor_parallelism
 
 # Test the utils logic
 # Cases:
-# - get_usable_memory Windows
-# - get_usable_memory Mac
-# - get_usable_memory single CUDA
-# - get_usable_memory multiple CUDA
-# - get_usable_memory single ROCM
-# - get_usable_memory multiple ROCM
-# - get_usable_memory single Vulkan
-# - get_usable_memory multiple Vulkan
-# - get_usable_memory single OpenCL
-# - get_usable_memory multiple OpenCL
+# - get_usable_memory
+#   - Windows
+#   - Mac
+#   - single CUDA
+#   - multiple CUDA
+#   - single ROCM
+#   - multiple ROCM
+#   - single Vulkan
+#   - multiple Vulkan
+#   - single OpenCL
+#   - multiple OpenCL
+# - get_tensor_parallelism
+#   - no GPUs
+#   - single GPU
+#   - multiple GPUs
 
 
 def test_get_usable_memory_windows():
@@ -113,3 +119,77 @@ def test_get_usable_memory_multiple_opencl():
         return_value=MagicMock(available_global_memory=25387073536),
     ):
         assert get_usable_memory() == 50774147072
+
+
+def test_get_tensor_parallelism_no_gpus():
+    with patch("utils.get_devices", return_value=[]), patch(
+        "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
+    ):
+        with pytest.raises(ValueError):
+            get_tensor_parallelism("model_weights_dir", Quantization.INT4)
+
+
+def test_get_tensor_parallelism_single_gpu():
+    with patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}]), patch(
+        "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
+    ):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 1
+
+
+def test_get_tensor_parallelism_multiple_gpus():
+    # Case 1: 2 GPUs, model is 10GB
+    with patch(
+        "utils.get_devices",
+        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
+    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+
+    # Case 2: 8 GPUs, model is 10GB
+    with patch(
+        "utils.get_devices",
+        return_value=[
+            {"type": "cuda", "id": 0},
+            {"type": "cuda", "id": 1},
+            {"type": "cuda", "id": 2},
+            {"type": "cuda", "id": 3},
+            {"type": "cuda", "id": 4},
+            {"type": "cuda", "id": 5},
+            {"type": "cuda", "id": 6},
+            {"type": "cuda", "id": 7},
+        ],
+    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 4
+
+    # Case 3: 2 GPUs, model is 5GB
+    with patch(
+        "utils.get_devices",
+        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
+    ), patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+
+    # Case 4: 3 GPUs, model is 5GB
+    with patch(
+        "utils.get_devices",
+        return_value=[
+            {"type": "cuda", "id": 0},
+            {"type": "cuda", "id": 1},
+            {"type": "cuda", "id": 2},
+        ],
+    ), patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+
+    # Case 2: 8 GPUs, model is 70GB
+    with patch(
+        "utils.get_devices",
+        return_value=[
+            {"type": "cuda", "id": 0},
+            {"type": "cuda", "id": 1},
+            {"type": "cuda", "id": 2},
+            {"type": "cuda", "id": 3},
+            {"type": "cuda", "id": 4},
+            {"type": "cuda", "id": 5},
+            {"type": "cuda", "id": 6},
+            {"type": "cuda", "id": 7},
+        ],
+    ), patch("utils.get_model_size_info", return_value=(0, 70 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 8

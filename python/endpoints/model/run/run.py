@@ -1,15 +1,16 @@
-import os
-import signal
 import multiprocessing
 import asyncio
 import aiohttp
-import psutil
 import json
+from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
 from endpoints.model.install import InstallationManager
-from endpoints.model.install.install import get_space_check_info, convert_and_quantize
+from endpoints.model.install.install import (
+    get_space_check_info,
+    convert_quantize_compile,
+)
 from utils import (
     get_app_data_path,
     find_port,
@@ -17,6 +18,7 @@ from utils import (
     is_convertable_format,
     get_model_size_info,
     get_usable_memory,
+    get_tensor_parallelism,
 )
 from db import db
 from truffle_types import Quantization
@@ -63,15 +65,16 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     return [1 / len(model_ids) for _ in model_ids]
 
 
-def serve_model(model_path: str, mem_share: float, port: int):
+def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
     serve(
         model=str(model_path),
         device="auto",
-        model_lib=None,
+        model_lib=str(model_path / "compilation.so"),
         mode="local",
         additional_models=[],  # Not relevant
+        tensor_parallel_shards=shards,
         max_batch_size=1,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
@@ -116,10 +119,14 @@ async def run_model(
     model_path = get_app_data_path() / "models" / model_id / quantization.value
     model_info = await get_model_info(model_id)
     port = find_port()
+    shards = get_tensor_parallelism(
+        get_app_data_path() / "models" / model_id / "base",
+        quantization,
+    )
 
     # Start the model server as a separate process
     proc = multiprocessing.Process(
-        target=serve_model, args=(model_path, mem_share, port)
+        target=serve_model, args=(model_path, mem_share, port, shards)
     )
     proc.start()
 
@@ -174,7 +181,7 @@ async def run_models_generator(
     Yields:
         {
             "id": str,
-            "status": str (ACKNOWLEDGED, QUANTIZING, RUNNING)
+            "status": str (ACKNOWLEDGED, INSTALLING, RUNNING)
             "instance": int,
             "port": int,
             "error": str
@@ -210,7 +217,7 @@ async def run_models_generator(
         if not is_convertable_format(weights_path):
             error_event = {
                 "id": model_id,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": "Model is not in a convertable format",
@@ -237,7 +244,7 @@ async def run_models_generator(
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
             "id": None,
-            "status": "QUANTIZING",
+            "status": "INSTALLING",
             "instance": None,
             "port": None,
             "error": "Not enough space to convert and quantize the models",
@@ -255,7 +262,7 @@ async def run_models_generator(
     # Convert and quantize the models
     for i, conversion in enumerate(conversions):
         logger.info(
-            f"""Converting and quantizing model {
+            f"""Converting, quantizing, and compiling model {
                 conversion['model_id']}"""
         )
         model_id = conversion["model_id"]
@@ -277,7 +284,7 @@ async def run_models_generator(
             )
             error_event = {
                 "id": model_id,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": "Not enough memory to convert and quantize the model",
@@ -298,7 +305,7 @@ async def run_models_generator(
         # Send quantization event
         quantization_event = {
             "id": model_id,
-            "status": "QUANTIZING",
+            "status": "INSTALLING",
             "instance": None,
             "port": None,
             "error": None,
@@ -307,7 +314,7 @@ async def run_models_generator(
 
         # Perform the conversion and quantization
         installation_manager.remove_from_conversion_queue()
-        convert_and_quantize(weights_path, quant_path, quant)
+        convert_quantize_compile(weights_path, quant_path, quant)
         installation_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models

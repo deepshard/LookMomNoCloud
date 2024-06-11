@@ -125,15 +125,6 @@ def trending_5_mock():
 
 
 @pytest.fixture
-def hello_mock():
-    with aioresponses() as mocked:
-        mocked.get(
-            f"{HIGHLIGHTS_URL}/models/hello", status=200, payload=[], repeat=True
-        )
-        yield mocked
-
-
-@pytest.fixture
 def trending_running_mock():
     with aioresponses() as mocked:
         mocked.get(

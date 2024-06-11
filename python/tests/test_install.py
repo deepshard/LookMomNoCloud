@@ -183,6 +183,8 @@ async def test_install_single_model_from_scratch(
     assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
 
     assert mock_mlc.call_count == 1
+    assert quant_decision_mock.call_count == 1
+    quant_decision_mock.assert_called_with([ID], manager)
 
     # Check that the files were downloaded
     download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
@@ -243,6 +245,9 @@ async def test_complete_partial_installation_of_single_model(
             progress_updates.append(json.loads(progress[5:]))
 
         assert mock_download_file.call_count == 2
+        assert quant_decision_mock.call_count == 1
+        assert mock_mlc.call_count == 1
+        quant_decision_mock.assert_called_with([ID], manager)
 
         # Assert acknowledgement event was sent
         assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -308,6 +313,9 @@ async def test_skip_download_of_already_downloaded_model(
             progress_updates.append(json.loads(progress[5:]))
 
         assert mock_download_file.call_count == 0
+        assert mock_mlc.call_count == 1
+        assert quant_decision_mock.call_count == 1
+        quant_decision_mock.assert_called_with([ID], manager)
 
         # Assert acknowledgement event was sent
         assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -593,6 +601,8 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
     assert progress_updates[0]["status"] == "ACKNOWLEDGED"
     assert progress_updates[-1]["status"] == "STOPPED"
     assert mock_mlc.call_count == 0  # Conversion and quantization should be skipped
+    assert quant_decision_mock.call_count == 1
+    quant_decision_mock.assert_called_with([ID], manager)
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -704,6 +714,10 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
 
+    assert mock_mlc.call_count == 0
+    assert quant_decision_mock.call_count == 1
+    quant_decision_mock.assert_called_with([ID], manager)
+
 
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
@@ -753,6 +767,10 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
+
+    assert mock_mlc.call_count == 0
+    assert quant_decision_mock.call_count == 1
+    quant_decision_mock.assert_called_with([ID], manager)
 
 
 @pytest.mark.asyncio

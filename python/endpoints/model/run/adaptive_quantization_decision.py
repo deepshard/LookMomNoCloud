@@ -23,10 +23,17 @@ quantization_scores = {
 
 
 def get_model_size(model_id: str) -> int:
+    # Placeholder, will pull from metadata API
     return 30_000_000_000
 
 
 def get_model_size_score(model_size: int) -> float:
+    """
+    Returns a score based on the model's size. The larger the model, the lower
+    the score because it has a higher default performance level, therefore it
+    can handle more quantization.
+    """
+
     # If model >= 70B params, return 0.33
     if model_size >= 70_000_000_000:
         return 0.33
@@ -40,6 +47,12 @@ def get_model_size_score(model_size: int) -> float:
 
 
 def get_quantization_time_penalty(model_id: str, quantization: Quantization) -> float:
+    """
+    If a model has not been quantized, then there is a 10% penalty based on its size.
+    Quantizing a model takes time, so we want to penalize the score for models that
+    are not ready to be served immediately.
+    """
+
     if not does_quantization_exist(model_id, quantization):
         model_size = get_model_size(model_id)
         return 0.1 * get_model_size_score(model_size)
@@ -48,6 +61,8 @@ def get_quantization_time_penalty(model_id: str, quantization: Quantization) -> 
 
 
 def get_expected_memory_consumption(models: list[str, Quantization]) -> int:
+    """Estimates the expected memory consumption of a list of model configurations."""
+
     total_size = 0
     for model_id, quantization in models:
         base_weights_path = get_app_data_path() / "models" / model_id / "base"
@@ -58,6 +73,8 @@ def get_expected_memory_consumption(models: list[str, Quantization]) -> int:
 
 
 def get_expected_disk_consumption(models: list[str, Quantization]) -> int:
+    """Estimates the expected disk consumption of a list of model configurations."""
+
     total_size = 0
     for model_id, quantization in models:
         if not does_quantization_exist(model_id, quantization):
@@ -69,6 +86,11 @@ def get_expected_disk_consumption(models: list[str, Quantization]) -> int:
 
 
 def get_capabilities_score(model_id: str, quantization: Quantization) -> float:
+    """
+    Returns a capabilities score based on the model's size and the expected impact of
+    quantization on model downstream performance.
+    """
+
     model_size = get_model_size(model_id)
     model_size_score = get_model_size_score(model_size)
     quantization_score = quantization_scores[quantization]
@@ -76,6 +98,8 @@ def get_capabilities_score(model_id: str, quantization: Quantization) -> float:
 
 
 def get_score(models) -> dict[str, float]:
+    """Returns an overall score taking into account capabilities and quantization time penalty."""
+
     score = 0
     for configuration in models:
         score += get_capabilities_score(
@@ -86,10 +110,12 @@ def get_score(models) -> dict[str, float]:
 
 
 def get_quantization_options(model_id: str) -> list[Quantization]:
+    # Collect information necessary for identifying available quantization kinds
     base_weights_path = get_app_data_path() / "models" / model_id / "base"
     config = detect_config(base_weights_path)
     model = detect_model_type("auto", config)
 
+    # Get the quantization options available for the model then convert them to Quantization enum
     quantization_kinds = list(model.quantize.keys())
     raw_quantization_options = [
         quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds
@@ -115,10 +141,12 @@ def get_usable_configurations(
     installation_manager: InstallationManager,
 ):
     """
-    Create every possible combination of quantization options and return the ones whose
+    Create every possible combination of model x quantization options and return the ones whose
     expected memory consumption and expected disk consumption are less than the system's
     available resources.
     """
+
+    # Create a list of all possible combinations of model x quantization options
     model_ids = list(configurations.keys())
     quant_options = quant_options = [
         [(model_id, quant) for quant in configurations[model_id]]
@@ -130,9 +158,11 @@ def get_usable_configurations(
     for combination in all_combinations:
         models = [(model_id, quant) for model_id, quant in combination]
 
+        # Collect expected memory and disk consumption for the combination
         expected_memory = get_expected_memory_consumption(models)
         expected_disk = get_expected_disk_consumption(models)
 
+        # Check if the combination is usable based on available resources
         available_memory, disk_space, bytes_remaining = install.get_space_check_info(
             installation_manager
         )
@@ -148,6 +178,15 @@ def get_usable_configurations(
 def get_adaptive_quantization_decision(
     model_ids: list[str], installation_manager: InstallationManager
 ) -> list[str, Quantization]:
+    """
+    Returns the best combination of models and quantization options based on the available
+    configurations and the system's available resources.
+
+    Args:
+        model_ids: List of model IDs
+        installation_manager: InstallationManager object
+    """
+
     available_configurations = get_available_configurations(model_ids)
     usable_configurations = get_usable_configurations(
         available_configurations, installation_manager

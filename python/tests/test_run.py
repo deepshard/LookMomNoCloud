@@ -190,6 +190,8 @@ async def test_run_quantization_does_not_exist(
 
         # Check the responses
         assert mlc_mock.call_count == 1
+        assert get_quant_decision_mock.call_count == 1
+        get_quant_decision_mock.assert_called_with([model_id_1], manager)
         assert len(responses) == 3
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"
@@ -228,6 +230,8 @@ async def test_run_quantization_exists(
 
         # Check the responses
         assert mlc_mock.call_count == 0
+        assert get_quant_decision_mock.call_count == 1
+        get_quant_decision_mock.assert_called_with([model_id_1], manager)
         assert len(responses) == 2
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"
@@ -257,7 +261,7 @@ async def test_run_multiple_models(
                 (model_id_1, Quantization.Q0F16),
                 (model_id_2, Quantization.Q0F16),
             ],
-        ):
+        ) as get_quant_decision_mock:
             with patch(
                 "endpoints.model.run.run.find_port", return_value=8899
             ) as find_port:
@@ -282,6 +286,15 @@ async def test_run_multiple_models(
 
                 # Check the responses
                 assert mlc_mock.call_count == 2
+                assert get_quant_decision_mock.call_count == 1
+                get_quant_decision_mock.assert_called_with(
+                    [
+                        model_id_1,
+                        model_id_1,
+                        model_id_2,
+                    ],
+                    manager,
+                )
                 assert len(responses) == 8
                 assert responses[0] == {
                     "id": model_id_1,
@@ -381,6 +394,8 @@ async def test_run_instance_running(
 
         # Check the responses
         assert mlc_mock.call_count == 0
+        assert get_quant_decision_mock.call_count == 1
+        get_quant_decision_mock.assert_called_with([model_id_1], manager)
         assert len(responses) == 2
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"

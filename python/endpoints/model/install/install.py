@@ -444,7 +444,7 @@ async def install_generator(
     )
 
     # Return early if the quantization is alrady built
-    quantization = get_base_quantization_decision(install_path, installation_manager)
+    quantization = get_base_quantization_decision(model_id, installation_manager)
     if does_quantization_exist(model_id, quantization):
         logger.info(f"Conversion and quantization already exists for {model_dir}")
         progress_event = {

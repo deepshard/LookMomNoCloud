@@ -131,10 +131,10 @@ def mock_quants():
 
 @pytest.fixture
 def mlc_mock():
-    # Mock convert_and_quantize, when called write some data to the model's quantization directory
+    # Mock convert_quantize_compile, when called write some data to the model's quantization directory
     with patch(
-        "endpoints.model.run.run.convert_and_quantize", return_value=None
-    ) as convert_and_quantize:
+        "endpoints.model.run.run.convert_quantize_compile", return_value=None
+    ) as cqc:
 
         def write_data(weights_path, quant_path, quant):
             print(f"Writing data to {quant_path}")
@@ -142,8 +142,8 @@ def mlc_mock():
             with open(quant_path / "model.bin", "wb") as f:
                 f.write("test".encode("utf-8"))
 
-        convert_and_quantize.side_effect = write_data
-        yield convert_and_quantize
+        cqc.side_effect = write_data
+        yield cqc
 
 
 # Tests
@@ -173,7 +173,7 @@ async def test_run_quantization_does_not_exist(
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"
         assert responses[1]["id"] == model_id_1
-        assert responses[1]["status"] == "QUANTIZING"
+        assert responses[1]["status"] == "INSTALLING"
         assert responses[2]["id"] == model_id_1
         assert responses[2]["status"] == "RUNNING"
         assert responses[2]["instance"] == 1
@@ -270,14 +270,14 @@ async def test_run_multiple_models(
 
             assert responses[3] == {
                 "id": model_id_1,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": None,
             }
             assert responses[4] == {
                 "id": model_id_2,
-                "status": "QUANTIZING",
+                "status": "INSTALLING",
                 "instance": None,
                 "port": None,
                 "error": None,
@@ -382,7 +382,7 @@ async def test_run_not_convertable_format(
         assert responses[0]["id"] == model_id_1
         assert responses[0]["status"] == "ACKNOWLEDGED"
         assert responses[-1]["id"] == model_id_1
-        assert responses[-1]["status"] == "QUANTIZING"
+        assert responses[-1]["status"] == "INSTALLING"
         assert responses[-1]["instance"] == None
         assert responses[-1]["port"] == None
         assert responses[-1]["error"] == "Model is not in a convertable format"
@@ -417,7 +417,7 @@ async def test_run_not_enough_space(
             assert responses[2]["id"] == model_id_3
             assert responses[2]["status"] == "ACKNOWLEDGED"
             assert responses[3]["id"] == None
-            assert responses[3]["status"] == "QUANTIZING"
+            assert responses[3]["status"] == "INSTALLING"
             assert responses[3]["instance"] == None
             assert responses[3]["port"] == None
             assert (
@@ -457,7 +457,7 @@ async def test_run_not_enough_memory_quantization(
             assert responses[2]["id"] == model_id_3
             assert responses[2]["status"] == "ACKNOWLEDGED"
             assert responses[3]["id"] == model_id_1
-            assert responses[3]["status"] == "QUANTIZING"
+            assert responses[3]["status"] == "INSTALLING"
             assert responses[3]["instance"] == None
             assert responses[3]["port"] == None
             assert (

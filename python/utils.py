@@ -99,8 +99,7 @@ def get_devices() -> list[str]:
 
     devices = []
     for device_type in DEVICE_OPTIONS:
-        i = 0
-        while True:
+        for i in range(8):  # max 8 devices per type for now
             cur_device = tvm.device(dev_type=device_type, dev_id=i)
             try:
                 if cur_device.exist:

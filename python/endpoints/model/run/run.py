@@ -62,19 +62,6 @@ def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float
     ]
 
 
-<< << << < HEAD
-== == == =
-
-
-def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
-    # NOTE: We will make this more sophisticated in the future and potentially combine
-    # this with the adaptive_quantization_decision function
-    return [1 / len(model_ids) for _ in model_ids]
-
-
->>>>>> > main
-
-
 def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
@@ -210,8 +197,7 @@ async def run_models_generator(
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
-    configurations = get_adaptive_quantization_decision(
-        model_ids, installation_manager)
+    configurations = get_adaptive_quantization_decision(model_ids, installation_manager)
     quantizations = [config[1] for config in configurations]
     mem_shares = get_gpu_memory_shares(configurations)
     instance_numbers = await get_instances(model_ids)
@@ -251,8 +237,7 @@ async def run_models_generator(
 
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
-    _, disk_space, bytes_remaining = install.get_space_check_info(
-        installation_manager)
+    _, disk_space, bytes_remaining = install.get_space_check_info(installation_manager)
     if total_compressed_size + bytes_remaining > disk_space:
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
@@ -293,8 +278,7 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         if model_size > available_ram:
             logger.error(
-                f"Not enough memory to convert and quantize the model {
-                    model_id}"
+                f"Not enough memory to convert and quantize the model {model_id}"
             )
             error_event = {
                 "id": model_id,
@@ -328,11 +312,7 @@ async def run_models_generator(
 
         # Perform the conversion and quantization
         installation_manager.remove_from_conversion_queue()
-<< << << < HEAD
         install.convert_quantize_compile(weights_path, quant_path, quant)
-== == == =
-        convert_quantize_compile(weights_path, quant_path, quant)
->>>>>> > main
         installation_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models

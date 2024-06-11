@@ -162,6 +162,9 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
 
     # Get number of devices (heirarchy is as follows: CUDA, ROCM, Vulkan, OpenCL)
     devices = get_devices()
+    if any(device["type"] == "metal" for device in devices):
+        return 1
+
     num_devices = 0
     if any(device["type"] == "cuda" for device in devices):
         num_devices = len([device for device in devices if device["type"] == "cuda"])
@@ -179,9 +182,9 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
         return 1
 
     # Identify the max number of devices that can be used such that the model isn't sharded into
-    # less than 2.5GB per device
+    # less than 5GB per device
     shards = 1
-    while compressed_size / shards > 2.5 * 1024 * 1024 * 1024 and shards < num_devices:
+    while compressed_size / shards > 5 * 1024 * 1024 * 1024 and shards < num_devices:
         shards += 1
 
     return shards

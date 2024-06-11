@@ -164,10 +164,10 @@ def get_conv_template(base_weights_path: str) -> str:
     return "LM"
 
 
-def get_base_quantization_decision(
+async def get_base_quantization_decision(
     model_id: str, installation_manager: InstallationManager
 ) -> Quantization:
-    quantization_options = get_adaptive_quantization_decision(
+    quantization_options = await get_adaptive_quantization_decision(
         [model_id], installation_manager
     )
     return quantization_options[0][1]
@@ -444,7 +444,7 @@ async def install_generator(
     )
 
     # Return early if the quantization is alrady built
-    quantization = get_base_quantization_decision(model_id, installation_manager)
+    quantization = await get_base_quantization_decision(model_id, installation_manager)
     if does_quantization_exist(model_id, quantization):
         logger.info(f"Conversion and quantization already exists for {model_dir}")
         progress_event = {

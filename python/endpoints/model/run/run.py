@@ -55,10 +55,11 @@ async def get_model_info(model_id: str) -> dict:
     return {"name": "meta-llama/Meta-Llama-3-8B", "size": 8000000000}
 
 
-def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
-    total_score = get_score(configurations)
+async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
+    total_score = await get_score(configurations)
     return [
-        get_score([configuration]) / total_score for configuration in configurations
+        (await get_score([configuration]) / total_score)
+        for configuration in configurations
     ]
 
 
@@ -197,9 +198,11 @@ async def run_models_generator(
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
-    configurations = get_adaptive_quantization_decision(model_ids, installation_manager)
+    configurations = await get_adaptive_quantization_decision(
+        model_ids, installation_manager
+    )
     quantizations = [config[1] for config in configurations]
-    mem_shares = get_gpu_memory_shares(configurations)
+    mem_shares = await get_gpu_memory_shares(configurations)
     instance_numbers = await get_instances(model_ids)
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes

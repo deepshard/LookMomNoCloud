@@ -2,6 +2,7 @@ import os
 import pytest
 from unittest import mock
 from unittest.mock import patch, MagicMock
+from aioresponses import aioresponses
 from pathlib import Path
 from endpoints.model.install.InstallationManager import InstallationManager
 from endpoints.model.run.adaptive_quantization_decision import (
@@ -9,6 +10,51 @@ from endpoints.model.run.adaptive_quantization_decision import (
 )
 from truffle_types import Quantization
 import utils
+from constants import TRUFFLE_API_URL
+
+
+# Data
+MOCK_MODEL_1 = {
+    "id": 1,
+    "name": "test",
+    "title": "test",
+    "size": 30_000_000_000,
+    "author": "test",
+    "downloads": 1,
+    "likes": 1,
+    "intro": "test",
+    "capabilities": "test",
+    "risks": "test",
+    "hfLink": "https://huggingface.co/api/models/openai-community/gpt2",
+    "evalId": "test",
+    "backgroundImage": "test",
+}
+
+
+# Fixtures
+@pytest.fixture
+def api_mock():
+    with aioresponses() as mocked:
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=1",
+            status=200,
+            payload=MOCK_MODEL_1,
+            repeat=True,
+        )
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=2",
+            status=200,
+            payload=MOCK_MODEL_1,
+            repeat=True,
+        )
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=3",
+            status=200,
+            payload=MOCK_MODEL_1,
+            repeat=True,
+        )
+        yield mocked
+
 
 # Cases:
 # - One model, fits in memory (no quantization)
@@ -16,9 +62,10 @@ import utils
 # - One model, can't fit in memory (no quantization)
 # - Multiple models, all fit in memory (no quantization)
 # - Multiple models, larger model gets quantized more (quantization)
-
-
-def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_quantization():
+@pytest.mark.asyncio
+async def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_quantization(
+    api_mock,
+):
     model_ids = ["1"]
     installation_manager = InstallationManager()
 
@@ -43,14 +90,17 @@ def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_quantiza
                     "endpoints.model.run.adaptive_quantization_decision.install.get_space_check_info",
                     return_value=(2000, 2000, 0),
                 ):
-                    result = get_adaptive_quantization_decision(
+                    result = await get_adaptive_quantization_decision(
                         model_ids, installation_manager
                     )
 
                     assert result == [("1", Quantization.Q0F16)]
 
 
-def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory_quantization():
+@pytest.mark.asyncio
+async def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory_quantization(
+    api_mock,
+):
     model_ids = ["1"]
     installation_manager = InstallationManager()
 
@@ -68,14 +118,17 @@ def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory_quant
                 "endpoints.model.run.adaptive_quantization_decision.install.get_space_check_info",
                 return_value=(500, 2000, 0),
             ):
-                result = get_adaptive_quantization_decision(
+                result = await get_adaptive_quantization_decision(
                     model_ids, installation_manager
                 )
 
                 assert result == [("1", Quantization.Q4F16_0)]
 
 
-def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_no_quantization():
+@pytest.mark.asyncio
+async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_no_quantization(
+    api_mock,
+):
     model_ids = ["1"]
     installation_manager = InstallationManager()
 
@@ -94,12 +147,15 @@ def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_no_quan
                 return_value=(500, 500, 0),
             ):
                 with pytest.raises(Exception):
-                    result = get_adaptive_quantization_decision(
+                    result = await get_adaptive_quantization_decision(
                         model_ids, installation_manager
                     )
 
 
-def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_memory_no_quantization():
+@pytest.mark.asyncio
+async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_memory_no_quantization(
+    api_mock,
+):
     model_ids = ["1", "2", "3"]
     installation_manager = InstallationManager()
 
@@ -124,7 +180,7 @@ def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_memory_no
                     "endpoints.model.run.adaptive_quantization_decision.install.get_space_check_info",
                     return_value=(2000, 2000, 0),
                 ):
-                    result = get_adaptive_quantization_decision(
+                    result = await get_adaptive_quantization_decision(
                         model_ids, installation_manager
                     )
 
@@ -135,7 +191,10 @@ def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_memory_no
                     ]
 
 
-def test_get_adaptive_quantization_decision_multiple_models_larger_model_gets_quantized_more():
+@pytest.mark.asyncio
+async def test_get_adaptive_quantization_decision_multiple_models_larger_model_gets_quantized_more(
+    api_mock,
+):
     model_ids = ["1", "2", "3"]
     installation_manager = InstallationManager()
 
@@ -170,7 +229,7 @@ def test_get_adaptive_quantization_decision_multiple_models_larger_model_gets_qu
                     "endpoints.model.run.adaptive_quantization_decision.install.get_space_check_info",
                     return_value=(2500, 2500, 0),
                 ):
-                    result = get_adaptive_quantization_decision(
+                    result = await get_adaptive_quantization_decision(
                         model_ids, installation_manager
                     )
 

@@ -1,4 +1,5 @@
 import itertools
+import aiohttp
 from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.quantization import QUANTIZATION
 import endpoints.model.install.InstallationManager as InstallationManager
@@ -10,6 +11,7 @@ from utils import (
     get_usable_memory,
     does_quantization_exist,
 )
+from constants import TRUFFLE_API_URL
 
 quantization_scores = {
     Quantization.Q0F16: 1,
@@ -22,9 +24,13 @@ quantization_scores = {
 }
 
 
-def get_model_size(model_id: str) -> int:
-    # Placeholder, will pull from metadata API
-    return 30_000_000_000
+async def get_model_size(model_id: str) -> int:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{TRUFFLE_API_URL}/models?id={model_id}") as response:
+            assert response.status == 200, f"Failed to fetch model {model_id}"
+            model = await response.json()
+            print(model)
+            return model["size"]
 
 
 def get_model_size_score(model_size: int) -> float:
@@ -46,7 +52,9 @@ def get_model_size_score(model_size: int) -> float:
     return 1
 
 
-def get_quantization_time_penalty(model_id: str, quantization: Quantization) -> float:
+async def get_quantization_time_penalty(
+    model_id: str, quantization: Quantization
+) -> float:
     """
     If a model has not been quantized, then there is a 10% penalty based on its size.
     Quantizing a model takes time, so we want to penalize the score for models that
@@ -54,7 +62,7 @@ def get_quantization_time_penalty(model_id: str, quantization: Quantization) -> 
     """
 
     if not does_quantization_exist(model_id, quantization):
-        model_size = get_model_size(model_id)
+        model_size = await get_model_size(model_id)
         return 0.1 * get_model_size_score(model_size)
 
     return 0
@@ -85,26 +93,30 @@ def get_expected_disk_consumption(models: list[str, Quantization]) -> int:
     return total_size
 
 
-def get_capabilities_score(model_id: str, quantization: Quantization) -> float:
+async def get_capabilities_score(model_id: str, quantization: Quantization) -> float:
     """
     Returns a capabilities score based on the model's size and the expected impact of
     quantization on model downstream performance.
     """
 
-    model_size = get_model_size(model_id)
+    model_size = await get_model_size(model_id)
     model_size_score = get_model_size_score(model_size)
     quantization_score = quantization_scores[quantization]
     return model_size_score * quantization_score
 
 
-def get_score(models) -> dict[str, float]:
+async def get_score(models) -> dict[str, float]:
     """Returns an overall score taking into account capabilities and quantization time penalty."""
 
     score = 0
     for configuration in models:
-        score += get_capabilities_score(
+        capabilities_score = await get_capabilities_score(
             configuration[0], configuration[1]
-        ) - get_quantization_time_penalty(configuration[0], configuration[1])
+        )
+        quantization_time_penalty = await get_quantization_time_penalty(
+            configuration[0], configuration[1]
+        )
+        score += capabilities_score - quantization_time_penalty
 
     return score
 
@@ -175,7 +187,7 @@ def get_usable_configurations(
     return usable_configurations
 
 
-def get_adaptive_quantization_decision(
+async def get_adaptive_quantization_decision(
     model_ids: list[str], installation_manager: InstallationManager
 ) -> list[str, Quantization]:
     """
@@ -198,7 +210,7 @@ def get_adaptive_quantization_decision(
     best_combination = None
     max_score = 0
     for combination in usable_configurations:
-        score = get_score(combination)
+        score = await get_score(combination)
         if score > max_score:
             max_score = score
             best_combination = combination

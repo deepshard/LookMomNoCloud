@@ -38,13 +38,19 @@ async def get_downloaded_models():
 
             model = Model(
                 id=model_id,
-                url="https://huggingface.co/openai-community/gpt2",
+                name="openai-community/gpt2",
+                title="GPT-2",
+                size=137_000_000,
+                author="OpenAI",
+                downloads=0,
+                likes=0,
+                intro="",
+                capabilities="",
+                risks="",
+                hf_link="https://huggingface.co/openai-community/gpt2",
+                eval_id="",
                 status=ModelStatus.STOPPED,  # TODO: Get actual status. Do we need a global status db?
                 background_image="",
-                author="OpenAI",
-                name="GPT-2",
-                params=137_000_000,
-                description="OpenAI's 137M parameter model for text generation.",
                 instance=None,
                 progress=None,
             )

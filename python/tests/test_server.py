@@ -18,7 +18,7 @@ def mock_generators():
     ) as mock_run_models_generator, patch(
         "server.stop_model_handler"
     ) as mock_stop_model_handler, patch(
-        "server.get_highlights"
+        "server.get_highlights", return_value=[]
     ) as mock_get_highlights, patch(
         "server.get_new"
     ) as mock_get_new:

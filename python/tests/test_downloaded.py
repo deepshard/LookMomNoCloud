@@ -26,6 +26,36 @@ from constants import TRUFFLE_API_URL
 ID = "ed8aee0b-8428-4c2f-9b8f-756c19ab57e9"
 ID_2 = "b438d015-ad45-4e9a-9aba-2e290348b078"
 HF_API_URL = "https://huggingface.co/api/models/openai-community/gpt2"
+MOCK_MODEL_1 = {
+    "id": ID,
+    "name": "test",
+    "title": "test",
+    "size": 1,
+    "author": "test",
+    "downloads": 1,
+    "likes": 1,
+    "intro": "test",
+    "capabilities": "test",
+    "risks": "test",
+    "hfLink": HF_API_URL,
+    "evalId": "test",
+    "backgroundImage": "test",
+}
+MOCK_MODEL_2 = {
+    "id": ID_2,
+    "name": "test",
+    "title": "test",
+    "size": 1,
+    "author": "test",
+    "downloads": 1,
+    "likes": 1,
+    "intro": "test",
+    "capabilities": "test",
+    "risks": "test",
+    "hfLink": HF_API_URL,
+    "evalId": "test",
+    "backgroundImage": "test",
+}
 MOCK_API_RESPONSE = {
     "siblings": [
         {
@@ -64,41 +94,13 @@ def api_mock():
         mocked.get(
             TRUFFLE_API_URL + "/models?id=" + ID,
             status=200,
-            payload={
-                "id": ID,
-                "name": "test",
-                "title": "test",
-                "size": 1,
-                "author": "test",
-                "downloads": 1,
-                "likes": 1,
-                "intro": "test",
-                "capabilities": "test",
-                "risks": "test",
-                "hfLink": HF_API_URL,
-                "evalId": "test",
-                "backgroundImage": "test",
-            },
+            payload=MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
             TRUFFLE_API_URL + "/models?id=" + ID_2,
             status=200,
-            payload={
-                "id": ID_2,
-                "name": "test",
-                "title": "test",
-                "size": 1,
-                "author": "test",
-                "downloads": 1,
-                "likes": 1,
-                "intro": "test",
-                "capabilities": "test",
-                "risks": "test",
-                "hfLink": HF_API_URL,
-                "evalId": "test",
-                "backgroundImage": "test",
-            },
+            payload=MOCK_MODEL_2,
             repeat=True,
         )
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE, repeat=True)

@@ -10,6 +10,7 @@ from endpoints.model.downloaded.downloaded import (
     is_model_downloaded,
     get_downloaded_models,
 )
+from constants import TRUFFLE_API_URL
 
 
 # Test the get_downloaded_models logic
@@ -22,8 +23,9 @@ from endpoints.model.downloaded.downloaded import (
 
 
 # Mock constants
-ID = str(uuid4())
-HF_API_URL = "https://huggingface.co/api/models/openai-community/gpt2?"
+ID = "ed8aee0b-8428-4c2f-9b8f-756c19ab57e9"
+ID_2 = "b438d015-ad45-4e9a-9aba-2e290348b078"
+HF_API_URL = "https://huggingface.co/api/models/openai-community/gpt2"
 MOCK_API_RESPONSE = {
     "siblings": [
         {
@@ -59,6 +61,46 @@ def app_data_path_mock():
 @pytest.fixture
 def api_mock():
     with aioresponses() as mocked:
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=" + ID,
+            status=200,
+            payload={
+                "id": ID,
+                "name": "test",
+                "title": "test",
+                "size": 1,
+                "author": "test",
+                "downloads": 1,
+                "likes": 1,
+                "intro": "test",
+                "capabilities": "test",
+                "risks": "test",
+                "hfLink": HF_API_URL,
+                "evalId": "test",
+                "backgroundImage": "test",
+            },
+            repeat=True,
+        )
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=" + ID_2,
+            status=200,
+            payload={
+                "id": ID_2,
+                "name": "test",
+                "title": "test",
+                "size": 1,
+                "author": "test",
+                "downloads": 1,
+                "likes": 1,
+                "intro": "test",
+                "capabilities": "test",
+                "risks": "test",
+                "hfLink": HF_API_URL,
+                "evalId": "test",
+                "backgroundImage": "test",
+            },
+            repeat=True,
+        )
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE, repeat=True)
         yield mocked
 
@@ -147,7 +189,7 @@ async def test_multiple_models_downloaded(
         f.write(os.urandom(1024))
 
     # Create another model directory
-    model_dir = Path(f"/tmp/models/{str(uuid4())}/base")
+    model_dir = Path(f"/tmp/models/{ID_2}/base")
     model_dir.mkdir(parents=True, exist_ok=True)
     with open(model_dir / "pytorch_model.bin", "wb") as f:
         f.write(os.urandom(1024))
@@ -221,7 +263,7 @@ async def test_one_model_downloaded_fully_another_not_fully(
         f.write(os.urandom(1024))
 
     # Create another model directory
-    model_dir = Path(f"/tmp/models/{str(uuid4())}/base")
+    model_dir = Path(f"/tmp/models/{ID_2}/base")
     model_dir.mkdir(parents=True, exist_ok=True)
     with open(model_dir / "pytorch_model.bin", "wb") as f:
         f.write(os.urandom(1024))

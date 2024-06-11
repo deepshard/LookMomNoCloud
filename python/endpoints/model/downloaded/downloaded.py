@@ -1,4 +1,7 @@
+import asyncio
 import os
+
+import aiohttp
 from endpoints.model.install.install import (
     get_hf_repo_info,
     get_local_files,
@@ -6,6 +9,8 @@ from endpoints.model.install.install import (
 )
 from utils import get_app_data_path
 from truffle_types import Model, ModelStatus
+from constants import TRUFFLE_API_URL
+from db import db
 
 
 async def is_model_downloaded(model_id: str) -> bool:
@@ -16,44 +21,57 @@ async def is_model_downloaded(model_id: str) -> bool:
     if not os.path.isdir(model_path):
         return False
 
-    # TODO: Look up model details via HF scraping API
-    url = "https://huggingface.co/openai-community/gpt2"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{TRUFFLE_API_URL}/models?id={model_id}") as response:
+            assert response.status == 200, f"Failed to fetch model {model_id}"
+            model = await response.json()
+            hf_link = model["hfLink"]
+            remote_files = await get_hf_repo_info(
+                hf_link.split("/")[-2] + "/" + hf_link.split("/")[-1]
+            )
+            local_files = get_local_files(model_path)
+            files_to_download = get_files_to_download(remote_files, local_files)
 
-    remote_files = await get_hf_repo_info("openai-community/gpt2")
-    local_files = get_local_files(model_path)
-    files_to_download = get_files_to_download(remote_files, local_files)
-
-    return len(files_to_download) == 0
+            return len(files_to_download) == 0
 
 
 async def get_downloaded_models():
-    """Returns a list of all downloaded models."""
+    """Returns a list of all downloaded models"""
 
     base_dir = get_app_data_path() / "models"
-    models = []
-    for model_id in os.listdir(base_dir):
-        downloaded = await is_model_downloaded(model_id)
-        if downloaded:
-            # TODO: Look up model details via HF scraping API
+    model_ids = os.listdir(base_dir)
 
-            model = Model(
-                id=model_id,
-                name="openai-community/gpt2",
-                title="GPT-2",
-                size=137_000_000,
-                author="OpenAI",
-                downloads=0,
-                likes=0,
-                intro="",
-                capabilities="",
-                risks="",
-                hf_link="https://huggingface.co/openai-community/gpt2",
-                eval_id="",
-                status=ModelStatus.STOPPED,  # TODO: Get actual status. Do we need a global status db?
-                background_image="",
-                instance=None,
-                progress=None,
+    async with aiohttp.ClientSession() as session:
+        tasks = [get_model_details(model_id, session) for model_id in model_ids]
+        models = await asyncio.gather(*tasks)
+
+    # Filter out None values if the model is not downloaded
+    return [model for model in models if model is not None]
+
+
+async def get_model_details(model_id, session):
+    """Helper function to fetch model details if downloaded."""
+    downloaded = await is_model_downloaded(model_id)
+    if downloaded:
+        async with session.get(f"{TRUFFLE_API_URL}/models?id={model_id}") as response:
+            assert response.status == 200, f"Failed to fetch model {model_id}"
+            model = await response.json()
+            return Model(
+                id=model["id"],
+                name=model["name"],
+                title=model["title"],
+                size=model["size"],
+                author=model["author"],
+                downloads=model["downloads"],
+                likes=model["likes"],
+                intro=model["intro"],
+                capabilities=model["capabilities"],
+                risks=model["risks"],
+                hf_link=model["hfLink"],
+                eval_id=model["evalId"],
+                status=ModelStatus.STOPPED,  # NOTE: this is not really used in the frontend
+                background_image=model["backgroundImage"],
+                instance=0,
+                progress=0,
             )
-            models.append(model)
-
-    return models
+    return None

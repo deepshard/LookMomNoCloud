@@ -30,7 +30,8 @@ def base_fixture(request):
     request.addfinalizer(teardown)
 
 
-HIGHLIGHTS_URL = "https://api.deepshard.org"  # todo: fix this once we have deployed the highlights api
+# todo: fix this once we have deployed the highlights api
+HIGHLIGHTS_URL = "https://api.deepshard.org"
 
 MODELS = [
     {
@@ -133,7 +134,7 @@ def hello_mock():
 
 
 @pytest.fixture
-def trending_4_mock():
+def trending_running_mock():
     with aioresponses() as mocked:
         mocked.get(
             f"{HIGHLIGHTS_URL}/models/trending?k=4",
@@ -141,12 +142,6 @@ def trending_4_mock():
             payload=MODELS[1:],
             repeat=True,
         )
-        yield mocked
-
-
-@pytest.fixture
-def model0_mock():
-    with aioresponses() as mocked:
         mocked.get(
             f"{HIGHLIGHTS_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
             status=200,
@@ -169,7 +164,7 @@ async def test_get_highlights_new_user(trending_5_mock):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_models_running():
+async def test_get_highlights_models_running(trending_running_mock):
     async with init_db():
         mock_model = {
             "id": MODELS[0]["id"],

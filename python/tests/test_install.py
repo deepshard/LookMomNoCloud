@@ -101,6 +101,15 @@ def app_data_path_mock():
 
 
 @pytest.fixture
+def quant_decision_mock():
+    with patch(
+        "endpoints.model.install.install.get_adaptive_quantization_decision"
+    ) as mock_quant_decision:
+        mock_quant_decision.return_value = [("1", Quantization.Q0F16)]
+        yield mock_quant_decision
+
+
+@pytest.fixture
 def standard_aiohttp_get_mocks():
     with aioresponses() as mocked:
         mocked.get(HF_API_URL, status=200, payload=MOCK_API_RESPONSE)
@@ -131,6 +140,7 @@ def mock_headers():
 @pytest.mark.asyncio
 async def test_install_single_model_from_scratch(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -187,13 +197,14 @@ async def test_install_single_model_from_scratch(
     mock_get_file_sizes.assert_called_with(MODEL_URL, mock.ANY)
     mock_get_hf_repo_info.assert_called_with("meta-llama/Meta-Llama-3-8B")
     mock_mlc.assert_called_with(
-        download_path / "base", download_path / "INT4", Quantization.INT4
+        download_path / "base", download_path / "q0f16", Quantization.Q0F16
     )
 
 
 @pytest.mark.asyncio
 async def test_complete_partial_installation_of_single_model(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -248,6 +259,7 @@ async def test_complete_partial_installation_of_single_model(
 @pytest.mark.asyncio
 async def test_skip_download_of_already_downloaded_model(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -313,7 +325,7 @@ async def test_skip_download_of_already_downloaded_model(
 
 @pytest.mark.asyncio
 async def test_model_download_returns_progress_in_expected_format(
-    app_data_path_mock, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock, quant_decision_mock, mock_aiohttp_head, mock_headers, mocker
 ):
     clear_path()
 
@@ -366,6 +378,7 @@ async def test_model_download_returns_progress_in_expected_format(
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_single_model(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -411,6 +424,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -456,6 +470,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 @pytest.mark.asyncio
 async def test_only_converts_and_quantizes_single_model_at_a_time(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -521,6 +536,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
 @pytest.mark.asyncio
 async def test_skips_conversion_and_quantization_of_already_converted_model(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -584,7 +600,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
 
 @pytest.mark.asyncio
 async def test_returns_error_if_model_weights_are_not_in_expected_format(
-    app_data_path_mock, mock_aiohttp_head, mock_headers, mocker
+    app_data_path_mock, quant_decision_mock, mock_aiohttp_head, mock_headers, mocker
 ):
     clear_path()
 
@@ -643,6 +659,7 @@ async def test_returns_error_if_model_weights_are_not_in_expected_format(
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -691,6 +708,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
 @pytest.mark.asyncio
 async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,
@@ -740,6 +758,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 @pytest.mark.asyncio
 async def test_completion_of_conversion_and_quantization_returns_status_transition(
     app_data_path_mock,
+    quant_decision_mock,
     standard_aiohttp_get_mocks,
     mock_aiohttp_head,
     mock_headers,

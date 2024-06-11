@@ -16,6 +16,9 @@ from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from mlc_llm.support.auto_target import detect_target_and_host
+from endpoints.model.run.adaptive_quantization_decision import (
+    get_adaptive_quantization_decision,
+)
 from truffle_types import RepoType, FileInfo, Quantization
 from utils import (
     get_app_data_path,
@@ -161,30 +164,18 @@ def get_conv_template(base_weights_path: str) -> str:
     return "LM"
 
 
-def get_base_quantization_decision(base_weights_path: str) -> Quantization:
-    # TODO: Implement a more sophisticated method to determine the quantization later
-    return Quantization.INT4
+def get_base_quantization_decision(
+    model_id: str, installation_manager: InstallationManager
+) -> Quantization:
+    quantization_options = get_adaptive_quantization_decision(
+        [model_id], installation_manager
+    )
+    return quantization_options[0][1]
 
 
 def get_quantization_object(quantization: Quantization, model):
-    quantization_kinds = list(model.quantize.keys())
-    quantization_options = [
-        quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds
-    ]
-
-    if quantization.value == "INT8":
-        filtered_quantization_options = [
-            quant for quant in quantization_options if quant.kind == "no-quant"
-        ]
-        return filtered_quantization_options[0]
-    else:
-        filtered_quantization_options = []
-        for quant in quantization_options:
-            if quant.kind == "no-quant":
-                continue
-            if quant.quantize_dtype == quantization.value.lower():
-                filtered_quantization_options.append(quant)
-        return filtered_quantization_options[0]
+    quantization_obj = QUANTIZATION[quantization.value]
+    return quantization_obj
 
 
 def get_space_check_info(
@@ -268,7 +259,7 @@ def convert_quantize_compile(
     else:
         logger.info(
             f"""Already compiled. Skipping compilation for {
-                    quant_weights_path}"""
+                quant_weights_path}"""
         )
 
     # Generate config
@@ -453,7 +444,7 @@ async def install_generator(
     )
 
     # Return early if the quantization is alrady built
-    quantization = get_base_quantization_decision(install_path)
+    quantization = get_base_quantization_decision(install_path, installation_manager)
     if does_quantization_exist(model_id, quantization):
         logger.info(f"Conversion and quantization already exists for {model_dir}")
         progress_event = {

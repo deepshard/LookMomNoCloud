@@ -6,12 +6,9 @@ from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
-from endpoints.model.install import InstallationManager
-from endpoints.model.install.install import (
-    get_space_check_info,
-    convert_quantize_compile,
-)
-from endpoints.model.run.adaptive_quntization_decision import (
+import endpoints.model.install.install as install
+import endpoints.model.install.InstallationManager as InstallationManager
+from endpoints.model.run.adaptive_quantization_decision import (
     get_score,
     get_adaptive_quantization_decision,
 )
@@ -58,9 +55,8 @@ async def get_model_info(model_id: str) -> dict:
     return {"name": "meta-llama/Meta-Llama-3-8B", "size": 8000000000}
 
 
-def get_gpu_memory_shares(
-    configurations: list[str, Quantization], total_score: float
-) -> list[float]:
+def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
+    total_score = get_score(configurations)
     return [
         get_score([configuration]) / total_score for configuration in configurations
     ]
@@ -201,13 +197,9 @@ async def run_models_generator(
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
-    quantizations = [
-        configuration[1]
-        for configuration in get_adaptive_quantization_decision(
-            model_ids, installation_manager
-        )
-    ]
-    mem_shares = get_gpu_memory_shares(model_ids)
+    configurations = get_adaptive_quantization_decision(model_ids, installation_manager)
+    quantizations = [config[1] for config in configurations]
+    mem_shares = get_gpu_memory_shares(configurations)
     instance_numbers = await get_instances(model_ids)
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes
@@ -245,7 +237,7 @@ async def run_models_generator(
 
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
-    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
+    _, disk_space, bytes_remaining = install.get_space_check_info(installation_manager)
     if total_compressed_size + bytes_remaining > disk_space:
         logger.error("Not enough space to convert and quantize the models")
         error_event = {
@@ -320,7 +312,7 @@ async def run_models_generator(
 
         # Perform the conversion and quantization
         installation_manager.remove_from_conversion_queue()
-        convert_quantize_compile(weights_path, quant_path, quant)
+        install.convert_quantize_compile(weights_path, quant_path, quant)
         installation_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models

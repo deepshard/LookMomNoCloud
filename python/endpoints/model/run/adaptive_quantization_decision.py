@@ -1,8 +1,8 @@
 import itertools
 from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.quantization import QUANTIZATION
-from endpoints.model.install import InstallationManager
-from endpoints.model.install.install import get_space_check_info
+import endpoints.model.install.InstallationManager as InstallationManager
+import endpoints.model.install.install as install
 from truffle_types import Quantization
 from utils import (
     get_app_data_path,
@@ -75,12 +75,12 @@ def get_capabilities_score(model_id: str, quantization: Quantization) -> float:
     return model_size_score * quantization_score
 
 
-def get_score(models: list[str, Quantization]) -> dict[str, float]:
+def get_score(models) -> dict[str, float]:
     score = 0
-    for model_id, quantization in models:
+    for configuration in models:
         score += get_capabilities_score(
-            model_id, quantization
-        ) - get_quantization_time_penalty(model_id, quantization)
+            configuration[0], configuration[1]
+        ) - get_quantization_time_penalty(configuration[0], configuration[1])
 
     return score
 
@@ -104,7 +104,6 @@ def get_quantization_options(model_id: str) -> list[Quantization]:
 def get_available_configurations(model_ids: list[str]) -> dict[str, list[Quantization]]:
     available_configurations = {}
     for model_id in model_ids:
-        base_weights_path = get_app_data_path() / "models" / model_id / "base"
         quantization_options = get_quantization_options(model_id)
         available_configurations[model_id] = quantization_options
 
@@ -121,10 +120,11 @@ def get_usable_configurations(
     available resources.
     """
     model_ids = list(configurations.keys())
-    all_combinations = itertools.product(
-        ((model_id, quant) for quant in configurations[model_id])
+    quant_options = quant_options = [
+        [(model_id, quant) for quant in configurations[model_id]]
         for model_id in model_ids
-    )
+    ]
+    all_combinations = itertools.product(*quant_options)
 
     usable_configurations = []
     for combination in all_combinations:
@@ -133,7 +133,7 @@ def get_usable_configurations(
         expected_memory = get_expected_memory_consumption(models)
         expected_disk = get_expected_disk_consumption(models)
 
-        available_memory, disk_space, bytes_remaining = get_space_check_info(
+        available_memory, disk_space, bytes_remaining = install.get_space_check_info(
             installation_manager
         )
         if (
@@ -152,9 +152,16 @@ def get_adaptive_quantization_decision(
     usable_configurations = get_usable_configurations(
         available_configurations, installation_manager
     )
-    scores = {
-        combination: get_score(combination) for combination in usable_configurations
-    }
 
-    best_combination = max(scores, key=scores.get)
+    if len(usable_configurations) == 0:
+        raise Exception("No usable configurations found")
+
+    best_combination = None
+    max_score = 0
+    for combination in usable_configurations:
+        score = get_score(combination)
+        if score > max_score:
+            max_score = score
+            best_combination = combination
+
     return best_combination

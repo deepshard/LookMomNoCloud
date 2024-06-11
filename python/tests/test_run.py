@@ -10,6 +10,7 @@ from endpoints.model.install import InstallationManager
 from endpoints.model.run.run import run_models_generator, get_instances
 from db import db
 from server import init_db
+from truffle_types import Quantization
 
 schema = {
     "type": "object",
@@ -88,6 +89,15 @@ def get_tensor_parallelism_mock():
 
 
 @pytest.fixture
+def get_quant_decision_mock():
+    with patch(
+        "endpoints.model.run.run.get_adaptive_quantization_decision",
+        return_value=[(model_id_1, Quantization.Q0F16)],
+    ) as get_adaptive_quantization_decision:
+        yield get_adaptive_quantization_decision
+
+
+@pytest.fixture
 def get_app_data_path_mock():
     with patch(
         "endpoints.model.run.run.get_app_data_path", return_value=Path("/tmp")
@@ -98,7 +108,8 @@ def get_app_data_path_mock():
 @pytest.fixture
 def get_disk_and_memory_mock():
     with patch(
-        "endpoints.model.run.run.get_space_check_info", return_value=(8192, 8192, 0)
+        "endpoints.model.run.run.install.get_space_check_info",
+        return_value=(8192, 8192, 0),
     ) as get_space_check_info, patch(
         "endpoints.model.run.run.get_usable_memory", return_value=8192
     ):
@@ -129,7 +140,7 @@ def mock_quants():
         "endpoints.model.run.run.does_quantization_exist", return_value=True
     ) as does_quantization_exist:
         for model_id in [model_id_1, model_id_2, model_id_3]:
-            quant_path = Path("/tmp") / "models" / model_id / "INT4"
+            quant_path = Path("/tmp") / "models" / model_id / "q0f16"
             os.makedirs(quant_path, exist_ok=True)
             with open(quant_path / "model.bin", "wb") as f:
                 f.write("test".encode("utf-8"))
@@ -141,7 +152,7 @@ def mock_quants():
 def mlc_mock():
     # Mock convert_quantize_compile, when called write some data to the model's quantization directory
     with patch(
-        "endpoints.model.run.run.convert_quantize_compile", return_value=None
+        "endpoints.model.run.run.install.convert_quantize_compile", return_value=None
     ) as cqc:
 
         def write_data(weights_path, quant_path, quant):
@@ -159,6 +170,7 @@ def mlc_mock():
 async def test_run_quantization_does_not_exist(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     server_mock,
     subprocess_mock,
@@ -194,6 +206,7 @@ async def test_run_quantization_does_not_exist(
 async def test_run_quantization_exists(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     mock_quants,
     server_mock,
@@ -237,90 +250,104 @@ async def test_run_multiple_models(
     mocker,
 ):
     async with init_db():
-        with patch("endpoints.model.run.run.find_port", return_value=8899) as find_port:
-            manager = InstallationManager()
+        with patch(
+            "endpoints.model.run.run.get_adaptive_quantization_decision",
+            return_value=[
+                (model_id_1, Quantization.Q0F16),
+                (model_id_1, Quantization.Q0F16),
+                (model_id_2, Quantization.Q0F16),
+            ],
+        ):
+            with patch(
+                "endpoints.model.run.run.find_port", return_value=8899
+            ) as find_port:
+                manager = InstallationManager()
 
-            # Prepare JSON streaming responses as they would be sent from the generator
-            stream = run_models_generator([model_id_1, model_id_1, model_id_2], manager)
+                # Prepare JSON streaming responses as they would be sent from the generator
+                stream = run_models_generator(
+                    [model_id_1, model_id_1, model_id_2], manager
+                )
 
-            # Collect the responses
-            responses = []
-            async for response in stream:
-                responses.append(json.loads(response[5:]))
+                # Collect the responses
+                responses = []
+                async for response in stream:
+                    responses.append(json.loads(response[5:]))
+                    print(responses[-1])
 
-                if len(responses) == 6:
-                    find_port.return_value = 8900
+                    if len(responses) == 6:
+                        find_port.return_value = 8900
 
-                if len(responses) == 7:
-                    find_port.return_value = 8901
+                    if len(responses) == 7:
+                        find_port.return_value = 8901
 
-            # Check the responses
-            assert mlc_mock.call_count == 2
-            assert len(responses) == 8
-            assert responses[0] == {
-                "id": model_id_1,
-                "status": "ACKNOWLEDGED",
-                "instance": None,
-                "port": None,
-                "error": None,
-            }
-            assert responses[1] == {
-                "id": model_id_1,
-                "status": "ACKNOWLEDGED",
-                "instance": None,
-                "port": None,
-                "error": None,
-            }
-            assert responses[2] == {
-                "id": model_id_2,
-                "status": "ACKNOWLEDGED",
-                "instance": None,
-                "port": None,
-                "error": None,
-            }
+                # Check the responses
+                assert mlc_mock.call_count == 2
+                assert len(responses) == 8
+                assert responses[0] == {
+                    "id": model_id_1,
+                    "status": "ACKNOWLEDGED",
+                    "instance": None,
+                    "port": None,
+                    "error": None,
+                }
+                assert responses[1] == {
+                    "id": model_id_1,
+                    "status": "ACKNOWLEDGED",
+                    "instance": None,
+                    "port": None,
+                    "error": None,
+                }
+                assert responses[2] == {
+                    "id": model_id_2,
+                    "status": "ACKNOWLEDGED",
+                    "instance": None,
+                    "port": None,
+                    "error": None,
+                }
 
-            assert responses[3] == {
-                "id": model_id_1,
-                "status": "INSTALLING",
-                "instance": None,
-                "port": None,
-                "error": None,
-            }
-            assert responses[4] == {
-                "id": model_id_2,
-                "status": "INSTALLING",
-                "instance": None,
-                "port": None,
-                "error": None,
-            }
+                assert responses[3] == {
+                    "id": model_id_1,
+                    "status": "INSTALLING",
+                    "instance": None,
+                    "port": None,
+                    "error": None,
+                }
+                assert responses[4] == {
+                    "id": model_id_2,
+                    "status": "INSTALLING",
+                    "instance": None,
+                    "port": None,
+                    "error": None,
+                }
 
-            assert responses[5] == {
-                "id": model_id_1,
-                "status": "RUNNING",
-                "instance": 1,
-                "port": 8899,
-                "error": None,
-            }
-            assert responses[6] == {
-                "id": model_id_1,
-                "status": "RUNNING",
-                "instance": 2,
-                "port": 8900,
-                "error": None,
-            }
-            assert responses[7] == {
-                "id": model_id_2,
-                "status": "RUNNING",
-                "instance": 1,
-                "port": 8901,
-                "error": None,
-            }
+                assert responses[5] == {
+                    "id": model_id_1,
+                    "status": "RUNNING",
+                    "instance": 1,
+                    "port": 8899,
+                    "error": None,
+                }
+                assert responses[6] == {
+                    "id": model_id_1,
+                    "status": "RUNNING",
+                    "instance": 2,
+                    "port": 8900,
+                    "error": None,
+                }
+                assert responses[7] == {
+                    "id": model_id_2,
+                    "status": "RUNNING",
+                    "instance": 1,
+                    "port": 8901,
+                    "error": None,
+                }
 
 
 @pytest.mark.asyncio
 async def test_run_instance_running(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     mock_quants,
     server_mock,
@@ -368,6 +395,7 @@ async def test_run_instance_running(
 async def test_run_not_convertable_format(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     server_mock,
     subprocess_mock,
@@ -405,6 +433,7 @@ async def test_run_not_convertable_format(
 async def test_run_not_enough_space(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     server_mock,
     subprocess_mock,
@@ -415,7 +444,8 @@ async def test_run_not_enough_space(
 
         # Mock the disk usage
         with patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(0, 1024, 0)
+            "endpoints.model.run.run.install.get_space_check_info",
+            return_value=(0, 1024, 0),
         ), patch("endpoints.model.run.run.get_usable_memory", return_value=8192):
             # Prepare JSON streaming responses as they would be sent from the generator
             stream = run_models_generator([model_id_1, model_id_2, model_id_3], manager)
@@ -448,6 +478,7 @@ async def test_run_not_enough_space(
 async def test_run_not_enough_memory_quantization(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     server_mock,
     subprocess_mock,
@@ -457,7 +488,8 @@ async def test_run_not_enough_memory_quantization(
         manager = InstallationManager()
 
         with patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(0, 8192, 0)
+            "endpoints.model.run.run.install.get_space_check_info",
+            return_value=(0, 8192, 0),
         ), patch(
             "endpoints.model.run.run.get_usable_memory",
             return_value=0,
@@ -496,6 +528,7 @@ async def test_run_not_enough_memory_quantization(
 async def test_run_not_enough_memory_run(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     mock_quants,
     server_mock,
@@ -506,7 +539,8 @@ async def test_run_not_enough_memory_run(
         manager = InstallationManager()
 
         with patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(0, 8192, 0)
+            "endpoints.model.run.run.install.get_space_check_info",
+            return_value=(0, 8192, 0),
         ), patch(
             "endpoints.model.run.run.get_usable_memory",
             return_value=0,
@@ -538,6 +572,7 @@ async def test_run_not_enough_memory_run(
 async def test_run_kill_previous_models(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     mock_quants,
     server_mock,
@@ -548,8 +583,16 @@ async def test_run_kill_previous_models(
         manager = InstallationManager()
 
         with patch(
-            "endpoints.model.run.run.get_space_check_info", return_value=(0, 8192, 0)
-        ), patch("endpoints.model.run.run.get_usable_memory") as ram_mock:
+            "endpoints.model.run.run.install.get_space_check_info",
+            return_value=(0, 8192, 0),
+        ), patch("endpoints.model.run.run.get_usable_memory") as ram_mock, patch(
+            "endpoints.model.run.run.get_adaptive_quantization_decision",
+            return_value=[
+                (model_id_1, Quantization.Q0F16),
+                (model_id_2, Quantization.Q0F16),
+                (model_id_3, Quantization.Q0F16),
+            ],
+        ):
 
             def mock_virtual_memory():
                 if ram_mock.call_count <= 2:
@@ -626,6 +669,7 @@ async def test_run_kill_previous_models(
 async def test_run_get_instance_count(
     base_fixture,
     get_tensor_parallelism_mock,
+    get_quant_decision_mock,
     get_app_data_path_mock,
     mock_quants,
     server_mock,

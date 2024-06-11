@@ -9,7 +9,7 @@ from pathlib import Path
 from truffle_types import Quantization
 
 
-def get_disk_usage(folder_path: str) -> int:
+def get_disk_usage(folder_path: Path) -> int:
     total_size = 0
     with os.scandir(folder_path) as dir_entries:
         for entry in dir_entries:
@@ -89,7 +89,7 @@ def is_convertable_format(base_weights_path: str) -> bool:
 
 
 def get_model_size_info(
-    weights_path: str, quantization: Quantization
+    weights_path: Path, quantization: Quantization
 ) -> tuple[int, float]:
     model_size = get_disk_usage(weights_path)
     compression_rate = get_quantization_compression(quantization)

@@ -24,7 +24,7 @@ from utils import (
     get_model_size_info,
     get_usable_memory,
     get_devices,
-    get_tensor_parallelism
+    get_tensor_parallelism,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
@@ -261,7 +261,7 @@ def convert_quantize_compile(
                 prefill_chunk_size=None,
                 attention_sink_size=None,
                 max_batch_size=1,
-                tensor_parallel_shards=shards
+                tensor_parallel_shards=shards,
             ),
             debug_dump=None,
         )
@@ -270,7 +270,6 @@ def convert_quantize_compile(
             f"""Already compiled. Skipping compilation for {
                     quant_weights_path}"""
         )
-
 
     # Generate config
     logger.info(f"Generating config for {base_weights_path}")

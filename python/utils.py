@@ -151,3 +151,34 @@ def get_usable_memory() -> int:
             return 0
     else:
         raise ValueError(f"Unsupported system: {system}")
+
+
+def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -> int:
+    # Get the model size and the compressed size
+    _, compressed_size = get_model_size_info(model_weights_dir, quantization)
+
+    # Get number of devices (heirarchy is as follows: CUDA, ROCM, Vulkan, OpenCL)
+    devices = get_devices()
+    num_devices = 0
+    if any(device["type"] == "cuda" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "cuda"])
+    elif any(device["type"] == "rocm" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "rocm"])
+    elif any(device["type"] == "vulkan" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "vulkan"])
+    elif any(device["type"] == "opencl" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "opencl"])
+
+    if num_devices == 0:
+        raise ValueError("No devices found")
+
+    if num_devices == 1:
+        return 1
+
+    # Identify the max number of devices that can be used such that the model isn't sharded into
+    # less than 2.5GB per device
+    shards = 1
+    while compressed_size / shards > 2.5 * 1024 * 1024 * 1024 and shards < num_devices:
+        shards += 1
+
+    return shards

@@ -48,8 +48,8 @@ model_files = [
     {"file": "config.json", "data": os.urandom(1024)},
 ]
 MOCK_MODEL_1 = {
-    "id": 1,
-    "name": "test",
+    "id": model_id_1,
+    "name": "meta-llama/Meta-Llama-3-8B",
     "title": "test",
     "size": 30_000_000_000,
     "author": "test",

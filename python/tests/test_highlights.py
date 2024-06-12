@@ -12,6 +12,7 @@ from aioresponses import aioresponses
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
 from server import init_db
+from constants import TRUFFLE_API_URL
 from db import db
 import re
 
@@ -29,9 +30,6 @@ def base_fixture(request):
 
     request.addfinalizer(teardown)
 
-
-# todo: fix this once we have deployed the highlights api
-HIGHLIGHTS_URL = "https://api.deepshard.org"
 
 MODELS = [
     {
@@ -116,7 +114,7 @@ MODELS = [
 def trending_5_mock():
     with aioresponses() as mocked:
         mocked.get(
-            f"{HIGHLIGHTS_URL}/models/trending?k=5",
+            f"{TRUFFLE_API_URL}/models/trending?k=5",
             status=200,
             payload=MODELS,
             repeat=True,
@@ -128,13 +126,13 @@ def trending_5_mock():
 def trending_running_mock():
     with aioresponses() as mocked:
         mocked.get(
-            f"{HIGHLIGHTS_URL}/models/trending?k=4",
+            f"{TRUFFLE_API_URL}/models/trending?k=4",
             status=200,
             payload=MODELS[1:],
             repeat=True,
         )
         mocked.get(
-            f"{HIGHLIGHTS_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
+            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
             status=200,
             payload=MODELS[0],
             repeat=True,

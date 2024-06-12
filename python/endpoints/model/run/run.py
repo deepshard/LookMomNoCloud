@@ -4,6 +4,7 @@ import aiohttp
 import json
 from pathlib import Path
 from loguru import logger
+from enum import Enum
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
 from endpoints.model.install import InstallationManager
@@ -25,9 +26,17 @@ from truffle_types import Quantization
 from constants import TRUFFLE_API_URL
 
 
+class Status(Enum):
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    INSTALLING = "INSTALLING"
+    RUNNING = "RUNNING"
+    STOPPED = "STOPPED"
+    ERROR = "ERROR"
+
+
 class ProgressEvent:
     def __init__(
-        self, model_id: str, status: str, instance: int, port: int, error: str = None
+        self, model_id: str, status: Status, instance: int, port: int, error: str = None
     ):
         self.model_id = model_id
         self.status = status
@@ -39,7 +48,7 @@ class ProgressEvent:
         return json.dumps(
             {
                 "id": self.model_id,
-                "status": self.status,
+                "status": self.status.value,
                 "instance": self.instance,
                 "port": self.port,
                 "error": self.error,
@@ -48,7 +57,7 @@ class ProgressEvent:
 
     def update(
         self,
-        status: str = None,
+        status: Status = None,
         instance: int = None,
         port: int = None,
         error: str = None,
@@ -107,6 +116,36 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     # NOTE: We will make this more sophisticated in the future and potentially combine
     # this with the adaptive_quantization_decision function
     return [1 / len(model_ids) for _ in model_ids]
+
+
+def check_download_space(size: int, installation_manager: InstallationManager) -> bool:
+    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
+    if size + bytes_remaining < disk_space:
+        return True
+
+    raise ValueError("Not enough space to download the model")
+
+
+def check_memory_space(weights_path: Path, quant: Quantization, conversions: list, i: int, installation_manager: InstallationManager) -> bool:
+    model_size, _ = get_model_size_info(weights_path, quant)
+    available_ram = get_usable_memory()
+
+    if model_size < available_ram:
+        return True
+
+    raise ValueError("Not enough memory to convert and quantize the model")
+
+
+def cancel_models(conversions: list, i: int, installation_manager: InstallationManager):
+    # Cancel all conversions that have not yet been started
+    models_to_cancel = [
+        {
+            "model_path": get_app_data_path() / "models" / canceled_conversion["model_id"],
+            "quantization": canceled_conversion["quant"],
+        }
+        for canceled_conversion in conversions[i:]
+    ]
+    installation_manager.cancel_conversions(models_to_cancel)
 
 
 def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
@@ -265,20 +304,16 @@ async def run_models_generator(
 
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
-    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
-    if total_compressed_size + bytes_remaining > disk_space:
-        logger.error("Not enough space to convert and quantize the models")
+    try:
+        check_download_space(total_compressed_size, installation_manager)
+    except Exception as e:
         error_event = ProgressEvent(
-            None,
-            "INSTALLING",
-            None,
-            None,
-            "Not enough space to convert and quantize the models",
-        )
+            None, "INSTALLING", None, None, str(e))
         yield str(error_event)
         return
 
-    # Add all of the conversions to the queue at once
+    # Add all of the conversions to the queue at once to avoid weird space calculations
+    # or allowing a secondary run request to interfere with an earlier one
     for conversion in conversions:
         model_path = get_app_data_path() / "models" / conversion["model_id"]
         installation_manager.add_to_conversion_queue(
@@ -302,31 +337,14 @@ async def run_models_generator(
             await asyncio.sleep(5)
 
         # Check if there is enough memory to convert and quantize the model
-        model_size, _ = get_model_size_info(weights_path, quant)
-        available_ram = get_usable_memory()
-        if model_size > available_ram:
-            logger.error(
-                f"Not enough memory to convert and quantize the model {
-                    model_id}"
-            )
+        try:
+            check_memory_space(weights_path, quant)
+        except Exception as e:
+            # Cancel all conversions that have not yet been started
+            cancel_models(conversions, i, installation_manager)
             error_event = ProgressEvent(
-                model_id,
-                "INSTALLING",
-                None,
-                None,
-                "Not enough memory to convert and quantize the model",
-            )
+                model_id, "INSTALLING", None, None, str(e))
             yield str(error_event)
-            models_to_cancel = [
-                {
-                    "model_path": get_app_data_path()
-                    / "models"
-                    / canceled_conversion["model_id"],
-                    "quantization": canceled_conversion["quant"],
-                }
-                for canceled_conversion in conversions[i:]
-            ]
-            installation_manager.cancel_conversions(models_to_cancel)
             return
 
         # Send quantization event
@@ -334,8 +352,14 @@ async def run_models_generator(
         yield str(quantization_event)
 
         # Perform the conversion and quantization
-        installation_manager.remove_from_conversion_queue()
-        convert_quantize_compile(weights_path, quant_path, quant)
+        try:
+            installation_manager.remove_from_conversion_queue()
+            convert_quantize_compile(weights_path, quant_path, quant)
+        except Exception as e:
+            error_event = ProgressEvent(
+                model_id, "INSTALLING", None, None, str(e))
+            yield str(error_event)
+            return
         installation_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models
@@ -350,15 +374,13 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
-        model_size, _ = get_model_size_info(weights_path, quant)
-        if model_size > available_ram:
+
+        try:
+            check_memory_space(weights_path, quant,
+                               conversions, i, installation_manager)
+        except Exception as e:
             error_event = ProgressEvent(
-                model_id,
-                "RUNNING",
-                instance,
-                None,
-                "Not enough memory to run the model",
-            )
+                model_id, "RUNNING", instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return
@@ -374,8 +396,8 @@ async def run_models_generator(
             import traceback
 
             logger.error(
-                f"Error running model {model_id}: {
-                    e}\n{traceback.format_exc()}"
+                f"""Error running model {model_id}: {
+                    e}\n{traceback.format_exc()}"""
             )
             error_event = ProgressEvent(
                 model_id, "RUNNING", instance, None, str(e))

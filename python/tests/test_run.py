@@ -485,10 +485,7 @@ async def test_run_not_enough_space(
             assert responses[3]["status"] == "INSTALLING"
             assert responses[3]["instance"] == None
             assert responses[3]["port"] == None
-            assert (
-                responses[-1]["error"]
-                == "Not enough space to convert and quantize the models"
-            )
+            assert responses[-1]["error"] == "Not enough space"
 
 
 @pytest.mark.asyncio
@@ -531,10 +528,7 @@ async def test_run_not_enough_memory_quantization(
             assert responses[3]["status"] == "INSTALLING"
             assert responses[3]["instance"] == None
             assert responses[3]["port"] == None
-            assert (
-                responses[-1]["error"]
-                == "Not enough memory to convert and quantize the model"
-            )
+            assert responses[-1]["error"] == "Not enough memory"
             assert (
                 len(manager.conversion_queue) == 0
             ), "Conversion queue should be cleared"
@@ -580,7 +574,7 @@ async def test_run_not_enough_memory_run(
                 assert responses[-1]["status"] == "RUNNING"
                 assert responses[-1]["instance"] == 1
                 assert responses[-1]["port"] == None
-                assert responses[-1]["error"] == "Not enough memory to run the model"
+                assert responses[-1]["error"] == "Not enough memory"
 
 
 @pytest.mark.asyncio
@@ -602,7 +596,7 @@ async def test_run_kill_previous_models(
         ), patch("endpoints.model.run.run.get_usable_memory") as ram_mock:
 
             def mock_virtual_memory():
-                if ram_mock.call_count <= 2:
+                if ram_mock.call_count <= 5:
                     return 8192
 
                 # For model_id_3, there is not enough memory to run the model
@@ -620,7 +614,6 @@ async def test_run_kill_previous_models(
                 responses = []
                 async for response in stream:
                     responses.append(json.loads(response[5:]))
-                    print(responses[-1])
 
                 # Check the responses
                 assert mlc_mock.call_count == 0
@@ -668,7 +661,7 @@ async def test_run_kill_previous_models(
                     "status": "RUNNING",
                     "instance": 1,
                     "port": None,
-                    "error": "Not enough memory to run the model",
+                    "error": "Not enough memory",
                 }
 
 

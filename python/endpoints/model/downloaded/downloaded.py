@@ -26,12 +26,7 @@ async def is_model_downloaded(model_id: str) -> bool:
             assert response.status == 200, f"Failed to fetch model {model_id}"
             model = await response.json()
             hf_link = model["hfLink"]
-            remote_files = await get_hf_repo_info(
-                hf_link.split("/")[-2] + "/" + hf_link.split("/")[-1]
-            )
-            local_files = get_local_files(model_path)
-            files_to_download = get_files_to_download(
-                remote_files, local_files)
+            files_to_download = await get_files_to_download(hf_link, model_path)
 
             return len(files_to_download) == 0
 
@@ -43,8 +38,7 @@ async def get_downloaded_models():
     model_ids = os.listdir(base_dir)
 
     async with aiohttp.ClientSession() as session:
-        tasks = [get_model_details(model_id, session)
-                 for model_id in model_ids]
+        tasks = [get_model_details(model_id, session) for model_id in model_ids]
         models = await asyncio.gather(*tasks)
 
     # Filter out None values if the model is not downloaded

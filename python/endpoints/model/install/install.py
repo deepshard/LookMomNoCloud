@@ -21,17 +21,14 @@ from truffle_types import RepoType, FileInfo, Quantization
 from utils import (
     get_app_data_path,
     does_quantization_exist,
-    is_convertable_format,
     get_model_size_info,
     get_usable_memory,
-    get_devices,
     get_tensor_parallelism,
     is_mlc_compatible,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
-HF_AUTH_HEADER = {
-    "Authorization": f"Bearer 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"}
+HF_AUTH_HEADER = {"Authorization": f"Bearer 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"}
 
 
 class Status(Enum):
@@ -139,8 +136,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
             raise ValueError(f"Missing rfilename for {file}")
 
         tasks.append(
-            get_file_size_hf(
-                f"https://huggingface.co/{model_name}", file["rfilename"])
+            get_file_size_hf(f"https://huggingface.co/{model_name}", file["rfilename"])
         )
 
     # Get the file sizes
@@ -180,13 +176,12 @@ async def get_files_to_download(model_url: str, install_path: Path) -> list[File
     return files_to_download
 
 
-def check_download_space(size: int, installation_manager: InstallationManager) -> bool:
-    _, disk_space, total_bytes_remaining = get_space_check_info(
-        installation_manager)
+def check_disk_space(size: int, installation_manager: InstallationManager) -> bool:
+    _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
     if size + total_bytes_remaining < disk_space:
         return True
 
-    raise ValueError("Not enough space to download the model")
+    raise ValueError("Not enough space")
 
 
 def check_memory_space(size: int) -> bool:
@@ -194,7 +189,7 @@ def check_memory_space(size: int) -> bool:
     if size < available_ram:
         return True
 
-    raise ValueError("Not enough memory to convert and quantize the model")
+    raise ValueError("Not enough memory")
 
 
 async def get_repo_info(url: str) -> list[FileInfo]:
@@ -274,7 +269,13 @@ async def download_file(
 
 
 async def download_files(
-    model_id: str, model_url: str, install_path: Path, files_to_download: list[FileInfo], total_size: int, installation_manager: InstallationManager, progress_event: ProgressEvent
+    model_id: str,
+    model_url: str,
+    install_path: Path,
+    files_to_download: list[FileInfo],
+    total_size: int,
+    installation_manager: InstallationManager,
+    progress_event: ProgressEvent,
 ):
     # Start downloading files
     logger.info(f"Downloading {len(files_to_download)} files")
@@ -294,8 +295,7 @@ async def download_files(
         download_tasks = asyncio.gather(*tasks)
 
         while not download_tasks.done():
-            progress = int(
-                100 * progress_tracker["downloaded_bytes"] / total_size)
+            progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
             installation_manager.set_download(
                 model_id, total_size - progress_tracker["downloaded_bytes"]
             )
@@ -316,12 +316,15 @@ async def download_files(
 
 
 async def queue_conversion(
-    model_dir: str, quantization: Quantization, install_path: Path, installation_manager: InstallationManager, progress_event: ProgressEvent
+    model_dir: str,
+    quantization: Quantization,
+    install_path: Path,
+    installation_manager: InstallationManager,
+    progress_event: ProgressEvent,
 ):
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    _, compressed_size = get_model_size_info(
-        install_path, quantization)
+    _, compressed_size = get_model_size_info(install_path, quantization)
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
     )
@@ -464,10 +467,9 @@ async def install_generator(
 
     # Check that there is enough space to download the model
     try:
-        check_download_space(total_size, installation_manager)
+        check_disk_space(total_size, installation_manager)
     except Exception as e:
-        progress_event.update(status=Status.DOWNLOADING,
-                              progress=100, error=str(e))
+        progress_event.update(status=Status.DOWNLOADING, progress=100, error=str(e))
         yield str(progress_event)
         return
 
@@ -481,7 +483,13 @@ async def install_generator(
     installation_manager.set_download(model_id, total_size)
     try:
         async for progress_event in download_files(
-            model_id, model_url, install_path, files_to_download, total_size, installation_manager, progress_event
+            model_id,
+            model_url,
+            install_path,
+            files_to_download,
+            total_size,
+            installation_manager,
+            progress_event,
         ):
             yield str(progress_event)
     except Exception as e:
@@ -500,14 +508,12 @@ async def install_generator(
     try:
         quantization = get_base_quantization_decision(install_path)
         if does_quantization_exist(model_id, quantization):
-            logger.info(
-                f"Conversion and quantization already exists for {model_dir}")
+            logger.info(f"Conversion and quantization already exists for {model_dir}")
             progress_event.update(status=Status.STOPPED)
             yield str(progress_event)
             return
     except Exception as e:
-        progress_event.update(status=Status.INSTALLING,
-                              error=str(e))
+        progress_event.update(error=str(e))
         yield str(progress_event)
         return
 
@@ -519,8 +525,7 @@ async def install_generator(
         ):
             yield str(progress_event)
     except Exception as e:
-        progress_event.update(status=Status.INSTALLING,
-                              error=str(e))
+        progress_event.update(error=str(e))
         yield str(progress_event)
         installation_manager.complete_conversion()
         return
@@ -528,13 +533,11 @@ async def install_generator(
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")
     try:
-        model_size, compressed_size = get_model_size_info(
-            install_path, quantization)
-        check_download_space(compressed_size, installation_manager)
+        model_size, compressed_size = get_model_size_info(install_path, quantization)
+        check_disk_space(compressed_size, installation_manager)
         check_memory_space(model_size)
     except Exception as e:
-        progress_event.update(status=Status.INSTALLING,
-                              error=str(e))
+        progress_event.update(error=str(e))
         yield str(progress_event)
         installation_manager.complete_conversion()
         return
@@ -545,14 +548,12 @@ async def install_generator(
         quant_path = model_dir / quantization.value
         convert_quantize_compile(install_path, quant_path, quantization)
     except Exception as e:
-        progress_event.update(status=Status.INSTALLING,
-                              error=str(e))
+        progress_event.update(error=str(e))
         yield str(progress_event)
         installation_manager.complete_conversion()
         return
 
-    logger.info(
-        f"Conversion, quantization, and compilation complete for {model_dir}")
+    logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")
     progress_event.update(status=Status.STOPPED)
     yield str(progress_event)
     installation_manager.complete_conversion()

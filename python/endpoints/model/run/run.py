@@ -118,29 +118,31 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     return [1 / len(model_ids) for _ in model_ids]
 
 
-def check_download_space(size: int, installation_manager: InstallationManager) -> bool:
+def check_disk_space(size: int, installation_manager: InstallationManager) -> bool:
     _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
     if size + bytes_remaining < disk_space:
         return True
 
-    raise ValueError("Not enough space to download the model")
+    raise ValueError("Not enough space")
 
 
-def check_memory_space(weights_path: Path, quant: Quantization, conversions: list, i: int, installation_manager: InstallationManager) -> bool:
+def check_memory_space(weights_path: Path, quant: Quantization) -> bool:
     model_size, _ = get_model_size_info(weights_path, quant)
     available_ram = get_usable_memory()
 
     if model_size < available_ram:
         return True
 
-    raise ValueError("Not enough memory to convert and quantize the model")
+    raise ValueError("Not enough memory")
 
 
 def cancel_models(conversions: list, i: int, installation_manager: InstallationManager):
     # Cancel all conversions that have not yet been started
     models_to_cancel = [
         {
-            "model_path": get_app_data_path() / "models" / canceled_conversion["model_id"],
+            "model_path": get_app_data_path()
+            / "models"
+            / canceled_conversion["model_id"],
             "quantization": canceled_conversion["quant"],
         }
         for canceled_conversion in conversions[i:]
@@ -232,7 +234,7 @@ async def run_model(
         }
     )
 
-    return ProgressEvent(model_id, "RUNNING", instance, port)
+    return ProgressEvent(model_id, Status.RUNNING, instance, port)
 
 
 async def kill_models(models: list[ProgressEvent]):
@@ -259,8 +261,7 @@ async def run_models_generator(
     """
 
     for model_id in model_ids:
-        acknowledgement_event = ProgressEvent(
-            model_id, "ACKNOWLEDGED", None, None)
+        acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
         yield str(acknowledgement_event)
 
     # Determine optimal quantization for each model and determine its instance number
@@ -282,7 +283,7 @@ async def run_models_generator(
         if not is_convertable_format(weights_path):
             error_event = ProgressEvent(
                 model_id,
-                "INSTALLING",
+                Status.INSTALLING,
                 None,
                 None,
                 "Model is not in a convertable format",
@@ -305,10 +306,9 @@ async def run_models_generator(
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
     try:
-        check_download_space(total_compressed_size, installation_manager)
+        check_disk_space(total_compressed_size, installation_manager)
     except Exception as e:
-        error_event = ProgressEvent(
-            None, "INSTALLING", None, None, str(e))
+        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         return
 
@@ -342,13 +342,12 @@ async def run_models_generator(
         except Exception as e:
             # Cancel all conversions that have not yet been started
             cancel_models(conversions, i, installation_manager)
-            error_event = ProgressEvent(
-                model_id, "INSTALLING", None, None, str(e))
+            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
 
         # Send quantization event
-        quantization_event = ProgressEvent(model_id, "INSTALLING", None, None)
+        quantization_event = ProgressEvent(model_id, Status.INSTALLING, None, None)
         yield str(quantization_event)
 
         # Perform the conversion and quantization
@@ -356,8 +355,7 @@ async def run_models_generator(
             installation_manager.remove_from_conversion_queue()
             convert_quantize_compile(weights_path, quant_path, quant)
         except Exception as e:
-            error_event = ProgressEvent(
-                model_id, "INSTALLING", None, None, str(e))
+            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
         installation_manager.complete_conversion()
@@ -376,11 +374,11 @@ async def run_models_generator(
         weights_path = model_path / "base"
 
         try:
-            check_memory_space(weights_path, quant,
-                               conversions, i, installation_manager)
+            check_memory_space(weights_path, quant)
         except Exception as e:
             error_event = ProgressEvent(
-                model_id, "RUNNING", instance, None, str(e))
+                model_id, Status.RUNNING, instance, None, str(e)
+            )
             yield str(error_event)
             await kill_models(models_started)
             return
@@ -400,7 +398,8 @@ async def run_models_generator(
                     e}\n{traceback.format_exc()}"""
             )
             error_event = ProgressEvent(
-                model_id, "RUNNING", instance, None, str(e))
+                model_id, Status.RUNNING, instance, None, str(e)
+            )
             yield str(error_event)
             await kill_models(models_started)
             return

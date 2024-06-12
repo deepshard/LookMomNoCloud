@@ -22,7 +22,6 @@ from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
 from db import db
 
-
 installation_manager = None
 
 
@@ -66,7 +65,11 @@ async def sysinfo():
 
 @app.get("/highlights")
 async def highlights():
-    return get_highlights()
+    try:
+        return await get_highlights()
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Failed to fetch highlights")
 
 
 @app.get("/new")

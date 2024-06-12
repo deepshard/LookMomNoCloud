@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, session } from "electron";
+import { app, BrowserWindow, session } from "electron";
 import path from "path";
 import os from "os";
 
@@ -62,7 +62,7 @@ app.on("ready", async function () {
     console.error("Failed to install extension:", error);
   }
 
-  const mainWindow = createWindow();
+  createWindow();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

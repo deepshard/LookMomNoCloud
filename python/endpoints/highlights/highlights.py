@@ -1,68 +1,72 @@
+import asyncio
+import aiohttp
 from truffle_types import Model, ModelStatus
-
-data = [
-    {
-        "id": "aaaa-bbbb-cccc-dddd",
-        "url": "https://huggingface.co/gradientai/Llama-3-8B-Instruct-Gradient-1048k",
-        "status": ModelStatus.DOWNLOADING,
-        "background_image": "",
-        "author": "Gradient AI",
-        "name": "Llama-3-8B-Instruct-Gradient-1048k",
-        "params": 8_030_000_000,
-        "description": "Gradient AI's 8B parameter model for instruction following.",
-        "instance": None,
-        "progress": 64,
-    },
-    {
-        "id": "eeee-ffff-gggg-hhhh",
-        "url": "https://huggingface.co/microsoft/Phi-3-small-8k-instruct",
-        "status": ModelStatus.INSTALLING,
-        "background_image": "",
-        "author": "Microsoft",
-        "name": "Phi-3-small-8k-instruct",
-        "params": 7_390_000_000,
-        "description": "Microsoft's 7.39B parameter model for instruction following.",
-        "instance": None,
-        "progress": 100,
-    },
-    {
-        "id": "iiii-jjjj-kkkk-llll",
-        "url": "https://huggingface.co/nvidia/Llama3-ChatQA-1.5-8B",
-        "status": ModelStatus.STOPPED,
-        "background_image": "",
-        "author": "NVIDIA",
-        "name": "Llama3-ChatQA-1.5-8B",
-        "params": 8_030_000_000,
-        "description": "NVIDIA's 8B parameter model for chat-based question answering.",
-        "instance": None,
-        "progress": None,
-    },
-    {
-        "id": "mmmm-nnnn-oooo-pppp",
-        "url": "https://huggingface.co/meta-llama/Meta-Llama-3-8B",
-        "status": ModelStatus.NOT_DOWNLOADED,
-        "background_image": "",
-        "author": "Meta Llama",
-        "name": "Meta-Llama-3-8B",
-        "params": 8_030_000_000,
-        "description": "Meta Llama's 8B parameter model for general-purpose conversational AI.",
-        "instance": None,
-        "progress": None,
-    },
-    {
-        "id": "qqqq-rrrr-ssss-tttt",
-        "url": "https://huggingface.co/01-ai/Yi-1.5-34B-Chat",
-        "status": ModelStatus.NOT_DOWNLOADED,
-        "background_image": "",
-        "author": "01 AI",
-        "name": "Yi-1.5-34B-Chat",
-        "params": 34_400_000_000,
-        "description": "01 AI's 34.4B parameter model for chat-based question answering.",
-        "instance": None,
-        "progress": None,
-    },
-]
+from db import db
+from constants import TRUFFLE_API_URL
 
 
-def get_highlights() -> list[Model]:
-    return [Model(**model) for model in data]
+async def get_highlights() -> list[Model]:
+    async with aiohttp.ClientSession() as session:
+        models = await db.runningmodels.find_many()
+        tasks = []
+        for model in models:
+            task = fetch_model_data(session, model)
+            tasks.append(task)
+        if len(models) < 5:
+            tasks.append(get_trending_models(session, 5 - len(models)))
+            results = await asyncio.gather(*tasks)
+            trending = results.pop()
+            return results + trending
+        else:
+            return await asyncio.gather(*tasks)
+
+
+async def get_trending_models(session, num: int) -> list[Model]:
+    async with session.get(f"{TRUFFLE_API_URL}/models/trending?k={num}") as response:
+        assert response.status == 200, f"Failed to fetch trending models"
+        data = await response.json()
+        return [
+            Model(
+                id=model["id"],
+                name=model["name"],
+                title=model["title"],
+                size=model["size"],
+                author=model["author"],
+                downloads=model["downloads"],
+                likes=model["likes"],
+                intro=model["intro"],
+                capabilities=model["capabilities"],
+                risks=model["risks"],
+                hf_link=model["hfLink"],
+                eval_id=model["evalId"],
+                status=ModelStatus.NOT_DOWNLOADED,
+                background_image=model["backgroundImage"],
+                instance=0,
+                progress=0,
+            )
+            for model in data
+        ]
+
+
+async def fetch_model_data(session, model):
+    async with session.get(f"{TRUFFLE_API_URL}/models?id={model.id}") as response:
+        assert response.status == 200, f"Failed to fetch model data for {model.id}"
+        model_data = await response.json()
+        return Model(
+            id=model_data["id"],
+            name=model_data["name"],
+            title=model_data["title"],
+            size=model_data["size"],
+            author=model_data["author"],
+            downloads=model_data["downloads"],
+            likes=model_data["likes"],
+            intro=model_data["intro"],
+            capabilities=model_data["capabilities"],
+            risks=model_data["risks"],
+            hf_link=model_data["hfLink"],
+            eval_id=model_data["evalId"],
+            status=ModelStatus.RUNNING,
+            background_image=model_data["backgroundImage"],
+            instance=model.instance,
+            progress=0,
+        )

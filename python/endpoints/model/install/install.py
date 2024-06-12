@@ -8,11 +8,14 @@ from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
+from mlc_llm.interface.compile import compile as compile_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.support.auto_weight import detect_weight
+from mlc_llm.interface.compiler_flags import OptimizationFlags, ModelConfigOverride
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
+from mlc_llm.support.auto_target import detect_target_and_host
 from truffle_types import RepoType, FileInfo, Quantization
 from utils import (
     get_app_data_path,
@@ -20,8 +23,12 @@ from utils import (
     is_convertable_format,
     get_model_size_info,
     get_usable_memory,
+    get_devices,
+    get_tensor_parallelism,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
+
+HF_AUTH_HEADER = {"Authorization": f"Bearer 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"}
 
 
 def get_url_type(url: str) -> RepoType:
@@ -38,17 +45,24 @@ def get_hf_name_for_url(url: str) -> str:
 
 
 async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
         async with session.head(
             f"{url}/resolve/main/{file}", allow_redirects=True
         ) as response:
             return file, int(response.headers["Content-Length"])
 
 
+def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
+    return not any(
+        file.endswith(pattern) or file.startswith(pattern)
+        for pattern in ignore_patterns
+    )
+
+
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     # Query the HF API to get the requisite info
     url = f"https://huggingface.co/api/models/{model_name}?"
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
         async with session.get(url) as response:
             response.raise_for_status()
             data = await response.json()
@@ -57,6 +71,28 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     files = data.get("siblings", [])
     if not files:
         raise ValueError(f"Could not find any files for {model_name}")
+
+    base_ignore_patterns = ["tflite", "onnx", "msgpack", "txt", "ot", "h5"]
+
+    # Check if there is a safetensor file. If so, exclude PyTorch bin files (redundant)
+    contains_safetensor = any(
+        file["rfilename"].endswith("safetensors") for file in files
+    )
+    if contains_safetensor:
+        base_ignore_patterns.extend(["bin", "pth", "pt"])
+
+    contains_consolidated_weights = any(
+        file["rfilename"].endswith("consolidated.safetensors") for file in files
+    )
+    if contains_consolidated_weights:
+        base_ignore_patterns.extend(["consolidated.safetensors"])
+
+    # filter out files that are not convertable or redundant
+    files = [
+        file
+        for file in files
+        if _is_convertable_file(file["rfilename"], base_ignore_patterns)
+    ]
 
     tasks = []
     for file in files:
@@ -178,7 +214,7 @@ async def download_file(
                 progress_tracker["downloaded_bytes"] += len(chunk)
 
 
-def convert_and_quantize(
+def convert_quantize_compile(
     base_weights_path: str, quant_weights_path: str, quantization: Quantization
 ):
     # Gather necessary info for conversion
@@ -192,6 +228,8 @@ def convert_and_quantize(
     device = detect_device("auto")
     conv_template = get_conv_template(base_weights_path)
     quantization_obj = get_quantization_object(quantization, model)
+    target, build_func = detect_target_and_host("auto", "auto")
+    shards = get_tensor_parallelism(base_weights_path, quantization)
 
     # Convert and quantize
     logger.info(f"Converting weights for {base_weights_path}")
@@ -205,6 +243,34 @@ def convert_and_quantize(
         output=quant_weights_path,
     )
 
+    compile_path = quant_weights_path / "compilation.so"
+    if not compile_path.exists():
+        logger.info(f"Compiling model at {quant_weights_path}")
+        compile_mlc(
+            config=config,
+            quantization=quantization_obj,
+            model_type=model,
+            target=target,
+            opt=OptimizationFlags.from_str("O2"),
+            build_func=build_func,
+            system_lib_prefix="auto",
+            output=quant_weights_path / "compilation.so",
+            overrides=ModelConfigOverride(
+                context_window_size=None,
+                sliding_window_size=None,
+                prefill_chunk_size=None,
+                attention_sink_size=None,
+                max_batch_size=1,
+                tensor_parallel_shards=shards,
+            ),
+            debug_dump=None,
+        )
+    else:
+        logger.info(
+            f"""Already compiled. Skipping compilation for {
+                    quant_weights_path}"""
+        )
+
     # Generate config
     logger.info(f"Generating config for {base_weights_path}")
     gen_config_mlc(
@@ -216,7 +282,7 @@ def convert_and_quantize(
         sliding_window_size=None,
         prefill_chunk_size=None,
         attention_sink_size=None,
-        tensor_parallel_shards=None,
+        tensor_parallel_shards=shards,
         max_batch_size=1,
         output=Path(quant_weights_path),
     )
@@ -239,24 +305,23 @@ async def install_generator(
     Yields:
         {
             "id": str,
-            "status": str (DOWNLOADING, INSTALLING, DONE),
+            "status": str (ACKNOWLEDGED, DOWNLOADING, INSTALLING, STOPPED),
             "progress": int,
             "error": str (optional)
         }
     """
 
-    model_dir = get_app_data_path() / "models" / model_id
-    install_path = model_dir / "base"
-
-    # Send initial install progress
     logger.info(f"Starting install for {model_url}")
-    initial_progress = {
+    progress_event = {
         "id": model_id,
-        "status": "DOWNLOADING",
+        "status": "ACKNOWLEDGED",
         "progress": 0,
         "error": None,
     }
-    yield f"data: {json.dumps(initial_progress)}\n\n"
+    yield f"data: {json.dumps(progress_event)}\n\n"
+
+    model_dir = get_app_data_path() / "models" / model_id
+    install_path = model_dir / "base"
 
     # Get files to download
     try:
@@ -274,6 +339,35 @@ async def install_generator(
         yield f"data: {json.dumps(progress_event)}\n\n"
         return
 
+    def is_mlc_compatible(files: list[FileInfo]) -> bool:
+        # files must contain one of the following:
+        # - pytorch_model.bin.index.json
+        # - pytorch_model.bin
+        # - model.safetensors.index.json
+        # - model.safetensors
+        patterns = [
+            "pytorch_model.bin.index.json",
+            "pytorch_model.bin",
+            "model.safetensors.index.json",
+            "model.safetensors",
+        ]
+        for file in files:
+            if any(file.file.endswith(pattern) for pattern in patterns):
+                return True
+        return False
+
+    if not is_mlc_compatible(remote_files):
+        logger.info(f"Unsupported model format for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "DOWNLOADING",
+            "progress": 100,
+            "error": f"Unsupported model format for {install_path}",
+        }
+        yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
+        return
+
     # Check that there is enough space to download the model
     _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
     if total_size + total_bytes_remaining > disk_space:
@@ -288,6 +382,15 @@ async def install_generator(
         return
 
     try:
+        # Send initial progress event
+        initial_progress = {
+            "id": model_id,
+            "status": "DOWNLOADING",
+            "progress": 0,
+            "error": None,
+        }
+        yield f"data: {json.dumps(initial_progress)}\n\n"
+
         # Mark as downloading and send to InstallSystemManager
         installation_manager.set_download(model_id, total_size)
 
@@ -295,7 +398,7 @@ async def install_generator(
         logger.info(f"Downloading {len(files_to_download)} files")
         progress_tracker = {"downloaded_bytes": 0}
         last_progress = 0
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
             tasks = [
                 download_file(
                     session,
@@ -349,9 +452,22 @@ async def install_generator(
             len(files_to_download)} files. Beginning weight conversion and quantization."""
     )
 
+    # Return early if the quantization is alrady built
+    quantization = get_base_quantization_decision(install_path)
+    if does_quantization_exist(model_id, quantization):
+        logger.info(f"Conversion and quantization already exists for {model_dir}")
+        progress_event = {
+            "id": model_id,
+            "status": "STOPPED",
+            "progress": 100,
+            "error": None,
+        }
+        yield f"data: {json.dumps(progress_event)}\n\n"
+        installation_manager.complete_conversion()
+        return
+
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
-    quantization = get_base_quantization_decision(install_path)
     model_size, compressed_size = get_model_size_info(install_path, quantization)
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
@@ -365,37 +481,18 @@ async def install_generator(
     yield f"data: {json.dumps(progress_event)}\n\n"
 
     while not installation_manager.is_models_conversion_turn(model_dir, quantization):
+        logger.info(
+            f"""Waiting for {model_dir} to be converted.\nCurrent conversion queue: {
+                installation_manager.conversion_queue()}\nCurrent conversion in progress: {installation_manager.current_conversion}"""
+        )
         await asyncio.sleep(5)
 
+    logger.info(f"Model's turn to be converted.")
     installation_manager.remove_from_conversion_queue()
-
-    # Return early if the quantization is alrady built
-    if does_quantization_exist(model_id, quantization):
-        logger.info(f"Conversion and quantization already done for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "DONE",
-            "progress": 100,
-            "error": None,
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
-        return
-
-    # Check if the format is convertable
-    if not is_convertable_format(install_path):
-        logger.info(f"Unsupported model format for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": f"Unsupported model format for {install_path}",
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
-        return
+    await asyncio.sleep(3)
 
     # Check that there is enough space and memory to convert and quantize the model
+    logger.info(f"Checking space and memory for {model_dir}")
     available_ram, disk_space, bytes_remaining = get_space_check_info(
         installation_manager
     )
@@ -412,11 +509,17 @@ async def install_generator(
         return
 
     # Convert and quantize the model
+    logger.info(f"Converting and quantizing {model_dir}")
     quant_path = model_dir / quantization.value
-    convert_and_quantize(install_path, quant_path, quantization)
+    convert_quantize_compile(install_path, quant_path, quantization)
 
-    logger.info(f"Conversion and quantization complete for {model_dir}")
-    progress_event = {"id": model_id, "status": "DONE", "progress": 100, "error": None}
+    logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")
+    progress_event = {
+        "id": model_id,
+        "status": "STOPPED",
+        "progress": 100,
+        "error": None,
+    }
     yield f"data: {json.dumps(progress_event)}\n\n"
     installation_manager.complete_conversion()
     return

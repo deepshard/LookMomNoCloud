@@ -1,0 +1,36 @@
+name: Frontend tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  frontend_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.14.0'
+
+    - name: Install Bun
+      run: npm install -g bun
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Run tests
+      run: bun test
+  
+    - name: Slack Notification on Failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,commit,author,action,eventName,ref,workflow
+
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

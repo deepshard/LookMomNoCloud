@@ -1,0 +1,24 @@
+<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_b_417_434)">
+<g clip-path="url(#clip0_417_434)">
+<rect width="30" height="30" rx="15" fill="#D9D9D9" fill-opacity="0.3"/>
+<path d="M30.0161 15.0815C30.0161 23.4108 23.2638 30.163 14.9345 30.163C6.60525 30.163 -0.146973 23.4108 -0.146973 15.0815C-0.146973 6.75223 6.60525 0 14.9345 0C23.2638 0 30.0161 6.75223 30.0161 15.0815ZM2.11526 15.0815C2.11526 22.1614 7.85465 27.9008 14.9345 27.9008C22.0144 27.9008 27.7538 22.1614 27.7538 15.0815C27.7538 8.00162 22.0144 2.26223 14.9345 2.26223C7.85465 2.26223 2.11526 8.00162 2.11526 15.0815Z" fill="#D9D9D9" fill-opacity="0.2"/>
+<path d="M14.9345 1.13111C14.9345 0.506417 15.4417 -0.00441229 16.0646 0.0423961C17.9878 0.186902 19.869 0.699247 21.6049 1.55532C23.6797 2.57847 25.4913 4.06519 26.8995 5.90047C28.3078 7.73575 29.275 9.87039 29.7263 12.1393C30.1776 14.4081 30.1009 16.7504 29.5022 18.9849C28.9034 21.2194 27.7987 23.2862 26.2734 25.0255C24.7482 26.7647 22.8432 28.1298 20.706 29.015C18.5688 29.9003 16.2565 30.282 13.9482 30.1308C12.0168 30.0042 10.1314 29.5072 8.39365 28.6708C7.83077 28.3999 7.64699 27.7039 7.95934 27.1629C8.27169 26.6219 8.96173 26.4415 9.52815 26.705C10.9625 27.3722 12.5111 27.7695 14.0961 27.8734C16.0582 28.002 18.0236 27.6775 19.8403 26.925C21.6569 26.1725 23.2761 25.0122 24.5726 23.5339C25.8691 22.0555 26.8081 20.2987 27.317 18.3994C27.826 16.5001 27.8911 14.5091 27.5075 12.5806C27.1239 10.6521 26.3018 8.83762 25.1048 7.27763C23.9078 5.71764 22.3679 4.45393 20.6044 3.58425C19.1798 2.8817 17.64 2.4515 16.0642 2.3121C15.4419 2.25705 14.9345 1.75581 14.9345 1.13111Z" fill="url(#paint0_radial_417_434)"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_b_417_434" x="-6" y="-6" width="42" height="42" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feGaussianBlur in="BackgroundImageFix" stdDeviation="3"/>
+<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_417_434"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_417_434" result="shape"/>
+</filter>
+<radialGradient id="paint0_radial_417_434" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(15) rotate(90.1243) scale(30.1631)">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="white"/>
+</radialGradient>
+<clipPath id="clip0_417_434">
+<rect width="30" height="30" rx="15" fill="white"/>
+</clipPath>
+</defs>
+</svg>

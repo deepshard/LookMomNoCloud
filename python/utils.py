@@ -1,7 +1,10 @@
 import os
+import re
 import psutil
 import platform
 import socket
+import subprocess
+import tvm
 from pathlib import Path
 from truffle_types import Quantization
 
@@ -40,7 +43,19 @@ def find_port(port: int = 8899) -> int:
 
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
-    return quant_path.exists() and len(os.listdir(quant_path)) > 0
+    mlc_chat_config_path = quant_path / "mlc-chat-config.json"
+    ndarray_cache_path = quant_path / "ndarray-cache.json"
+    tokenizer_config_path = quant_path / "tokenizer_config.json"
+    tokenizer_path = quant_path / "tokenizer.json"
+    shards = sum(1 for _ in quant_path.glob("params_shard_*.bin"))
+    return (
+        quant_path.exists()
+        and mlc_chat_config_path.exists()
+        and ndarray_cache_path.exists()
+        and shards > 0
+        and tokenizer_config_path.exists()
+        and tokenizer_path.exists()
+    )
 
 
 def get_quantization_compression(quant: Quantization) -> float:
@@ -79,9 +94,91 @@ def get_model_size_info(
     return model_size, compressed_size
 
 
+def get_devices() -> list[str]:
+    DEVICE_OPTIONS = ["cuda", "rocm", "metal", "vulkan", "opencl"]
+
+    devices = []
+    for device_type in DEVICE_OPTIONS:
+        for i in range(8):  # max 8 devices per type for now
+            cur_device = tvm.device(dev_type=device_type, dev_id=i)
+            try:
+                if cur_device.exist:
+                    devices.append({"type": device_type, "id": i})
+            except Exception:
+                continue
+
+    return devices
+
+
+def get_devices_memory(device_type: str, devices: list[any]) -> int:
+    total_available = 0
+    for device in [device for device in devices if device["type"] == device_type]:
+        total_available += tvm.runtime.device(
+            device_type=device["type"], dev_id=device["id"]
+        ).available_global_memory
+
+    return total_available
+
+
 def get_usable_memory() -> int:
     """
     This is the memory that is currently available or could be quickly made available.
     That is, the maximum memory a new process could use without trigger an OOM error.
     """
-    return psutil.virtual_memory().total - psutil.virtual_memory().used
+    system = platform.system()
+    mem = psutil.virtual_memory()
+    if system == "Darwin":
+        # macOS swaps to disk when memory is low, so we need to take that into account
+        return mem.total - mem.wired
+    elif system == "Linux":
+        # Get devices
+        devices = get_devices()
+
+        # Heirarchy is as follows:
+        # - CUDA
+        # - ROCM
+        # - Vulkan
+        # - OpenCL
+        if any(device["type"] == "cuda" for device in devices):
+            return get_devices_memory("cuda", devices)
+        elif any(device["type"] == "rocm" for device in devices):
+            return get_devices_memory("rocm", devices)
+        elif any(device["type"] == "vulkan" for device in devices):
+            return get_devices_memory("vulkan", devices)
+        elif any(device["type"] == "opencl" for device in devices):
+            return get_devices_memory("opencl", devices)
+        else:
+            return 0
+    else:
+        raise ValueError(f"Unsupported system: {system}")
+
+
+def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -> int:
+    # Get the model size and the compressed size
+    _, compressed_size = get_model_size_info(model_weights_dir, quantization)
+
+    # Get number of devices (heirarchy is as follows: CUDA, ROCM, Vulkan, OpenCL)
+    devices = get_devices()
+    num_devices = 0
+    if any(device["type"] == "cuda" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "cuda"])
+    elif any(device["type"] == "rocm" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "rocm"])
+    elif any(device["type"] == "vulkan" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "vulkan"])
+    elif any(device["type"] == "opencl" for device in devices):
+        num_devices = len([device for device in devices if device["type"] == "opencl"])
+
+    if num_devices == 0:
+        raise ValueError("No devices found")
+
+    if num_devices == 1:
+        return 1
+
+    # Identify the max number of devices that can be used such that the model isn't sharded into
+    # less than 2.5GB per device
+    shards = 1
+    while compressed_size / shards > 2.5 * 1024 * 1024 * 1024 and shards < num_devices:
+        shards += 1
+
+    return shards

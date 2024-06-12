@@ -4,7 +4,7 @@ const NavBar = () => {
   const appIcon = process.env.NODE_ENV === "development" ? "/assets/icons/TRUFFLE_LOGO.svg" : "../../renderer/main_window/assets/icons/TRUFFLE_LOGO.svg";
   const searchIcon = process.env.NODE_ENV === "development" ? "/assets/icons/search-icon.svg" : "../../renderer/main_window/assets/icons/search-icon.svg";
   return (
-    <div className="navbar no-select">
+    <div className="navbar">
       <div className="bg-transparent h-5 w-5 rounded-full" />
 
       <div className="flex w-full max-w-[660px] gap-3 justify-start items-center">

@@ -100,7 +100,7 @@ export default function Home() {
         <div/>
         
         {/* HOME WIDGETS */}
-        <div className="no-select w-[660px] flex flex-col justify-start items-center gap-5">
+        <div className="w-[660px] flex flex-col justify-start items-center gap-5">
           
           <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
             {/* Should be <SunIcon /> */}

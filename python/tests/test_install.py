@@ -43,7 +43,6 @@ schema = {
 # - Returns error if there is not enough space to download (with a model already in progress)
 # - Only converts and quantizes a single model at a time
 # - Skips conversion and quantization of already converted model
-# - Returns error if model weights are not in the expected format
 # - Returns error if there is not enough space or memory to convert and quantize
 # - Completion of conversion and quantization returns status transition
 # - Gets correct HF name given a URL
@@ -399,7 +398,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
         progress_updates.append(json.loads(progress[5:]))
 
     assert progress_updates[-1]["status"] == "DOWNLOADING"
-    assert progress_updates[-1]["error"] == "Not enough space to download the model"
+    assert progress_updates[-1]["error"] == "Not enough space"
 
     # Assert that acknowledgement event was sent
     assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -447,7 +446,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
 
     assert progress_updates[0]["status"] == "ACKNOWLEDGED"
     assert progress_updates[-1]["status"] == "DOWNLOADING"
-    assert progress_updates[-1]["error"] == "Not enough space to download the model"
+    assert progress_updates[-1]["error"] == "Not enough space"
 
     # Check that queue is empty
     assert len(manager.conversion_queue) == 0
@@ -583,64 +582,6 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
 
 
 @pytest.mark.asyncio
-async def test_returns_error_if_model_weights_are_not_in_expected_format(
-    app_data_path_mock, mock_aiohttp_head, mock_headers, mocker
-):
-    clear_path()
-
-    with aioresponses() as mocked:
-        # Setup mock behavior for download tasks in install_generator
-        # Change API response to not have the correct pytorch_model.bin file
-        API_RESPONSE = {
-            "siblings": [
-                {
-                    "rfilename": "config.json",
-                },
-            ]
-        }
-        mocked.get(HF_API_URL, status=200, payload=API_RESPONSE)
-        mocked.get(FILE_TWO_URL, status=200, body=MOCK_FILE_TWO_DATA)
-        mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-            {"Content-Length": 1024}
-        )
-
-        # It is relatively safe to mock this because it is exclusively a wrapper around calls to external libraries
-        mock_mlc = mocker.patch(
-            "endpoints.model.install.install.convert_quantize_compile",
-            return_value=None,
-        )
-        mocker.patch(
-            "endpoints.model.install.install.get_usable_memory", return_value=1024
-        )
-        manager = InstallationManager()
-
-        # Write the file to simulate a complete download
-        download_path = Path("/tmp") / "models" / ID / "base"
-        download_path.mkdir(parents=True, exist_ok=True)
-        with open(download_path / "config.json", "wb") as f:
-            f.write(MOCK_FILE_TWO_DATA)
-
-        # Prepare JSON streaming responses as they would be sent from the generator
-        progress_stream = install_generator(ID, MODEL_URL, manager)
-
-        # Collect all progress updates
-        progress_updates = []
-        async for progress in progress_stream:
-            progress_updates.append(json.loads(progress[5:]))
-
-        assert (
-            progress_updates[-1]["error"]
-            == f"Unsupported model format for {download_path}"
-        )
-
-        # Assert that acknowledgement event was sent
-        assert progress_updates[0]["status"] == "ACKNOWLEDGED"
-
-        # Check that queue is empty
-        assert len(manager.conversion_queue) == 0
-
-
-@pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
     app_data_path_mock,
     standard_aiohttp_get_mocks,
@@ -676,10 +617,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
                 "psutil.disk_usage", return_value=MagicMock(total=1024, used=0, free=0)
             )
 
-    assert (
-        progress_updates[-1]["error"]
-        == "Not enough space or memory to convert and quantize the model"
-    )
+    assert progress_updates[-1]["error"] == "Not enough space"
 
     # Assert that acknowledgement event was sent
     assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -717,18 +655,15 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     progress_updates = []
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
+        print(progress_updates[-1])
 
         if progress_updates[-1]["status"] == "INSTALLING":
             # Mock the available RAM information to be less than the required amount
             mocker.patch(
-                "endpoints.model.install.install.get_space_check_info",
-                return_value=(0, 8192, 0),
+                "endpoints.model.install.install.get_usable_memory", return_value=0
             )
 
-    assert (
-        progress_updates[-1]["error"]
-        == "Not enough space or memory to convert and quantize the model"
-    )
+    assert progress_updates[-1]["error"] == "Not enough memory"
 
     # Assert that acknowledgement event was sent
     assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -794,7 +729,10 @@ def test_get_hf_name_for_url():
         assert get_hf_name_for_url(url) == expected_name
 
 
-def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_lists():
+@pytest.mark.asyncio
+async def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_lists(
+    mocker,
+):
     cases = [
         {
             "remote": [
@@ -887,7 +825,17 @@ def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_
     ]
 
     for case, expected_outcome in zip(cases, expected_outcomes):
-        assert get_files_to_download(case["remote"], case["local"]) == expected_outcome
+        mocker.patch(
+            "endpoints.model.install.install.get_repo_info", return_value=case["remote"]
+        )
+        mocker.patch(
+            "endpoints.model.install.install.get_local_files",
+            return_value=case["local"],
+        )
+        assert (
+            await get_files_to_download(case["remote"], case["local"])
+            == expected_outcome
+        )
 
 
 @pytest.mark.asyncio

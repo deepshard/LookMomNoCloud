@@ -126,8 +126,16 @@ def mock_headers():
 
 # Tests
 @pytest.mark.asyncio
-async def test_no_models_downloaded(app_data_path_mock):
-    os.makedirs("/tmp/models")
+async def test_no_models_downloaded(
+    app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
+):
+    clear_path()
+    os.makedirs("/tmp/models", exist_ok=True)
+
+    mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
+        {"Content-Length": 1024}
+    )
+
     models = await get_downloaded_models()
     assert len(models) == 0
 

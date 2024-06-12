@@ -4,6 +4,7 @@ import aiohttp
 import json
 from pathlib import Path
 from loguru import logger
+from enum import Enum
 from mlc_llm.interface.serve import serve
 from endpoints.model.stop import stop_model_handler
 from endpoints.model.install import InstallationManager
@@ -23,6 +24,55 @@ from utils import (
 from db import db
 from truffle_types import Quantization
 from constants import TRUFFLE_API_URL
+
+
+class Status(Enum):
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    INSTALLING = "INSTALLING"
+    RUNNING = "RUNNING"
+    STOPPED = "STOPPED"
+    ERROR = "ERROR"
+
+
+class ProgressEvent:
+    def __init__(
+        self, model_id: str, status: Status, instance: int, port: int, error: str = None
+    ):
+        self.model_id = model_id
+        self.status = status
+        self.instance = instance
+        self.port = port
+        self.error = error
+
+    def to_json(self):
+        return json.dumps(
+            {
+                "id": self.model_id,
+                "status": self.status.value,
+                "instance": self.instance,
+                "port": self.port,
+                "error": self.error,
+            }
+        )
+
+    def update(
+        self,
+        status: Status = None,
+        instance: int = None,
+        port: int = None,
+        error: str = None,
+    ):
+        if status is not None:
+            self.status = status
+        if instance is not None:
+            self.instance = instance
+        if port is not None:
+            self.port = port
+        if error is not None:
+            self.error = error
+
+    def __str__(self):
+        return f"data: {self.to_json()}\n\n"
 
 
 async def get_instances(model_ids: list[str]) -> list[int]:
@@ -66,6 +116,38 @@ def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
     # NOTE: We will make this more sophisticated in the future and potentially combine
     # this with the adaptive_quantization_decision function
     return [1 / len(model_ids) for _ in model_ids]
+
+
+def check_disk_space(size: int, installation_manager: InstallationManager) -> bool:
+    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
+    if size + bytes_remaining < disk_space:
+        return True
+
+    raise ValueError("Not enough space")
+
+
+def check_memory_space(weights_path: Path, quant: Quantization) -> bool:
+    model_size, _ = get_model_size_info(weights_path, quant)
+    available_ram = get_usable_memory()
+
+    if model_size < available_ram:
+        return True
+
+    raise ValueError("Not enough memory")
+
+
+def cancel_models(conversions: list, i: int, installation_manager: InstallationManager):
+    # Cancel all conversions that have not yet been started
+    models_to_cancel = [
+        {
+            "model_path": get_app_data_path()
+            / "models"
+            / canceled_conversion["model_id"],
+            "quantization": canceled_conversion["quant"],
+        }
+        for canceled_conversion in conversions[i:]
+    ]
+    installation_manager.cancel_conversions(models_to_cancel)
 
 
 def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
@@ -117,7 +199,7 @@ async def is_server_running(port: int, timeout: int = 120) -> bool:
 
 async def run_model(
     model_id: str, quantization: Quantization, mem_share: float, instance: int
-) -> dict:
+) -> ProgressEvent:
     # Identify the necessary info to launch the model
     model_path = get_app_data_path() / "models" / model_id / quantization.value
     model_info = await get_model_info(model_id)
@@ -152,19 +234,13 @@ async def run_model(
         }
     )
 
-    return {
-        "id": model_id,
-        "status": "RUNNING",
-        "instance": instance,
-        "port": port,
-        "error": None,
-    }
+    return ProgressEvent(model_id, Status.RUNNING, instance, port)
 
 
-async def kill_models(models: list[dict]):
+async def kill_models(models: list[ProgressEvent]):
     # Kill all of the running models and remove them from the database
     for model in models:
-        await stop_model_handler(model["id"], model["instance"])
+        await stop_model_handler(model.model_id, model.instance)
 
 
 async def run_models_generator(
@@ -181,25 +257,12 @@ async def run_models_generator(
         model_ids (list[str]): The list of model IDs to run
         installation_manager (InstallationManager): The installation manager instance
 
-    Yields:
-        {
-            "id": str,
-            "status": str (ACKNOWLEDGED, INSTALLING, RUNNING)
-            "instance": int,
-            "port": int,
-            "error": str
-        }
+    Yields a string of the JSON representation of a ProgressEvent
     """
 
     for model_id in model_ids:
-        acknowledgement_event = {
-            "id": model_id,
-            "status": "ACKNOWLEDGED",
-            "instance": None,
-            "port": None,
-            "error": None,
-        }
-        yield f"data: {json.dumps(acknowledgement_event)}\n\n"
+        acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
+        yield str(acknowledgement_event)
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
@@ -218,14 +281,14 @@ async def run_models_generator(
 
         # Check if the model is in a convertable format
         if not is_convertable_format(weights_path):
-            error_event = {
-                "id": model_id,
-                "status": "INSTALLING",
-                "instance": None,
-                "port": None,
-                "error": "Model is not in a convertable format",
-            }
-            yield f"data: {json.dumps(error_event)}\n\n"
+            error_event = ProgressEvent(
+                model_id,
+                Status.INSTALLING,
+                None,
+                None,
+                "Model is not in a convertable format",
+            )
+            yield str(error_event)
             return
 
         # Check if the quantization already exists
@@ -242,20 +305,15 @@ async def run_models_generator(
 
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
-    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
-    if total_compressed_size + bytes_remaining > disk_space:
-        logger.error("Not enough space to convert and quantize the models")
-        error_event = {
-            "id": None,
-            "status": "INSTALLING",
-            "instance": None,
-            "port": None,
-            "error": "Not enough space to convert and quantize the models",
-        }
-        yield f"data: {json.dumps(error_event)}\n\n"
+    try:
+        check_disk_space(total_compressed_size, installation_manager)
+    except Exception as e:
+        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
+        yield str(error_event)
         return
 
-    # Add all of the conversions to the queue at once
+    # Add all of the conversions to the queue at once to avoid weird space calculations
+    # or allowing a secondary run request to interfere with an earlier one
     for conversion in conversions:
         model_path = get_app_data_path() / "models" / conversion["model_id"]
         installation_manager.add_to_conversion_queue(
@@ -279,45 +337,27 @@ async def run_models_generator(
             await asyncio.sleep(5)
 
         # Check if there is enough memory to convert and quantize the model
-        model_size, _ = get_model_size_info(weights_path, quant)
-        available_ram = get_usable_memory()
-        if model_size > available_ram:
-            logger.error(
-                f"Not enough memory to convert and quantize the model {model_id}"
-            )
-            error_event = {
-                "id": model_id,
-                "status": "INSTALLING",
-                "instance": None,
-                "port": None,
-                "error": "Not enough memory to convert and quantize the model",
-            }
-            yield f"data: {json.dumps(error_event)}\n\n"
-            models_to_cancel = [
-                {
-                    "model_path": get_app_data_path()
-                    / "models"
-                    / canceled_conversion["model_id"],
-                    "quantization": canceled_conversion["quant"],
-                }
-                for canceled_conversion in conversions[i:]
-            ]
-            installation_manager.cancel_conversions(models_to_cancel)
+        try:
+            check_memory_space(weights_path, quant)
+        except Exception as e:
+            # Cancel all conversions that have not yet been started
+            cancel_models(conversions, i, installation_manager)
+            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            yield str(error_event)
             return
 
         # Send quantization event
-        quantization_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "instance": None,
-            "port": None,
-            "error": None,
-        }
-        yield f"data: {json.dumps(quantization_event)}\n\n"
+        quantization_event = ProgressEvent(model_id, Status.INSTALLING, None, None)
+        yield str(quantization_event)
 
         # Perform the conversion and quantization
-        installation_manager.remove_from_conversion_queue()
-        convert_quantize_compile(weights_path, quant_path, quant)
+        try:
+            installation_manager.remove_from_conversion_queue()
+            convert_quantize_compile(weights_path, quant_path, quant)
+        except Exception as e:
+            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            yield str(error_event)
+            return
         installation_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models
@@ -332,16 +372,14 @@ async def run_models_generator(
         available_ram = get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
-        model_size, _ = get_model_size_info(weights_path, quant)
-        if model_size > available_ram:
-            error_event = {
-                "id": model_id,
-                "status": "RUNNING",
-                "instance": instance,
-                "port": None,
-                "error": "Not enough memory to run the model",
-            }
-            yield f"data: {json.dumps(error_event)}\n\n"
+
+        try:
+            check_memory_space(weights_path, quant)
+        except Exception as e:
+            error_event = ProgressEvent(
+                model_id, Status.RUNNING, instance, None, str(e)
+            )
+            yield str(error_event)
             await kill_models(models_started)
             return
 
@@ -349,18 +387,20 @@ async def run_models_generator(
         try:
             result = await run_model(model_id, quant, mem_share, instance)
             models_started.append(result)
-            logger.info(f"Model {model_id} started on port {result['port']}")
-            yield f"data: {json.dumps(result)}\n\n"
+            logger.info(f"Model {model_id} started on port {result.port}")
+            yield str(result)
         except Exception as e:
             logger.error(f"Error running model {model_id}: {e}")
-            error_event = {
-                "id": model_id,
-                "status": "RUNNING",
-                "instance": instance,
-                "port": None,
-                "error": str(e),
-            }
-            yield f"data: {json.dumps(error_event)}\n\n"
+            import traceback
+
+            logger.error(
+                f"""Error running model {model_id}: {
+                    e}\n{traceback.format_exc()}"""
+            )
+            error_event = ProgressEvent(
+                model_id, Status.RUNNING, instance, None, str(e)
+            )
+            yield str(error_event)
             await kill_models(models_started)
             return
 

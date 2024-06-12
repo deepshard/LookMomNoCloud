@@ -5,11 +5,13 @@ import pytest
 from unittest import mock
 from unittest.mock import patch, MagicMock
 import shutil
+from aioresponses import aioresponses
 from pathlib import Path
 from endpoints.model.install import InstallationManager
 from endpoints.model.run.run import run_models_generator, get_instances
 from db import db
 from server import init_db
+from constants import TRUFFLE_API_URL
 
 schema = {
     "type": "object",
@@ -44,6 +46,21 @@ model_files = [
     {"file": "pytorch_model.bin", "data": os.urandom(1024)},
     {"file": "config.json", "data": os.urandom(1024)},
 ]
+MOCK_MODEL_1 = {
+    "id": model_id_1,
+    "name": "meta-llama/Meta-Llama-3-8B",
+    "title": "test",
+    "size": 1,
+    "author": "test",
+    "downloads": 1,
+    "likes": 1,
+    "intro": "test",
+    "capabilities": "test",
+    "risks": "test",
+    "hfLink": "",
+    "evalId": "test",
+    "backgroundImage": "test",
+}
 
 # Helpers
 
@@ -77,6 +94,30 @@ def base_fixture(request):
         asyncio.run(clear_db())
 
     request.addfinalizer(teardown)
+
+
+@pytest.fixture
+def api_mock():
+    with aioresponses() as mocked:
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=TEST_model_1",
+            status=200,
+            payload=MOCK_MODEL_1,
+            repeat=True,
+        )
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=TEST_model_2",
+            status=200,
+            payload=MOCK_MODEL_1,
+            repeat=True,
+        )
+        mocked.get(
+            TRUFFLE_API_URL + "/models?id=TEST_model_3",
+            status=200,
+            payload=MOCK_MODEL_1,
+            repeat=True,
+        )
+        yield mocked
 
 
 @pytest.fixture
@@ -158,6 +199,7 @@ def mlc_mock():
 @pytest.mark.asyncio
 async def test_run_quantization_does_not_exist(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     server_mock,
@@ -193,6 +235,7 @@ async def test_run_quantization_does_not_exist(
 @pytest.mark.asyncio
 async def test_run_quantization_exists(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     mock_quants,
@@ -228,6 +271,7 @@ async def test_run_quantization_exists(
 @pytest.mark.asyncio
 async def test_run_multiple_models(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     server_mock,
@@ -320,6 +364,7 @@ async def test_run_multiple_models(
 @pytest.mark.asyncio
 async def test_run_instance_running(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     mock_quants,
@@ -367,6 +412,7 @@ async def test_run_instance_running(
 @pytest.mark.asyncio
 async def test_run_not_convertable_format(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     server_mock,
@@ -404,6 +450,7 @@ async def test_run_not_convertable_format(
 @pytest.mark.asyncio
 async def test_run_not_enough_space(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     server_mock,
@@ -447,6 +494,7 @@ async def test_run_not_enough_space(
 @pytest.mark.asyncio
 async def test_run_not_enough_memory_quantization(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     server_mock,
@@ -495,6 +543,7 @@ async def test_run_not_enough_memory_quantization(
 @pytest.mark.asyncio
 async def test_run_not_enough_memory_run(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     mock_quants,
@@ -537,6 +586,7 @@ async def test_run_not_enough_memory_run(
 @pytest.mark.asyncio
 async def test_run_kill_previous_models(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     mock_quants,
@@ -625,6 +675,7 @@ async def test_run_kill_previous_models(
 @pytest.mark.asyncio
 async def test_run_get_instance_count(
     base_fixture,
+    api_mock,
     get_tensor_parallelism_mock,
     get_app_data_path_mock,
     mock_quants,

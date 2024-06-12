@@ -22,6 +22,7 @@ from utils import (
 )
 from db import db
 from truffle_types import Quantization
+from constants import TRUFFLE_API_URL
 
 
 async def get_instances(model_ids: list[str]) -> list[int]:
@@ -50,8 +51,10 @@ async def get_instances(model_ids: list[str]) -> list[int]:
 
 
 async def get_model_info(model_id: str) -> dict:
-    # TODO: Properly implement this when the HF scraping API is ready
-    return {"name": "meta-llama/Meta-Llama-3-8B", "size": 8000000000}
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{TRUFFLE_API_URL}/models?id={model_id}") as response:
+            assert response.status == 200, f"Failed to fetch model {model_id}"
+            return await response.json()
 
 
 def adaptive_quantization_decision(model_ids: list[str]) -> list[Quantization]:

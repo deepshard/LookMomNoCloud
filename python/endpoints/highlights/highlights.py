@@ -2,8 +2,7 @@ import asyncio
 import aiohttp
 from truffle_types import Model, ModelStatus
 from db import db
-
-HIGHLIGHTS_URL = "https://api.deepshard.org"
+from constants import TRUFFLE_API_URL
 
 
 async def get_highlights() -> list[Model]:
@@ -23,7 +22,7 @@ async def get_highlights() -> list[Model]:
 
 
 async def get_trending_models(session, num: int) -> list[Model]:
-    async with session.get(f"{HIGHLIGHTS_URL}/models/trending?k={num}") as response:
+    async with session.get(f"{TRUFFLE_API_URL}/models/trending?k={num}") as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
         return [
@@ -50,7 +49,7 @@ async def get_trending_models(session, num: int) -> list[Model]:
 
 
 async def fetch_model_data(session, model):
-    async with session.get(f"{HIGHLIGHTS_URL}/models?id={model.id}") as response:
+    async with session.get(f"{TRUFFLE_API_URL}/models?id={model.id}") as response:
         assert response.status == 200, f"Failed to fetch model data for {model.id}"
         model_data = await response.json()
         return Model(

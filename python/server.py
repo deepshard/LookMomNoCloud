@@ -22,7 +22,6 @@ from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
 from db import db
 
-
 installation_manager = None
 
 

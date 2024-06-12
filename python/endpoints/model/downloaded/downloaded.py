@@ -52,7 +52,6 @@ async def get_downloaded_models():
 async def get_model_status(model_id):
     """Helper function to fetch model status."""
     model = await db.runningmodels.find_first(where={"id": model_id})
-    print("*****", model)
     if model:
         return ModelStatus.RUNNING
     return ModelStatus.STOPPED

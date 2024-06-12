@@ -108,7 +108,7 @@ export default function Home() {
             <div className="h-4 w-4 rounded-full bg-surface-750" />
             
             {/* TITLE */}
-            <h1 className="text-[15px] text-surface-750 w-full">Welcome, Peter</h1>
+            <h1 className="text-surface-750 w-full">Welcome, Peter</h1>
           </div>
           
           {/* FREQUENTLY USED WIDGETS */}

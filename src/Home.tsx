@@ -23,34 +23,28 @@ export default function Home() {
 
   return (
     <div className="snap-y snap-mandatory">
-      <div className="home-layout w-full h-full flex flex-col justify-between items-center gap-5 p-14">
+      <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
 
         {/* DON'T DELETE – Meant for alignment purposes */}
         <div />
 
-        {/* HOME WIDGETS */}
+
         <div className="w-[660px] flex flex-col justify-start items-center gap-5">
           
           <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
-            {/* Should be <SunIcon /> */}
             <div className="h-4 w-4 rounded-full bg-surface-750" />
             
-            {/* TITLE */}
             <h1 className="text-surface-750 w-full">Welcome, Peter</h1>
           </div>
           
-          {/* FREQUENTLY USED WIDGETS */}
           <div className="flex gap-1.5 w-[660px]">
             {storeHighlights?.map((model) => (
               <ModelWidget model={model} key={model.id} />
             ))}
           </div>
 
-          {/* FIXED WIDGETS – News, Apps, Models & Hardware */}
           <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
-            {/* New Explore and Apps container */}
             <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
-              {/* NEWS CAROUSEL */}
               <div className="relative widget-3d rounded-lg w-80 h-[150px]">
                 <Carousel
                   responsive={{
@@ -70,7 +64,7 @@ export default function Home() {
                   className="rounded-lg"
                   customDot={<CustomCarouselDot />}
                   dotListClass="discover-carousel-dots">
-                  {/* 1 */}
+
                   <div className="w-full h-[150px] relative overflow-hidden ">
                     <div className="absolute top-0 left-0 p-5">
                       <img
@@ -96,7 +90,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* 2 */}
                   <div className="w-full h-[150px] relative overflow-hidden ">
                     <div className="absolute top-0 left-0 p-5">
                       <img
@@ -124,9 +117,7 @@ export default function Home() {
                 </Carousel>
               </div>
 
-              {/* APPS AND MODELS FOLDERS */}
               <div className="w-full flex justify-between gap-5">
-                {/* APPS FOLDER */}
                 <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
                   <div className="grid grid-cols-2 gap-5 p-5">
                     {[...Array(4)].map((_, index) => (
@@ -138,7 +129,6 @@ export default function Home() {
                   </p>
                 </div>
 
-                {/* MODELS FOLDER */}
                 <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
                   <div className="grid grid-cols-2 gap-5 p-5">
                     {[...Array(4)].map((_, index) => (
@@ -152,7 +142,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* HARDWARE MWIDGET – CAROUSEL */}
             <div className="relative overflow-hidden widget-3d w-80 h-80">
               <Carousel
                 responsive={{
@@ -166,18 +155,15 @@ export default function Home() {
                   },
                 }}
                 arrows={false}
-                // autoPlay
                 showDots
                 infinite
                 className="w-full h-full items-center"
                 customDot={<CustomCarouselDot />}
                 dotListClass="order-truffle-carousel-dots">
-                {/* System Info */}
                 <div className="w-full h-full">
                   <SysInfo />
                 </div>
 
-                {/* Truffle Hardware Slide */}
                 <div className="col-span-1 w-full h-full ">
                   <div className="flex flex-col w-full h-full">
                     <div className="w-full h-full flex justify-center flex-1 ">

@@ -34,7 +34,7 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
-  process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
+  mainWindow.setResizable(false);
 
   return mainWindow;
 };

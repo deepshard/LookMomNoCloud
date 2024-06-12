@@ -71,6 +71,26 @@ button.ant-btn.preorder-btn {
   }
 }
 
+.slick-dots-bottom {
+  width: 60px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: 16px !important;
+
+  li, button {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .slick-active > button {
+    background-color: rgba(255, 255, 255, 0.50) !important;
+  }
+
+  :not(.slick-active) > button:hover {
+    background-color: rgba(255, 255, 255, 0.50) !important;
+  }
+}
+
 @layer base {
 }
 

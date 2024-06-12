@@ -6,7 +6,7 @@ import socket
 import subprocess
 import tvm
 from pathlib import Path
-from truffle_types import Quantization
+from truffle_types import FileInfo, Quantization
 
 
 def get_disk_usage(folder_path: str) -> int:
@@ -118,6 +118,24 @@ def get_devices_memory(device_type: str, devices: list[any]) -> int:
         ).available_global_memory
 
     return total_available
+
+
+def is_mlc_compatible(files: list[FileInfo]) -> bool:
+    # files must contain one of the following:
+    # - pytorch_model.bin.index.json
+    # - pytorch_model.bin
+    # - model.safetensors.index.json
+    # - model.safetensors
+    patterns = [
+        "pytorch_model.bin.index.json",
+        "pytorch_model.bin",
+        "model.safetensors.index.json",
+        "model.safetensors",
+    ]
+    for file in files:
+        if any(file.file.endswith(pattern) for pattern in patterns):
+            return True
+    return False
 
 
 def get_usable_memory() -> int:

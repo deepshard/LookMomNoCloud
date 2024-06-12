@@ -7,6 +7,7 @@ import psutil
 from uuid import uuid4
 from pathlib import Path
 from loguru import logger
+from enum import Enum
 from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
 from mlc_llm.interface.compile import compile as compile_mlc
 from mlc_llm.support.auto_config import detect_config, detect_model_type
@@ -25,11 +26,48 @@ from utils import (
     get_usable_memory,
     get_devices,
     get_tensor_parallelism,
+    is_mlc_compatible,
 )
 from endpoints.model.install.InstallationManager import InstallationManager
 
 HF_AUTH_HEADER = {
     "Authorization": f"Bearer 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"}
+
+
+class Status(Enum):
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    DOWNLOADING = "DOWNLOADING"
+    INSTALLING = "INSTALLING"
+    STOPPED = "STOPPED"
+
+
+class ProgressEvent:
+    def __init__(self, model_id: str, status: Status, progress: int, error: str = None):
+        self.model_id = model_id
+        self.status = status
+        self.progress = progress
+        self.error = error
+
+    def to_json(self):
+        return json.dumps(
+            {
+                "id": self.model_id,
+                "status": self.status.value,
+                "progress": self.progress,
+                "error": self.error,
+            }
+        )
+
+    def update(self, status: Status = None, progress: int = None, error: str = None):
+        if status is not None:
+            self.status = status
+        if progress is not None:
+            self.progress = progress
+        if error is not None:
+            self.error = error
+
+    def __str__(self):
+        return f"data: {self.to_json()}\n\n"
 
 
 def get_url_type(url: str) -> RepoType:
@@ -142,25 +180,6 @@ async def get_files_to_download(model_url: str, install_path: Path) -> list[File
     return files_to_download
 
 
-def is_mlc_compatible(files: list[FileInfo]) -> bool:
-    # files must contain one of the following:
-    # - pytorch_model.bin.index.json
-    # - pytorch_model.bin
-    # - model.safetensors.index.json
-    # - model.safetensors
-    patterns = [
-        "pytorch_model.bin.index.json",
-        "pytorch_model.bin",
-        "model.safetensors.index.json",
-        "model.safetensors",
-    ]
-    for file in files:
-        if any(file.file.endswith(pattern) for pattern in patterns):
-            return True
-
-    raise ValueError("Model is not in a convertable format")
-
-
 def check_download_space(size: int, installation_manager: InstallationManager) -> bool:
     _, disk_space, total_bytes_remaining = get_space_check_info(
         installation_manager)
@@ -255,7 +274,7 @@ async def download_file(
 
 
 async def download_files(
-    model_id: str, model_url: str, install_path: Path, files_to_download: list[FileInfo], total_size: int, installation_manager: InstallationManager
+    model_id: str, model_url: str, install_path: Path, files_to_download: list[FileInfo], total_size: int, installation_manager: InstallationManager, progress_event: ProgressEvent
 ):
     # Start downloading files
     logger.info(f"Downloading {len(files_to_download)} files")
@@ -284,13 +303,8 @@ async def download_files(
             # Send progress event
             if (progress - last_progress) >= 1:
                 last_progress = progress
-                progress_event = {
-                    "id": model_id,
-                    "status": "DOWNLOADING",
-                    "progress": progress,
-                    "error": None,
-                }
-                yield f"data: {json.dumps(progress_event)}\n\n"
+                progress_event.update(progress=progress)
+                yield progress_event
 
             await asyncio.sleep(0.1)
 
@@ -302,7 +316,7 @@ async def download_files(
 
 
 async def queue_conversion(
-    model_id: str, model_dir: str, quantization: Quantization, install_path: Path, installation_manager: InstallationManager
+    model_dir: str, quantization: Quantization, install_path: Path, installation_manager: InstallationManager, progress_event: ProgressEvent
 ):
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
@@ -311,13 +325,8 @@ async def queue_conversion(
     installation_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
     )
-    progress_event = {
-        "id": model_id,
-        "status": "INSTALLING",
-        "progress": 100,
-        "error": None,
-    }
-    yield f"data: {json.dumps(progress_event)}\n\n"
+    progress_event.update(progress=100)
+    yield progress_event
 
     while not installation_manager.is_models_conversion_turn(model_dir, quantization):
         logger.info(
@@ -429,136 +438,90 @@ async def install_generator(
     """
 
     logger.info(f"Starting install for {model_url}")
-    progress_event = {
-        "id": model_id,
-        "status": "ACKNOWLEDGED",
-        "progress": 0,
-        "error": None,
-    }
-    yield f"data: {json.dumps(progress_event)}\n\n"
+    progress_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, 0)
+    yield str(progress_event)
 
     model_dir = get_app_data_path() / "models" / model_id
     install_path = model_dir / "base"
 
     # Get files to download
+    logger.info(f"Gathering the set of files to download for {model_id}")
     try:
         files_to_download = await get_files_to_download(model_url, install_path)
         total_size = sum([file.size for file in files_to_download])
     except Exception as e:
-        progress_event = {
-            "id": model_id,
-            "status": "DOWNLOADING",
-            "progress": 0,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.DOWNLOADING, error=str(e))
+        yield str(progress_event)
         return
 
+    # Check if the model is MLC compatible
     try:
         is_mlc_compatible(files_to_download)
     except Exception as e:
-        logger.info(f"Unsupported model format for {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "DOWNLOADING",
-            "progress": 100,
-            "error": f"Unsupported model format for {install_path}",
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.DOWNLOADING, error=str(e))
+        yield str(progress_event)
         return
 
     # Check that there is enough space to download the model
     try:
         check_download_space(total_size, installation_manager)
     except Exception as e:
-        logger.info(f"Not enough space to download {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "DOWNLOADING",
-            "progress": 100,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.DOWNLOADING,
+                              progress=100, error=str(e))
+        yield str(progress_event)
         return
 
-    # Send initial progress event
+    # Send initial downloading progress event
     logger.info(f"Starting download process for model {model_id}")
-    initial_progress = {
-        "id": model_id,
-        "status": "DOWNLOADING",
-        "progress": 0,
-        "error": None,
-    }
-    yield f"data: {json.dumps(initial_progress)}\n\n"
+    progress_event.update(status=Status.DOWNLOADING, progress=0)
+    yield str(progress_event)
 
-    # Mark as downloading and send to InstallSystemManager
+    # Begin downloading the files
+    logger.info(f"Downloading {len(files_to_download)} files")
     installation_manager.set_download(model_id, total_size)
-
     try:
         async for progress_event in download_files(
-            model_id, model_url, install_path, files_to_download, total_size, installation_manager
+            model_id, model_url, install_path, files_to_download, total_size, installation_manager, progress_event
         ):
-            yield progress_event
-
+            yield str(progress_event)
     except Exception as e:
         logger.error(f"Failed to download {model_dir}: {str(e)}")
-        progress_event = {
-            "id": model_id,
-            "status": "DOWNLOADING",
-            "progress": 0,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.DOWNLOADING, error=str(e))
+        yield str(progress_event)
         return
 
     # Mark as installing and send to InstallManager
     logger.info(
-        f"""Downloaded {
-            len(files_to_download)} files. Beginning weight conversion and quantization process."""
+        f"Downloaded files. Beginning weight conversion and quantization process."
     )
+    progress_event.update(status=Status.INSTALLING, progress=100)
 
-    # Return early if the quantization is alrady built
+    # Check if the quantization is already built
     try:
         quantization = get_base_quantization_decision(install_path)
         if does_quantization_exist(model_id, quantization):
             logger.info(
                 f"Conversion and quantization already exists for {model_dir}")
-            progress_event = {
-                "id": model_id,
-                "status": "STOPPED",
-                "progress": 100,
-                "error": None,
-            }
-            yield f"data: {json.dumps(progress_event)}\n\n"
-            installation_manager.complete_conversion()
+            progress_event.update(status=Status.STOPPED)
+            yield str(progress_event)
             return
     except Exception as e:
-        logger.error(f"""Failed to determine quantization for {
-                     model_dir}: {str(e)}""")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
-        installation_manager.complete_conversion()
+        progress_event.update(status=Status.INSTALLING,
+                              error=str(e))
+        yield str(progress_event)
         return
 
+    # Add conversion to the queue and wait for it to be ready for processing
+    logger.info(f"Adding {model_dir} to the conversion queue")
     try:
         async for progress_event in queue_conversion(
-            model_id, model_dir, quantization, install_path, installation_manager
+            model_dir, quantization, install_path, installation_manager, progress_event
         ):
-            yield progress_event
+            yield str(progress_event)
     except Exception as e:
-        logger.error(f"Failed to queue conversion for {model_dir}: {str(e)}")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.INSTALLING,
+                              error=str(e))
+        yield str(progress_event)
         installation_manager.complete_conversion()
         return
 
@@ -570,15 +533,9 @@ async def install_generator(
         check_download_space(compressed_size, installation_manager)
         check_memory_space(model_size)
     except Exception as e:
-        logger.info(
-            f"Not enough space or memory to convert and quantize {model_dir}")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.INSTALLING,
+                              error=str(e))
+        yield str(progress_event)
         installation_manager.complete_conversion()
         return
 
@@ -588,25 +545,15 @@ async def install_generator(
         quant_path = model_dir / quantization.value
         convert_quantize_compile(install_path, quant_path, quantization)
     except Exception as e:
-        logger.error(f"Failed to convert and quantize {model_dir}: {str(e)}")
-        progress_event = {
-            "id": model_id,
-            "status": "INSTALLING",
-            "progress": 100,
-            "error": str(e),
-        }
-        yield f"data: {json.dumps(progress_event)}\n\n"
+        progress_event.update(status=Status.INSTALLING,
+                              error=str(e))
+        yield str(progress_event)
         installation_manager.complete_conversion()
         return
 
     logger.info(
         f"Conversion, quantization, and compilation complete for {model_dir}")
-    progress_event = {
-        "id": model_id,
-        "status": "STOPPED",
-        "progress": 100,
-        "error": None,
-    }
-    yield f"data: {json.dumps(progress_event)}\n\n"
+    progress_event.update(status=Status.STOPPED)
+    yield str(progress_event)
     installation_manager.complete_conversion()
     return

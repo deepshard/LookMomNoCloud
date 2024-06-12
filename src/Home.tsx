@@ -95,7 +95,6 @@ export default function Home() {
   return (
     <div className="snap-y snap-mandatory">
       <div className="home-layout w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-        <img src={dottedBg} alt="" className="w-full h-full absolute top-0 left-0 object-cover opacity-[15%]" />
 
         {/* DON'T DELETE – Meant for alignment purposes */}
         <div/>

@@ -20,6 +20,21 @@ body {
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera, Firefox, Safari */
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-body {
+  width: 950px;
+  height: 688px;
+  border: #fff 1px solid;
+  border-radius: 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url("/assets/images/truffle-background.png");
 }
 
 .react-multi-carousel-track {

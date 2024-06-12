@@ -11,6 +11,7 @@ from endpoints.model.downloaded.downloaded import (
     get_downloaded_models,
 )
 from constants import TRUFFLE_API_URL
+from server import init_db
 
 
 # Test the get_downloaded_models logic
@@ -135,79 +136,81 @@ async def test_no_models_downloaded(app_data_path_mock):
 async def test_one_model_downloaded(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
-    clear_path()
-    os.makedirs("/tmp/models")
+    async with init_db():
+        clear_path()
+        os.makedirs("/tmp/models")
 
-    mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024}
-    )
+        mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
+            {"Content-Length": 1024}
+        )
 
-    # Create a model directory
-    model_dir = Path(f"/tmp/models/{ID}/base")
-    model_dir.mkdir(parents=True, exist_ok=True)
-    with open(model_dir / "pytorch_model.bin", "wb") as f:
-        f.write(os.urandom(1024))
-    with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
-    onnx_dir = model_dir / "onnx"
-    onnx_dir.mkdir(parents=True, exist_ok=True)
-    with open(onnx_dir / "onnx_model.onnx", "wb") as f:
-        f.write(os.urandom(1024))
-    tf_dir = model_dir / "tf_model"
-    tf_dir.mkdir(parents=True, exist_ok=True)
-    with open(tf_dir / "tf_model.pb", "wb") as f:
-        f.write(os.urandom(1024))
+        # Create a model directory
+        model_dir = Path(f"/tmp/models/{ID}/base")
+        model_dir.mkdir(parents=True, exist_ok=True)
+        with open(model_dir / "pytorch_model.bin", "wb") as f:
+            f.write(os.urandom(1024))
+        with open(model_dir / "config.json", "wb") as f:
+            f.write(os.urandom(1024))
+        onnx_dir = model_dir / "onnx"
+        onnx_dir.mkdir(parents=True, exist_ok=True)
+        with open(onnx_dir / "onnx_model.onnx", "wb") as f:
+            f.write(os.urandom(1024))
+        tf_dir = model_dir / "tf_model"
+        tf_dir.mkdir(parents=True, exist_ok=True)
+        with open(tf_dir / "tf_model.pb", "wb") as f:
+            f.write(os.urandom(1024))
 
-    models = await get_downloaded_models()
-    assert len(models) == 1
-    assert models[0].id == ID
+        models = await get_downloaded_models()
+        assert len(models) == 1
+        assert models[0].id == ID
 
 
 @pytest.mark.asyncio
 async def test_multiple_models_downloaded(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
-    clear_path()
-    os.makedirs("/tmp/models")
+    async with init_db():
+        clear_path()
+        os.makedirs("/tmp/models")
 
-    mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024}
-    )
+        mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
+            {"Content-Length": 1024}
+        )
 
-    # Create a model directory
-    model_dir = Path(f"/tmp/models/{ID}/base")
-    model_dir.mkdir(parents=True, exist_ok=True)
-    with open(model_dir / "pytorch_model.bin", "wb") as f:
-        f.write(os.urandom(1024))
-    with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
-    onnx_dir = model_dir / "onnx"
-    onnx_dir.mkdir(parents=True, exist_ok=True)
-    with open(onnx_dir / "onnx_model.onnx", "wb") as f:
-        f.write(os.urandom(1024))
-    tf_dir = model_dir / "tf_model"
-    tf_dir.mkdir(parents=True, exist_ok=True)
-    with open(tf_dir / "tf_model.pb", "wb") as f:
-        f.write(os.urandom(1024))
+        # Create a model directory
+        model_dir = Path(f"/tmp/models/{ID}/base")
+        model_dir.mkdir(parents=True, exist_ok=True)
+        with open(model_dir / "pytorch_model.bin", "wb") as f:
+            f.write(os.urandom(1024))
+        with open(model_dir / "config.json", "wb") as f:
+            f.write(os.urandom(1024))
+        onnx_dir = model_dir / "onnx"
+        onnx_dir.mkdir(parents=True, exist_ok=True)
+        with open(onnx_dir / "onnx_model.onnx", "wb") as f:
+            f.write(os.urandom(1024))
+        tf_dir = model_dir / "tf_model"
+        tf_dir.mkdir(parents=True, exist_ok=True)
+        with open(tf_dir / "tf_model.pb", "wb") as f:
+            f.write(os.urandom(1024))
 
-    # Create another model directory
-    model_dir = Path(f"/tmp/models/{ID_2}/base")
-    model_dir.mkdir(parents=True, exist_ok=True)
-    with open(model_dir / "pytorch_model.bin", "wb") as f:
-        f.write(os.urandom(1024))
-    with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
-    onnx_dir = model_dir / "onnx"
-    onnx_dir.mkdir(parents=True, exist_ok=True)
-    with open(onnx_dir / "onnx_model.onnx", "wb") as f:
-        f.write(os.urandom(1024))
-    tf_dir = model_dir / "tf_model"
-    tf_dir.mkdir(parents=True, exist_ok=True)
-    with open(tf_dir / "tf_model.pb", "wb") as f:
-        f.write(os.urandom(1024))
+        # Create another model directory
+        model_dir = Path(f"/tmp/models/{ID_2}/base")
+        model_dir.mkdir(parents=True, exist_ok=True)
+        with open(model_dir / "pytorch_model.bin", "wb") as f:
+            f.write(os.urandom(1024))
+        with open(model_dir / "config.json", "wb") as f:
+            f.write(os.urandom(1024))
+        onnx_dir = model_dir / "onnx"
+        onnx_dir.mkdir(parents=True, exist_ok=True)
+        with open(onnx_dir / "onnx_model.onnx", "wb") as f:
+            f.write(os.urandom(1024))
+        tf_dir = model_dir / "tf_model"
+        tf_dir.mkdir(parents=True, exist_ok=True)
+        with open(tf_dir / "tf_model.pb", "wb") as f:
+            f.write(os.urandom(1024))
 
-    models = await get_downloaded_models()
-    assert len(models) == 2
+        models = await get_downloaded_models()
+        assert len(models) == 2
 
 
 @pytest.mark.asyncio
@@ -241,41 +244,42 @@ async def test_one_model_downloaded_not_fully(
 async def test_one_model_downloaded_fully_another_not_fully(
     app_data_path_mock, api_mock, mock_aiohttp_head, mock_headers
 ):
-    clear_path()
-    os.makedirs("/tmp/models")
+    async with init_db():
+        clear_path()
+        os.makedirs("/tmp/models")
 
-    mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
-        {"Content-Length": 1024}
-    )
+        mock_aiohttp_head.return_value.__aenter__.return_value = await mock_headers(
+            {"Content-Length": 1024}
+        )
 
-    # Create a model directory
-    model_dir = Path(f"/tmp/models/{ID}/base")
-    model_dir.mkdir(parents=True, exist_ok=True)
-    with open(model_dir / "pytorch_model.bin", "wb") as f:
-        f.write(os.urandom(1024))
-    with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
-    onnx_dir = model_dir / "onnx"
-    onnx_dir.mkdir(parents=True, exist_ok=True)
-    with open(onnx_dir / "onnx_model.onnx", "wb") as f:
-        f.write(os.urandom(1024))
-    tf_dir = model_dir / "tf_model"
-    tf_dir.mkdir(parents=True, exist_ok=True)
-    with open(tf_dir / "tf_model.pb", "wb") as f:
-        f.write(os.urandom(1024))
+        # Create a model directory
+        model_dir = Path(f"/tmp/models/{ID}/base")
+        model_dir.mkdir(parents=True, exist_ok=True)
+        with open(model_dir / "pytorch_model.bin", "wb") as f:
+            f.write(os.urandom(1024))
+        with open(model_dir / "config.json", "wb") as f:
+            f.write(os.urandom(1024))
+        onnx_dir = model_dir / "onnx"
+        onnx_dir.mkdir(parents=True, exist_ok=True)
+        with open(onnx_dir / "onnx_model.onnx", "wb") as f:
+            f.write(os.urandom(1024))
+        tf_dir = model_dir / "tf_model"
+        tf_dir.mkdir(parents=True, exist_ok=True)
+        with open(tf_dir / "tf_model.pb", "wb") as f:
+            f.write(os.urandom(1024))
 
-    # Create another model directory
-    model_dir = Path(f"/tmp/models/{ID_2}/base")
-    model_dir.mkdir(parents=True, exist_ok=True)
-    with open(model_dir / "pytorch_model.bin", "wb") as f:
-        f.write(os.urandom(1024))
-    with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
-    onnx_dir = model_dir / "onnx"
-    onnx_dir.mkdir(parents=True, exist_ok=True)
-    with open(onnx_dir / "onnx_model.onnx", "wb") as f:
-        f.write(os.urandom(1024))
+        # Create another model directory
+        model_dir = Path(f"/tmp/models/{ID_2}/base")
+        model_dir.mkdir(parents=True, exist_ok=True)
+        with open(model_dir / "pytorch_model.bin", "wb") as f:
+            f.write(os.urandom(1024))
+        with open(model_dir / "config.json", "wb") as f:
+            f.write(os.urandom(1024))
+        onnx_dir = model_dir / "onnx"
+        onnx_dir.mkdir(parents=True, exist_ok=True)
+        with open(onnx_dir / "onnx_model.onnx", "wb") as f:
+            f.write(os.urandom(1024))
 
-    models = await get_downloaded_models()
-    assert len(models) == 1
-    assert models[0].id == ID
+        models = await get_downloaded_models()
+        assert len(models) == 1
+        assert models[0].id == ID

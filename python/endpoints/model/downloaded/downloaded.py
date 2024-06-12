@@ -49,6 +49,15 @@ async def get_downloaded_models():
     return [model for model in models if model is not None]
 
 
+async def get_model_status(model_id):
+    """Helper function to fetch model status."""
+    model = await db.runningmodels.find_first(where={"id": model_id})
+    print("*****", model)
+    if model:
+        return ModelStatus.RUNNING
+    return ModelStatus.STOPPED
+
+
 async def get_model_details(model_id, session):
     """Helper function to fetch model details if downloaded."""
     downloaded = await is_model_downloaded(model_id)
@@ -69,7 +78,7 @@ async def get_model_details(model_id, session):
                 risks=model["risks"],
                 hf_link=model["hfLink"],
                 eval_id=model["evalId"],
-                status=ModelStatus.STOPPED,  # NOTE: this is not really used in the frontend
+                status=await get_model_status(model_id),
                 background_image=model["backgroundImage"],
                 instance=0,
                 progress=0,

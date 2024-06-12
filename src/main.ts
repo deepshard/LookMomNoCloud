@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session } from "electron";
+import { app, BrowserWindow, session, screen } from "electron";
 import path from "path";
 import os from "os";
 
@@ -8,16 +8,15 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = () => {
+  const factor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    // width: 850,
-    // height: 600,
-    minWidth: 850,
-    minHeight: 600,
-    backgroundMaterial: "acrylic",
-    vibrancy: "fullscreen-ui",
+    width: 1140 ,
+    height: 826 ,
+    titleBarStyle: "hidden",
     webPreferences: {
-      // devTools: process.env.NODE_ENV === "development",
+      zoomFactor: 1.0 / factor,
+      devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
 
@@ -35,6 +34,7 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+  mainWindow.setResizable(false);
 
   return mainWindow;
 };

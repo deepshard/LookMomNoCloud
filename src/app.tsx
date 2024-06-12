@@ -15,21 +15,23 @@ function App() {
   useSysInfo({
     rootUrl: ROOTURL,
     addSysInfo,
-    EventSourceFactory: EventSource
+    EventSourceFactory: EventSource,
   });
 
   return (
     <div>
-      <Toaster />
-      <HashRouter>
-        <QueryProvider>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route index element={<Home />} />
-            </Route>
-          </Routes>
-        </QueryProvider>
-      </HashRouter>
+      <div className="app-body">
+        <Toaster />
+        <HashRouter>
+          <QueryProvider>
+            <Routes>
+              <Route element={<Layout />}>
+                <Route index element={<Home />} />
+              </Route>
+            </Routes>
+          </QueryProvider>
+        </HashRouter>
+      </div>
     </div>
   );
 }

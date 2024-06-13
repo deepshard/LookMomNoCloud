@@ -28,8 +28,6 @@ from utils import (
     is_mlc_compatible,
 )
 
-HF_AUTH_HEADER = {"Authorization": f"Bearer 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"}
-
 
 class Status(Enum):
     ACKNOWLEDGED = "ACKNOWLEDGED"
@@ -81,11 +79,10 @@ def get_hf_name_for_url(url: str) -> str:
 
 
 async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
-    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
-        async with session.head(
-            f"{url}/resolve/main/{file}", allow_redirects=True
-        ) as response:
-            return file, int(response.headers["Content-Length"])
+    async with global_state_manager.session.head(
+        f"{url}/resolve/main/{file}", allow_redirects=True
+    ) as response:
+        return file, int(response.headers["Content-Length"])
 
 
 def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
@@ -98,10 +95,9 @@ def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     # Query the HF API to get the requisite info
     url = f"https://huggingface.co/api/models/{model_name}?"
-    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            data = await response.json()
+    async with global_state_manager.session.get(url) as response:
+        response.raise_for_status()
+        data = await response.json()
 
     # Get list of repo files
     files = data.get("siblings", [])
@@ -234,7 +230,6 @@ def get_quantization_object(quantization: Quantization, model):
 
 
 async def download_file(
-    session: any,
     url: str,
     install_path: Path,
     file_info: FileInfo,
@@ -243,7 +238,9 @@ async def download_file(
     file_path = os.path.join(install_path, file_info.file)
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-    async with session.get(url, allow_redirects=True, timeout=None) as response:
+    async with global_state_manager.session.get(
+        url, allow_redirects=True, timeout=None
+    ) as response:
         response.raise_for_status()
         async with aiofiles_open(file_path, "wb") as f:
             async for chunk in response.content.iter_chunked(1024):
@@ -263,35 +260,33 @@ async def download_files(
     logger.info(f"Downloading {len(files_to_download)} files")
     progress_tracker = {"downloaded_bytes": 0}
     last_progress = 0
-    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
-        tasks = [
-            download_file(
-                session,
-                get_file_download_url(model_url, file.file),
-                install_path,
-                file,
-                progress_tracker,
-            )
-            for file in files_to_download
-        ]
-        download_tasks = asyncio.gather(*tasks)
+    tasks = [
+        download_file(
+            get_file_download_url(model_url, file.file),
+            install_path,
+            file,
+            progress_tracker,
+        )
+        for file in files_to_download
+    ]
+    download_tasks = asyncio.gather(*tasks)
 
-        while not download_tasks.done():
-            progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
-            global_state_manager.model_manager.set_download(
-                model_id, total_size - progress_tracker["downloaded_bytes"]
-            )
+    while not download_tasks.done():
+        progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
+        global_state_manager.model_manager.set_download(
+            model_id, total_size - progress_tracker["downloaded_bytes"]
+        )
 
-            # Send progress event
-            if (progress - last_progress) >= 1:
-                last_progress = progress
-                progress_event.update(progress=progress)
-                yield progress_event
+        # Send progress event
+        if (progress - last_progress) >= 1:
+            last_progress = progress
+            progress_event.update(progress=progress)
+            yield progress_event
 
-            await asyncio.sleep(0.1)
+        await asyncio.sleep(0.1)
 
-        # Ensure that the download is complete
-        await download_tasks
+    # Ensure that the download is complete
+    await download_tasks
 
     # Clear download from InstallSystemManager
     global_state_manager.model_manager.clear_download(model_id)

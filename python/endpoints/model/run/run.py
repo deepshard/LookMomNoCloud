@@ -97,10 +97,11 @@ async def get_instances(model_ids: list[str]) -> list[int]:
 
 
 async def get_model_info(model_id: str) -> dict:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"{TRUFFLE_API_URL}/models?id={model_id}") as response:
-            assert response.status == 200, f"Failed to fetch model {model_id}"
-            return await response.json()
+    async with global_state_manager.session.get(
+        f"{TRUFFLE_API_URL}/models?id={model_id}"
+    ) as response:
+        assert response.status == 200, f"Failed to fetch model {model_id}"
+        return await response.json()
 
 
 async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
@@ -185,9 +186,8 @@ async def is_server_running(port: int, timeout: int = 120) -> bool:
     # Check if the server is running and the endpoints are accessible
     while seconds_elapsed < timeout:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    return response.status == 200
+            async with global_state_manager.session.get(url) as response:
+                return response.status == 200
         except Exception as e:
             pass
 

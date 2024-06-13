@@ -6,25 +6,31 @@ from db import db
 
 class GlobalStateManager:
     """
-    GlobalStateManager is a class that manages the global state of the application.
-    It is responsible for managing the database connection, the aiohttp session, and the ModelManager.
+    Manages the global state of the application, including the database connection,
+    aiohttp session, and the ModelManager.
     """
 
     def __init__(self):
         self.db = db
-        self.session = aiohttp.ClientSession()
-        self.model_manager = ModelManager(self.session)
+        self.session = None
+        self.model_manager = None
+        self._headers = {
+            {"Authorization": f"Bearer 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"}
+        }
 
     async def launch(self):
         if not db.is_connected():
             logger.info(f"Connecting to DB at: {db._datasource}")
             await db.connect()
+        self.session = await aiohttp.ClientSession(
+            headers=self._headers
+        ).__aenter__()  # Properly handle session in async context
+        self.model_manager = ModelManager(self.session)
 
     async def teardown(self):
-        """Kill the aiohttp session and disconnect from the database on server shutdown."""
-
-        await self.session.close()
-
+        """Closes the aiohttp session and disconnects from the database on server shutdown."""
+        if self.session:
+            await self.session.close()
         if db.is_connected():
             await db.disconnect()
 

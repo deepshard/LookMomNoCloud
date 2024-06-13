@@ -4,6 +4,9 @@ from multiprocessing import Process, set_start_method
 from state import global_state_manager
 from server import init_state
 from endpoints.model.stop import stop_model_handler
+from sqlalchemy import delete, select
+from models import RunningModel
+from db import get_db_session
 
 
 # Test the stop_model_handler logic
@@ -20,7 +23,9 @@ async def fake_process():
 
 async def clear_db():
     async with init_state():
-        await global_state_manager.db.runningmodels.delete_many()
+        async with get_db_session() as session:
+            await session.execute(delete(RunningModel))
+            await session.commit()
 
 
 # Fixtures
@@ -55,24 +60,30 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
             "port": 8899,
             "quantization": "INT4",
         }
-        await global_state_manager.db.runningmodels.create(mock_model)
+        async with get_db_session() as session:
+            session.add(RunningModel(**mock_model))
+            await session.commit()
 
-        # Assert process is running
-        assert mock_process.is_alive(), "Mock process should be running"
+            # Assert process is running
+            assert mock_process.is_alive(), "Mock process should be running"
 
-        # Stop the model instance
-        await stop_model_handler(mock_model["id"], mock_model["instance"])
+            # Stop the model instance
+            await stop_model_handler(mock_model["id"], mock_model["instance"])
 
-        # Check that the mock process was stopped
-        assert not mock_process.is_alive(), "Mock process should be stopped"
+            # Check that the mock process was stopped
+            assert not mock_process.is_alive(), "Mock process should be stopped"
 
-        # Check that the model instance was removed from the database
-        model_instance = await global_state_manager.db.runningmodels.find_first(
-            where={"id": mock_model["id"], "instance": mock_model["instance"]}
-        )
-        assert (
-            model_instance is None
-        ), "Model instance should be removed from the database"
+            # Check that the model instance was removed from the database
+            result = await session.scalars(
+                select(RunningModel).where(
+                    RunningModel.id == mock_model["id"],
+                    RunningModel.instance == mock_model["instance"],
+                )
+            )
+            model_instance = result.first()
+            assert (
+                model_instance is None
+            ), "Model instance should be removed from the database"
 
 
 @pytest.mark.asyncio

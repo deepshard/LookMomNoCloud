@@ -2,16 +2,18 @@ import ModelWidget from "./component/ModelWidget";
 import { Button } from "antd";
 import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
 import { useEffect } from "react";
-import { useStore } from "./store/store";
+
 import Carousel from "./component/Carousel/Carousel";
 import SysInfo from "./component/SysInfo";
+import useSysInfo from "./hooks/sysInfo/useSysInfo";
+import { useAppStore } from "./store/store";
 
 export default function Home() {
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
 
   const { data: highlights } = useGetHighlights();
-  const { highlights: storeHighlights, setHighlights } = useStore();
+  const { highlights: storeHighlights, setHighlights, sysInfo } = useAppStore();
 
   useEffect(() => {
     if (highlights) {
@@ -112,7 +114,7 @@ export default function Home() {
             {/* <div className="relative overflow-hidden widget-3d w-80 h-80">
             </div> */}
               <Carousel easing="linear" waitForAnimate className="w-80 h-80 widget-3d">
-                <SysInfo />
+                <SysInfo sysInfo={sysInfo} />
                 {/* <div className="w-full h-full">
                   <SysInfo />
                 </div>

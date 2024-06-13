@@ -91,6 +91,12 @@ button.ant-btn.preorder-btn {
   }
 }
 
+div.slick-list,
+div.slick-track,
+div.slick-slide > div {
+  height: 100% !important;
+}
+
 @layer base {
 }
 

@@ -104,7 +104,7 @@ def app_data_path_mock():
 @pytest.fixture
 def quant_decision_mock():
     with patch(
-        "endpoints.model.install.install.global_state_manager.model_manager.get_adaptive_quantization_decision"
+        "state.ModelManager.ModelManager.get_adaptive_quantization_decision"
     ) as mock_quant_decision:
         mock_quant_decision.return_value = [("1", Quantization.Q0F16)]
         yield mock_quant_decision
@@ -723,7 +723,6 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
         progress_updates = []
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
-            print(progress_updates[-1])
 
             if progress_updates[-1]["status"] == "INSTALLING":
                 # Mock the available RAM information to be less than the required amount
@@ -916,22 +915,23 @@ async def test_correctly_selects_proper_files_to_download_given_local_and_remote
 
 @pytest.mark.asyncio
 async def test_hf_repo_files():
-    files = await get_hf_repo_info("mistralai/Codestral-22B-v0.1")
-    assert any(file.file.endswith("safetensors") for file in files)
-    assert not any(file.file.endswith("consolidated.safetensors") for file in files)
+    async with init_state():
+        files = await get_hf_repo_info("mistralai/Codestral-22B-v0.1")
+        assert any(file.file.endswith("safetensors") for file in files)
+        assert not any(file.file.endswith("consolidated.safetensors") for file in files)
 
-    files = await get_hf_repo_info("meta-llama/Meta-Llama-3-8B")
-    assert any(file.file.endswith("safetensors") for file in files)
-    assert not any(file.file.endswith(".pth") for file in files)
+        files = await get_hf_repo_info("meta-llama/Meta-Llama-3-8B")
+        assert any(file.file.endswith("safetensors") for file in files)
+        assert not any(file.file.endswith(".pth") for file in files)
 
-    files = await get_hf_repo_info("mistralai/Mixtral-8x7B-Instruct-v0.1")
-    assert any(file.file.endswith("safetensors") for file in files)
-    assert not any(file.file.endswith(".pt") for file in files)
+        files = await get_hf_repo_info("mistralai/Mixtral-8x7B-Instruct-v0.1")
+        assert any(file.file.endswith("safetensors") for file in files)
+        assert not any(file.file.endswith(".pt") for file in files)
 
-    files = await get_hf_repo_info("openai-community/gpt2")
-    assert any(file.file.endswith("safetensors") for file in files)
-    assert not any(file.file.endswith("tflite") for file in files)
-    assert not any(file.file.endswith("msgpack") for file in files)
-    assert not any(file.file.endswith("bin") for file in files)
-    assert not any(file.file.endswith("h5") for file in files)
-    assert not any(file.file.startswith("onnx") for file in files)
+        files = await get_hf_repo_info("openai-community/gpt2")
+        assert any(file.file.endswith("safetensors") for file in files)
+        assert not any(file.file.endswith("tflite") for file in files)
+        assert not any(file.file.endswith("msgpack") for file in files)
+        assert not any(file.file.endswith("bin") for file in files)
+        assert not any(file.file.endswith("h5") for file in files)
+        assert not any(file.file.startswith("onnx") for file in files)

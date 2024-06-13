@@ -74,7 +74,7 @@ def clear_path():
 async def clear_db():
     async with init_state():
         print("Clearing DB")
-        global_state_manager.db.runningmodels.delete_many()
+        await global_state_manager.db.runningmodels.delete_many()
 
 
 # Fixtures
@@ -132,7 +132,7 @@ def get_tensor_parallelism_mock():
 @pytest.fixture
 def get_quant_decision_mock():
     with patch(
-        "endpoints.model.run.run.global_state_manager.model_manager.get_adaptive_quantization_decision",
+        "state.ModelManager.ModelManager.get_adaptive_quantization_decision",
         return_value=[(model_id_1, Quantization.Q0F16)],
     ) as get_adaptive_quantization_decision:
         yield get_adaptive_quantization_decision
@@ -631,7 +631,7 @@ async def test_run_kill_previous_models(
         ):
 
             def mock_virtual_memory():
-                if ram_mock.call_count <= 5:
+                if ram_mock.call_count <= 2:
                     return 8192
 
                 # For model_id_3, there is not enough memory to run the model

@@ -15,7 +15,7 @@ class GlobalStateManager:
         self.session = None
         self.model_manager = None
         self._headers = {
-            {"Authorization": f"Bearer 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"}
+            "Authorization": f"Bearer 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"
         }
 
     async def launch(self):

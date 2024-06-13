@@ -20,7 +20,7 @@ async def fake_process():
 
 async def clear_db():
     async with init_state():
-        await global_state_manager.db.models.delete_many()
+        await global_state_manager.db.runningmodels.delete_many()
 
 
 # Fixtures

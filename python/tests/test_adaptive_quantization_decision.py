@@ -68,7 +68,7 @@ async def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_qu
         model_ids = ["1"]
 
         with patch(
-            "state.global_state_manager.model_manager.get_quantization_options",
+            "state.ModelManager.ModelManager.get_quantization_options",
             return_value=[
                 Quantization.Q0F16,
                 Quantization.Q4F16_0,
@@ -77,15 +77,15 @@ async def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_qu
             ],
         ):
             with patch(
-                "state.global_state_manager.model_manager.get_expected_memory_consumption",
+                "state.ModelManager.ModelManager.get_expected_memory_consumption",
                 return_value=1000,
             ):
                 with patch(
-                    "state.global_state_manager.model_manager.get_expected_disk_consumption",
+                    "state.ModelManager.ModelManager.get_expected_disk_consumption",
                     return_value=1000,
                 ):
                     with patch(
-                        "state.global_state_manager.model_manager.get_space_check_info",
+                        "state.ModelManager.ModelManager.get_space_check_info",
                         return_value=(2000, 2000, 0),
                     ):
                         result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
@@ -103,7 +103,7 @@ async def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory
         model_ids = ["1"]
 
         with patch(
-            "state.global_state_manager.model_manager.get_quantization_options",
+            "state.ModelManager.ModelManager.get_quantization_options",
             return_value=[
                 Quantization.Q0F16,
                 Quantization.Q4F16_0,
@@ -113,7 +113,7 @@ async def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory
         ):
             with patch("utils.get_disk_usage", return_value=1000):
                 with patch(
-                    "state.global_state_manager.model_manager.get_space_check_info",
+                    "state.ModelManager.ModelManager.get_space_check_info",
                     return_value=(500, 2000, 0),
                 ):
                     result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
@@ -131,7 +131,7 @@ async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_n
         model_ids = ["1"]
 
         with patch(
-            "state.global_state_manager.model_manager.get_quantization_options",
+            "state.ModelManager.ModelManager.get_quantization_options",
             return_value=[
                 Quantization.Q0F16,
                 Quantization.Q4F16_0,
@@ -141,7 +141,7 @@ async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_n
         ):
             with patch("utils.get_disk_usage", return_value=100000):
                 with patch(
-                    "state.global_state_manager.model_manager.get_space_check_info",
+                    "state.ModelManager.ModelManager.get_space_check_info",
                     return_value=(500, 500, 0),
                 ):
                     with pytest.raises(Exception):
@@ -158,7 +158,7 @@ async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_mem
         model_ids = ["1", "2", "3"]
 
         with patch(
-            "state.global_state_manager.model_manager.get_quantization_options",
+            "state.ModelManager.ModelManager.get_quantization_options",
             return_value=[
                 Quantization.Q0F16,
                 Quantization.Q4F16_0,
@@ -167,15 +167,15 @@ async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_mem
             ],
         ):
             with patch(
-                "state.global_state_manager.model_manager.get_expected_memory_consumption",
+                "state.ModelManager.ModelManager.get_expected_memory_consumption",
                 return_value=1000,
             ):
                 with patch(
-                    "state.global_state_manager.model_manager.get_expected_disk_consumption",
+                    "state.ModelManager.ModelManager.get_expected_disk_consumption",
                     return_value=1000,
                 ):
                     with patch(
-                        "state.global_state_manager.model_manager.get_space_check_info",
+                        "state.ModelManager.ModelManager.get_space_check_info",
                         return_value=(2000, 2000, 0),
                     ):
                         result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
@@ -197,7 +197,7 @@ async def test_get_adaptive_quantization_decision_multiple_models_larger_model_g
         model_ids = ["1", "2", "3"]
 
         with patch(
-            "state.global_state_manager.model_manager.get_quantization_options",
+            "state.ModelManager.ModelManager.get_quantization_options",
             return_value=[
                 Quantization.Q0F16,
                 Quantization.Q4F16_0,
@@ -206,7 +206,7 @@ async def test_get_adaptive_quantization_decision_multiple_models_larger_model_g
             ],
         ):
             with patch(
-                "utils.get_app_data_path",
+                "state.ModelManager.get_app_data_path",
                 return_value=Path("/tmp"),
             ):
                 with patch("utils.get_disk_usage") as mock_get_disk_usage:
@@ -224,7 +224,7 @@ async def test_get_adaptive_quantization_decision_multiple_models_larger_model_g
                     mock_get_disk_usage.side_effect = mock_disk_usage
 
                     with patch(
-                        "state.global_state_manager.model_manager.get_space_check_info",
+                        "state.ModelManager.ModelManager.get_space_check_info",
                         return_value=(2500, 2500, 0),
                     ):
                         result = await global_state_manager.model_manager.get_adaptive_quantization_decision(

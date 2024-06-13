@@ -269,7 +269,7 @@ async def run_models_generator(model_ids: list[str]):
         )
     )
     quantizations = [config[1] for config in configurations]
-    mem_shares = await get_gpu_memory_shares(model_ids)
+    mem_shares = await get_gpu_memory_shares(configurations)
     instance_numbers = await get_instances(model_ids)
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes

@@ -7,6 +7,9 @@ import Carousel from "./component/Carousel/Carousel";
 import SysInfo from "./component/SysInfo";
 import useSysInfo from "./hooks/sysInfo/useSysInfo";
 import { useAppStore } from "./store/store";
+import PreOrderTruffle from "./component/PreOrderTruffle";
+import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
+import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 
 export default function Home() {
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
@@ -41,50 +44,26 @@ export default function Home() {
               <Carousel autoplay easing="linear" waitForAnimate className="w-80 h-[150px] widget-3d">
                 <div className="w-full h-[150px] relative overflow-hidden ">
                   <div className="absolute top-0 left-0 p-5">
-                    <img
-                      src={llamaImage}
-                      alt=""
-                      className="discover-model-img w-10 h-10 rounded-xs"
-                    />
-                    <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">
-                      DeepSeek
-                    </h3>
+                    <img src={llamaImage} alt="" className="discover-model-img w-10 h-10 rounded-xs" />
+                    <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">DeepSeek</h3>
                     <p className="body-sm break-words line-clamp-2 base-regular text-surface-500">
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
+                      lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur
+                      adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur
+                      elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate
+                      consectetur etiam consectetur
                     </p>
                   </div>
                 </div>
 
                 <div className="w-full h-[150px] relative overflow-hidden ">
                   <div className="absolute top-0 left-0 p-5">
-                    <img
-                      src={llamaImage}
-                      alt=""
-                      className="discover-model-img w-10 h-10 rounded-xs"
-                    />
-                    <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">
-                      DeepSeek
-                    </h3>
+                    <img src={llamaImage} alt="" className="discover-model-img w-10 h-10 rounded-xs" />
+                    <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">DeepSeek</h3>
                     <p className="body-sm break-words line-clamp-2 base-regular text-surface-500">
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
-                      lorem ipsum dolor sit amet consectetur adipiscing elit
-                      etiam consectetur elementum mattis aliquam vulputate
-                      consectetur etiam consectetur lorem ipsum dolor sit amet
-                      consectetur adipiscing elit etiam consectetur elementum
-                      mattis aliquam vulputate consectetur etiam consectetur
+                      lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur
+                      adipiscing elit etiam consectetur elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur
+                      elementum mattis aliquam vulputate consectetur etiam consectetur lorem ipsum dolor sit amet consectetur adipiscing elit etiam consectetur elementum mattis aliquam vulputate
+                      consectetur etiam consectetur
                     </p>
                   </div>
                 </div>
@@ -113,25 +92,9 @@ export default function Home() {
 
             {/* <div className="relative overflow-hidden widget-3d w-80 h-80">
             </div> */}
-              <Carousel easing="linear" waitForAnimate className="w-80 h-80 widget-3d">
-                <SysInfo sysInfo={sysInfo} />
-                {/* <div className="w-full h-full">
-                  <SysInfo />
-                </div>
-
-                <div className="col-span-1 w-full h-full ">
-                  <div className="flex flex-col w-full h-full">
-                    <div className="w-full h-full flex justify-center flex-1 ">
-                      <img src={truffleHardwareImage} alt="" className="self-end" />
-                    </div>
-                    <div className="flex w-full h-[45%] border-t-[0.9px] border-t-white/30 radial-gradient from-[#d9d9d9]/50 from-[20%] via-[#d9d9d9]/45 via-30% to-[#D9D9D94D]/30 to-[60%]">
-                      <Button type="primary" className="preorder-btn self-end m-[13px] h-[40px] w-full bg-[#817f7f] text-white">
-                        <span className="base-medium ">Pre Order Truffle–1</span>
-                      </Button>
-                    </div>
-                  </div>
-                </div> */}
-              </Carousel>
+            <SystemInfoHardwareCarouselProvider>
+              <SystemInfoHardwareCarousel sysInfo={sysInfo} />
+            </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
 

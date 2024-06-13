@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import SysInfoModelListItem from "./SysInfoModelListItem";
 import MemoryChip from "../../icons/MemoryChip";
 import ExternalDrive from "../../icons/ExternalDrive";
 import { TSysInfo } from "../../types/schemas";
-import {upperFirst} from 'lodash'
 import { bytesToHumanReadable } from "../../utils/sysUtils";
+import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
 
 interface SysInfoProps {
     sysInfo: TSysInfo | null;
@@ -13,7 +12,7 @@ interface SysInfoProps {
 
 const Sysinfo = ({sysInfo}: SysInfoProps) => {
 
-  const [selection, setSelection] = useState<"memory" | "disk">("memory");
+  const {selection, setSelection} = useSystemInfoHardwareCarouselContext();
 
   const onSelectionChange = (value: "memory" | "disk") => {
     setSelection(value);
@@ -31,16 +30,6 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
       return sysInfo.resources.total.disk - sysInfo.resources.available.disk
     }
   }
-
-  useEffect(() => {
-    const slickList = document.querySelectorAll('.slick-list')[1]
-    // const slickListDiv = slickList.querySelectorAll('.slick-slide')
-    // console.log(slickListDiv)
-    if(slickList) {
-      slickList.style.overflow = `visible`
-    }
-  }, [])
-
 
   if(!sysInfo) return null
 
@@ -67,7 +56,6 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
         </div>
       </div>
       <CircularProgressbar
-        // value={usedPercentage}
         value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
         text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}
         strokeWidth={13}
@@ -86,10 +74,6 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
         <SysInfoModelListItem />
         <SysInfoModelListItem />
       </div>
-      <span className="flex gap-[4px] fixed bottom-[-35px] z-40 translate-x-[-50%] left-[50%]">
-        <img src="/assets/icons/monitor.svg" alt="" />
-        <p>{upperFirst(selection)} Usage</p>
-      </span>
     </div>
   );
 };

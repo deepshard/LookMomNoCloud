@@ -32,3 +32,5 @@ export const useStore = create<State>((set) => ({
   }),
   clearData: () => set({ sysInfo: null, highlights: [] }), // Method to clear all data
 }));
+
+export const useAppStore = () => useStore((state) => state)

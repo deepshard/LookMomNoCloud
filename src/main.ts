@@ -16,7 +16,7 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     webPreferences: {
       zoomFactor: 1.0 / factor,
-      devTools: false,
+      // devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
 
@@ -34,7 +34,7 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
-  mainWindow.setResizable(false);
+  process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
 
   return mainWindow;
 };

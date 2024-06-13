@@ -9,7 +9,7 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
           'Accept': 'text/event-stream',
         },
         body: JSON.stringify({
-            url: model.url,
+            url: model.hf_link,
             id: model.id
         }),
         signal: signal

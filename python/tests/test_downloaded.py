@@ -38,7 +38,7 @@ MOCK_MODEL_1 = {
     "risks": "test",
     "hfLink": HF_API_URL,
     "evalId": "test",
-    "backgroundImage": "test",
+    "bg_image_url": "test",
 }
 MOCK_MODEL_2 = {
     "id": ID_2,
@@ -53,7 +53,7 @@ MOCK_MODEL_2 = {
     "risks": "test",
     "hfLink": HF_API_URL,
     "evalId": "test",
-    "backgroundImage": "test",
+    "bg_image_url": "test",
 }
 MOCK_API_RESPONSE = {
     "siblings": [
@@ -91,13 +91,19 @@ def app_data_path_mock():
 def api_mock():
     with aioresponses() as mocked:
         mocked.get(
-            TRUFFLE_API_URL + "/models?id=" + ID,
+            TRUFFLE_API_URL
+            + "/models?id="
+            + ID
+            + "&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
-            TRUFFLE_API_URL + "/models?id=" + ID_2,
+            TRUFFLE_API_URL
+            + "/models?id="
+            + ID_2
+            + "&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MOCK_MODEL_2,
             repeat=True,

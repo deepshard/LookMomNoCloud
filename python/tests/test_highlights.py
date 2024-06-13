@@ -44,7 +44,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "backgroundImage": "test",
+        "bg_image_url": "test",
     },
     {
         "id": "b438d015-ad45-4e9a-9aba-2e290348b078",
@@ -59,7 +59,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "backgroundImage": "test",
+        "bg_image_url": "test",
     },
     {
         "id": "e1b7a151-ad5a-4929-b9a2-20e42f629c4c",
@@ -74,7 +74,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "backgroundImage": "test",
+        "bg_image_url": "test",
     },
     {
         "id": "c081e038-a74c-4a7d-87d6-f36bbf7ff373",
@@ -89,7 +89,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "backgroundImage": "test",
+        "bg_image_url": "test",
     },
     {
         "id": "da05e829-9e9b-43d8-8c26-6141318700cb",
@@ -104,7 +104,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "backgroundImage": "test",
+        "bg_image_url": "test",
     },
 ]
 
@@ -113,7 +113,7 @@ MODELS = [
 def trending_5_mock():
     with aioresponses() as mocked:
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=5",
+            f"{TRUFFLE_API_URL}/models/trending?k=5&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MODELS,
             repeat=True,
@@ -125,13 +125,13 @@ def trending_5_mock():
 def trending_running_mock():
     with aioresponses() as mocked:
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=4",
+            f"{TRUFFLE_API_URL}/models/trending?k=4&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MODELS[1:],
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
+            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MODELS[0],
             repeat=True,

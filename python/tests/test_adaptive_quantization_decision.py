@@ -25,7 +25,7 @@ MOCK_MODEL_1 = {
     "risks": "test",
     "hfLink": "https://huggingface.co/api/models/openai-community/gpt2",
     "evalId": "test",
-    "backgroundImage": "test",
+    "bg_image_url": "test",
 }
 
 
@@ -34,19 +34,22 @@ MOCK_MODEL_1 = {
 def api_mock():
     with aioresponses() as mocked:
         mocked.get(
-            TRUFFLE_API_URL + "/models?id=1",
+            TRUFFLE_API_URL
+            + "/models?id=1&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
-            TRUFFLE_API_URL + "/models?id=2",
+            TRUFFLE_API_URL
+            + "/models?id=2&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
-            TRUFFLE_API_URL + "/models?id=3",
+            TRUFFLE_API_URL
+            + "/models?id=3&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=MOCK_MODEL_1,
             repeat=True,

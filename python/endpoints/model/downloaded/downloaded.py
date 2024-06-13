@@ -23,7 +23,7 @@ async def is_model_downloaded(model_id: str) -> bool:
         return False
 
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model_id}"
+        f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model_id}"
         model = await response.json()
@@ -61,7 +61,7 @@ async def get_model_details(model_id):
     downloaded = await is_model_downloaded(model_id)
     if downloaded:
         async with global_state_manager.session.get(
-            f"{TRUFFLE_API_URL}/models?id={model_id}"
+            f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
         ) as response:
             assert response.status == 200, f"Failed to fetch model {model_id}"
             model = await response.json()
@@ -79,7 +79,7 @@ async def get_model_details(model_id):
                 hf_link=model["hfLink"],
                 eval_id=model["evalId"],
                 status=await get_model_status(model_id),
-                background_image=model["backgroundImage"],
+                background_image=model["bg_image_url"],
                 instance=0,
                 progress=0,
             )

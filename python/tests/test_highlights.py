@@ -18,7 +18,7 @@ from constants import TRUFFLE_API_URL
 
 async def clear_db():
     async with init_state():
-        global_state_manager.db.runningmodels.delete_many()
+        await global_state_manager.db.runningmodels.delete_many()
 
 
 # Fixtures

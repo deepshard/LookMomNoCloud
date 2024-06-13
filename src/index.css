@@ -38,6 +38,19 @@ body {
   backdrop-filter: blur(75px);
 }
 
+:root {
+  --input-text-color: rgba(255, 255, 255, 0.75);
+  --input-placeholder-color: rgba(255, 255, 255, 0.4);
+}
+
+input {
+  color: var(--input-text-color);
+}
+
+input::placeholder {
+  color: var(--input-placeholder-color);
+}
+
 .react-multi-carousel-track {
   height: 100% !important;
 }
@@ -95,6 +108,15 @@ div.slick-list,
 div.slick-track,
 div.slick-slide > div {
   height: 100% !important;
+}
+
+div.slick-slide > div {
+  padding: 0 !important;
+  overflow: overlay !important;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
@@ -194,17 +216,4 @@ div.slick-slide > div {
   .widget-3d {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
   }
-}
-
-:root {
-  --input-text-color: rgba(255, 255, 255, 0.75);
-  --input-placeholder-color: rgba(255, 255, 255, 0.4);
-}
-
-input {
-  color: var(--input-text-color);
-}
-
-input::placeholder {
-  color: var(--input-placeholder-color);
 }

@@ -32,6 +32,15 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
     }
   }
 
+  useEffect(() => {
+    const slickList = document.querySelectorAll('.slick-list')[1]
+    // const slickListDiv = slickList.querySelectorAll('.slick-slide')
+    // console.log(slickListDiv)
+    if(slickList) {
+      slickList.style.overflow = `visible`
+    }
+  }, [])
+
 
   if(!sysInfo) return null
 
@@ -77,7 +86,7 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
         <SysInfoModelListItem />
         <SysInfoModelListItem />
       </div>
-      <span className="flex gap-[4px] absolute bottom-[-10px] z-[9999]">
+      <span className="flex gap-[4px] fixed bottom-[-35px] z-40 translate-x-[-50%] left-[50%]">
         <img src="/assets/icons/monitor.svg" alt="" />
         <p>{upperFirst(selection)} Usage</p>
       </span>

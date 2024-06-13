@@ -17,6 +17,7 @@ from utils import get_usable_memory, get_tensor_parallelism
 #   - single OpenCL
 #   - multiple OpenCL
 # - get_tensor_parallelism
+#   - Mac
 #   - no GPUs
 #   - single GPU
 #   - multiple GPUs
@@ -121,19 +122,26 @@ def test_get_usable_memory_multiple_opencl():
         assert get_usable_memory() == 50774147072
 
 
+def test_get_tensor_parallelism_mac():
+    with patch("utils.get_devices", return_value=[{"type": "metal", "id": 0}]), patch(
+        "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
+    ):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 1
+
+
 def test_get_tensor_parallelism_no_gpus():
     with patch("utils.get_devices", return_value=[]), patch(
         "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
     ):
         with pytest.raises(ValueError):
-            get_tensor_parallelism("model_weights_dir", Quantization.INT4)
+            get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0)
 
 
 def test_get_tensor_parallelism_single_gpu():
     with patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}]), patch(
         "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
     ):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 1
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 1
 
 
 def test_get_tensor_parallelism_multiple_gpus():
@@ -142,9 +150,9 @@ def test_get_tensor_parallelism_multiple_gpus():
         "utils.get_devices",
         return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
     ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 2
 
-    # Case 2: 8 GPUs, model is 10GB
+    # Case 2: 8 GPUs, model is 20GB
     with patch(
         "utils.get_devices",
         return_value=[
@@ -157,17 +165,24 @@ def test_get_tensor_parallelism_multiple_gpus():
             {"type": "cuda", "id": 6},
             {"type": "cuda", "id": 7},
         ],
-    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 4
+    ), patch("utils.get_model_size_info", return_value=(0, 20 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 4
 
     # Case 3: 2 GPUs, model is 5GB
     with patch(
         "utils.get_devices",
         return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
     ), patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 1
 
-    # Case 4: 3 GPUs, model is 5GB
+    # Case 4: 2 GPUs, model is 10GB
+    with patch(
+        "utils.get_devices",
+        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
+    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 2
+
+    # Case 5: 3 GPUs, model is 10GB
     with patch(
         "utils.get_devices",
         return_value=[
@@ -175,10 +190,10 @@ def test_get_tensor_parallelism_multiple_gpus():
             {"type": "cuda", "id": 1},
             {"type": "cuda", "id": 2},
         ],
-    ), patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 2
 
-    # Case 2: 8 GPUs, model is 70GB
+    # Case 6: 8 GPUs, model is 70GB
     with patch(
         "utils.get_devices",
         return_value=[
@@ -192,4 +207,4 @@ def test_get_tensor_parallelism_multiple_gpus():
             {"type": "cuda", "id": 7},
         ],
     ), patch("utils.get_model_size_info", return_value=(0, 70 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 8
+        assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 8

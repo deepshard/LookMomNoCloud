@@ -17,6 +17,7 @@ from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
 from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
 from mlc_llm.support.auto_target import detect_target_and_host
+from state import global_state_manager
 from truffle_types import RepoType, FileInfo, Quantization
 from utils import (
     get_app_data_path,
@@ -26,9 +27,6 @@ from utils import (
     get_tensor_parallelism,
     is_mlc_compatible,
 )
-from endpoints.model.install.InstallationManager import InstallationManager
-
-HF_AUTH_HEADER = {"Authorization": f"Bearer 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"}
 
 
 class Status(Enum):
@@ -81,11 +79,10 @@ def get_hf_name_for_url(url: str) -> str:
 
 
 async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
-    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
-        async with session.head(
-            f"{url}/resolve/main/{file}", allow_redirects=True
-        ) as response:
-            return file, int(response.headers["Content-Length"])
+    async with global_state_manager.session.head(
+        f"{url}/resolve/main/{file}", allow_redirects=True
+    ) as response:
+        return file, int(response.headers["Content-Length"])
 
 
 def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
@@ -98,10 +95,9 @@ def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
 async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     # Query the HF API to get the requisite info
     url = f"https://huggingface.co/api/models/{model_name}?"
-    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            data = await response.json()
+    async with global_state_manager.session.get(url) as response:
+        response.raise_for_status()
+        data = await response.json()
 
     # Get list of repo files
     files = data.get("siblings", [])
@@ -176,8 +172,12 @@ async def get_files_to_download(model_url: str, install_path: Path) -> list[File
     return files_to_download
 
 
-def check_disk_space(size: int, installation_manager: InstallationManager) -> bool:
-    _, disk_space, total_bytes_remaining = get_space_check_info(installation_manager)
+def check_disk_space(size: int) -> bool:
+    (
+        _,
+        disk_space,
+        total_bytes_remaining,
+    ) = global_state_manager.model_manager.get_space_check_info()
     if size + total_bytes_remaining < disk_space:
         return True
 
@@ -215,43 +215,21 @@ def get_conv_template(base_weights_path: str) -> str:
     return "LM"
 
 
-def get_base_quantization_decision(base_weights_path: str) -> Quantization:
-    # TODO: Implement a more sophisticated method to determine the quantization later
-    return Quantization.INT4
+async def get_base_quantization_decision(model_id: str) -> Quantization:
+    quantization_options = (
+        await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            [model_id]
+        )
+    )
+    return quantization_options[0][1]
 
 
 def get_quantization_object(quantization: Quantization, model):
-    quantization_kinds = list(model.quantize.keys())
-    quantization_options = [
-        quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds
-    ]
-
-    if quantization.value == "INT8":
-        filtered_quantization_options = [
-            quant for quant in quantization_options if quant.kind == "no-quant"
-        ]
-        return filtered_quantization_options[0]
-    else:
-        filtered_quantization_options = []
-        for quant in quantization_options:
-            if quant.kind == "no-quant":
-                continue
-            if quant.quantize_dtype == quantization.value.lower():
-                filtered_quantization_options.append(quant)
-        return filtered_quantization_options[0]
-
-
-def get_space_check_info(
-    installation_manager: InstallationManager,
-) -> tuple[int, int, int]:
-    available_ram = get_usable_memory()
-    disk_space = psutil.disk_usage("/").free
-    bytes_remaining = installation_manager.get_total_bytes_remaining()
-    return available_ram, disk_space, bytes_remaining
+    quantization_obj = QUANTIZATION[quantization.value]
+    return quantization_obj
 
 
 async def download_file(
-    session: any,
     url: str,
     install_path: Path,
     file_info: FileInfo,
@@ -260,7 +238,9 @@ async def download_file(
     file_path = os.path.join(install_path, file_info.file)
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-    async with session.get(url, allow_redirects=True, timeout=None) as response:
+    async with global_state_manager.session.get(
+        url, allow_redirects=True, timeout=None
+    ) as response:
         response.raise_for_status()
         async with aiofiles_open(file_path, "wb") as f:
             async for chunk in response.content.iter_chunked(1024):
@@ -274,72 +254,70 @@ async def download_files(
     install_path: Path,
     files_to_download: list[FileInfo],
     total_size: int,
-    installation_manager: InstallationManager,
     progress_event: ProgressEvent,
 ):
     # Start downloading files
     logger.info(f"Downloading {len(files_to_download)} files")
     progress_tracker = {"downloaded_bytes": 0}
     last_progress = 0
-    async with aiohttp.ClientSession(headers=HF_AUTH_HEADER) as session:
-        tasks = [
-            download_file(
-                session,
-                get_file_download_url(model_url, file.file),
-                install_path,
-                file,
-                progress_tracker,
-            )
-            for file in files_to_download
-        ]
-        download_tasks = asyncio.gather(*tasks)
+    tasks = [
+        download_file(
+            get_file_download_url(model_url, file.file),
+            install_path,
+            file,
+            progress_tracker,
+        )
+        for file in files_to_download
+    ]
+    download_tasks = asyncio.gather(*tasks)
 
-        while not download_tasks.done():
-            progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
-            installation_manager.set_download(
-                model_id, total_size - progress_tracker["downloaded_bytes"]
-            )
+    while not download_tasks.done():
+        progress = int(100 * progress_tracker["downloaded_bytes"] / total_size)
+        global_state_manager.model_manager.set_download(
+            model_id, total_size - progress_tracker["downloaded_bytes"]
+        )
 
-            # Send progress event
-            if (progress - last_progress) >= 1:
-                last_progress = progress
-                progress_event.update(progress=progress)
-                yield progress_event
+        # Send progress event
+        if (progress - last_progress) >= 1:
+            last_progress = progress
+            progress_event.update(progress=progress)
+            yield progress_event
 
-            await asyncio.sleep(0.1)
+        await asyncio.sleep(0.1)
 
-        # Ensure that the download is complete
-        await download_tasks
+    # Ensure that the download is complete
+    await download_tasks
 
     # Clear download from InstallSystemManager
-    installation_manager.clear_download(model_id)
+    global_state_manager.model_manager.clear_download(model_id)
 
 
 async def queue_conversion(
     model_dir: str,
     quantization: Quantization,
     install_path: Path,
-    installation_manager: InstallationManager,
     progress_event: ProgressEvent,
 ):
     # Weight conversion and quantization process
     logger.info(f"Adding {model_dir} to the conversion queue")
     _, compressed_size = get_model_size_info(install_path, quantization)
-    installation_manager.add_to_conversion_queue(
+    global_state_manager.model_manager.add_to_conversion_queue(
         model_dir, quantization, compressed_size
     )
     progress_event.update(progress=100)
     yield progress_event
 
-    while not installation_manager.is_models_conversion_turn(model_dir, quantization):
+    while not global_state_manager.model_manager.is_models_conversion_turn(
+        model_dir, quantization
+    ):
         logger.info(
             f"""Waiting for {model_dir} to be converted.\nCurrent conversion queue: {
-                installation_manager.conversion_queue()}\nCurrent conversion in progress: {installation_manager.current_conversion}"""
+                global_state_manager.model_manager.conversion_queue()}\nCurrent conversion in progress: {global_state_manager.model_manager.current_conversion}"""
         )
         await asyncio.sleep(5)
 
     logger.info(f"Model's turn to be converted.")
-    installation_manager.remove_from_conversion_queue()
+    global_state_manager.model_manager.remove_from_conversion_queue()
     await asyncio.sleep(3)
 
 
@@ -417,9 +395,7 @@ def convert_quantize_compile(
     )
 
 
-async def install_generator(
-    model_id: str, model_url: str, installation_manager: InstallationManager
-):
+async def install_generator(model_id: str, model_url: str):
     """
     Downloads and installs a model from a given URL.
 
@@ -428,8 +404,8 @@ async def install_generator(
     - Generates the Truffle config file
 
     Args:
+        model_id (str): The ID of the model
         model_url (str): The URL to download the model from
-        installation_manager (InstallationManager): The manager of global download and conversion state
 
     Yields:
         {
@@ -467,7 +443,7 @@ async def install_generator(
 
     # Check that there is enough space to download the model
     try:
-        check_disk_space(total_size, installation_manager)
+        check_disk_space(total_size)
     except Exception as e:
         progress_event.update(status=Status.DOWNLOADING, progress=100, error=str(e))
         yield str(progress_event)
@@ -480,7 +456,7 @@ async def install_generator(
 
     # Begin downloading the files
     logger.info(f"Downloading {len(files_to_download)} files")
-    installation_manager.set_download(model_id, total_size)
+    global_state_manager.model_manager.set_download(model_id, total_size)
     try:
         async for progress_event in download_files(
             model_id,
@@ -488,7 +464,6 @@ async def install_generator(
             install_path,
             files_to_download,
             total_size,
-            installation_manager,
             progress_event,
         ):
             yield str(progress_event)
@@ -506,7 +481,7 @@ async def install_generator(
 
     # Check if the quantization is already built
     try:
-        quantization = get_base_quantization_decision(install_path)
+        quantization = await get_base_quantization_decision(model_id)
         if does_quantization_exist(model_id, quantization):
             logger.info(f"Conversion and quantization already exists for {model_dir}")
             progress_event.update(status=Status.STOPPED)
@@ -521,25 +496,25 @@ async def install_generator(
     logger.info(f"Adding {model_dir} to the conversion queue")
     try:
         async for progress_event in queue_conversion(
-            model_dir, quantization, install_path, installation_manager, progress_event
+            model_dir, quantization, install_path, progress_event
         ):
             yield str(progress_event)
     except Exception as e:
         progress_event.update(error=str(e))
         yield str(progress_event)
-        installation_manager.complete_conversion()
+        global_state_manager.model_manager.complete_conversion()
         return
 
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")
     try:
         model_size, compressed_size = get_model_size_info(install_path, quantization)
-        check_disk_space(compressed_size, installation_manager)
+        check_disk_space(compressed_size)
         check_memory_space(model_size)
     except Exception as e:
         progress_event.update(error=str(e))
         yield str(progress_event)
-        installation_manager.complete_conversion()
+        global_state_manager.model_manager.complete_conversion()
         return
 
     # Convert and quantize the model
@@ -550,11 +525,11 @@ async def install_generator(
     except Exception as e:
         progress_event.update(error=str(e))
         yield str(progress_event)
-        installation_manager.complete_conversion()
+        global_state_manager.model_manager.complete_conversion()
         return
 
     logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")
     progress_event.update(status=Status.STOPPED)
     yield str(progress_event)
-    installation_manager.complete_conversion()
+    global_state_manager.model_manager.complete_conversion()
     return

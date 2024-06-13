@@ -108,8 +108,8 @@ async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list
     total_score = await global_state_manager.model_manager.get_score(configurations)
     return [
         (
-            await global_state_manager.model_manager.get_score([configuration])
-            / total_score
+            0.85 * (await global_state_manager.model_manager.get_score([configuration])
+                    / total_score)
         )
         for configuration in configurations
     ]
@@ -127,9 +127,9 @@ def check_disk_space(size: int) -> bool:
     raise ValueError("Not enough space")
 
 
-def check_memory_space(weights_path: Path, quant: Quantization) -> bool:
+def check_memory_space(weights_path: Path, quant: Quantization, run: bool) -> bool:
     model_size, _ = get_model_size_info(weights_path, quant)
-    available_ram = get_usable_memory()
+    available_ram = get_usable_memory(run)
 
     if model_size < available_ram:
         return True
@@ -159,16 +159,22 @@ def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
         device="auto",
         model_lib=str(model_path / "compilation.so"),
         mode="local",
+        enable_debug=False,
         additional_models=[],  # Not relevant
         tensor_parallel_shards=shards,
-        max_batch_size=1,
+        max_num_sequence=None,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
+        max_single_sequence_length=None,
         prefill_chunk_size=None,  # This lets the AsyncMLEngine automatically determine
+        sliding_window_size=None,
+        attention_sink_size=None,
         max_history_size=None,  # Not relevant
         gpu_memory_utilization=mem_share,
         speculative_mode="disable",  # TODO: Decide if we want to enable this
         spec_draft_length=4,
+        prefix_cache_mode="disable",
+        prefix_cache_max_num_recycling_seqs=None,
         enable_tracing=False,
         host="127.0.0.1",
         port=port,
@@ -258,8 +264,10 @@ async def run_models_generator(model_ids: list[str]):
     """
 
     for model_id in model_ids:
-        acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
+        acknowledgement_event = ProgressEvent(
+            model_id, Status.ACKNOWLEDGED, None, None)
         yield str(acknowledgement_event)
+        await asyncio.sleep(2)
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
@@ -273,7 +281,8 @@ async def run_models_generator(model_ids: list[str]):
         mem_shares = await get_gpu_memory_shares(configurations)
         instance_numbers = await get_instances(model_ids)
     except Exception as e:
-        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
+        error_event = ProgressEvent(
+            None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         return
 
@@ -315,7 +324,8 @@ async def run_models_generator(model_ids: list[str]):
     try:
         check_disk_space(total_compressed_size)
     except Exception as e:
-        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
+        error_event = ProgressEvent(
+            None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         return
 
@@ -347,16 +357,18 @@ async def run_models_generator(model_ids: list[str]):
 
         # Check if there is enough memory to convert and quantize the model
         try:
-            check_memory_space(weights_path, quant)
+            check_memory_space(weights_path, quant, False)
         except Exception as e:
             # Cancel all conversions that have not yet been started
             cancel_models(conversions, i)
-            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
 
         # Send quantization event
-        quantization_event = ProgressEvent(model_id, Status.INSTALLING, None, None)
+        quantization_event = ProgressEvent(
+            model_id, Status.INSTALLING, None, None)
         yield str(quantization_event)
 
         # Perform the conversion and quantization
@@ -364,7 +376,8 @@ async def run_models_generator(model_ids: list[str]):
             global_state_manager.model_manager.remove_from_conversion_queue()
             convert_quantize_compile(weights_path, quant_path, quant)
         except Exception as e:
-            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
         global_state_manager.model_manager.complete_conversion()
@@ -382,7 +395,7 @@ async def run_models_generator(model_ids: list[str]):
         weights_path = model_path / "base"
 
         try:
-            check_memory_space(weights_path, quant)
+            check_memory_space(model_path / quant.value, quant, True)
         except Exception as e:
             error_event = ProgressEvent(
                 model_id, Status.RUNNING, instance, None, str(e)

@@ -22,7 +22,10 @@ async def get_highlights() -> list[Model]:
 
 
 async def get_trending_models(session, num: int) -> list[Model]:
-    async with session.get(f"{TRUFFLE_API_URL}/models/trending?k={num}") as response:
+    async with session.get(
+        f"{TRUFFLE_API_URL}/models/trending?k={num}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
+    ) as response:
+        print(response)
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
         return [
@@ -40,7 +43,7 @@ async def get_trending_models(session, num: int) -> list[Model]:
                 hf_link=model["hfLink"],
                 eval_id=model["evalId"],
                 status=ModelStatus.NOT_DOWNLOADED,
-                background_image=model["backgroundImage"],
+                background_image=model["bg_image_url"],
                 instance=0,
                 progress=0,
             )

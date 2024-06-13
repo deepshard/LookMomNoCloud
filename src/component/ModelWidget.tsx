@@ -9,42 +9,38 @@ import { motion } from "framer-motion"
 
 interface ModelWidgetProps {
   model: TModel;
+  onInstall?: () => void;
+  onRun?: () => void;
+  onStop?: () => void;
+  onDelete?: () => void;
+  onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model }: ModelWidgetProps) => {
+const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
-  const { setDownloads } = useStore();
-  const { installModel, disconnect } = useInstallModel({ streamFn: startInstallModel });
-
   useEffect(() => {
     return () => {
-      disconnect();
+      onDisconnect && onDisconnect();
     };
   }, []);
 
   const handleAction = () => {
     switch (model.status) {
-      case "DOWNLOADING":
-        console.log("TODO: downloading");
-        break;
       case "NOT_DOWNLOADED":
-        installModel(model, new AbortController(), (progress) => {
-          setDownloads({
-            ...model,
-            ...progress,
-          });
-        });
+        onInstall && onInstall();
         break;
       case "RUNNING":
         console.log("TODO: trying to stop");
+        onStop && onStop();
         break;
       case "STOPPED":
         console.log("TODO: trying to run");
+        onRun && onRun();
         break;
       default:
         break;
@@ -122,6 +118,7 @@ const ModelWidget = ({ model }: ModelWidgetProps) => {
     <div className="model-widget base-regular">
       <img src={llamaIcon} alt="" />
       <div className="absolute top-0 left-0 p-2">
+        <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
         <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
       </div>
       <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2"></p>

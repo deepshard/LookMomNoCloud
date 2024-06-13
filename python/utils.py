@@ -73,11 +73,9 @@ def get_quantization_compression(quant: Quantization) -> float:
 
 
 def is_convertable_format(base_weights_path: str) -> bool:
-    pytorch_json_path = os.path.join(
-        base_weights_path, "pytorch_model.bin.index.json")
+    pytorch_json_path = os.path.join(base_weights_path, "pytorch_model.bin.index.json")
     pytorch_bin_path = os.path.join(base_weights_path, "pytorch_model.bin")
-    safetensors_path = os.path.join(
-        base_weights_path, "model.safetensors.index.json")
+    safetensors_path = os.path.join(base_weights_path, "model.safetensors.index.json")
     safetensors_bin_path = os.path.join(base_weights_path, "model.safetensors")
 
     if (
@@ -191,17 +189,13 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
 
     num_devices = 0
     if any(device["type"] == "cuda" for device in devices):
-        num_devices = len(
-            [device for device in devices if device["type"] == "cuda"])
+        num_devices = len([device for device in devices if device["type"] == "cuda"])
     elif any(device["type"] == "rocm" for device in devices):
-        num_devices = len(
-            [device for device in devices if device["type"] == "rocm"])
+        num_devices = len([device for device in devices if device["type"] == "rocm"])
     elif any(device["type"] == "vulkan" for device in devices):
-        num_devices = len(
-            [device for device in devices if device["type"] == "vulkan"])
+        num_devices = len([device for device in devices if device["type"] == "vulkan"])
     elif any(device["type"] == "opencl" for device in devices):
-        num_devices = len(
-            [device for device in devices if device["type"] == "opencl"])
+        num_devices = len([device for device in devices if device["type"] == "opencl"])
 
     if num_devices == 0:
         raise ValueError("No devices found")

@@ -63,8 +63,7 @@ class ModelManager:
             if quantization_dir.exists():
                 quantized_bytes = get_disk_usage(quantization_dir)
                 conversion_bytes += (
-                    self.current_conversion["compressed_size"] -
-                    quantized_bytes
+                    self.current_conversion["compressed_size"] - quantized_bytes
                 )
 
         return download_bytes + conversion_bytes
@@ -135,8 +134,7 @@ class ModelManager:
         async with self.session.get(
             f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
         ) as response:
-            assert response.status == 200, f"Failed to fetch model size for {
-                model_id}"
+            assert response.status == 200, f"Failed to fetch model size for {model_id}"
             model = await response.json()
             return model["size"]
 
@@ -179,8 +177,7 @@ class ModelManager:
         total_size = 0
         for model_id, quantization in models:
             base_weights_path = get_app_data_path() / "models" / model_id / "base"
-            _, compressed_size = get_model_size_info(
-                base_weights_path, quantization)
+            _, compressed_size = get_model_size_info(base_weights_path, quantization)
             total_size += compressed_size
 
         return total_size
@@ -259,7 +256,9 @@ class ModelManager:
 
         return available_configurations
 
-    def get_usable_configurations(self, configurations: list[tuple[str, list[Quantization]]]):
+    def get_usable_configurations(
+        self, configurations: list[tuple[str, list[Quantization]]]
+    ):
         """
         Create every possible combination of model x quantization options and return the ones whose
         expected memory consumption and expected disk consumption are less than the system's
@@ -282,7 +281,8 @@ class ModelManager:
 
             # Check if the combination is usable based on available resources
             available_memory, disk_space, bytes_remaining = self.get_space_check_info(
-                True)
+                True
+            )
             if (
                 expected_memory < available_memory
                 and expected_disk + bytes_remaining < disk_space
@@ -302,8 +302,7 @@ class ModelManager:
         """
 
         available_configurations = self.get_available_configurations(model_ids)
-        usable_configurations = self.get_usable_configurations(
-            available_configurations)
+        usable_configurations = self.get_usable_configurations(available_configurations)
 
         if len(usable_configurations) == 0:
             raise Exception("No usable configurations found")

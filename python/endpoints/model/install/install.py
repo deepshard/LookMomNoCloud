@@ -132,8 +132,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
             raise ValueError(f"Missing rfilename for {file}")
 
         tasks.append(
-            get_file_size_hf(
-                f"https://huggingface.co/{model_name}", file["rfilename"])
+            get_file_size_hf(f"https://huggingface.co/{model_name}", file["rfilename"])
         )
 
     # Get the file sizes
@@ -450,8 +449,7 @@ async def install_generator(model_id: str, model_url: str):
     try:
         check_disk_space(total_size)
     except Exception as e:
-        progress_event.update(status=Status.DOWNLOADING,
-                              progress=100, error=str(e))
+        progress_event.update(status=Status.DOWNLOADING, progress=100, error=str(e))
         yield str(progress_event)
         return
 
@@ -489,8 +487,7 @@ async def install_generator(model_id: str, model_url: str):
     try:
         quantization = await get_base_quantization_decision(model_id)
         if does_quantization_exist(model_id, quantization):
-            logger.info(
-                f"Conversion and quantization already exists for {model_dir}")
+            logger.info(f"Conversion and quantization already exists for {model_dir}")
             progress_event.update(status=Status.STOPPED)
             yield str(progress_event)
             return
@@ -515,8 +512,7 @@ async def install_generator(model_id: str, model_url: str):
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")
     try:
-        model_size, compressed_size = get_model_size_info(
-            install_path, quantization)
+        model_size, compressed_size = get_model_size_info(install_path, quantization)
         check_disk_space(compressed_size)
         check_memory_space(model_size)
     except Exception as e:
@@ -536,8 +532,7 @@ async def install_generator(model_id: str, model_url: str):
         global_state_manager.model_manager.complete_conversion()
         return
 
-    logger.info(
-        f"Conversion, quantization, and compilation complete for {model_dir}")
+    logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")
     progress_event.update(status=Status.STOPPED)
     yield str(progress_event)
     global_state_manager.model_manager.complete_conversion()

@@ -258,19 +258,26 @@ async def run_models_generator(model_ids: list[str]):
     """
 
     for model_id in model_ids:
-        acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
+        acknowledgement_event = ProgressEvent(
+            model_id, Status.ACKNOWLEDGED, None, None)
         yield str(acknowledgement_event)
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
-    configurations = (
-        await global_state_manager.model_manager.get_adaptive_quantization_decision(
-            model_ids
+    try:
+        configurations = (
+            await global_state_manager.model_manager.get_adaptive_quantization_decision(
+                model_ids
+            )
         )
-    )
-    quantizations = [config[1] for config in configurations]
-    mem_shares = await get_gpu_memory_shares(configurations)
-    instance_numbers = await get_instances(model_ids)
+        quantizations = [config[1] for config in configurations]
+        mem_shares = await get_gpu_memory_shares(configurations)
+        instance_numbers = await get_instances(model_ids)
+    except Exception as e:
+        error_event = ProgressEvent(
+            None, Status.INSTALLING, None, None, str(e))
+        yield str(error_event)
+        return
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes
     logger.info("Identifying models that need to be converted and quantized")
@@ -310,7 +317,8 @@ async def run_models_generator(model_ids: list[str]):
     try:
         check_disk_space(total_compressed_size)
     except Exception as e:
-        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
+        error_event = ProgressEvent(
+            None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         return
 
@@ -346,12 +354,14 @@ async def run_models_generator(model_ids: list[str]):
         except Exception as e:
             # Cancel all conversions that have not yet been started
             cancel_models(conversions, i)
-            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
 
         # Send quantization event
-        quantization_event = ProgressEvent(model_id, Status.INSTALLING, None, None)
+        quantization_event = ProgressEvent(
+            model_id, Status.INSTALLING, None, None)
         yield str(quantization_event)
 
         # Perform the conversion and quantization
@@ -359,7 +369,8 @@ async def run_models_generator(model_ids: list[str]):
             global_state_manager.model_manager.remove_from_conversion_queue()
             convert_quantize_compile(weights_path, quant_path, quant)
         except Exception as e:
-            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
         global_state_manager.model_manager.complete_conversion()

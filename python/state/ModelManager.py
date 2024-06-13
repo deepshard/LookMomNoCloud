@@ -63,7 +63,8 @@ class ModelManager:
             if quantization_dir.exists():
                 quantized_bytes = get_disk_usage(quantization_dir)
                 conversion_bytes += (
-                    self.current_conversion["compressed_size"] - quantized_bytes
+                    self.current_conversion["compressed_size"] -
+                    quantized_bytes
                 )
 
         return download_bytes + conversion_bytes
@@ -134,7 +135,8 @@ class ModelManager:
         async with self.session.get(
             f"{TRUFFLE_API_URL}/models?id={model_id}"
         ) as response:
-            assert response.status == 200, f"Failed to fetch model size for {model_id}"
+            assert response.status == 200, f"Failed to fetch model size for {
+                model_id}"
             model = await response.json()
             return model["size"]
 
@@ -177,7 +179,8 @@ class ModelManager:
         total_size = 0
         for model_id, quantization in models:
             base_weights_path = get_app_data_path() / "models" / model_id / "base"
-            _, compressed_size = get_model_size_info(base_weights_path, quantization)
+            _, compressed_size = get_model_size_info(
+                base_weights_path, quantization)
             total_size += compressed_size
 
         return total_size
@@ -235,12 +238,11 @@ class ModelManager:
         # Get the quantization options available for the model then convert them to Quantization enum
         quantization_kinds = list(model.quantize.keys())
         raw_quantization_options = [
-            quant for quant in QUANTIZATION.values() if quant.kind in quantization_kinds
+            quant.name for quant in QUANTIZATION.values() if quant.kind in quantization_kinds
         ]
         quantization_options = [
             quant for quant in Quantization if quant.value in raw_quantization_options
         ]
-
         return quantization_options
 
     def get_available_configurations(
@@ -299,7 +301,8 @@ class ModelManager:
         """
 
         available_configurations = self.get_available_configurations(model_ids)
-        usable_configurations = self.get_usable_configurations(available_configurations)
+        usable_configurations = self.get_usable_configurations(
+            available_configurations)
 
         if len(usable_configurations) == 0:
             raise Exception("No usable configurations found")

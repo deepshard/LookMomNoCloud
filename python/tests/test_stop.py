@@ -1,9 +1,9 @@
 import pytest
 import asyncio
 from multiprocessing import Process, set_start_method
+from state import global_state_manager
+from server import init_state
 from endpoints.model.stop import stop_model_handler
-from db import db
-from server import init_db
 
 
 # Test the stop_model_handler logic
@@ -19,8 +19,8 @@ async def fake_process():
 
 
 async def clear_db():
-    async with init_db():
-        await db.runningmodels.delete_many()
+    async with init_state():
+        await global_state_manager.db.runningmodels.delete_many()
 
 
 # Fixtures
@@ -44,7 +44,7 @@ def mock_process():
 # Tests
 @pytest.mark.asyncio
 async def test_stop_model_instance_exists(base_fixture, mock_process):
-    async with init_db():
+    async with init_state():
         # Add the model to the database
         mock_model = {
             "id": "TEST_model_1",
@@ -55,7 +55,7 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
             "port": 8899,
             "quantization": "INT4",
         }
-        await db.runningmodels.create(mock_model)
+        await global_state_manager.db.runningmodels.create(mock_model)
 
         # Assert process is running
         assert mock_process.is_alive(), "Mock process should be running"
@@ -67,7 +67,7 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
         assert not mock_process.is_alive(), "Mock process should be stopped"
 
         # Check that the model instance was removed from the database
-        model_instance = await db.runningmodels.find_first(
+        model_instance = await global_state_manager.db.runningmodels.find_first(
             where={"id": mock_model["id"], "instance": mock_model["instance"]}
         )
         assert (
@@ -77,7 +77,7 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
 
 @pytest.mark.asyncio
 async def test_stop_model_instance_not_exists(base_fixture):
-    async with init_db():
+    async with init_state():
         # Stop a non-existent model instance
         with pytest.raises(ValueError):
             await stop_model_handler("TEST_model_1", 1)

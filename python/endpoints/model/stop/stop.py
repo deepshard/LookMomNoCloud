@@ -1,7 +1,7 @@
 import os
 import signal
 from loguru import logger
-from db import db
+from state import global_state_manager
 
 
 async def stop_model_handler(model_id: str, instance: int):
@@ -9,13 +9,13 @@ async def stop_model_handler(model_id: str, instance: int):
     logger.info(f"Stopping model {model_id} instance {instance}")
 
     # Get the model instance from the database
-    model_db_info = await db.runningmodels.find_first(
+    model_db_info = await global_state_manager.db.runningmodels.find_first(
         where={"id": model_id, "instance": instance}
     )
     if model_db_info is None:
         logger.error(
             f"""Model {model_id} instance {
-                     instance} not found in database"""
+                instance} not found in database"""
         )
         raise ValueError(f"Model {model_id} instance {instance} not found")
 
@@ -24,4 +24,6 @@ async def stop_model_handler(model_id: str, instance: int):
     os.kill(model_db_info.pid, signal.SIGTERM)
 
     # Remove the model instance from the database
-    await db.runningmodels.delete_many(where={"id": model_id, "instance": instance})
+    await global_state_manager.db.runningmodels.delete_many(
+        where={"id": model_id, "instance": instance}
+    )

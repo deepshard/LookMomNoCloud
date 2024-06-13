@@ -11,16 +11,16 @@ import pytest
 from jsonschema import validate, ValidationError
 import subprocess
 import pytest
+from state import global_state_manager
+from server import init_state
 from endpoints.sysinfo import sysinfo_generator, CHANGE_THRESHOLD
-from db import db
-from server import init_db
 from unittest.mock import patch, MagicMock
 
 
 @pytest.mark.asyncio
 async def test_ram_change_detection():
     # Start the sysinfo generator
-    async with init_db():
+    async with init_state():
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
 
@@ -55,7 +55,7 @@ async def test_ram_change_detection():
 @pytest.mark.asyncio
 async def test_no_significant_ram_change_does_not_yield():
     # Start the sysinfo generator
-    async with init_db():
+    async with init_state():
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
 
@@ -85,7 +85,7 @@ async def test_no_significant_ram_change_does_not_yield():
 @pytest.mark.asyncio
 async def test_disk_change_detection():
     # Start the sysinfo generator
-    async with init_db():
+    async with init_state():
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
 
@@ -121,7 +121,7 @@ async def test_disk_change_detection():
 @pytest.mark.asyncio
 async def test_no_significant_disk_change_does_not_yield():
     # Start the sysinfo generator
-    async with init_db():
+    async with init_state():
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
 

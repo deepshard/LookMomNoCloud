@@ -1,28 +1,30 @@
 import asyncio
 import aiohttp
+from state import global_state_manager
 from truffle_types import Model, ModelStatus
-from db import db
 from constants import TRUFFLE_API_URL
+from state import global_state_manager
 
 
 async def get_highlights() -> list[Model]:
-    async with aiohttp.ClientSession() as session:
-        models = await db.runningmodels.find_many()
-        tasks = []
-        for model in models:
-            task = fetch_model_data(session, model)
-            tasks.append(task)
-        if len(models) < 5:
-            tasks.append(get_trending_models(session, 5 - len(models)))
-            results = await asyncio.gather(*tasks)
-            trending = results.pop()
-            return results + trending
-        else:
-            return await asyncio.gather(*tasks)
+    models = await global_state_manager.db.runningmodels.find_many()
+    tasks = []
+    for model in models:
+        task = fetch_model_data(model)
+        tasks.append(task)
+    if len(models) < 5:
+        tasks.append(get_trending_models(5 - len(models)))
+        results = await asyncio.gather(*tasks)
+        trending = results.pop()
+        return results + trending
+    else:
+        return await asyncio.gather(*tasks)
 
 
-async def get_trending_models(session, num: int) -> list[Model]:
-    async with session.get(f"{TRUFFLE_API_URL}/models/trending?k={num}") as response:
+async def get_trending_models(num: int) -> list[Model]:
+    async with global_state_manager.session.get(
+        f"{TRUFFLE_API_URL}/models/trending?k={num}"
+    ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
         return [
@@ -48,8 +50,10 @@ async def get_trending_models(session, num: int) -> list[Model]:
         ]
 
 
-async def fetch_model_data(session, model):
-    async with session.get(f"{TRUFFLE_API_URL}/models?id={model.id}") as response:
+async def fetch_model_data(model):
+    async with global_state_manager.session.get(
+        f"{TRUFFLE_API_URL}/models?id={model.id}"
+    ) as response:
         assert response.status == 200, f"Failed to fetch model data for {model.id}"
         model_data = await response.json()
         return Model(

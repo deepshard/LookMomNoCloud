@@ -9,7 +9,7 @@ from pathlib import Path
 from truffle_types import FileInfo, Quantization
 
 
-def get_disk_usage(folder_path: str) -> int:
+def get_disk_usage(folder_path: Path) -> int:
     total_size = 0
     with os.scandir(folder_path) as dir_entries:
         for entry in dir_entries:
@@ -61,9 +61,13 @@ def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
 def get_quantization_compression(quant: Quantization) -> float:
     # NOTE: We can replace this with a more sophisticated calculation later
     quantization_compression_table = {
-        Quantization.INT3: 0.25,
-        Quantization.INT4: 0.33,
-        Quantization.INT8: 0.55,
+        Quantization.Q0F16: 1,
+        Quantization.Q4F16_0: 0.28,
+        Quantization.Q4F16_1: 0.28,
+        Quantization.Q4F16_2: 0.32,
+        Quantization.Q4F16_FT: 0.25,
+        Quantization.Q3F16_0: 0.23,
+        Quantization.Q3F16_1: 0.23,
     }
     return quantization_compression_table[quant]
 
@@ -86,7 +90,7 @@ def is_convertable_format(base_weights_path: str) -> bool:
 
 
 def get_model_size_info(
-    weights_path: str, quantization: Quantization
+    weights_path: Path, quantization: Quantization
 ) -> tuple[int, float]:
     model_size = get_disk_usage(weights_path)
     compression_rate = get_quantization_compression(quantization)
@@ -177,6 +181,9 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
 
     # Get number of devices (heirarchy is as follows: CUDA, ROCM, Vulkan, OpenCL)
     devices = get_devices()
+    if any(device["type"] == "metal" for device in devices):
+        return 1
+
     num_devices = 0
     if any(device["type"] == "cuda" for device in devices):
         num_devices = len([device for device in devices if device["type"] == "cuda"])
@@ -194,9 +201,9 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
         return 1
 
     # Identify the max number of devices that can be used such that the model isn't sharded into
-    # less than 2.5GB per device
+    # less than 5GB per device
     shards = 1
-    while compressed_size / shards > 2.5 * 1024 * 1024 * 1024 and shards < num_devices:
+    while compressed_size / shards > 5 * 1024 * 1024 * 1024 and shards < num_devices:
         shards += 1
 
     return shards

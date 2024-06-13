@@ -26,12 +26,12 @@ class ModelManager:
 
         self.quantization_scores = {
             Quantization.Q0F16: 1,
-            Quantization.Q4F16_0: 0.89,
-            Quantization.Q4F16_1: 0.89,
-            Quantization.Q4F16_2: 0.92,
-            Quantization.Q4F16_FT: 0.73,
-            Quantization.Q3F16_0: 0.68,
-            Quantization.Q3F16_1: 0.68,
+            Quantization.Q4F16_0: 0.94,
+            Quantization.Q4F16_1: 0.94,
+            Quantization.Q4F16_2: 0.96,
+            Quantization.Q4F16_FT: 0.68,
+            Quantization.Q3F16_0: 0.72,
+            Quantization.Q3F16_1: 0.72,
         }
 
     ### Download and Conversion System ###

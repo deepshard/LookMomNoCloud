@@ -2,6 +2,7 @@ import asyncio
 import os
 
 import aiohttp
+from state import global_state_manager
 from endpoints.model.install.install import (
     get_hf_repo_info,
     get_local_files,
@@ -10,7 +11,6 @@ from endpoints.model.install.install import (
 from utils import get_app_data_path
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
-from db import db
 
 
 async def is_model_downloaded(model_id: str) -> bool:
@@ -47,7 +47,9 @@ async def get_downloaded_models():
 
 async def get_model_status(model_id):
     """Helper function to fetch model status."""
-    model = await db.runningmodels.find_first(where={"id": model_id})
+    model = await global_state_manager.db.runningmodels.find_first(
+        where={"id": model_id}
+    )
     if model:
         return ModelStatus.RUNNING
     return ModelStatus.STOPPED

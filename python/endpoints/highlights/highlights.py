@@ -1,13 +1,13 @@
 import asyncio
 import aiohttp
+from state import global_state_manager
 from truffle_types import Model, ModelStatus
-from db import db
 from constants import TRUFFLE_API_URL
 
 
 async def get_highlights() -> list[Model]:
     async with aiohttp.ClientSession() as session:
-        models = await db.runningmodels.find_many()
+        models = await global_state_manager.db.runningmodels.find_many()
         tasks = []
         for model in models:
             task = fetch_model_data(session, model)

@@ -71,7 +71,7 @@ def test_install_model(mock_generators):
     assert response.headers["Connection"] == "keep-alive"
     mock_install_generator.assert_called_once()
     mock_install_generator.assert_called_with(
-        "aaaa-bbbb-cccc-dddd", "https://example.com/model.zip", mock.ANY
+        "aaaa-bbbb-cccc-dddd", "https://example.com/model.zip"
     )
 
 
@@ -85,7 +85,7 @@ def test_run_model(mock_generators):
     assert response.headers["Connection"] == "keep-alive"
     mock_run_models_generator.assert_called_once()
     mock_run_models_generator.assert_called_with(
-        ["aaaa-bbbb-cccc-dddd", "eeee-ffff-gggg-hhhh"], mock.ANY
+        ["aaaa-bbbb-cccc-dddd", "eeee-ffff-gggg-hhhh"]
     )
 
 

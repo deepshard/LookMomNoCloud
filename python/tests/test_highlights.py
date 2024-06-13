@@ -9,17 +9,16 @@ from uuid import uuid4
 import shutil
 from pathlib import Path
 from aioresponses import aioresponses
+from state import global_state_manager
+from server import init_state
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
-from server import init_db
 from constants import TRUFFLE_API_URL
-from db import db
-import re
 
 
 async def clear_db():
-    async with init_db():
-        await db.runningmodels.delete_many()
+    async with init_state():
+        global_state_manager.db.runningmodels.delete_many()
 
 
 # Fixtures
@@ -141,8 +140,8 @@ def trending_running_mock():
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_new_user(trending_5_mock):
-    async with init_db():
+async def test_get_highlights_new_user(base_fixture, trending_5_mock):
+    async with init_state():
         models = await get_highlights()
         assert len(models) == 5
         assert models[0].status == ModelStatus.NOT_DOWNLOADED
@@ -153,8 +152,8 @@ async def test_get_highlights_new_user(trending_5_mock):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_models_running(trending_running_mock):
-    async with init_db():
+async def test_get_highlights_models_running(base_fixture, trending_running_mock):
+    async with init_state():
         mock_model = {
             "id": MODELS[0]["id"],
             "instance": 1,
@@ -164,7 +163,7 @@ async def test_get_highlights_models_running(trending_running_mock):
             "port": 32423,
             "quantization": "INT4",
         }
-        await db.runningmodels.create(mock_model)
+        await global_state_manager.db.runningmodels.create(mock_model)
         models = await get_highlights()
 
         assert len(models) == 5

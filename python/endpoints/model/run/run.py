@@ -6,12 +6,9 @@ from pathlib import Path
 from loguru import logger
 from enum import Enum
 from mlc_llm.interface.serve import serve
+from state import global_state_manager
 from endpoints.model.stop import stop_model_handler
-from endpoints.model.install import InstallationManager
-from endpoints.model.install.install import (
-    get_space_check_info,
-    convert_quantize_compile,
-)
+from endpoints.model.install.install import convert_quantize_compile
 from utils import (
     get_app_data_path,
     find_port,
@@ -21,7 +18,6 @@ from utils import (
     get_usable_memory,
     get_tensor_parallelism,
 )
-from db import db
 from truffle_types import Quantization
 from constants import TRUFFLE_API_URL
 
@@ -77,7 +73,7 @@ class ProgressEvent:
 
 async def get_instances(model_ids: list[str]) -> list[int]:
     # Get all of the running models
-    models = await db.runningmodels.find_many()
+    models = await global_state_manager.db.runningmodels.find_many()
 
     # For each model ID, get the max instance number from the DB, increment it, then
     # add the number of instances from the model IDs array that will be starting before it
@@ -107,19 +103,23 @@ async def get_model_info(model_id: str) -> dict:
             return await response.json()
 
 
-def adaptive_quantization_decision(model_ids: list[str]) -> list[Quantization]:
-    # NOTE: We will make this more sophisticated in the future
-    return [Quantization.INT4 for _ in model_ids]
+async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
+    total_score = await global_state_manager.model_manager.get_score(configurations)
+    return [
+        (
+            await global_state_manager.model_manager.get_score([configuration])
+            / total_score
+        )
+        for configuration in configurations
+    ]
 
 
-def get_gpu_memory_shares(model_ids: list[str]) -> list[float]:
-    # NOTE: We will make this more sophisticated in the future and potentially combine
-    # this with the adaptive_quantization_decision function
-    return [1 / len(model_ids) for _ in model_ids]
-
-
-def check_disk_space(size: int, installation_manager: InstallationManager) -> bool:
-    _, disk_space, bytes_remaining = get_space_check_info(installation_manager)
+def check_disk_space(size: int) -> bool:
+    (
+        _,
+        disk_space,
+        bytes_remaining,
+    ) = global_state_manager.model_manager.get_space_check_info()
     if size + bytes_remaining < disk_space:
         return True
 
@@ -136,7 +136,7 @@ def check_memory_space(weights_path: Path, quant: Quantization) -> bool:
     raise ValueError("Not enough memory")
 
 
-def cancel_models(conversions: list, i: int, installation_manager: InstallationManager):
+def cancel_models(conversions: list, i: int):
     # Cancel all conversions that have not yet been started
     models_to_cancel = [
         {
@@ -147,7 +147,7 @@ def cancel_models(conversions: list, i: int, installation_manager: InstallationM
         }
         for canceled_conversion in conversions[i:]
     ]
-    installation_manager.cancel_conversions(models_to_cancel)
+    global_state_manager.model_manager.cancel_conversions(models_to_cancel)
 
 
 def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
@@ -222,7 +222,7 @@ async def run_model(
         raise RuntimeError(f"Server at port {port} did not start in time")
 
     # Add the model to the running models database
-    await db.runningmodels.create(
+    await global_state_manager.db.runningmodels.create(
         {
             "id": model_id,
             "instance": instance,
@@ -243,9 +243,7 @@ async def kill_models(models: list[ProgressEvent]):
         await stop_model_handler(model.model_id, model.instance)
 
 
-async def run_models_generator(
-    model_ids: list[str], installation_manager: InstallationManager
-):
+async def run_models_generator(model_ids: list[str]):
     """
     Run the models with the given IDs. If any model fails to quantize or run, the generator
     will yield an error event and stop running the models from this request. It is an all-
@@ -255,7 +253,6 @@ async def run_models_generator(
 
     Args:
         model_ids (list[str]): The list of model IDs to run
-        installation_manager (InstallationManager): The installation manager instance
 
     Yields a string of the JSON representation of a ProgressEvent
     """
@@ -266,8 +263,13 @@ async def run_models_generator(
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
-    quantizations = adaptive_quantization_decision(model_ids)
-    mem_shares = get_gpu_memory_shares(model_ids)
+    configurations = (
+        await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            model_ids
+        )
+    )
+    quantizations = [config[1] for config in configurations]
+    mem_shares = await get_gpu_memory_shares(model_ids)
     instance_numbers = await get_instances(model_ids)
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes
@@ -306,7 +308,7 @@ async def run_models_generator(
     # Check if there is enough disk space to convert and quantize the models
     # We check memory at time of conversion
     try:
-        check_disk_space(total_compressed_size, installation_manager)
+        check_disk_space(total_compressed_size)
     except Exception as e:
         error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
@@ -316,7 +318,7 @@ async def run_models_generator(
     # or allowing a secondary run request to interfere with an earlier one
     for conversion in conversions:
         model_path = get_app_data_path() / "models" / conversion["model_id"]
-        installation_manager.add_to_conversion_queue(
+        global_state_manager.model_manager.add_to_conversion_queue(
             model_path, conversion["quant"], conversion["compressed_size"]
         )
 
@@ -333,7 +335,9 @@ async def run_models_generator(
         quant_path = model_path / quant.value
 
         # Wait for the model to be the next in line for conversion in the global queue
-        while not installation_manager.is_models_conversion_turn(model_path, quant):
+        while not global_state_manager.model_manager.is_models_conversion_turn(
+            model_path, quant
+        ):
             await asyncio.sleep(5)
 
         # Check if there is enough memory to convert and quantize the model
@@ -341,7 +345,7 @@ async def run_models_generator(
             check_memory_space(weights_path, quant)
         except Exception as e:
             # Cancel all conversions that have not yet been started
-            cancel_models(conversions, i, installation_manager)
+            cancel_models(conversions, i)
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
@@ -352,13 +356,13 @@ async def run_models_generator(
 
         # Perform the conversion and quantization
         try:
-            installation_manager.remove_from_conversion_queue()
+            global_state_manager.model_manager.remove_from_conversion_queue()
             convert_quantize_compile(weights_path, quant_path, quant)
         except Exception as e:
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
-        installation_manager.complete_conversion()
+        global_state_manager.model_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models
     models_started = []
@@ -369,7 +373,6 @@ async def run_models_generator(
         instance = instance_obj["instance"]
 
         # Check if there is enough memory to run the model
-        available_ram = get_usable_memory()
         model_path = get_app_data_path() / "models" / model_id
         weights_path = model_path / "base"
 

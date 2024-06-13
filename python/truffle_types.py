@@ -11,9 +11,13 @@ class RepoType(Enum):
 
 
 class Quantization(Enum):
-    INT8 = "INT8"
-    INT4 = "INT4"
-    INT3 = "INT3"
+    Q0F16 = "q0f16"
+    Q4F16_0 = "q4f16_0"
+    Q4F16_1 = "q4f16_1"
+    Q4F16_2 = "q4f16_2"
+    Q4F16_FT = "q4f16_ft"
+    Q3F16_0 = "q3f16_0"
+    Q3F16_1 = "q3f16_1"
 
 
 class ModelStatus(Enum):

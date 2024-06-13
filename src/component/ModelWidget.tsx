@@ -2,9 +2,6 @@ import { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
-import useInstallModel from "../hooks/installModel/useInstallModel";
-import { startInstallModel } from "../api/model";
-import { useStore } from "../store/store";
 import { motion } from "framer-motion"
 
 interface ModelWidgetProps {

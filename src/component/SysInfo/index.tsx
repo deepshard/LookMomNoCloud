@@ -18,8 +18,8 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
     setSelection(value);
   };
 
-  const calculatePercentage = (avaliable: number, total: number) => {
-    return Math.round(((total - avaliable) / total) * 100);
+  const calculatePercentage = (available: number, total: number) => {
+    return Math.round(((total - available) / total) * 100);
   };
 
   const getUsed = () => {

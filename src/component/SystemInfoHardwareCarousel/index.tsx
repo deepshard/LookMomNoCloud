@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Carousel from "../Carousel/Carousel";
 import PreOrderTruffle from "../PreOrderTruffle";
 import Sysinfo from "../SysInfo";
@@ -11,15 +10,6 @@ interface SystemInfoHardwareCarouselProps {
 }
 const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps) => {
   const { selection } = useSystemInfoHardwareCarouselContext();
-
-  useEffect(() => {
-    const slickList = document.querySelectorAll(".slick-list")[1];
-    // const slickListDiv = slickList.querySelectorAll('.slick-slide')
-    // console.log(slickListDiv)
-    if (slickList) {
-      //   slickList.style.overflow = `visible`
-    }
-  }, []);
 
   return (
     <div className="relative">

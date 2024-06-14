@@ -132,9 +132,8 @@ def mock_quant_decision(mocker):
 @pytest.fixture(autouse=True)
 def mock_utils(mocker):
     mocker.patch("utils.get_tensor_parallelism", return_value=1)
-    mocker.patch(
-        "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
-    )
+    mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
+    mocker.patch("endpoints.model.install.install.get_usable_memory", return_value=8192)
 
 
 # Test the install endpoint logic
@@ -504,9 +503,8 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 
         if progress_updates[-1]["status"] == "INSTALLING":
             # Mock the available RAM information to be less than the required amount
-            mocker.patch(
-                "psutil.virtual_memory", return_value=MagicMock(total=0, wired=0, available=0)
-            )
+            mocker.patch("state.ModelManager.get_usable_memory", return_value=0)
+            mocker.patch("endpoints.model.install.install.get_usable_memory", return_value=0)
 
     assert progress_updates[-1]["error"] == "Not enough memory"
 

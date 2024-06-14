@@ -65,6 +65,8 @@ def utils_mock(mocker):
     mocker.patch("endpoints.model.run.run.get_tensor_parallelism", return_value=1)
     mocker.patch("endpoints.model.run.run.is_server_running", return_value=True)
     mocker.patch("multiprocessing.Process", return_value=MagicMock(pid=1234))
+    mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
+    mocker.patch("endpoints.model.run.run.get_usable_memory", return_value=8192)
 
 
 @pytest.fixture(autouse=True)
@@ -325,9 +327,8 @@ async def test_run_not_convertable_format(session_fixture, mock_mlc, mocker):
 async def test_run_not_enough_space(session_fixture, mock_mlc, model_weights, mocker):
     # Mocks
     session_fixture("endpoints.model.run.run")
-    mocker.patch(
-        "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
-    )
+    mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
+    mocker.patch("endpoints.model.run.run.get_usable_memory", return_value=8192)
     mocker.patch("psutil.disk_usage", return_value=MagicMock(free=1024))
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -358,7 +359,7 @@ async def test_run_not_enough_space(session_fixture, mock_mlc, model_weights, mo
 async def test_run_not_enough_memory_quantization(session_fixture, model_weights, mocker):
     # Mocks
     session_fixture("endpoints.model.run.run")
-    mocker.patch("psutil.virtual_memory", return_value=MagicMock(total=0, wired=0, available=0))
+    mocker.patch("state.ModelManager.get_usable_memory", return_value=0)
     mocker.patch("psutil.disk_usage", return_value=MagicMock(free=8192))
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -393,9 +394,8 @@ async def test_run_kill_previous_models(session_fixture, mock_mlc, model_weights
     session_fixture("endpoints.model.run.run")
     mocker.patch("psutil.disk_usage", return_value=MagicMock(free=8192))
     kill_mock = mocker.patch("os.kill")
-    ram_mock = mocker.patch(
-        "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
-    )
+    mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
+    ram_mock = mocker.patch("endpoints.model.run.run.get_usable_memory", return_value=8192)
     create_quants()
 
     # Prepare JSON streaming responses as they would be sent from the generator
@@ -406,7 +406,7 @@ async def test_run_kill_previous_models(session_fixture, mock_mlc, model_weights
     async for response in stream:
         responses.append(json.loads(response[5:]))
         if len(responses) == 5:
-            ram_mock.return_value = MagicMock(total=0, wired=0, available=0)
+            ram_mock.return_value = 0
 
     # Check the responses
     assert kill_mock.call_count == 2

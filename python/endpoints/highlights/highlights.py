@@ -4,10 +4,11 @@ from state import global_state_manager
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
+from models import RunningModel
 
 
 async def get_highlights() -> list[Model]:
-    models = await global_state_manager.db.runningmodels.find_many()
+    models = await RunningModel.get_all()
     tasks = []
     for model in models:
         task = fetch_model_data(model)
@@ -23,7 +24,7 @@ async def get_highlights() -> list[Model]:
 
 async def get_trending_models(num: int) -> list[Model]:
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/trending?k={num}"
+        f"""{TRUFFLE_API_URL}/models/trending?k={num}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"""
     ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
@@ -42,7 +43,7 @@ async def get_trending_models(num: int) -> list[Model]:
                 hf_link=model["hfLink"],
                 eval_id=model["evalId"],
                 status=ModelStatus.NOT_DOWNLOADED,
-                background_image=model["backgroundImage"],
+                background_image=model["bg_image_url"],
                 instance=0,
                 progress=0,
             )
@@ -52,7 +53,7 @@ async def get_trending_models(num: int) -> list[Model]:
 
 async def fetch_model_data(model):
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model.id}"
+        f"{TRUFFLE_API_URL}/models?id={model.id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
     ) as response:
         assert response.status == 200, f"Failed to fetch model data for {model.id}"
         model_data = await response.json()
@@ -70,7 +71,7 @@ async def fetch_model_data(model):
             hf_link=model_data["hfLink"],
             eval_id=model_data["evalId"],
             status=ModelStatus.RUNNING,
-            background_image=model_data["backgroundImage"],
+            background_image=model_data["bg_image_url"],
             instance=model.instance,
             progress=0,
         )

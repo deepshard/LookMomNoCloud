@@ -1,22 +1,21 @@
 import ModelWidget from "./component/ModelWidget";
-import { Button } from "antd";
 import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
 import { useEffect } from "react";
 
 import Carousel from "./component/Carousel/Carousel";
-import SysInfo from "./component/SysInfo";
-import useSysInfo from "./hooks/sysInfo/useSysInfo";
-import { useAppStore } from "./store/store";
-import PreOrderTruffle from "./component/PreOrderTruffle";
+import { useAppStore, useStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
+import useInstallModel from "./hooks/installModel/useInstallModel";
+import { startInstallModel } from "./api/model";
 
 export default function Home() {
   const llamaImage = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
-  const truffleHardwareImage = process.env.NODE_ENV === "development" ? "/assets/icons/truffle-hardware.svg" : "../../renderer/main_window/assets/icons/truffle-hardware.svg";
 
   const { data: highlights } = useGetHighlights();
   const { highlights: storeHighlights, setHighlights, sysInfo } = useAppStore();
+  const { setDownloads } = useStore();
+  const { installModel, disconnect } = useInstallModel({ streamFn: startInstallModel });
 
   useEffect(() => {
     if (highlights) {
@@ -37,7 +36,23 @@ export default function Home() {
             <h1 className="text-surface-750 w-full">Welcome, Peter</h1>
           </div>
 
-          <div className="flex gap-1.5 w-[660px]">{storeHighlights?.map((model) => <ModelWidget model={model} key={model.id} />)}</div>
+          <div className="flex gap-1.5 w-[660px]">
+            {storeHighlights?.map((model) => (
+              <ModelWidget 
+                model={model} 
+                key={model.id}
+                onInstall={() => {
+                  installModel(model, new AbortController(), (progress) => {
+                    setDownloads({
+                      ...model,
+                      ...progress,
+                    });
+                  })
+                }}
+                onDisconnect={() => disconnect(model)}
+              />
+            ))}
+          </div>
 
           <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
             <div className="col-span-1 flex flex-col gap-5 justify-between w-80">

@@ -1,57 +1,27 @@
-import os
 import pytest
-from unittest import mock
-from unittest.mock import patch, MagicMock
-from aioresponses import aioresponses
+from unittest.mock import MagicMock
 from pathlib import Path
 from state import global_state_manager
 from server import init_state
 from truffle_types import Quantization
-import utils
-from constants import TRUFFLE_API_URL
+from tests.data import ID, ID_2
 
 
-# Data
-MOCK_MODEL_1 = {
-    "id": 1,
-    "name": "test",
-    "title": "test",
-    "size": 30_000_000_000,
-    "author": "test",
-    "downloads": 1,
-    "likes": 1,
-    "intro": "test",
-    "capabilities": "test",
-    "risks": "test",
-    "hfLink": "https://huggingface.co/api/models/openai-community/gpt2",
-    "evalId": "test",
-    "backgroundImage": "test",
-}
-
-
-# Fixtures
-@pytest.fixture
-def api_mock():
-    with aioresponses() as mocked:
-        mocked.get(
-            TRUFFLE_API_URL + "/models?id=1",
-            status=200,
-            payload=MOCK_MODEL_1,
-            repeat=True,
-        )
-        mocked.get(
-            TRUFFLE_API_URL + "/models?id=2",
-            status=200,
-            payload=MOCK_MODEL_1,
-            repeat=True,
-        )
-        mocked.get(
-            TRUFFLE_API_URL + "/models?id=3",
-            status=200,
-            payload=MOCK_MODEL_1,
-            repeat=True,
-        )
-        yield mocked
+@pytest.fixture(autouse=True)
+def mock_mlc(mocker):
+    mocker.patch(
+        "state.ModelManager.detect_model_type",
+        return_value=MagicMock(
+            quantize={
+                "no-quant": "",
+                "group-quant": "",
+                "ft-quant": "",
+                "awq": "",
+                "per-tensor-quant": "",
+            }
+        ),
+    )
+    mocker.patch("state.ModelManager.detect_config", return_value=MagicMock())
 
 
 # Cases:
@@ -62,177 +32,115 @@ def api_mock():
 # - Multiple models, larger model gets quantized more (quantization)
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_quantization(
-    api_mock,
+    session_fixture, is_macos, mocker
 ):
-    async with init_state():
-        model_ids = ["1"]
+    # Data
+    model_ids = [ID]
 
-        with patch(
-            "state.ModelManager.ModelManager.get_quantization_options",
-            return_value=[
-                Quantization.Q0F16,
-                Quantization.Q4F16_0,
-                Quantization.Q4F16_1,
-                Quantization.Q3F16_0,
-            ],
-        ):
-            with patch(
-                "state.ModelManager.ModelManager.get_expected_memory_consumption",
-                return_value=1000,
-            ):
-                with patch(
-                    "state.ModelManager.ModelManager.get_expected_disk_consumption",
-                    return_value=1000,
-                ):
-                    with patch(
-                        "state.ModelManager.ModelManager.get_space_check_info",
-                        return_value=(2000, 2000, 0),
-                    ):
-                        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                            model_ids
-                        )
+    # Mocks
+    session_fixture("state.ModelManager")
+    mocker.patch(
+        "psutil.virtual_memory",
+        return_value=MagicMock(total=100000000, available=100000000, wired=0),
+    )
+    mocker.patch(
+        "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
+    )
+    mocker.patch("state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
 
-                        assert result == [("1", Quantization.Q0F16)]
+    # Test
+    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
+    assert result == [(ID, Quantization.Q0F16)]
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory_quantization(
-    api_mock,
+    session_fixture, is_macos, mocker
 ):
-    async with init_state():
-        model_ids = ["1"]
+    # Data
+    model_ids = [ID]
 
-        with patch(
-            "state.ModelManager.ModelManager.get_quantization_options",
-            return_value=[
-                Quantization.Q0F16,
-                Quantization.Q4F16_0,
-                Quantization.Q4F16_1,
-                Quantization.Q3F16_0,
-            ],
-        ):
-            with patch("utils.get_disk_usage", return_value=1000):
-                with patch(
-                    "state.ModelManager.ModelManager.get_space_check_info",
-                    return_value=(500, 2000, 0),
-                ):
-                    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                        model_ids
-                    )
+    # Mocks
+    session_fixture("state.ModelManager")
+    mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
+    mocker.patch("utils.get_disk_usage", return_value=1000)
 
-                    assert result == [("1", Quantization.Q4F16_0)]
+    # Test
+    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
+
+    assert result == [(ID, Quantization.Q4F16_2)]
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_no_quantization(
-    api_mock,
+    session_fixture, is_macos, mocker
 ):
-    async with init_state():
-        model_ids = ["1"]
+    # Data
+    model_ids = [ID]
 
-        with patch(
-            "state.ModelManager.ModelManager.get_quantization_options",
-            return_value=[
-                Quantization.Q0F16,
-                Quantization.Q4F16_0,
-                Quantization.Q4F16_1,
-                Quantization.Q3F16_0,
-            ],
-        ):
-            with patch("utils.get_disk_usage", return_value=100000):
-                with patch(
-                    "state.ModelManager.ModelManager.get_space_check_info",
-                    return_value=(500, 500, 0),
-                ):
-                    with pytest.raises(Exception):
-                        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                            model_ids
-                        )
+    # Mocks
+    session_fixture("state.ModelManager")
+    mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
+    mocker.patch("utils.get_disk_usage", return_value=100000)
+
+    # Test
+    with pytest.raises(Exception):
+        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            model_ids
+        )
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_memory_no_quantization(
-    api_mock,
+    session_fixture, is_macos, mocker
 ):
-    async with init_state():
-        model_ids = ["1", "2", "3"]
+    # Data
+    model_ids = [ID, ID, ID_2]
 
-        with patch(
-            "state.ModelManager.ModelManager.get_quantization_options",
-            return_value=[
-                Quantization.Q0F16,
-                Quantization.Q4F16_0,
-                Quantization.Q4F16_1,
-                Quantization.Q3F16_0,
-            ],
-        ):
-            with patch(
-                "state.ModelManager.ModelManager.get_expected_memory_consumption",
-                return_value=1000,
-            ):
-                with patch(
-                    "state.ModelManager.ModelManager.get_expected_disk_consumption",
-                    return_value=1000,
-                ):
-                    with patch(
-                        "state.ModelManager.ModelManager.get_space_check_info",
-                        return_value=(2000, 2000, 0),
-                    ):
-                        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                            model_ids
-                        )
+    # Mocks
+    session_fixture("state.ModelManager")
+    mocker.patch(
+        "psutil.virtual_memory",
+        return_value=MagicMock(total=100000000, available=100000000, wired=0),
+    )
+    mocker.patch(
+        "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
+    )
+    mocker.patch("state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
 
-                        assert result == [
-                            ("1", Quantization.Q0F16),
-                            ("2", Quantization.Q0F16),
-                            ("3", Quantization.Q0F16),
-                        ]
+    # Test
+    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
+    assert result == [
+        (ID, Quantization.Q0F16),
+        (ID, Quantization.Q0F16),
+        (ID_2, Quantization.Q0F16),
+    ]
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_multiple_models_larger_model_gets_quantized_more(
-    api_mock,
+    session_fixture, is_macos, mocker
 ):
-    async with init_state():
-        model_ids = ["1", "2", "3"]
+    # Data
+    model_ids = [ID, ID_2]
 
-        with patch(
-            "state.ModelManager.ModelManager.get_quantization_options",
-            return_value=[
-                Quantization.Q0F16,
-                Quantization.Q4F16_0,
-                Quantization.Q4F16_1,
-                Quantization.Q3F16_0,
-            ],
-        ):
-            with patch(
-                "state.ModelManager.get_app_data_path",
-                return_value=Path("/tmp"),
-            ):
-                with patch("utils.get_disk_usage") as mock_get_disk_usage:
+    # Mocks
+    session_fixture("state.ModelManager")
+    mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=2000))
 
-                    def mock_disk_usage(weights_path):
-                        if weights_path == Path("/tmp/models/1/base"):
-                            return 1000
-                        if weights_path == Path("/tmp/models/2/base"):
-                            return 2000
-                        if weights_path == Path("/tmp/models/3/base"):
-                            return 3000
+    def mock_disk_usage(weights_path):
+        if weights_path == Path(f"/tmp/models/{ID}/base"):
+            return 500
+        if weights_path == Path(f"/tmp/models/{ID_2}/base"):
+            return 4000
 
-                        return 0
+        return 0
 
-                    mock_get_disk_usage.side_effect = mock_disk_usage
+    mocker.patch("utils.get_disk_usage", side_effect=mock_disk_usage)
 
-                    with patch(
-                        "state.ModelManager.ModelManager.get_space_check_info",
-                        return_value=(2500, 2500, 0),
-                    ):
-                        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                            model_ids
-                        )
-
-                        assert result == [
-                            ("1", Quantization.Q0F16),
-                            ("2", Quantization.Q4F16_0),
-                            ("3", Quantization.Q4F16_0),
-                        ]
+    # Test
+    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
+    assert result == [
+        (ID, Quantization.Q0F16),
+        (ID_2, Quantization.Q4F16_2),
+    ]

@@ -6,6 +6,9 @@ from pathlib import Path
 from loguru import logger
 from enum import Enum
 from mlc_llm.interface.serve import serve
+from sqlalchemy import select
+from db import get_db_session
+from models import RunningModel
 from state import global_state_manager
 from endpoints.model.stop import stop_model_handler
 from endpoints.model.install.install import convert_quantize_compile
@@ -31,9 +34,7 @@ class Status(Enum):
 
 
 class ProgressEvent:
-    def __init__(
-        self, model_id: str, status: Status, instance: int, port: int, error: str = None
-    ):
+    def __init__(self, model_id: str, status: Status, instance: int, port: int, error: str = None):
         self.model_id = model_id
         self.status = status
         self.instance = instance
@@ -73,32 +74,30 @@ class ProgressEvent:
 
 async def get_instances(model_ids: list[str]) -> list[int]:
     # Get all of the running models
-    models = await global_state_manager.db.runningmodels.find_many()
+    async with get_db_session() as session:
+        models = (await session.scalars(select(RunningModel))).all()
+        # For each model ID, get the max instance number from the DB, increment it, then
+        # add the number of instances from the model IDs array that will be starting before it
+        instances = []
+        for model_id in model_ids:
+            # Filter models down to matching IDs
+            matching_models = [model for model in models if model.id == model_id]
 
-    # For each model ID, get the max instance number from the DB, increment it, then
-    # add the number of instances from the model IDs array that will be starting before it
-    instances = []
-    for model_id in model_ids:
-        # Filter models down to matching IDs
-        matching_models = [model for model in models if model.id == model_id]
+            # Get the max instance number for the model
+            instances_to_run = [model for model in instances if model["model_id"] == model_id]
+            instance = (
+                max([model.instance for model in matching_models], default=0)
+                + 1
+                + len(instances_to_run)
+            )
+            instances.append({"model_id": model_id, "instance": instance})
 
-        # Get the max instance number for the model
-        instances_to_run = [
-            model for model in instances if model["model_id"] == model_id
-        ]
-        instance = (
-            max([model.instance for model in matching_models], default=0)
-            + 1
-            + len(instances_to_run)
-        )
-        instances.append({"model_id": model_id, "instance": instance})
-
-    return instances
+        return instances
 
 
 async def get_model_info(model_id: str) -> dict:
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model_id}"
+        f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model_id}"
         return await response.json()
@@ -107,10 +106,7 @@ async def get_model_info(model_id: str) -> dict:
 async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
     total_score = await global_state_manager.model_manager.get_score(configurations)
     return [
-        (
-            await global_state_manager.model_manager.get_score([configuration])
-            / total_score
-        )
+        (0.85 * (await global_state_manager.model_manager.get_score([configuration]) / total_score))
         for configuration in configurations
     ]
 
@@ -127,9 +123,9 @@ def check_disk_space(size: int) -> bool:
     raise ValueError("Not enough space")
 
 
-def check_memory_space(weights_path: Path, quant: Quantization) -> bool:
+def check_memory_space(weights_path: Path, quant: Quantization, run: bool) -> bool:
     model_size, _ = get_model_size_info(weights_path, quant)
-    available_ram = get_usable_memory()
+    available_ram = get_usable_memory(run)
 
     if model_size < available_ram:
         return True
@@ -141,9 +137,7 @@ def cancel_models(conversions: list, i: int):
     # Cancel all conversions that have not yet been started
     models_to_cancel = [
         {
-            "model_path": get_app_data_path()
-            / "models"
-            / canceled_conversion["model_id"],
+            "model_path": get_app_data_path() / "models" / canceled_conversion["model_id"],
             "quantization": canceled_conversion["quant"],
         }
         for canceled_conversion in conversions[i:]
@@ -159,16 +153,22 @@ def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
         device="auto",
         model_lib=str(model_path / "compilation.so"),
         mode="local",
+        enable_debug=False,
         additional_models=[],  # Not relevant
         tensor_parallel_shards=shards,
-        max_batch_size=1,
+        max_num_sequence=None,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
+        max_single_sequence_length=None,
         prefill_chunk_size=None,  # This lets the AsyncMLEngine automatically determine
+        sliding_window_size=None,
+        attention_sink_size=None,
         max_history_size=None,  # Not relevant
         gpu_memory_utilization=mem_share,
         speculative_mode="disable",  # TODO: Decide if we want to enable this
         spec_draft_length=4,
+        prefix_cache_mode="disable",
+        prefix_cache_max_num_recycling_seqs=None,
         enable_tracing=False,
         host="127.0.0.1",
         port=port,
@@ -210,9 +210,7 @@ async def run_model(
     )
 
     # Start the model server as a separate process
-    proc = multiprocessing.Process(
-        target=serve_model, args=(model_path, mem_share, port, shards)
-    )
+    proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
     proc.start()
 
     # Wait for the server to start and be available
@@ -222,17 +220,17 @@ async def run_model(
         raise RuntimeError(f"Server at port {port} did not start in time")
 
     # Add the model to the running models database
-    await global_state_manager.db.runningmodels.create(
-        {
-            "id": model_id,
-            "instance": instance,
-            "name": model_info["name"],
-            "size": model_info["size"],
-            "pid": proc.pid,
-            "port": port,
-            "quantization": quantization.value,
-        }
-    )
+    async with get_db_session() as session:
+        session.add(
+            RunningModel(
+                id=model_id,
+                instance=instance,
+                name=model_info["name"],
+                size=model_info["size"],
+                pid=proc.pid,
+            )
+        )
+        await session.commit()
 
     return ProgressEvent(model_id, Status.RUNNING, instance, port)
 
@@ -260,14 +258,13 @@ async def run_models_generator(model_ids: list[str]):
     for model_id in model_ids:
         acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
         yield str(acknowledgement_event)
+        await asyncio.sleep(2)
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
     try:
         configurations = (
-            await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                model_ids
-            )
+            await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
         )
         quantizations = [config[1] for config in configurations]
         mem_shares = await get_gpu_memory_shares(configurations)
@@ -340,14 +337,12 @@ async def run_models_generator(model_ids: list[str]):
         quant_path = model_path / quant.value
 
         # Wait for the model to be the next in line for conversion in the global queue
-        while not global_state_manager.model_manager.is_models_conversion_turn(
-            model_path, quant
-        ):
+        while not global_state_manager.model_manager.is_models_conversion_turn(model_path, quant):
             await asyncio.sleep(5)
 
         # Check if there is enough memory to convert and quantize the model
         try:
-            check_memory_space(weights_path, quant)
+            check_memory_space(weights_path, quant, False)
         except Exception as e:
             # Cancel all conversions that have not yet been started
             cancel_models(conversions, i)
@@ -382,11 +377,9 @@ async def run_models_generator(model_ids: list[str]):
         weights_path = model_path / "base"
 
         try:
-            check_memory_space(weights_path, quant)
+            check_memory_space(model_path / quant.value, quant, True)
         except Exception as e:
-            error_event = ProgressEvent(
-                model_id, Status.RUNNING, instance, None, str(e)
-            )
+            error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return
@@ -405,9 +398,7 @@ async def run_models_generator(model_ids: list[str]):
                 f"""Error running model {model_id}: {
                     e}\n{traceback.format_exc()}"""
             )
-            error_event = ProgressEvent(
-                model_id, Status.RUNNING, instance, None, str(e)
-            )
+            error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return

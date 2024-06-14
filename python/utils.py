@@ -89,9 +89,7 @@ def is_convertable_format(base_weights_path: str) -> bool:
     return False
 
 
-def get_model_size_info(
-    weights_path: Path, quantization: Quantization
-) -> tuple[int, float]:
+def get_model_size_info(weights_path: Path, quantization: Quantization) -> tuple[int, float]:
     model_size = get_disk_usage(weights_path)
     compression_rate = get_quantization_compression(quantization)
     compressed_size = model_size * compression_rate
@@ -142,7 +140,7 @@ def is_mlc_compatible(files: list[FileInfo]) -> bool:
     return False
 
 
-def get_usable_memory() -> int:
+def get_usable_memory(run: bool = False) -> int:
     """
     This is the memory that is currently available or could be quickly made available.
     That is, the maximum memory a new process could use without trigger an OOM error.
@@ -150,8 +148,11 @@ def get_usable_memory() -> int:
     system = platform.system()
     mem = psutil.virtual_memory()
     if system == "Darwin":
-        # macOS swaps to disk when memory is low, so we need to take that into account
-        return mem.total - mem.wired
+        if run:
+            return mem.available
+        else:
+            # macOS swaps to disk when memory is low, so we need to take that into account
+            return mem.total - mem.wired
     elif system == "Linux":
         # Get devices
         devices = get_devices()
@@ -207,3 +208,14 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
         shards += 1
 
     return shards
+
+
+def get_db_path():
+    return os.getenv(
+        "DATABASE_URL",
+        (
+            f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.db')}"
+            if os.getenv("ENV") == "prod"
+            else f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.test.db')}"
+        ),
+    )

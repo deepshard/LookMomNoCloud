@@ -4,6 +4,8 @@ from server import init_state
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
 from tests.data import MODELS
+from db import get_db_session
+from models import RunningModel
 
 
 @pytest.mark.asyncio
@@ -32,7 +34,9 @@ async def test_get_highlights_models_running():
             "port": 32423,
             "quantization": "INT4",
         }
-        await global_state_manager.db.runningmodels.create(mock_model)
+        async with get_db_session() as session:
+            session.add(RunningModel(**mock_model))
+            await session.commit()
 
         # Test
         models = await get_highlights()

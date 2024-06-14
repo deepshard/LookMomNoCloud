@@ -13,6 +13,8 @@ from server import init_state
 from endpoints.model.run.run import run_models_generator, get_instances
 from truffle_types import Quantization
 from constants import TRUFFLE_API_URL
+from models import RunningModel
+from db import get_db_session
 
 schema = {
     "type": "object",
@@ -74,7 +76,7 @@ def clear_path():
 async def clear_db():
     async with init_state():
         print("Clearing DB")
-        await global_state_manager.db.runningmodels.delete_many()
+        await RunningModel.delete_all()
 
 
 # Fixtures
@@ -292,8 +294,7 @@ async def test_run_multiple_models(
                 "endpoints.model.run.run.find_port", return_value=8899
             ) as find_port:
                 # Prepare JSON streaming responses as they would be sent from the generator
-                stream = run_models_generator(
-                    [model_id_1, model_id_1, model_id_2])
+                stream = run_models_generator([model_id_1, model_id_1, model_id_2])
 
                 # Collect the responses
                 responses = []
@@ -391,18 +392,21 @@ async def test_run_instance_running(
     get_disk_and_memory_mock,
 ):
     async with init_state():
-        # Insert a running model
-        await global_state_manager.db.runningmodels.create(
-            {
-                "id": model_id_1,
-                "instance": 1,
-                "name": "meta-llama/Meta-Llama-3-8B",
-                "size": 8000000000,
-                "pid": 1234,
-                "port": 8899,
-                "quantization": "INT4",
-            }
-        )
+        async with get_db_session() as session:
+            session.add(
+                RunningModel(
+                    **{
+                        "id": model_id_1,
+                        "instance": 1,
+                        "name": "meta-llama/Meta-Llama-3-8B",
+                        "size": 8000000000,
+                        "pid": 1234,
+                        "port": 8899,
+                        "quantization": "INT4",
+                    }
+                )
+            )
+            await session.commit()
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1])
@@ -441,8 +445,7 @@ async def test_run_not_convertable_format(
     async with init_state():
         # Rename pytorch_model.bin to something else
         model_path = Path("/tmp") / "models" / model_id_1 / "base"
-        os.rename(model_path / "pytorch_model.bin",
-                  model_path / "invalid_file.bin")
+        os.rename(model_path / "pytorch_model.bin", model_path / "invalid_file.bin")
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1])
@@ -629,8 +632,7 @@ async def test_run_kill_previous_models(
 
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator
-                stream = run_models_generator(
-                    [model_id_1, model_id_2, model_id_3])
+                stream = run_models_generator([model_id_1, model_id_2, model_id_3])
 
                 # Collect the responses
                 responses = []
@@ -730,8 +732,10 @@ async def test_run_get_instance_count(
                 "quantization": "INT4",
             },
         ]
-        for data_item in data:
-            await global_state_manager.db.runningmodels.create(data_item)
+        async with get_db_session() as session:
+            for data_item in data:
+                session.add(RunningModel(**data_item))
+            await session.commit()
 
         # Prepare JSON streaming responses as they would be sent from the generator
         instances = await get_instances([model_id_1, model_id_2, model_id_3])

@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from loguru import logger
+from migrations import run_migrations
 from state import global_state_manager
 from endpoints import (
     sysinfo_generator,
@@ -121,7 +122,6 @@ def run_migrations():
 if __name__ == "__main__":
     import uvicorn
 
-    print("Running migrations...")
     run_migrations()
 
     uvicorn.run(app, host="0.0.0.0", port=8899)

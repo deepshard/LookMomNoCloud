@@ -89,9 +89,7 @@ def is_convertable_format(base_weights_path: str) -> bool:
     return False
 
 
-def get_model_size_info(
-    weights_path: Path, quantization: Quantization
-) -> tuple[int, float]:
+def get_model_size_info(weights_path: Path, quantization: Quantization) -> tuple[int, float]:
     model_size = get_disk_usage(weights_path)
     compression_rate = get_quantization_compression(quantization)
     compressed_size = model_size * compression_rate
@@ -210,3 +208,14 @@ def get_tensor_parallelism(model_weights_dir: str, quantization: Quantization) -
         shards += 1
 
     return shards
+
+
+def get_db_path():
+    return os.getenv(
+        "DATABASE_URL",
+        (
+            f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.db')}"
+            if os.getenv("ENV") == "prod"
+            else f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.test.db')}"
+        ),
+    )

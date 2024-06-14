@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 
 interface ModelWidgetProps {
   model: TModel;
-onInstall?: () => void;
+  onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
   onDelete?: () => void;

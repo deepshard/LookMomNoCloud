@@ -1,27 +1,16 @@
 from alembic.config import Config
 from alembic import command
-from utils import get_app_data_path
-import os
-
-
-def get_db_path_sync():
-    return os.getenv(
-        "DATABASE_URL",
-        (
-            f"sqlite:///{str(get_app_data_path() / 'truffle.db')}"
-            if os.getenv("ENV") == "prod"
-            else f"sqlite:///{str(get_app_data_path() / 'truffle.test.db')}"
-        ),
-    )
+from utils import get_db_path
 
 
 def run_migrations():
-    print("** Running migrations **")
+    path = get_db_path().replace("+aiosqlite", "")
+    print("-- Running migrations")
     alembic_cfg = Config()
     alembic_cfg.set_main_option("script_location", "alembic")
-    alembic_cfg.set_main_option("sqlalchemy.url", get_db_path_sync())
+    alembic_cfg.set_main_option("sqlalchemy.url", path)
     command.upgrade(alembic_cfg, "head")
-    print("** Migrations complete **")
+    print("-- Done.")
 
 
 if __name__ == "__main__":

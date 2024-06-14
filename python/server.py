@@ -111,8 +111,6 @@ async def delete_model(model_id: str):
     return {}
 
 
-
-
 if __name__ == "__main__":
     import uvicorn
 

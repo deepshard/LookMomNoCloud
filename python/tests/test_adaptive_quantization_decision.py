@@ -4,7 +4,7 @@ from pathlib import Path
 from state import global_state_manager
 from server import init_state
 from truffle_types import Quantization
-from data import ID, ID_2
+from tests.data import ID, ID_2
 
 
 @pytest.fixture(autouse=True)

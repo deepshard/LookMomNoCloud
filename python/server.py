@@ -18,8 +18,6 @@ from endpoints import (
     get_downloaded_models,
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
-from alembic.config import Config
-from alembic import command
 
 
 @asynccontextmanager

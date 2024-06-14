@@ -175,8 +175,6 @@ async def test_install_single_model_from_scratch(session_fixture, mock_mlc, mock
     async for progress in progress_stream:
         progress_updates.append(json.loads(progress[5:]))
 
-    print(" -- progress updates", progress_updates)
-
     assert progress_updates[0]["status"] == "ACKNOWLEDGED"
     assert progress_updates[1]["status"] == "DOWNLOADING"
     assert progress_updates[-2]["status"] == "INSTALLING"

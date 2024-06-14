@@ -146,6 +146,10 @@ MOCK_FILE_ONE_DATA = os.urandom(1024)
 MOCK_FILE_TWO_DATA = os.urandom(1024)
 MOCK_FILE_THREE_DATA = os.urandom(1024)
 MOCK_FILE_FOUR_DATA = os.urandom(1024)
+MOCK_VALID_FILES = [
+    {"file": "pytorch_model.bin", "data": os.urandom(1024)},
+    {"file": "config.json", "data": os.urandom(1024)},
+]
 MOCK_FILES = [
     {"file_path": "file_one.bin", "data": os.urandom(1024)},
     {"file_path": "file_two.bin", "data": os.urandom(1024)},

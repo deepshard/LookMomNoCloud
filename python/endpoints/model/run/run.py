@@ -75,16 +75,18 @@ class ProgressEvent:
 async def get_instances(model_ids: list[str]) -> list[int]:
     # Get all of the running models
     async with get_db_session() as session:
-        models = await session.scalars(select(RunningModel)).all()
+        models = (await session.scalars(select(RunningModel))).all()
         # For each model ID, get the max instance number from the DB, increment it, then
         # add the number of instances from the model IDs array that will be starting before it
         instances = []
         for model_id in model_ids:
             # Filter models down to matching IDs
-            matching_models = [model for model in models if model.id == model_id]
+            matching_models = [
+                model for model in models if model.id == model_id]
 
             # Get the max instance number for the model
-            instances_to_run = [model for model in instances if model["model_id"] == model_id]
+            instances_to_run = [
+                model for model in instances if model["model_id"] == model_id]
             instance = (
                 max([model.instance for model in matching_models], default=0)
                 + 1
@@ -210,7 +212,8 @@ async def run_model(
     )
 
     # Start the model server as a separate process
-    proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
+    proc = multiprocessing.Process(
+        target=serve_model, args=(model_path, mem_share, port, shards))
     proc.start()
 
     # Wait for the server to start and be available
@@ -221,7 +224,7 @@ async def run_model(
 
     # Add the model to the running models database
     async with get_db_session() as session:
-        await session.add(
+        session.add(
             RunningModel(
                 id=model_id,
                 instance=instance,
@@ -256,7 +259,8 @@ async def run_models_generator(model_ids: list[str]):
     """
 
     for model_id in model_ids:
-        acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
+        acknowledgement_event = ProgressEvent(
+            model_id, Status.ACKNOWLEDGED, None, None)
         yield str(acknowledgement_event)
         await asyncio.sleep(2)
 
@@ -270,7 +274,8 @@ async def run_models_generator(model_ids: list[str]):
         mem_shares = await get_gpu_memory_shares(configurations)
         instance_numbers = await get_instances(model_ids)
     except Exception as e:
-        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
+        error_event = ProgressEvent(
+            None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         return
 
@@ -312,7 +317,8 @@ async def run_models_generator(model_ids: list[str]):
     try:
         check_disk_space(total_compressed_size)
     except Exception as e:
-        error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
+        error_event = ProgressEvent(
+            None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         return
 
@@ -346,12 +352,14 @@ async def run_models_generator(model_ids: list[str]):
         except Exception as e:
             # Cancel all conversions that have not yet been started
             cancel_models(conversions, i)
-            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
 
         # Send quantization event
-        quantization_event = ProgressEvent(model_id, Status.INSTALLING, None, None)
+        quantization_event = ProgressEvent(
+            model_id, Status.INSTALLING, None, None)
         yield str(quantization_event)
 
         # Perform the conversion and quantization
@@ -359,7 +367,8 @@ async def run_models_generator(model_ids: list[str]):
             global_state_manager.model_manager.remove_from_conversion_queue()
             convert_quantize_compile(weights_path, quant_path, quant)
         except Exception as e:
-            error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             return
         global_state_manager.model_manager.complete_conversion()
@@ -379,7 +388,8 @@ async def run_models_generator(model_ids: list[str]):
         try:
             check_memory_space(model_path / quant.value, quant, True)
         except Exception as e:
-            error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return
@@ -398,7 +408,8 @@ async def run_models_generator(model_ids: list[str]):
                 f"""Error running model {model_id}: {
                     e}\n{traceback.format_exc()}"""
             )
-            error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
+            error_event = ProgressEvent(
+                model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return

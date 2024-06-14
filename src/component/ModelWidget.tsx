@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 
 interface ModelWidgetProps {
   model: TModel;
-  onInstall?: () => void;
+onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
   onDelete?: () => void;
@@ -32,11 +32,9 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
         onInstall && onInstall();
         break;
       case "RUNNING":
-        console.log("TODO: trying to stop");
         onStop && onStop();
         break;
       case "STOPPED":
-        console.log("TODO: trying to run");
         onRun && onRun();
         break;
       default:
@@ -93,7 +91,10 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
         );
       case "RUNNING":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <div 
+            onClick={handleAction}
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
+          >
             <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );

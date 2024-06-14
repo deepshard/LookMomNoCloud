@@ -6,7 +6,7 @@ import Carousel from "./component/Carousel/Carousel";
 import { useAppStore, useStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
-import useInstallModel from "./hooks/installModel/useInstallModel";
+import useModelActions from "./hooks/installModel/useModelActions";
 import { startInstallModel } from "./api/model";
 
 export default function Home() {
@@ -14,8 +14,8 @@ export default function Home() {
 
   const { data: highlights } = useGetHighlights();
   const { highlights: storeHighlights, setHighlights, sysInfo } = useAppStore();
-  const { setDownloads } = useStore();
-  const { installModel, disconnect } = useInstallModel({ streamFn: startInstallModel });
+  const { updateModels } = useStore();
+  const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
 
   useEffect(() => {
     if (highlights) {
@@ -38,18 +38,37 @@ export default function Home() {
 
           <div className="flex gap-1.5 w-[660px]">
             {storeHighlights?.map((model) => (
-              <ModelWidget 
-                model={model} 
+              <ModelWidget
+                model={model}
                 key={model.id}
                 onInstall={() => {
-                  installModel(model, new AbortController(), (progress) => {
-                    setDownloads({
+                  installModel(model, undefined, (progress) => {
+                    updateModels({
                       ...model,
                       ...progress,
                     });
+                  });
+                }}
+                onRun={() => runModels([model], undefined, (updatedModel, controller) => {
+                  updateModels({
+                    ...model,
+                    ...updatedModel,
+                  });
+                  if(updatedModel.status === 'RUNNING') {
+                    controller.abort();
+                  }
+                })}
+                onStop={() => {
+                  stopModel(model)
+                  .then((res) => {
+                    updateModels({
+                      ...model,
+                      status: 'STOPPED',
+                    })
                   })
                 }}
-                onDisconnect={() => disconnect(model)}
+                onDelete={() => deleteModel(model)}
+                onDisconnect={() => cleanupInstall(model)}
               />
             ))}
           </div>

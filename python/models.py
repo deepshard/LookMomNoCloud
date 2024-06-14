@@ -1,3 +1,4 @@
+from uuid import uuid4
 from sqlalchemy import (
     BigInteger,
     create_engine,
@@ -11,12 +12,17 @@ from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 from sqlalchemy import select
 from db import get_db_session
 
+
+def get_uuid() -> str:
+    return str(uuid4())
+
+
 Base = declarative_base()
 
 
 class RunningModel(Base):
     __tablename__ = "running_models"
-    db_id = Column(String, primary_key=True, default="cuid()")
+    db_id = Column(String, primary_key=True, default=get_uuid)
     id = Column(String)
     instance = Column(Integer)
     name = Column(String)

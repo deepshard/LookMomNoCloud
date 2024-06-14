@@ -9,6 +9,7 @@ import tests.data as data
 from unittest import mock
 from unittest.mock import MagicMock, patch
 from aioresponses import aioresponses
+from db import get_db_session
 from state import global_state_manager
 from server import init_state
 from constants import TRUFFLE_API_URL
@@ -24,8 +25,7 @@ def clear_path():
 
 
 async def clear_db():
-    async with init_state():
-        await RunningModel.delete_all()
+    await RunningModel.delete_all()
 
 
 # Fixtures
@@ -43,8 +43,12 @@ async def test_fixture(request):
     await clear_db()
     os.makedirs("/tmp/models", exist_ok=True)
 
-    async def teardown():
-        await clear_db()
+    async with init_state():
+        yield
+
+    def teardown():
+        asyncio.run(clear_db())
+        clear_path()
 
     request.addfinalizer(teardown)
 
@@ -77,6 +81,8 @@ def request_mocks(request, mocker):
     with aioresponses() as mocked:
         # HuggingFace
         mocked.get(data.HF_API_URL, status=200, payload=data.MOCK_API_RESPONSE, repeat=True)
+        mocked.get(data.HF_API_URL_1, status=200, payload=data.mocked_response_1, repeat=True)
+        mocked.get(data.HF_API_URL_2, status=200, payload=data.mocked_response_2, repeat=True)
         mocked.get(data.FILE_ONE_URL, status=200, body=data.MOCK_FILE_ONE_DATA, repeat=True)
         mocked.get(data.FILE_TWO_URL, status=200, body=data.MOCK_FILE_TWO_DATA, repeat=True)
         mocked.get(data.FILE_THREE_URL, status=200, body=data.MOCK_FILE_THREE_DATA, repeat=True)

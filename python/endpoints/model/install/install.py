@@ -100,7 +100,6 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
 
     # Get list of repo files
     files = data.get("siblings", [])
-    print(files)
     if not files:
         raise ValueError(f"Could not find any files for {model_name}")
 

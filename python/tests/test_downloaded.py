@@ -56,69 +56,64 @@ def create_partial_model_dir(model_id: str):
 # Tests
 @pytest.mark.asyncio
 async def test_no_models_downloaded(session_fixture):
-    async with init_state():
-        # Mocks
-        session_fixture("endpoints.model.downloaded.downloaded")
+    # Mocks
+    session_fixture("endpoints.model.downloaded.downloaded")
 
-        # Test
-        models = await get_downloaded_models()
-        assert len(models) == 0
+    # Test
+    models = await get_downloaded_models()
+    assert len(models) == 0
 
 
 @pytest.mark.asyncio
 async def test_one_model_downloaded(session_fixture):
-    async with init_state():
-        # Mocks
-        session_fixture("endpoints.model.downloaded.downloaded")
+    # Mocks
+    session_fixture("endpoints.model.downloaded.downloaded")
 
-        # Create a model directory
-        create_model_dir(ID)
+    # Create a model directory
+    create_model_dir(ID)
 
-        # Test
-        models = await get_downloaded_models()
-        assert len(models) == 1
-        assert models[0].id == ID
+    # Test
+    models = await get_downloaded_models()
+    assert len(models) == 1
+    assert models[0].id == ID
 
 
 @pytest.mark.asyncio
 async def test_multiple_models_downloaded(session_fixture):
-    async with init_state():
-        # Mocks
-        session_fixture("endpoints.model.downloaded.downloaded")
+    # Mocks
+    session_fixture("endpoints.model.downloaded.downloaded")
 
-        # Create model directories
-        create_model_dir(ID)
-        create_model_dir(ID_2)
+    # Create model directories
+    create_model_dir(ID)
+    create_model_dir(ID_2)
 
-        # Test
-        models = await get_downloaded_models()
-        assert len(models) == 2
+    # Test
+    models = await get_downloaded_models()
+    assert len(models) == 2
 
 
 @pytest.mark.asyncio
 async def test_one_model_downloaded_not_fully(session_fixture):
-    async with init_state():
-        # Mocks
-        session_fixture("endpoints.model.downloaded.downloaded")
+    # Mocks
+    session_fixture("endpoints.model.downloaded.downloaded")
 
-        # Create a partial model directory
-        create_partial_model_dir(ID)
+    # Create a partial model directory
+    create_partial_model_dir(ID)
 
-        # Test
-        models = await get_downloaded_models()
-        assert len(models) == 0
+    # Test
+    models = await get_downloaded_models()
+    assert len(models) == 0
 
 
 @pytest.mark.asyncio
 async def test_one_model_downloaded_fully_another_not_fully(session_fixture):
-    async with init_state():
-        # Mocks
-        session_fixture("endpoints.model.downloaded.downloaded")
+    # Mocks
+    session_fixture("endpoints.model.downloaded.downloaded")
 
-        # Create a model directories
-        create_model_dir(ID)
-        create_partial_model_dir(ID_2)
+    # Create a model directories
+    create_model_dir(ID)
+    create_partial_model_dir(ID_2)
 
-        models = await get_downloaded_models()
-        assert len(models) == 1
-        assert models[0].id == ID
+    models = await get_downloaded_models()
+    assert len(models) == 1
+    assert models[0].id == ID

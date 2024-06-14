@@ -8,6 +8,8 @@ ID_2 = "b438d015-ad45-4e9a-9aba-2e290348b078"
 # Request URLs
 MODEL_URL = "https://huggingface.co/openai-community/gpt2"
 HF_API_URL = "https://huggingface.co/api/models/openai-community/gpt2?"
+HF_API_URL_1 = "https://huggingface.co/api/models/1?"
+HF_API_URL_2 = "https://huggingface.co/api/models/2?"
 
 FILE_ONE_URL = "https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin"
 FILE_TWO_URL = "https://huggingface.co/openai-community/gpt2/resolve/main/config.json"
@@ -63,6 +65,15 @@ MOCK_API_RESPONSE = {
         },
     ]
 }
+mocked_response_1 = [
+    {"rfilename": "pytorch_model.bin"},
+    {"rfilename": "config.json"},
+    {"rfilename": "onnx/onnx_model.onnx"},
+    {"rfilename": "tf_model/tf_model.tflite"},
+    {"rfilename": "test.msgpack"},
+    {"rfilename": "test.h5"},
+]
+mocked_response_2 = [{"rfilename": "xyz.safetensors"}, {"rfilename": "consolidated.safetensors"}]
 MODELS = [
     {
         "id": "3fec7228-04de-485d-9f09-bde6e8ea350f",

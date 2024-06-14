@@ -2,7 +2,7 @@ import React from 'react'
 
 function ModelFolderView() {
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center bg-black bg-opacity-50 bg-blur-[150px]'>
+    <div className='w-full h-full flex flex-col items-center justify-center bg-black/50 bg-blur-[150px]'>
         {/* Model Cards */}
         <div className='grid grid-cols-3 gap-y-[52px] gap-x-[140px]'>
           {[...Array(9)].map((_, index) => (

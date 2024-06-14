@@ -12,9 +12,7 @@ class GlobalStateManager:
     def __init__(self):
         self.session = None
         self.model_manager = None
-        self._headers = {
-            "Authorization": f"Bearer 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"
-        }
+        self._headers = {"Authorization": f"Bearer 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"}
 
     async def launch(self):
         self.session = await aiohttp.ClientSession(

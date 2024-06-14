@@ -62,15 +62,11 @@ class ModelManager:
 
             if quantization_dir.exists():
                 quantized_bytes = get_disk_usage(quantization_dir)
-                conversion_bytes += (
-                    self.current_conversion["compressed_size"] - quantized_bytes
-                )
+                conversion_bytes += self.current_conversion["compressed_size"] - quantized_bytes
 
         return download_bytes + conversion_bytes
 
-    def is_models_conversion_turn(
-        self, model_path: str, quantization: Quantization
-    ) -> bool:
+    def is_models_conversion_turn(self, model_path: str, quantization: Quantization) -> bool:
         """Check if the model is next in line for conversion and the prior conversion has completed."""
 
         return (
@@ -109,14 +105,11 @@ class ModelManager:
     def cancel_conversions(self, models: list[dict]):
         """Cancel conversions for a list of models."""
 
-        cancel_set = {
-            (model["model_path"], model["quantization"].value) for model in models
-        }
+        cancel_set = {(model["model_path"], model["quantization"].value) for model in models}
         self.conversion_queue = [
             queued_model
             for queued_model in self.conversion_queue
-            if (queued_model["model_path"], queued_model["quantization"])
-            not in cancel_set
+            if (queued_model["model_path"], queued_model["quantization"]) not in cancel_set
         ]
 
     def get_space_check_info(self, run: bool = False) -> tuple[int, int, int]:
@@ -189,16 +182,12 @@ class ModelManager:
         for model_id, quantization in models:
             if not does_quantization_exist(model_id, quantization):
                 base_weights_path = get_app_data_path() / "models" / model_id / "base"
-                _, compressed_size = get_model_size_info(
-                    base_weights_path, quantization
-                )
+                _, compressed_size = get_model_size_info(base_weights_path, quantization)
                 total_size += compressed_size
 
         return total_size
 
-    async def get_capabilities_score(
-        self, model_id: str, quantization: Quantization
-    ) -> float:
+    async def get_capabilities_score(self, model_id: str, quantization: Quantization) -> float:
         """
         Returns a capabilities score based on the model's size and the expected impact of
         quantization on model downstream performance.
@@ -237,9 +226,7 @@ class ModelManager:
         # Get the quantization options available for the model then convert them to Quantization enum
         quantization_kinds = list(model.quantize.keys())
         raw_quantization_options = [
-            quant.name
-            for quant in QUANTIZATION.values()
-            if quant.kind in quantization_kinds
+            quant.name for quant in QUANTIZATION.values() if quant.kind in quantization_kinds
         ]
         quantization_options = [
             quant for quant in Quantization if quant.value in raw_quantization_options
@@ -258,9 +245,7 @@ class ModelManager:
 
         return available_configurations
 
-    def get_usable_configurations(
-        self, configurations: list[tuple[str, list[Quantization]]]
-    ):
+    def get_usable_configurations(self, configurations: list[tuple[str, list[Quantization]]]):
         """
         Create every possible combination of model x quantization options and return the ones whose
         expected memory consumption and expected disk consumption are less than the system's
@@ -282,13 +267,8 @@ class ModelManager:
             expected_disk = self.get_expected_disk_consumption(models)
 
             # Check if the combination is usable based on available resources
-            available_memory, disk_space, bytes_remaining = self.get_space_check_info(
-                True
-            )
-            if (
-                expected_memory < available_memory
-                and expected_disk + bytes_remaining < disk_space
-            ):
+            available_memory, disk_space, bytes_remaining = self.get_space_check_info(True)
+            if expected_memory < available_memory and expected_disk + bytes_remaining < disk_space:
                 usable_configurations.append(models)
 
         return usable_configurations

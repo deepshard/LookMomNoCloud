@@ -34,8 +34,7 @@ def test_delete_model_base(session_fixture):
 
     # Assert that the model directory is deleted
     assert not base_path.exists(), "Model base directory should be deleted"
-    assert not (
-        base_path / "sub_folder").exists(), "Sub-folder should be deleted"
+    assert not (base_path / "sub_folder").exists(), "Sub-folder should be deleted"
     assert not (
         Path("/tmp") / "models" / ID
     ).exists(), "Model top-level directory should be deleted"
@@ -57,10 +56,8 @@ def test_delete_model_with_quant_dir(session_fixture):
     # Assert that the model directory is deleted
     assert not base_path.exists(), "Model base directory should be deleted"
     assert not quant_path.exists(), "Model quant directory should be deleted"
-    assert not (
-        base_path / "sub_folder").exists(), "Sub-folder should be deleted"
-    assert not (
-        quant_path / "sub_folder").exists(), "Sub-folder should be deleted"
+    assert not (base_path / "sub_folder").exists(), "Sub-folder should be deleted"
+    assert not (quant_path / "sub_folder").exists(), "Sub-folder should be deleted"
     assert not (
         Path("/tmp") / "models" / ID
     ).exists(), "Model top-level directory should be deleted"

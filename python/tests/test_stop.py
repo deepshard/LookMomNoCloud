@@ -81,9 +81,7 @@ async def test_stop_model_instance_exists(base_fixture, mock_process):
                 )
             )
             model_instance = result.first()
-        assert (
-            model_instance is None
-        ), "Model instance should be removed from the database"
+        assert model_instance is None, "Model instance should be removed from the database"
 
 
 @pytest.mark.asyncio

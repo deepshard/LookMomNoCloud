@@ -55,9 +55,7 @@ def create_partial_model_dir(model_id: str):
 
 # Tests
 @pytest.mark.asyncio
-async def test_no_models_downloaded(
-    session_fixture
-):
+async def test_no_models_downloaded(session_fixture):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.downloaded.downloaded")
@@ -68,9 +66,7 @@ async def test_no_models_downloaded(
 
 
 @pytest.mark.asyncio
-async def test_one_model_downloaded(
-    session_fixture
-):
+async def test_one_model_downloaded(session_fixture):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.downloaded.downloaded")
@@ -85,9 +81,7 @@ async def test_one_model_downloaded(
 
 
 @pytest.mark.asyncio
-async def test_multiple_models_downloaded(
-    session_fixture
-):
+async def test_multiple_models_downloaded(session_fixture):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.downloaded.downloaded")
@@ -102,9 +96,7 @@ async def test_multiple_models_downloaded(
 
 
 @pytest.mark.asyncio
-async def test_one_model_downloaded_not_fully(
-    session_fixture
-):
+async def test_one_model_downloaded_not_fully(session_fixture):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.downloaded.downloaded")
@@ -118,9 +110,7 @@ async def test_one_model_downloaded_not_fully(
 
 
 @pytest.mark.asyncio
-async def test_one_model_downloaded_fully_another_not_fully(
-    session_fixture
-):
+async def test_one_model_downloaded_fully_another_not_fully(session_fixture):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.downloaded.downloaded")

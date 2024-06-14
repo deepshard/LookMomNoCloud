@@ -9,12 +9,8 @@ ID_2 = "b438d015-ad45-4e9a-9aba-2e290348b078"
 MODEL_URL = "https://huggingface.co/openai-community/gpt2"
 HF_API_URL = "https://huggingface.co/api/models/openai-community/gpt2?"
 
-FILE_ONE_URL = (
-    "https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin"
-)
-FILE_TWO_URL = (
-    "https://huggingface.co/openai-community/gpt2/resolve/main/config.json"
-)
+FILE_ONE_URL = "https://huggingface.co/openai-community/gpt2/resolve/main/pytorch_model.bin"
+FILE_TWO_URL = "https://huggingface.co/openai-community/gpt2/resolve/main/config.json"
 FILE_THREE_URL = "https://huggingface.co/openai-community/gpt2/resolve/main/onnx/onnx_model.onnx"
 FILE_FOUR_URL = "https://huggingface.co/openai-community/gpt2/resolve/main/tf_model/tf_model.pb"
 

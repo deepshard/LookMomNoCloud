@@ -87,8 +87,7 @@ async def get_file_size_hf(url: str, file: str) -> tuple[str, int]:
 
 def _is_convertable_file(file: str, ignore_patterns: list[str]) -> bool:
     return not any(
-        file.endswith(pattern) or file.startswith(pattern)
-        for pattern in ignore_patterns
+        file.endswith(pattern) or file.startswith(pattern) for pattern in ignore_patterns
     )
 
 
@@ -108,9 +107,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
     base_ignore_patterns = ["tflite", "onnx", "msgpack", "txt", "ot", "h5"]
 
     # Check if there is a safetensor file. If so, exclude PyTorch bin files (redundant)
-    contains_safetensor = any(
-        file["rfilename"].endswith("safetensors") for file in files
-    )
+    contains_safetensor = any(file["rfilename"].endswith("safetensors") for file in files)
     if contains_safetensor:
         base_ignore_patterns.extend(["bin", "pth", "pt"])
 
@@ -122,9 +119,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
 
     # filter out files that are not convertable or redundant
     files = [
-        file
-        for file in files
-        if _is_convertable_file(file["rfilename"], base_ignore_patterns)
+        file for file in files if _is_convertable_file(file["rfilename"], base_ignore_patterns)
     ]
 
     tasks = []
@@ -132,10 +127,7 @@ async def get_hf_repo_info(model_name: str) -> list[FileInfo]:
         if not file["rfilename"]:
             raise ValueError(f"Missing rfilename for {file}")
 
-        tasks.append(
-            get_file_size_hf(
-                f"https://huggingface.co/{model_name}", file["rfilename"])
-        )
+        tasks.append(get_file_size_hf(f"https://huggingface.co/{model_name}", file["rfilename"]))
 
     # Get the file sizes
     files_to_download = await asyncio.gather(*tasks)
@@ -219,9 +211,7 @@ def get_conv_template(base_weights_path: str) -> str:
 
 async def get_base_quantization_decision(model_id: str) -> Quantization:
     quantization_options = (
-        await global_state_manager.model_manager.get_adaptive_quantization_decision(
-            [model_id]
-        )
+        await global_state_manager.model_manager.get_adaptive_quantization_decision([model_id])
     )
     return quantization_options[0][1]
 
@@ -309,9 +299,7 @@ async def queue_conversion(
     progress_event.update(progress=100)
     yield progress_event
 
-    while not global_state_manager.model_manager.is_models_conversion_turn(
-        model_dir, quantization
-    ):
+    while not global_state_manager.model_manager.is_models_conversion_turn(model_dir, quantization):
         logger.info(
             f"""Waiting for {model_dir} to be converted.\nCurrent conversion queue: {
                 global_state_manager.model_manager.conversion_queue()}\nCurrent conversion in progress: {global_state_manager.model_manager.current_conversion}"""
@@ -451,8 +439,7 @@ async def install_generator(model_id: str, model_url: str):
     try:
         check_disk_space(total_size)
     except Exception as e:
-        progress_event.update(status=Status.DOWNLOADING,
-                              progress=100, error=str(e))
+        progress_event.update(status=Status.DOWNLOADING, progress=100, error=str(e))
         yield str(progress_event)
         return
 
@@ -481,17 +468,14 @@ async def install_generator(model_id: str, model_url: str):
         return
 
     # Mark as installing and send to InstallManager
-    logger.info(
-        f"Downloaded files. Beginning weight conversion and quantization process."
-    )
+    logger.info(f"Downloaded files. Beginning weight conversion and quantization process.")
     progress_event.update(status=Status.INSTALLING, progress=100)
 
     # Check if the quantization is already built
     try:
         quantization = await get_base_quantization_decision(model_id)
         if does_quantization_exist(model_id, quantization):
-            logger.info(
-                f"Conversion and quantization already exists for {model_dir}")
+            logger.info(f"Conversion and quantization already exists for {model_dir}")
             progress_event.update(status=Status.STOPPED)
             yield str(progress_event)
             return
@@ -516,8 +500,7 @@ async def install_generator(model_id: str, model_url: str):
     # Check that there is enough space and memory to convert and quantize the model
     logger.info(f"Checking space and memory for {model_dir}")
     try:
-        model_size, compressed_size = get_model_size_info(
-            install_path, quantization)
+        model_size, compressed_size = get_model_size_info(install_path, quantization)
         check_disk_space(compressed_size)
         check_memory_space(model_size)
     except Exception as e:
@@ -537,8 +520,7 @@ async def install_generator(model_id: str, model_url: str):
         global_state_manager.model_manager.complete_conversion()
         return
 
-    logger.info(
-        f"Conversion, quantization, and compilation complete for {model_dir}")
+    logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")
     progress_event.update(status=Status.STOPPED)
     yield str(progress_event)
     global_state_manager.model_manager.complete_conversion()

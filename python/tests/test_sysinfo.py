@@ -24,9 +24,9 @@ async def test_ram_change_detection():
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
 
-        initial_ram = json.loads(initial_data.split("data: ")[1].strip())["resources"][
-            "available"
-        ]["ram"]
+        initial_ram = json.loads(initial_data.split("data: ")[1].strip())["resources"]["available"][
+            "ram"
+        ]
 
         # simulate -5% change
         after_change = round(initial_ram * 0.95)
@@ -39,17 +39,15 @@ async def test_ram_change_detection():
             updated_data = await generator.__anext__()
 
         # Parse the JSON data from the generator output
-        updated_ram = json.loads(updated_data.split("data: ")[1].strip())["resources"][
-            "available"
-        ]["ram"]
+        updated_ram = json.loads(updated_data.split("data: ")[1].strip())["resources"]["available"][
+            "ram"
+        ]
 
         # Calculate the percentage change in RAM
         ram_change = abs(updated_ram - initial_ram) / initial_ram * 100
 
         # Assert that the RAM change is at least 2%
-        assert (
-            ram_change >= CHANGE_THRESHOLD
-        ), f"RAM change should be at least {CHANGE_THRESHOLD}%"
+        assert ram_change >= CHANGE_THRESHOLD, f"RAM change should be at least {CHANGE_THRESHOLD}%"
 
 
 @pytest.mark.asyncio
@@ -59,9 +57,9 @@ async def test_no_significant_ram_change_does_not_yield():
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
 
-        initial_ram = json.loads(initial_data.split("data: ")[1].strip())["resources"][
-            "available"
-        ]["ram"]
+        initial_ram = json.loads(initial_data.split("data: ")[1].strip())["resources"]["available"][
+            "ram"
+        ]
 
         # simulate only 1% change
         after_change = round(initial_ram * 0.99)
@@ -74,9 +72,7 @@ async def test_no_significant_ram_change_does_not_yield():
             # Attempt to get updated data
             try:
                 updated_data = await asyncio.wait_for(generator.__anext__(), timeout=10)
-                assert (
-                    False
-                ), "Generator should not yield data for insignificant RAM change"
+                assert False, "Generator should not yield data for insignificant RAM change"
             except asyncio.TimeoutError:
                 # Expected timeout since there should be no new data yielded
                 assert True
@@ -140,9 +136,7 @@ async def test_no_significant_disk_change_does_not_yield():
             # Attempt to get updated data
             try:
                 updated_data = await asyncio.wait_for(generator.__anext__(), timeout=10)
-                assert (
-                    False
-                ), "Generator should not yield data for insignificant disk change"
+                assert False, "Generator should not yield data for insignificant disk change"
             except asyncio.TimeoutError:
                 # Expected timeout since there should be no new data yielded
                 assert True

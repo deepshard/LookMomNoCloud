@@ -9,10 +9,19 @@ from tests.data import ID, ID_2
 
 @pytest.fixture(autouse=True)
 def mock_mlc(mocker):
-    mocker.patch("state.ModelManager.detect_model_type", return_value=MagicMock(quantize={
-        "no-quant": "", "group-quant": "", "ft-quant": "", "awq": "", "per-tensor-quant": ""}))
-    mocker.patch("state.ModelManager.detect_config",
-                 return_value=MagicMock())
+    mocker.patch(
+        "state.ModelManager.detect_model_type",
+        return_value=MagicMock(
+            quantize={
+                "no-quant": "",
+                "group-quant": "",
+                "ft-quant": "",
+                "awq": "",
+                "per-tensor-quant": "",
+            }
+        ),
+    )
+    mocker.patch("state.ModelManager.detect_config", return_value=MagicMock())
 
 
 # Cases:
@@ -31,12 +40,16 @@ async def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_qu
 
         # Mocks
         session_fixture("state.ModelManager")
-        mocker.patch("psutil.virtual_memory", return_value=MagicMock(
-            total=100000000, available=100000000, wired=0))
         mocker.patch(
-            "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000)
+            "psutil.virtual_memory",
+            return_value=MagicMock(total=100000000, available=100000000, wired=0),
+        )
         mocker.patch(
-            "state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
+            "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
+        )
+        mocker.patch(
+            "state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000
+        )
 
         # Test
         result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
@@ -55,8 +68,7 @@ async def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory
 
         # Mocks
         session_fixture("state.ModelManager")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(available=500))
+        mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
         mocker.patch("utils.get_disk_usage", return_value=1000)
 
         # Test
@@ -77,8 +89,7 @@ async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_n
 
         # Mocks
         session_fixture("state.ModelManager")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(available=500))
+        mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
         mocker.patch("utils.get_disk_usage", return_value=100000)
 
         # Test
@@ -98,12 +109,16 @@ async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_mem
 
         # Mocks
         session_fixture("state.ModelManager")
-        mocker.patch("psutil.virtual_memory", return_value=MagicMock(
-            total=100000000, available=100000000, wired=0))
         mocker.patch(
-            "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000)
+            "psutil.virtual_memory",
+            return_value=MagicMock(total=100000000, available=100000000, wired=0),
+        )
         mocker.patch(
-            "state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
+            "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
+        )
+        mocker.patch(
+            "state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000
+        )
 
         # Test
         result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
@@ -126,8 +141,7 @@ async def test_get_adaptive_quantization_decision_multiple_models_larger_model_g
 
         # Mocks
         session_fixture("state.ModelManager")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(available=2000))
+        mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=2000))
 
         def mock_disk_usage(weights_path):
             if weights_path == Path(f"/tmp/models/{ID}/base"):
@@ -136,6 +150,7 @@ async def test_get_adaptive_quantization_decision_multiple_models_larger_model_g
                 return 4000
 
             return 0
+
         mocker.patch("utils.get_disk_usage", side_effect=mock_disk_usage)
 
         # Test

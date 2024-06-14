@@ -84,16 +84,12 @@ def test_run_model(mock_generators):
     assert response.headers["Cache-Control"] == "no-cache"
     assert response.headers["Connection"] == "keep-alive"
     mock_run_models_generator.assert_called_once()
-    mock_run_models_generator.assert_called_with(
-        ["aaaa-bbbb-cccc-dddd", "eeee-ffff-gggg-hhhh"]
-    )
+    mock_run_models_generator.assert_called_with(["aaaa-bbbb-cccc-dddd", "eeee-ffff-gggg-hhhh"])
 
 
 def test_stop_model(mock_generators):
     _, _, _, _, mock_stop_model_handler, _, _ = mock_generators
-    response = client.post(
-        "/model/stop", json={"id": "aaaa-bbbb-cccc-dddd", "instance": 1}
-    )
+    response = client.post("/model/stop", json={"id": "aaaa-bbbb-cccc-dddd", "instance": 1})
     assert response.status_code == 200
     mock_stop_model_handler.assert_called_once()
     mock_stop_model_handler.assert_called_with("aaaa-bbbb-cccc-dddd", 1)

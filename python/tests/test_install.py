@@ -77,36 +77,50 @@ def write_partial_dir(path):
 def mock_mlc(mocker):
     module = "endpoints.model.install.install"
 
-    mocker.patch(f"{module}.detect_model_type", return_value=MagicMock(quantize={
-        "no-quant": "", "group-quant": "", "ft-quant": "", "awq": "", "per-tensor-quant": ""}))
-    mocker.patch("state.ModelManager.detect_model_type", return_value=MagicMock(quantize={
-        "no-quant": "", "group-quant": "", "ft-quant": "", "awq": "", "per-tensor-quant": ""}))
-    mocker.patch(f"{module}.detect_config",
-                 return_value=MagicMock())
-    mocker.patch("state.ModelManager.detect_config",
-                 return_value=MagicMock())
-    mocker.patch(f"{module}.detect_weight",
-                 return_value=(MagicMock(), MagicMock()))
+    mocker.patch(
+        f"{module}.detect_model_type",
+        return_value=MagicMock(
+            quantize={
+                "no-quant": "",
+                "group-quant": "",
+                "ft-quant": "",
+                "awq": "",
+                "per-tensor-quant": "",
+            }
+        ),
+    )
+    mocker.patch(
+        "state.ModelManager.detect_model_type",
+        return_value=MagicMock(
+            quantize={
+                "no-quant": "",
+                "group-quant": "",
+                "ft-quant": "",
+                "awq": "",
+                "per-tensor-quant": "",
+            }
+        ),
+    )
+    mocker.patch(f"{module}.detect_config", return_value=MagicMock())
+    mocker.patch("state.ModelManager.detect_config", return_value=MagicMock())
+    mocker.patch(f"{module}.detect_weight", return_value=(MagicMock(), MagicMock()))
     mocker.patch(f"{module}.detect_device", return_value=MagicMock())
-    mocker.patch(f"{module}.detect_target_and_host",
-                 return_value=(MagicMock(), MagicMock()))
-    convert_weight = mocker.patch(
-        f"{module}.convert_weight_mlc", return_value=MagicMock())
+    mocker.patch(f"{module}.detect_target_and_host", return_value=(MagicMock(), MagicMock()))
+    convert_weight = mocker.patch(f"{module}.convert_weight_mlc", return_value=MagicMock())
     compile = mocker.patch(f"{module}.compile_mlc", return_value=MagicMock())
-    gen_config = mocker.patch(
-        f"{module}.gen_config_mlc", return_value=MagicMock())
+    gen_config = mocker.patch(f"{module}.gen_config_mlc", return_value=MagicMock())
 
     mocker.patch("json.load", return_value={})
 
     yield convert_weight, compile, gen_config
 
 
-@ pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def mock_quant_decision(mocker):
     mocker.patch(
-        "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000)
-    mocker.patch(
-        "state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
+        "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
+    )
+    mocker.patch("state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
     quant_decision = mocker.patch(
         "endpoints.model.install.install.global_state_manager.model_manager.get_adaptive_quantization_decision",
         side_effect=global_state_manager.model_manager.get_adaptive_quantization_decision,
@@ -114,7 +128,7 @@ def mock_quant_decision(mocker):
     yield quant_decision
 
 
-@ pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def mock_tensor_parallelism(mocker):
     mocker.patch("utils.get_tensor_parallelism", return_value=1)
 
@@ -136,17 +150,12 @@ def mock_tensor_parallelism(mocker):
 
 
 # Tests
-@ pytest.mark.asyncio
-async def test_install_single_model_from_scratch(
-    session_fixture,
-    mock_mlc,
-    mocker
-):
+@pytest.mark.asyncio
+async def test_install_single_model_from_scratch(session_fixture, mock_mlc, mocker):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("state.ModelManager.get_app_data_path",
-                     return_value=Path("/tmp"))
+        mocker.patch("state.ModelManager.get_app_data_path", return_value=Path("/tmp"))
         mock_get_file_sizes = mocker.patch(
             "endpoints.model.install.install.get_file_size_hf",
             side_effect=get_file_size_hf,
@@ -155,8 +164,9 @@ async def test_install_single_model_from_scratch(
             "endpoints.model.install.install.get_hf_repo_info",
             side_effect=get_hf_repo_info,
         )
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         # Test
         # Prepare JSON streaming responses as they would be sent from the generator
@@ -171,9 +181,7 @@ async def test_install_single_model_from_scratch(
         assert progress_updates[1]["status"] == "DOWNLOADING"
         assert progress_updates[-2]["status"] == "INSTALLING"
         assert progress_updates[-1]["status"] == "STOPPED"
-        assert all(
-            p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates
-        )
+        assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
 
         assert mock_mlc[0].call_count == 1
         assert mock_mlc[1].call_count == 1
@@ -193,7 +201,7 @@ async def test_install_single_model_from_scratch(
         mock_get_hf_repo_info.assert_called_with("openai-community/gpt2")
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_complete_partial_installation_of_single_model(
     session_fixture,
     mock_mlc,
@@ -202,10 +210,12 @@ async def test_complete_partial_installation_of_single_model(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
         mock_download_file = mocker.patch(
-            "endpoints.model.install.install.download_file", side_effect=download_file)
+            "endpoints.model.install.install.download_file", side_effect=download_file
+        )
 
         # Write one of the files to simulate a partial download
         download_path = Path("/tmp") / "models" / ID / "base"
@@ -236,7 +246,7 @@ async def test_complete_partial_installation_of_single_model(
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_skip_download_of_already_downloaded_model(
     session_fixture,
     mock_mlc,
@@ -245,10 +255,12 @@ async def test_skip_download_of_already_downloaded_model(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
         mock_download_file = mocker.patch(
-            "endpoints.model.install.install.download_file", side_effect=download_file)
+            "endpoints.model.install.install.download_file", side_effect=download_file
+        )
 
         # Write all files to simulate a complete download
         download_path = Path("/tmp") / "models" / ID / "base"
@@ -274,24 +286,21 @@ async def test_skip_download_of_already_downloaded_model(
         download_path = Path("/tmp") / "models" / progress_updates[0]["id"]
         assert (download_path / "base" / "pytorch_model.bin").exists()
         assert (download_path / "base" / "config.json").exists()
-        assert (download_path / "base" / "onnx" /
-                "onnx_model.onnx").exists()
-        assert (download_path / "base" /
-                "tf_model" / "tf_model.pb").exists()
+        assert (download_path / "base" / "onnx" / "onnx_model.onnx").exists()
+        assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
 
         # Check that queue is empty
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
-async def test_model_download_returns_progress_in_expected_format(
-    session_fixture, mocker
-):
+@pytest.mark.asyncio
+async def test_model_download_returns_progress_in_expected_format(session_fixture, mocker):
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         # Prepare JSON streaming responses as they would be sent from the generator
         progress_stream = install_generator(ID, MODEL_URL)
@@ -301,17 +310,10 @@ async def test_model_download_returns_progress_in_expected_format(
         async for progress in progress_stream:
             progress_updates.append(json.loads(progress[5:]))
 
-        assert all(
-            p.keys() == schema["properties"].keys() for p in progress_updates
-        )
-        assert all(
-            p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates
-        )
+        assert all(p.keys() == schema["properties"].keys() for p in progress_updates)
+        assert all(p["progress"] >= 0 and p["progress"] <= 100 for p in progress_updates)
         assert len(progress_updates) > 3
-        assert (
-            progress_updates[1]["progress"] >= 0
-            and progress_updates[1]["progress"] <= 100
-        )
+        assert progress_updates[1]["progress"] >= 0 and progress_updates[1]["progress"] <= 100
 
         # Assert that acknowledgement event was sent
         assert progress_updates[0]["status"] == "ACKNOWLEDGED"
@@ -320,7 +322,7 @@ async def test_model_download_returns_progress_in_expected_format(
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_single_model(
     session_fixture,
     mocker,
@@ -328,11 +330,10 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
         mocker.patch(
-            "psutil.disk_usage", return_value=MagicMock(total=1024, used=1024, free=0)
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
         )
+        mocker.patch("psutil.disk_usage", return_value=MagicMock(total=1024, used=1024, free=0))
 
         # Prepare JSON streaming responses as they would be sent from the generator
         progress_stream = install_generator(ID, MODEL_URL)
@@ -352,7 +353,7 @@ async def test_returns_error_if_not_enough_space_to_download_single_model(
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_download_with_model_in_progress(
     session_fixture,
     mocker,
@@ -360,13 +361,12 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         global_state_manager.model_manager.set_download("000", 1024)
-        mocker.patch(
-            "psutil.disk_usage", return_value=MagicMock(total=1024, used=0, free=1024)
-        )
+        mocker.patch("psutil.disk_usage", return_value=MagicMock(total=1024, used=0, free=1024))
 
         # Prepare JSON streaming responses as they would be sent from the generator
         progress_stream = install_generator(ID, MODEL_URL)
@@ -384,7 +384,7 @@ async def test_returns_error_if_not_enough_space_to_download_with_model_in_progr
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_only_converts_and_quantizes_single_model_at_a_time(
     session_fixture,
     mock_mlc,
@@ -393,8 +393,9 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         global_state_manager.model_manager.conversion_in_progress = True
         global_state_manager.model_manager.current_conversion = {
@@ -440,7 +441,7 @@ async def test_only_converts_and_quantizes_single_model_at_a_time(
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_skips_conversion_and_quantization_of_already_converted_model(
     session_fixture,
     mock_mlc,
@@ -449,11 +450,10 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
+        mocker.patch("endpoints.model.install.install.does_quantization_exist", return_value=True)
         mocker.patch(
-            "endpoints.model.install.install.does_quantization_exist", return_value=True
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
         )
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
 
         # Write all files to simulate a complete download
         download_path = Path("/tmp") / "models" / ID / "base"
@@ -477,7 +477,7 @@ async def test_skips_conversion_and_quantization_of_already_converted_model(
         assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
     session_fixture,
     mock_mlc,
@@ -486,8 +486,9 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         # Prepare JSON streaming responses as they would be sent from the generator
         progress_stream = install_generator(ID, MODEL_URL)
@@ -517,7 +518,7 @@ async def test_returns_error_if_not_enough_space_to_convert_and_quantize(
         assert mock_mlc[2].call_count == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     session_fixture,
     mock_mlc,
@@ -526,8 +527,9 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         # Prepare JSON streaming responses as they would be sent from the generator
         progress_stream = install_generator(ID, MODEL_URL)
@@ -539,8 +541,9 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
 
             if progress_updates[-1]["status"] == "INSTALLING":
                 # Mock the available RAM information to be less than the required amount
-                mocker.patch("psutil.virtual_memory",
-                             return_value=MagicMock(total=0, wired=0, available=0))
+                mocker.patch(
+                    "psutil.virtual_memory", return_value=MagicMock(total=0, wired=0, available=0)
+                )
 
         assert progress_updates[-1]["error"] == "Not enough memory"
 
@@ -555,7 +558,7 @@ async def test_returns_error_if_not_enough_memory_to_convert_and_quantize(
         assert mock_mlc[2].call_count == 0
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_completion_of_conversion_and_quantization_returns_status_transition(
     session_fixture,
     mock_mlc,
@@ -564,8 +567,9 @@ async def test_completion_of_conversion_and_quantization_returns_status_transiti
     async with init_state():
         # Mocks
         session_fixture("endpoints.model.install.install")
-        mocker.patch("psutil.virtual_memory",
-                     return_value=MagicMock(total=8192, wired=0, available=8192))
+        mocker.patch(
+            "psutil.virtual_memory", return_value=MagicMock(total=8192, wired=0, available=8192)
+        )
 
         # Prepare JSON streaming responses as they would be sent from the generator
         progress_stream = install_generator(ID, MODEL_URL)
@@ -602,7 +606,7 @@ def test_get_hf_name_for_url():
         assert get_hf_name_for_url(url) == expected_name
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_correctly_selects_proper_files_to_download_given_local_and_remote_file_lists(
     mocker,
 ):
@@ -698,17 +702,12 @@ async def test_correctly_selects_proper_files_to_download_given_local_and_remote
     ]
 
     for case, expected_outcome in zip(cases, expected_outcomes):
-        mocker.patch(
-            "endpoints.model.install.install.get_repo_info", return_value=case["remote"]
-        )
+        mocker.patch("endpoints.model.install.install.get_repo_info", return_value=case["remote"])
         mocker.patch(
             "endpoints.model.install.install.get_local_files",
             return_value=case["local"],
         )
-        assert (
-            await get_files_to_download(case["remote"], case["local"])
-            == expected_outcome
-        )
+        assert await get_files_to_download(case["remote"], case["local"]) == expected_outcome
 
 
 # TODO: fix this test

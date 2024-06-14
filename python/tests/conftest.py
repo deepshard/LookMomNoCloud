@@ -76,21 +76,11 @@ def request_mocks(request, mocker):
 
     with aioresponses() as mocked:
         # HuggingFace
-        mocked.get(
-            data.HF_API_URL, status=200, payload=data.MOCK_API_RESPONSE, repeat=True
-        )
-        mocked.get(
-            data.FILE_ONE_URL, status=200, body=data.MOCK_FILE_ONE_DATA, repeat=True
-        )
-        mocked.get(
-            data.FILE_TWO_URL, status=200, body=data.MOCK_FILE_TWO_DATA, repeat=True
-        )
-        mocked.get(
-            data.FILE_THREE_URL, status=200, body=data.MOCK_FILE_THREE_DATA, repeat=True
-        )
-        mocked.get(
-            data.FILE_FOUR_URL, status=200, body=data.MOCK_FILE_FOUR_DATA, repeat=True
-        )
+        mocked.get(data.HF_API_URL, status=200, payload=data.MOCK_API_RESPONSE, repeat=True)
+        mocked.get(data.FILE_ONE_URL, status=200, body=data.MOCK_FILE_ONE_DATA, repeat=True)
+        mocked.get(data.FILE_TWO_URL, status=200, body=data.MOCK_FILE_TWO_DATA, repeat=True)
+        mocked.get(data.FILE_THREE_URL, status=200, body=data.MOCK_FILE_THREE_DATA, repeat=True)
+        mocked.get(data.FILE_FOUR_URL, status=200, body=data.MOCK_FILE_FOUR_DATA, repeat=True)
 
         # Truffle
         mocked.get(
@@ -125,8 +115,6 @@ def request_mocks(request, mocker):
         )
 
         mock_head = mocker.patch("aiohttp.ClientSession.head")
-        mock_head.return_value.__aenter__.return_value = MagicMock(
-            headers={"Content-Length": 1024}
-        )
+        mock_head.return_value.__aenter__.return_value = MagicMock(headers={"Content-Length": 1024})
 
         yield mocked

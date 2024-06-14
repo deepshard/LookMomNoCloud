@@ -147,9 +147,7 @@ def get_disk_and_memory_mock():
 
 @pytest.fixture
 def server_mock():
-    with patch(
-        "endpoints.model.run.run.is_server_running", return_value=True
-    ) as is_server_running:
+    with patch("endpoints.model.run.run.is_server_running", return_value=True) as is_server_running:
         yield is_server_running
 
 
@@ -180,9 +178,7 @@ def mock_quants():
 @pytest.fixture
 def mlc_mock():
     # Mock convert_quantize_compile, when called write some data to the model's quantization directory
-    with patch(
-        "endpoints.model.run.run.convert_quantize_compile", return_value=None
-    ) as cqc:
+    with patch("endpoints.model.run.run.convert_quantize_compile", return_value=None) as cqc:
 
         def write_data(weights_path, quant_path, quant):
             print(f"Writing data to {quant_path}")
@@ -290,9 +286,7 @@ async def test_run_multiple_models(
                 (model_id_2, Quantization.Q0F16),
             ],
         ) as get_quant_decision_mock:
-            with patch(
-                "endpoints.model.run.run.find_port", return_value=8899
-            ) as find_port:
+            with patch("endpoints.model.run.run.find_port", return_value=8899) as find_port:
                 # Prepare JSON streaming responses as they would be sent from the generator
                 stream = run_models_generator([model_id_1, model_id_1, model_id_2])
 

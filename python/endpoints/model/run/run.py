@@ -34,9 +34,7 @@ class Status(Enum):
 
 
 class ProgressEvent:
-    def __init__(
-        self, model_id: str, status: Status, instance: int, port: int, error: str = None
-    ):
+    def __init__(self, model_id: str, status: Status, instance: int, port: int, error: str = None):
         self.model_id = model_id
         self.status = status
         self.instance = instance
@@ -86,9 +84,7 @@ async def get_instances(model_ids: list[str]) -> list[int]:
             matching_models = [model for model in models if model.id == model_id]
 
             # Get the max instance number for the model
-            instances_to_run = [
-                model for model in instances if model["model_id"] == model_id
-            ]
+            instances_to_run = [model for model in instances if model["model_id"] == model_id]
             instance = (
                 max([model.instance for model in matching_models], default=0)
                 + 1
@@ -110,13 +106,7 @@ async def get_model_info(model_id: str) -> dict:
 async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
     total_score = await global_state_manager.model_manager.get_score(configurations)
     return [
-        (
-            0.85
-            * (
-                await global_state_manager.model_manager.get_score([configuration])
-                / total_score
-            )
-        )
+        (0.85 * (await global_state_manager.model_manager.get_score([configuration]) / total_score))
         for configuration in configurations
     ]
 
@@ -147,9 +137,7 @@ def cancel_models(conversions: list, i: int):
     # Cancel all conversions that have not yet been started
     models_to_cancel = [
         {
-            "model_path": get_app_data_path()
-            / "models"
-            / canceled_conversion["model_id"],
+            "model_path": get_app_data_path() / "models" / canceled_conversion["model_id"],
             "quantization": canceled_conversion["quant"],
         }
         for canceled_conversion in conversions[i:]
@@ -222,9 +210,7 @@ async def run_model(
     )
 
     # Start the model server as a separate process
-    proc = multiprocessing.Process(
-        target=serve_model, args=(model_path, mem_share, port, shards)
-    )
+    proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
     proc.start()
 
     # Wait for the server to start and be available
@@ -278,9 +264,7 @@ async def run_models_generator(model_ids: list[str]):
     logger.info("Determining optimal quantizations and instance numbers")
     try:
         configurations = (
-            await global_state_manager.model_manager.get_adaptive_quantization_decision(
-                model_ids
-            )
+            await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
         )
         quantizations = [config[1] for config in configurations]
         mem_shares = await get_gpu_memory_shares(configurations)
@@ -353,9 +337,7 @@ async def run_models_generator(model_ids: list[str]):
         quant_path = model_path / quant.value
 
         # Wait for the model to be the next in line for conversion in the global queue
-        while not global_state_manager.model_manager.is_models_conversion_turn(
-            model_path, quant
-        ):
+        while not global_state_manager.model_manager.is_models_conversion_turn(model_path, quant):
             await asyncio.sleep(5)
 
         # Check if there is enough memory to convert and quantize the model
@@ -397,9 +379,7 @@ async def run_models_generator(model_ids: list[str]):
         try:
             check_memory_space(model_path / quant.value, quant, True)
         except Exception as e:
-            error_event = ProgressEvent(
-                model_id, Status.RUNNING, instance, None, str(e)
-            )
+            error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return
@@ -418,9 +398,7 @@ async def run_models_generator(model_ids: list[str]):
                 f"""Error running model {model_id}: {
                     e}\n{traceback.format_exc()}"""
             )
-            error_event = ProgressEvent(
-                model_id, Status.RUNNING, instance, None, str(e)
-            )
+            error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
             return

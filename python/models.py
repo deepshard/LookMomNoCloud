@@ -34,9 +34,7 @@ class RunningModel(Base):
     @staticmethod
     async def get_by_id(id):
         async with get_db_session() as session:
-            result = await session.scalars(
-                select(RunningModel).where(RunningModel.id == id)
-            )
+            result = await session.scalars(select(RunningModel).where(RunningModel.id == id))
             return result.first()
 
     @staticmethod

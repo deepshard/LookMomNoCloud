@@ -1,7 +1,6 @@
 from alembic.config import Config
 from alembic import command
-from sqlalchemy import create_engine
-from db import get_app_data_path
+from utils import get_app_data_path
 import os
 
 

@@ -17,7 +17,6 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
-  const llamaIcon = process.env.NODE_ENV === "development" ? "/assets/images/llama1.png" : "../../renderer/main_window/assets/images/llama1.png";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
   useEffect(() => {
@@ -32,11 +31,9 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
         onInstall && onInstall();
         break;
       case "RUNNING":
-        console.log("TODO: trying to stop");
         onStop && onStop();
         break;
       case "STOPPED":
-        console.log("TODO: trying to run");
         onRun && onRun();
         break;
       default:
@@ -93,7 +90,10 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
         );
       case "RUNNING":
         return (
-          <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <div 
+            onClick={handleAction}
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
+          >
             <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -113,7 +113,7 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
 
   return (
     <div className="model-widget base-regular">
-      <img src={llamaIcon} alt="" />
+      <img src={model.background_image} alt="" />
       <div className="absolute top-0 left-0 p-2">
         <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
         <p className="title-sm text-surface-main w-[60%]">{model.author}</p>

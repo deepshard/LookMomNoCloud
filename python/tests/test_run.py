@@ -133,23 +133,6 @@ def get_tensor_parallelism_mock():
 
 
 @pytest.fixture
-def get_quant_decision_mock():
-    with patch(
-        "state.ModelManager.ModelManager.get_adaptive_quantization_decision",
-        return_value=[(model_id_1, Quantization.Q0F16)],
-    ) as get_adaptive_quantization_decision:
-        yield get_adaptive_quantization_decision
-
-
-@pytest.fixture
-def get_app_data_path_mock():
-    with patch(
-        "endpoints.model.run.run.get_app_data_path", return_value=Path("/tmp")
-    ) as get_app_data_path:
-        yield get_app_data_path
-
-
-@pytest.fixture
 def get_disk_and_memory_mock():
     with patch(
         "endpoints.model.run.run.global_state_manager.model_manager.get_space_check_info",
@@ -309,7 +292,8 @@ async def test_run_multiple_models(
                 "endpoints.model.run.run.find_port", return_value=8899
             ) as find_port:
                 # Prepare JSON streaming responses as they would be sent from the generator
-                stream = run_models_generator([model_id_1, model_id_1, model_id_2])
+                stream = run_models_generator(
+                    [model_id_1, model_id_1, model_id_2])
 
                 # Collect the responses
                 responses = []
@@ -457,7 +441,8 @@ async def test_run_not_convertable_format(
     async with init_state():
         # Rename pytorch_model.bin to something else
         model_path = Path("/tmp") / "models" / model_id_1 / "base"
-        os.rename(model_path / "pytorch_model.bin", model_path / "invalid_file.bin")
+        os.rename(model_path / "pytorch_model.bin",
+                  model_path / "invalid_file.bin")
 
         # Prepare JSON streaming responses as they would be sent from the generator
         stream = run_models_generator([model_id_1])
@@ -644,7 +629,8 @@ async def test_run_kill_previous_models(
 
             with patch("os.kill") as kill_mock:
                 # Prepare JSON streaming responses as they would be sent from the generator
-                stream = run_models_generator([model_id_1, model_id_2, model_id_3])
+                stream = run_models_generator(
+                    [model_id_1, model_id_2, model_id_3])
 
                 # Collect the responses
                 responses = []

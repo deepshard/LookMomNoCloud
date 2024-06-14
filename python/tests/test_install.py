@@ -131,7 +131,7 @@ def mock_quant_decision(mocker):
 
 @pytest.fixture(autouse=True)
 def mock_utils(mocker):
-    mocker.patch("utils.get_tensor_parallelism", return_value=1)
+    mocker.patch("endpoints.model.install.install.get_tensor_parallelism", return_value=1)
     mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
     mocker.patch("endpoints.model.install.install.get_usable_memory", return_value=8192)
 

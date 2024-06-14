@@ -4,11 +4,10 @@ from utils import get_db_path
 
 
 def run_migrations():
-    path = get_db_path().replace("+aiosqlite", "")
     print("-- Running migrations")
     alembic_cfg = Config()
     alembic_cfg.set_main_option("script_location", "alembic")
-    alembic_cfg.set_main_option("sqlalchemy.url", path)
+    alembic_cfg.set_main_option("sqlalchemy.url", get_db_path())
     command.upgrade(alembic_cfg, "head")
     print("-- Done.")
 

@@ -74,8 +74,17 @@ function ModelDetailView() {
             {/* DON'T REMOVE – Used for alignment purposes */}
             <div/>
 
-            {/* Model's Image */}
-            <div className='w-[660px] h-[408px] glass-3d rounded-2xl' />
+            <div className='relative flex flex-col justify-start items-start'>
+                {/* Model's Image */}
+                <div className='w-[660px] h-[408px] glass-3d rounded-2xl' />
+
+                {/* Model's Name */}
+                <div className='absolute -bottom-10 flex flex-col items-start gap-0.5'>
+                    <p className='heading-md text-surface-main'>GPT-4 with Vision</p>
+                    {/* <p className='title-xs text-surface-500'>by Meta</p> */}
+                </div>
+            </div>
+            
 
             {/* Model's Info */}
             <div className='flex flex-col justify-end items-center gap-5'>

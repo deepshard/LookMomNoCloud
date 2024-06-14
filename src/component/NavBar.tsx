@@ -1,7 +1,6 @@
 import React from "react";
 
 const NavBar = () => {
-  const appIcon = process.env.NODE_ENV === "development" ? "/assets/icons/TRUFFLE_LOGO.svg" : "../../renderer/main_window/assets/icons/TRUFFLE_LOGO.svg";
   const searchIcon = process.env.NODE_ENV === "development" ? "/assets/icons/search-icon.svg" : "../../renderer/main_window/assets/icons/search-icon.svg";
   return (
     <div className="navbar">
@@ -20,17 +19,15 @@ const NavBar = () => {
 
         <div className="h-4 w-[0.5px] bg-surface-100" />
 
-        <div className="h-8 flex-grow flex-center-y gap-1.5 items-center">
+        <div className="h-8 flex-grow flex-center-y gap-1.5 items-center" onClick={() => console.log("click")}>
           <img
             src={searchIcon}
             alt="search"
             className="w-3 h-3 text-surface-400"
           />
-          <input
-            type="text"
-            placeholder="Search AI..."
-            className="flex-grow bg-transparent outline-none base-medium"
-          />
+          <div className="flex-grow bg-transparent outline-none base-medium cursor-text">
+            <p className="text-surface-400">Search AI...</p>
+          </div>
         </div>
       </div>
       

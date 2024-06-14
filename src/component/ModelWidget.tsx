@@ -4,7 +4,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
 import { motion } from "framer-motion"
 
-interface ModelWidgetProps {
+interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
   model: TModel;
   onInstall?: () => void;
   onRun?: () => void;
@@ -13,7 +13,7 @@ interface ModelWidgetProps {
   onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }: ModelWidgetProps) => {
+const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect, ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
@@ -112,7 +112,7 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect }
   }
 
   return (
-    <div className="model-widget base-regular">
+    <div className={`model-widget base-regular ${props.className}`}>
       <img src={model.background_image} alt="" />
       <div className="absolute top-0 left-0 p-2">
         <p className="title-sm text-surface-main w-[60%]">{model.title}</p>

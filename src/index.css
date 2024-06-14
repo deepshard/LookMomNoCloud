@@ -45,10 +45,21 @@ body {
 
 input {
   color: var(--input-text-color);
+  caret-color: white;
 }
 
-input::placeholder {
+input::placeholder, .ant-input::placeholder {
   color: var(--input-placeholder-color);
+}
+
+.ant-input {
+  outline: none !important;
+}
+.ant-input:hover, .ant-input:focus {
+  background-color: transparent !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .react-multi-carousel-track {
@@ -215,5 +226,11 @@ div.slick-slide > div {
 
   .widget-3d {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
+  }
+
+  .search {
+    @apply absolute top-0 w-full h-full z-40;
+    backdrop-filter: blur(75px);
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), rgba(255, 255, 255, 0.10)
   }
 }

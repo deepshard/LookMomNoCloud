@@ -6,7 +6,7 @@ import Carousel from "./component/Carousel/Carousel";
 import { useAppStore, useStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
-import useModelActions from "./hooks/installModel/useModelActions";
+import useModelActions from "./hooks/modelActions/useModelActions";
 import { startInstallModel } from "./api/model";
 
 export default function Home() {

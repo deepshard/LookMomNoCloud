@@ -43,10 +43,7 @@ async def test_ram_change_detection(mocker):
     ram_change = abs(updated_ram - initial_ram) / initial_ram * 100
 
     # Assert that the RAM change is at least 2%
-    assert (
-        ram_change >= CHANGE_THRESHOLD
-    ), f"RAM change should be at least {
-        CHANGE_THRESHOLD}%"
+    assert ram_change >= CHANGE_THRESHOLD, f"RAM change should be at least {CHANGE_THRESHOLD}%"
 
 
 @pytest.mark.asyncio

@@ -127,7 +127,10 @@ class ModelManager:
         async with self.session.get(
             f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
         ) as response:
-            assert response.status == 200, f"Failed to fetch model size for {model_id}"
+            assert (
+                response.status == 200
+            ), f"Failed to fetch model size for {
+                model_id}"
             model = await response.json()
             return model["size"]
 

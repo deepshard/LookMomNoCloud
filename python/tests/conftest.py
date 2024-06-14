@@ -59,7 +59,7 @@ def is_windows(mocker):
     mocker.patch.object(platform_module, "system", return_value="Windows")
 
 
-@pytest.fixture
+@pytest.fixture()
 def is_linux(mocker):
     platform_module = sys.modules["platform"]
     mocker.patch.object(platform_module, "system", return_value="Linux")

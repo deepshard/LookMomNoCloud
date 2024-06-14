@@ -26,7 +26,6 @@ def mock_process():
     set_start_method("spawn")
     proc = Process(target=fake_process)
     proc.start()
-    print(f"Mock process started with PID {proc.pid}")
     yield proc
 
 

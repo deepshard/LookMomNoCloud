@@ -4,10 +4,11 @@ from state import global_state_manager
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
+from models import RunningModel
 
 
 async def get_highlights() -> list[Model]:
-    models = await global_state_manager.db.runningmodels.find_many()
+    models = await RunningModel.get_all()
     tasks = []
     for model in models:
         task = fetch_model_data(model)

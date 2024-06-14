@@ -6,7 +6,7 @@ jobs:
   python_tests:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: "file:${{ github.workspace }}/truffle.test.db"
+      DATABASE_URL: "sqlite:///${{ github.workspace }}/truffle.test.db"
     steps:
       - uses: actions/checkout@v2
 
@@ -16,16 +16,26 @@ jobs:
           python-version: "3.x"
           cache: 'pip'
 
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            !~/.cache/pip/log
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install Python dependencies
         run: |
           cd python
           python -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly
           pip install -r requirements.txt
 
-      - name: Create test database
+      - name: Run database migrations
         run: |
           cd python
-          prisma db push --schema ./prisma/schema.prisma
+          PYTHONPATH="." python -c "from server import run_migrations; run_migrations()"
 
       - name: Run tests
         run: |

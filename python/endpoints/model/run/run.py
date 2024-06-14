@@ -6,6 +6,9 @@ from pathlib import Path
 from loguru import logger
 from enum import Enum
 from mlc_llm.interface.serve import serve
+from sqlalchemy import select
+from db import get_db_session
+from models import RunningModel
 from state import global_state_manager
 from endpoints.model.stop import stop_model_handler
 from endpoints.model.install.install import convert_quantize_compile
@@ -73,27 +76,27 @@ class ProgressEvent:
 
 async def get_instances(model_ids: list[str]) -> list[int]:
     # Get all of the running models
-    models = await global_state_manager.db.runningmodels.find_many()
+    async with get_db_session() as session:
+        models = await session.scalars(select(RunningModel)).all()
+        # For each model ID, get the max instance number from the DB, increment it, then
+        # add the number of instances from the model IDs array that will be starting before it
+        instances = []
+        for model_id in model_ids:
+            # Filter models down to matching IDs
+            matching_models = [model for model in models if model.id == model_id]
 
-    # For each model ID, get the max instance number from the DB, increment it, then
-    # add the number of instances from the model IDs array that will be starting before it
-    instances = []
-    for model_id in model_ids:
-        # Filter models down to matching IDs
-        matching_models = [model for model in models if model.id == model_id]
+            # Get the max instance number for the model
+            instances_to_run = [
+                model for model in instances if model["model_id"] == model_id
+            ]
+            instance = (
+                max([model.instance for model in matching_models], default=0)
+                + 1
+                + len(instances_to_run)
+            )
+            instances.append({"model_id": model_id, "instance": instance})
 
-        # Get the max instance number for the model
-        instances_to_run = [
-            model for model in instances if model["model_id"] == model_id
-        ]
-        instance = (
-            max([model.instance for model in matching_models], default=0)
-            + 1
-            + len(instances_to_run)
-        )
-        instances.append({"model_id": model_id, "instance": instance})
-
-    return instances
+        return instances
 
 
 async def get_model_info(model_id: str) -> dict:
@@ -231,17 +234,17 @@ async def run_model(
         raise RuntimeError(f"Server at port {port} did not start in time")
 
     # Add the model to the running models database
-    await global_state_manager.db.runningmodels.create(
-        {
-            "id": model_id,
-            "instance": instance,
-            "name": model_info["name"],
-            "size": model_info["size"],
-            "pid": proc.pid,
-            "port": port,
-            "quantization": quantization.value,
-        }
-    )
+    async with get_db_session() as session:
+        await session.add(
+            RunningModel(
+                id=model_id,
+                instance=instance,
+                name=model_info["name"],
+                size=model_info["size"],
+                pid=proc.pid,
+            )
+        )
+        await session.commit()
 
     return ProgressEvent(model_id, Status.RUNNING, instance, port)
 

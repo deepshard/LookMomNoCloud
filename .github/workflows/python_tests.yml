@@ -6,7 +6,7 @@ jobs:
   python_tests:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: "sqlite:///${{ github.workspace }}/truffle.test.db"
+      DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
     steps:
       - uses: actions/checkout@v4
 

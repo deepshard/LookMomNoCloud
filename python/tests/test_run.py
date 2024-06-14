@@ -328,6 +328,7 @@ async def test_run_not_enough_space(session_fixture, mock_mlc, model_weights, mo
     # Mocks
     session_fixture("endpoints.model.run.run")
     mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
+    mocker.patch("state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=0)
     mocker.patch("endpoints.model.run.run.get_usable_memory", return_value=8192)
     mocker.patch("psutil.disk_usage", return_value=MagicMock(free=1024))
 

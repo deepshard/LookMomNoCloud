@@ -9,16 +9,18 @@ from uuid import uuid4
 import shutil
 from pathlib import Path
 from aioresponses import aioresponses
+from models import RunningModel
 from state import global_state_manager
 from server import init_state
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
 from constants import TRUFFLE_API_URL
+from db import get_db_session
 
 
 async def clear_db():
     async with init_state():
-        await global_state_manager.db.runningmodels.delete_many()
+        await RunningModel.delete_all()
 
 
 # Fixtures
@@ -163,12 +165,14 @@ async def test_get_highlights_models_running(base_fixture, trending_running_mock
             "port": 32423,
             "quantization": "INT4",
         }
-        await global_state_manager.db.runningmodels.create(mock_model)
-        models = await get_highlights()
+        async with get_db_session() as session:
+            session.add(RunningModel(**mock_model))
+            await session.commit()
+            models = await get_highlights()
 
-        assert len(models) == 5
-        assert models[0].status == ModelStatus.RUNNING
-        assert models[1].status == ModelStatus.NOT_DOWNLOADED
-        assert models[2].status == ModelStatus.NOT_DOWNLOADED
-        assert models[3].status == ModelStatus.NOT_DOWNLOADED
-        assert models[4].status == ModelStatus.NOT_DOWNLOADED
+            assert len(models) == 5
+            assert models[0].status == ModelStatus.RUNNING
+            assert models[1].status == ModelStatus.NOT_DOWNLOADED
+            assert models[2].status == ModelStatus.NOT_DOWNLOADED
+            assert models[3].status == ModelStatus.NOT_DOWNLOADED
+            assert models[4].status == ModelStatus.NOT_DOWNLOADED

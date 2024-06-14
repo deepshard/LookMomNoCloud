@@ -2,6 +2,7 @@ import asyncio
 import os
 
 import aiohttp
+from models import RunningModel
 from state import global_state_manager
 from endpoints.model.install.install import (
     get_hf_repo_info,
@@ -48,9 +49,7 @@ async def get_downloaded_models():
 
 async def get_model_status(model_id):
     """Helper function to fetch model status."""
-    model = await global_state_manager.db.runningmodels.find_first(
-        where={"id": model_id}
-    )
+    model = await RunningModel.get_by_id(model_id)
     if model:
         return ModelStatus.RUNNING
     return ModelStatus.STOPPED

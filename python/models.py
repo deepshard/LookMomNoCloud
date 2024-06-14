@@ -1,5 +1,15 @@
-from sqlalchemy import BigInteger, create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import (
+    BigInteger,
+    create_engine,
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    delete,
+)
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+from sqlalchemy import select
+from db import get_db_session
 
 Base = declarative_base()
 
@@ -14,3 +24,23 @@ class RunningModel(Base):
     pid = Column(Integer)
     port = Column(Integer)
     quantization = Column(String)
+
+    @staticmethod
+    async def get_all():
+        async with get_db_session() as session:
+            result = await session.scalars(select(RunningModel))
+            return result.all()
+
+    @staticmethod
+    async def get_by_id(id):
+        async with get_db_session() as session:
+            result = await session.scalars(
+                select(RunningModel).where(RunningModel.id == id)
+            )
+            return result.first()
+
+    @staticmethod
+    async def delete_all():
+        async with get_db_session() as session:
+            await session.execute(delete(RunningModel))
+            await session.commit()

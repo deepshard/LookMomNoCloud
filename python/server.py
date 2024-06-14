@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from loguru import logger
+from migrations import run_migrations
 from state import global_state_manager
 from endpoints import (
     sysinfo_generator,
@@ -17,9 +18,6 @@ from endpoints import (
     get_downloaded_models,
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
-from alembic.config import Config
-from alembic import command
-from db import get_db_path_sync
 
 
 @asynccontextmanager
@@ -109,13 +107,6 @@ async def stop_model(request: StopRequest):
 async def delete_model(model_id: str):
     delete_model_handler(model_id)
     return {}
-
-
-def run_migrations():
-    alembic_cfg = Config()
-    alembic_cfg.set_main_option("script_location", "alembic")
-    alembic_cfg.set_main_option("sqlalchemy.url", get_db_path_sync())
-    command.upgrade(alembic_cfg, "head")
 
 
 if __name__ == "__main__":

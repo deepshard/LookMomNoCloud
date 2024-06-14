@@ -35,7 +35,7 @@ jobs:
       - name: Run database migrations
         run: |
           cd python
-          PYTHONPATH="." python -c "from server import run_migrations; run_migrations()"
+          python migrations.py
 
       - name: Run tests
         run: |

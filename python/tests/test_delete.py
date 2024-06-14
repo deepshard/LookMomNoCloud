@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 from endpoints import delete_model_handler
-from utils import get_app_data_path
 from tests.data import ID, MOCK_FILES
 
 

@@ -1,6 +1,4 @@
 import pytest
-from state import global_state_manager
-from server import init_state
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
 from tests.data import MODELS

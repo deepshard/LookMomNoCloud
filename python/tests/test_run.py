@@ -1,18 +1,10 @@
 import os
 import json
-import asyncio
 import pytest
-from unittest import mock
-from unittest.mock import patch, MagicMock
-import shutil
-import aiohttp
-from aioresponses import aioresponses
+from unittest.mock import MagicMock
 from pathlib import Path
 from state import global_state_manager
-from server import init_state
 from endpoints.model.run.run import run_models_generator, get_instances
-from truffle_types import Quantization
-from constants import TRUFFLE_API_URL
 from models import RunningModel
 from db import get_db_session
 from tests.data import ID, ID_2, MOCK_VALID_FILES

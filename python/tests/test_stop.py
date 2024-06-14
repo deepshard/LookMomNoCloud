@@ -3,8 +3,6 @@ import asyncio
 from multiprocessing import Process, set_start_method
 
 from sqlalchemy import select
-from state import global_state_manager
-from server import init_state
 from endpoints.model.stop import stop_model_handler
 from db import get_db_session
 from models import RunningModel

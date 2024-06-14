@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from truffle_types import Quantization
 from utils import get_usable_memory, get_tensor_parallelism
 

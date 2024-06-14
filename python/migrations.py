@@ -4,7 +4,7 @@ from utils import get_db_path
 
 
 def run_migrations():
-    print("-- Running migrations")
+    print("-- Running migrations:", get_db_path())
     alembic_cfg = Config()
     alembic_cfg.set_main_option("script_location", "alembic")
     alembic_cfg.set_main_option("sqlalchemy.url", get_db_path())

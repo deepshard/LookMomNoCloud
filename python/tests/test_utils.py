@@ -17,135 +17,106 @@ from utils import get_usable_memory, get_tensor_parallelism
 #   - single OpenCL
 #   - multiple OpenCL
 # - get_tensor_parallelism
+#   - Mac
 #   - no GPUs
 #   - single GPU
 #   - multiple GPUs
 
 
-def test_get_usable_memory_windows():
-    with patch("utils.platform.system", return_value="Windows"):
-        with pytest.raises(ValueError):
-            get_usable_memory()
+@pytest.fixture(autouse=True)
+def mock_tvm_device(mocker):
+    mocker.patch("tvm.runtime.device", return_value=MagicMock(available_global_memory=25387073536))
 
 
-def test_get_usable_memory_mac():
-    with patch("utils.platform.system", return_value="Darwin"), patch(
-        "utils.psutil.virtual_memory"
-    ) as mock_virtual_memory:
-        mock_virtual_memory.return_value.total = 1000000000
-        mock_virtual_memory.return_value.wired = 100000000
-        assert get_usable_memory() == 900000000
+def test_get_usable_memory_windows(is_windows):
+    with pytest.raises(ValueError):
+        get_usable_memory()
 
 
-def test_get_usable_memory_single_cuda():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=[{"type": "cuda", "id": 0}]
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 25387073536
+def test_get_usable_memory_mac(is_macos, mocker):
+    mocker.patch(
+        "utils.psutil.virtual_memory", return_value=MagicMock(total=1000000000, wired=100000000)
+    )
+    assert get_usable_memory() == 900000000
 
 
-def test_get_usable_memory_multiple_cuda():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices",
-        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 50774147072
+def test_get_usable_memory_single_cuda(is_linux, mocker):
+    mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+    assert get_usable_memory() == 25387073536
 
 
-def test_get_usable_memory_single_rocm():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=[{"type": "rocm", "id": 0}]
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 25387073536
+def test_get_usable_memory_multiple_cuda(is_linux, mocker):
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}]
+    )
+    assert get_usable_memory() == 50774147072
 
 
-def test_get_usable_memory_multiple_rocm():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices",
-        return_value=[{"type": "rocm", "id": 0}, {"type": "rocm", "id": 1}],
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 50774147072
+def test_get_usable_memory_single_rocm(is_linux, mocker):
+    mocker.patch("utils.get_devices", return_value=[{"type": "rocm", "id": 0}])
+    assert get_usable_memory() == 25387073536
 
 
-def test_get_usable_memory_single_vulkan():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=[{"type": "vulkan", "id": 0}]
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 25387073536
+def test_get_usable_memory_multiple_rocm(is_linux, mocker):
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "rocm", "id": 0}, {"type": "rocm", "id": 1}]
+    )
+    assert get_usable_memory() == 50774147072
 
 
-def test_get_usable_memory_multiple_vulkan():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices",
-        return_value=[{"type": "vulkan", "id": 0}, {"type": "vulkan", "id": 1}],
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 50774147072
+def test_get_usable_memory_single_vulkan(is_linux, mocker):
+    mocker.patch("utils.get_devices", return_value=[{"type": "vulkan", "id": 0}])
+    assert get_usable_memory() == 25387073536
 
 
-def test_get_usable_memory_single_opencl():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices", return_value=[{"type": "opencl", "id": 0}]
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 25387073536
+def test_get_usable_memory_multiple_vulkan(is_linux, mocker):
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "vulkan", "id": 0}, {"type": "vulkan", "id": 1}]
+    )
+    assert get_usable_memory() == 50774147072
 
 
-def test_get_usable_memory_multiple_opencl():
-    with patch("utils.platform.system", return_value="Linux"), patch(
-        "utils.get_devices",
-        return_value=[{"type": "opencl", "id": 0}, {"type": "opencl", "id": 1}],
-    ), patch(
-        "tvm.runtime.device",
-        return_value=MagicMock(available_global_memory=25387073536),
-    ):
-        assert get_usable_memory() == 50774147072
+def test_get_usable_memory_single_opencl(is_linux, mocker):
+    mocker.patch("utils.get_devices", return_value=[{"type": "opencl", "id": 0}])
+    assert get_usable_memory() == 25387073536
 
 
-def test_get_tensor_parallelism_no_gpus():
-    with patch("utils.get_devices", return_value=[]), patch(
-        "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
-    ):
-        with pytest.raises(ValueError):
-            get_tensor_parallelism("model_weights_dir", Quantization.INT4)
+def test_get_usable_memory_multiple_opencl(is_linux, mocker):
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "opencl", "id": 0}, {"type": "opencl", "id": 1}]
+    )
+    assert get_usable_memory() == 50774147072
 
 
-def test_get_tensor_parallelism_single_gpu():
-    with patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}]), patch(
-        "utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)
-    ):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 1
+def test_get_tensor_parallelism_mac(mocker):
+    mocker.patch("utils.get_devices", return_value=[{"type": "metal", "id": 0}])
+    mocker.patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 1
 
 
-def test_get_tensor_parallelism_multiple_gpus():
+def test_get_tensor_parallelism_no_gpus(mocker):
+    mocker.patch("utils.get_devices", return_value=[])
+    mocker.patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024))
+    with pytest.raises(ValueError):
+        get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0)
+
+
+def test_get_tensor_parallelism_single_gpu(mocker):
+    mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+    mocker.patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 1
+
+
+def test_get_tensor_parallelism_multiple_gpus(mocker):
     # Case 1: 2 GPUs, model is 10GB
-    with patch(
-        "utils.get_devices",
-        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
-    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}]
+    )
+    mocker.patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 2
 
-    # Case 2: 8 GPUs, model is 10GB
-    with patch(
+    # Case 2: 8 GPUs, model is 20GB
+    mocker.patch(
         "utils.get_devices",
         return_value=[
             {"type": "cuda", "id": 0},
@@ -157,29 +128,38 @@ def test_get_tensor_parallelism_multiple_gpus():
             {"type": "cuda", "id": 6},
             {"type": "cuda", "id": 7},
         ],
-    ), patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 4
+    )
+    mocker.patch("utils.get_model_size_info", return_value=(0, 20 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 4
 
     # Case 3: 2 GPUs, model is 5GB
-    with patch(
-        "utils.get_devices",
-        return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}],
-    ), patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}]
+    )
+    mocker.patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 1
 
-    # Case 4: 3 GPUs, model is 5GB
-    with patch(
+    # Case 4: 2 GPUs, model is 10GB
+    mocker.patch(
+        "utils.get_devices", return_value=[{"type": "cuda", "id": 0}, {"type": "cuda", "id": 1}]
+    )
+    mocker.patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 2
+
+    # Case 5: 3 GPUs, model is 10GB
+    mocker.patch(
         "utils.get_devices",
         return_value=[
             {"type": "cuda", "id": 0},
             {"type": "cuda", "id": 1},
             {"type": "cuda", "id": 2},
         ],
-    ), patch("utils.get_model_size_info", return_value=(0, 5 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 2
+    )
+    mocker.patch("utils.get_model_size_info", return_value=(0, 10 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 2
 
-    # Case 2: 8 GPUs, model is 70GB
-    with patch(
+    # Case 6: 8 GPUs, model is 70GB
+    mocker.patch(
         "utils.get_devices",
         return_value=[
             {"type": "cuda", "id": 0},
@@ -191,5 +171,6 @@ def test_get_tensor_parallelism_multiple_gpus():
             {"type": "cuda", "id": 6},
             {"type": "cuda", "id": 7},
         ],
-    ), patch("utils.get_model_size_info", return_value=(0, 70 * 1024 * 1024 * 1024)):
-        assert get_tensor_parallelism("model_weights_dir", Quantization.INT4) == 8
+    )
+    mocker.patch("utils.get_model_size_info", return_value=(0, 70 * 1024 * 1024 * 1024))
+    assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 8

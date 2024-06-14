@@ -6,6 +6,9 @@ from loguru import logger
 import psutil
 import time
 import os
+
+from sqlalchemy import select
+from models import RunningModel
 from truffle_types import (
     ModelResourceDetails,
     SystemInfo,
@@ -14,7 +17,7 @@ from truffle_types import (
 )
 
 from utils import get_app_data_path, get_disk_usage
-from db import db
+from db import get_db_session
 
 
 CHANGE_THRESHOLD = 3
@@ -41,7 +44,7 @@ async def get_sysinfo() -> SystemInfo:
 
 
 async def get_models_data() -> List[ModelResourceDetails]:
-    models = await db.runningmodels.find_many()
+    models = await RunningModel.get_all()
     final = []
     for model in models:
         try:

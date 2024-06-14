@@ -1,5 +1,7 @@
 import { TModel } from "../types/schemas";
-import { ROOTURL } from "./client";
+import ApiClient, { ROOTURL } from "./client";
+
+const client = new ApiClient("model").client;
 
 export const startInstallModel = async (model: TModel, signal: AbortSignal, callback: (response: Partial<TModel>) => void) => {
     return fetch(ROOTURL + "/model/install", {
@@ -9,7 +11,7 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
           'Accept': 'text/event-stream',
         },
         body: JSON.stringify({
-            url: model.url,
+            url: model.hf_link,
             id: model.id
         }),
         signal: signal
@@ -42,4 +44,61 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
           }
         });
       })
+}
+
+export const startRunModels = async (models: TModel[], signalController: AbortController, callback: (response: Partial<TModel>, controller: AbortController) => void) => {
+    return fetch(ROOTURL + "/model/run", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+      },
+      body: JSON.stringify({
+          ids: models.map((model) => model.id)
+      }),
+      signal: signalController.signal
+  }).then(response => {
+      if(!response.ok) {
+        throw new Error(response.statusText);
+      }
+      return response
+  })
+  .then((response) => {
+    const reader = response?.body?.getReader();
+    return new ReadableStream({
+      start(controller) {
+        function push() {
+          // Read from the stream
+          reader?.read().then(({ done, value }) => {
+            if (done) {
+              controller.close();
+              return;
+            }
+            // Decode and process the chunk
+            const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
+            const runResponse: Partial<TModel> = JSON.parse(text);
+            callback(runResponse, signalController)
+            controller.enqueue(value);
+            push();
+          });
+        }
+        push();
+      }
+    });
+  })
+}
+
+export const stopModel = async (model: TModel) => {
+  const response = await client.post("/stop", {
+    id: model.id,
+    instance: model.instance
+  });
+  return response.data;
+}
+
+export const deleteModel = async (model: TModel) => {
+  const response = await client.post("/delete", {
+    id: model.id
+  });
+  return response.data;
 }

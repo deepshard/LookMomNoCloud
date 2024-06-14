@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import subprocess
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from loguru import logger
+from migrations import run_migrations
+from state import global_state_manager
 from endpoints import (
     sysinfo_generator,
     delete_model_handler,
@@ -17,31 +17,22 @@ from endpoints import (
     get_new,
     get_downloaded_models,
 )
-from endpoints.model.install import InstallationManager
 from truffle_types import InstallRequest, RunRequest, StopRequest
-from utils import get_app_data_path
-from db import db
-
-installation_manager = None
 
 
 @asynccontextmanager
-async def init_db():
-    if not db.is_connected():
-        logger.info(f"Connecting to DB at: {db._datasource}")
-        await db.connect()
+async def init_state():
+    await global_state_manager.launch()
     yield
-    if db.is_connected():
-        await db.disconnect()
+    await global_state_manager.teardown()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global installation_manager
-    installation_manager = InstallationManager()
-
-    async with init_db():
+    async with init_state():
         yield
+
+    await global_state_manager.teardown()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -86,7 +77,7 @@ async def downloaded():
 async def install_model(request: InstallRequest):
     # Start the model installation process
     response = StreamingResponse(
-        install_generator(request.id, request.url, installation_manager),
+        install_generator(request.id, request.url),
         media_type="text/event-stream",
     )
     response.headers["Cache-Control"] = "no-cache"
@@ -98,7 +89,7 @@ async def install_model(request: InstallRequest):
 async def run_model(request: RunRequest):
     # Start the model running process
     response = StreamingResponse(
-        run_models_generator(request.ids, installation_manager),
+        run_models_generator(request.ids),
         media_type="text/event-stream",
     )
     response.headers["Cache-Control"] = "no-cache"
@@ -120,5 +111,7 @@ async def delete_model(model_id: str):
 
 if __name__ == "__main__":
     import uvicorn
+
+    run_migrations()
 
     uvicorn.run(app, host="0.0.0.0", port=8899)

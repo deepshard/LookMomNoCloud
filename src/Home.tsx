@@ -10,6 +10,7 @@ import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
 import Featured from "./component/Featured";
 import { useHomePageContext } from "./context/HomePageProvider";
+import MyModels from "./component/MyModels";
 
 export default function Home() {
 
@@ -17,7 +18,7 @@ export default function Home() {
   const { highlights: storeHighlights, setHighlights, sysInfo } = useAppStore();
   const { updateModels } = useStore();
   const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
-  const { showSearch, setShowSearch } = useHomePageContext();
+  const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
 
   useEffect(() => {
     if (highlights) {
@@ -28,7 +29,8 @@ export default function Home() {
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {/* <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} /> */}
+      {/* {showMyModels && <MyModels onClose={() => setShowMyModels(false)}/>} */}
+      {<MyModels onClose={() => setShowMyModels(false)}/>}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
           {/* DON'T DELETE – Meant for alignment purposes */}
@@ -95,7 +97,7 @@ export default function Home() {
                     <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Apps</p>
                   </div>
 
-                  <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
+                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
                     <div className="grid grid-cols-2 gap-5 p-5">
                       {[...Array(4)].map((_, index) => (
                         <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>

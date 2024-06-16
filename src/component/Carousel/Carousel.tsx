@@ -4,7 +4,7 @@ const Carousel = ({children, className, ...props}: AntdCarouselProps) => {
   return (
     <AntdCarousel 
       {...props} 
-      className={`glass-3d text-surface-750 ${className}`}
+      className={`text-surface-750 ${className}`}
     >
       {children}
     </AntdCarousel>

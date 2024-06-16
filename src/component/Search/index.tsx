@@ -5,7 +5,6 @@ import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
-import { useHomePageContext } from "../../context/HomePageProvider";
 interface SearchProps {
   onClose?: () => void;
   recentlyUsedModels?: TModel[];
@@ -13,11 +12,9 @@ interface SearchProps {
 const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
   const [search, setSearch] = useState("");
   const { data: searchModels, refetch: onSearchModels, isLoading } = useSearchModels(search);
-  const { setShowSearch } = useHomePageContext();
 
   useEffect(() => {
     const handleSearch = debounce(() => {
-      console.log(search);
       onSearchModels();
     }, 500);
 
@@ -29,7 +26,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
   useEffect(() => {
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setShowSearch(false);
+        onClose && onClose();
       }
     };
     window.addEventListener("keyup", handleKeyUp);
@@ -38,7 +35,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
 
   return (
     <div className="search">
-      <img src="/assets/icons/close.svg" alt="" className="absolute p-[10px] top-[20px] right-[20px]" onClick={onClose} />
+      <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
       <div className="w-full mt-[131px] px-[145px]">
         <Input onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-[38px] bg-transparent text-[32px] border-none" />
         {isLoading ? (

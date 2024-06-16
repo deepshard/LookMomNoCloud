@@ -113,7 +113,7 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect, 
 
   return (
     <div className={`model-widget base-regular ${props.className}`}>
-      <img src={model.background_image} alt="" />
+      <img src={model.background_image} alt="" className="w-full h-full"/>
       <div className="absolute top-0 left-0 p-2">
         <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
         <p className="title-sm text-surface-main w-[60%]">{model.author}</p>

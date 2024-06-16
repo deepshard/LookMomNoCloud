@@ -131,6 +131,15 @@ div.slick-slide > div {
   }
 }
 
+.my-models-container > .ant-carousel {
+  height: 100% !important;
+
+  .slick-slide > div {
+    display: flex;
+    align-items: center;
+  }
+}
+
 @layer base {
 }
 

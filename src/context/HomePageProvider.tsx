@@ -1,18 +1,23 @@
 import { Dispatch, createContext, useContext, useState } from "react";
 
 interface HomePageContextProps {
-    showSearch: boolean;
-    setShowSearch: Dispatch<React.SetStateAction<boolean>>
+  showSearch: boolean;
+  setShowSearch: Dispatch<React.SetStateAction<boolean>>;
+  showMyModels: boolean;
+  setShowMyModels: Dispatch<React.SetStateAction<boolean>>;
 }
 
 const HomePageContext = createContext<HomePageContextProps>({
-    showSearch: false,
-    setShowSearch: () => {},
+  showSearch: false,
+  setShowSearch: () => {},
+  showMyModels: false,
+  setShowMyModels: () => {},
 });
 
 const HomePageProvider = ({ children }) => {
-    const [showSearch, setShowSearch] = useState(false);
-  return <HomePageContext.Provider value={{ showSearch, setShowSearch  }}>{children}</HomePageContext.Provider>;
+  const [showSearch, setShowSearch] = useState(false);
+  const [showMyModels, setShowMyModels] = useState(false);
+  return <HomePageContext.Provider value={{ showSearch, setShowSearch, showMyModels, setShowMyModels }}>{children}</HomePageContext.Provider>;
 };
 
 export const useHomePageContext = () => useContext(HomePageContext);

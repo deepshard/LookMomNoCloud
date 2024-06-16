@@ -104,6 +104,14 @@ export const deleteModel = async (model: TModel) => {
   return response.data;
 }
 
+export const getMyModels = async (): Promise<TModel[]> => {
+  const response = await localClient.get("/downloaded");
+  return response.data;
+}
+
+
+/** Remote API Calls */
+
 export const searchModels = async (query: string) => {
   const response = await client.get(`/search/?query=${query}`);
   return response.data;

@@ -108,15 +108,15 @@ def request_mocks(request, mocker):
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=4&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
-            status=200,
-            payload=data.MODELS[1:],
-            repeat=True,
-        )
-        mocked.get(
             f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
             status=200,
             payload=data.MODELS[0],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models?id=b438d015-ad45-4e9a-9aba-2e290348b078&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
+            status=200,
+            payload=data.MODELS[1],
             repeat=True,
         )
 

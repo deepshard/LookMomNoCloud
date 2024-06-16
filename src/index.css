@@ -60,6 +60,7 @@ input::placeholder, .ant-input::placeholder {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
+  color: #fff !important;
 }
 
 .react-multi-carousel-track {

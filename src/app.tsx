@@ -5,7 +5,7 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
 import useSysInfo from "./hooks/sysInfo/useSysInfo";
 import { useStore } from "./store/store";
-import { ROOTURL } from "./api/client";
+import { LOCAL_ROOT_URL } from "./api/client";
 import QueryProvider from "./lib/react-query/QueryProvider";
 
 const root = createRoot(document.getElementById("root"));
@@ -13,7 +13,7 @@ const root = createRoot(document.getElementById("root"));
 function App() {
   const { addSysInfo } = useStore();
   useSysInfo({
-    rootUrl: ROOTURL,
+    rootUrl: LOCAL_ROOT_URL,
     addSysInfo,
     EventSourceFactory: EventSource,
   });

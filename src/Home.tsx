@@ -9,6 +9,7 @@ import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCaro
 import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
 import Featured from "./component/Featured";
+import { useHomePageContext } from "./context/HomePageProvider";
 
 export default function Home() {
 
@@ -16,6 +17,7 @@ export default function Home() {
   const { highlights: storeHighlights, setHighlights, sysInfo } = useAppStore();
   const { updateModels } = useStore();
   const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
+  const { showSearch, setShowSearch } = useHomePageContext();
 
   useEffect(() => {
     if (highlights) {
@@ -25,7 +27,8 @@ export default function Home() {
 
   return (
     <>
-      <Search recentlyUsedModels={storeHighlights} />
+      {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
+      {/* <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} /> */}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
           {/* DON'T DELETE – Meant for alignment purposes */}

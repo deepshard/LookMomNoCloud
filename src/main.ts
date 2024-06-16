@@ -11,8 +11,8 @@ const createWindow = () => {
   const factor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1140 ,
-    height: 826 ,
+    width: 950 ,
+    height: 690 ,
     titleBarStyle: "hidden",
     webPreferences: {
       zoomFactor: 1.0 / factor,
@@ -34,7 +34,7 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
-  // mainWindow.setResizable(false);
+  process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
 
   return mainWindow;
 };

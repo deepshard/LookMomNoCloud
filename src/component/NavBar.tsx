@@ -1,7 +1,9 @@
 import React from "react";
+import { useHomePageContext } from "../context/HomePageProvider";
 
 const NavBar = () => {
   const searchIcon = process.env.NODE_ENV === "development" ? "/assets/icons/search-icon.svg" : "../../renderer/main_window/assets/icons/search-icon.svg";
+  const {setShowSearch} = useHomePageContext();
   return (
     <div className="navbar">
       <div className="bg-transparent h-5 w-5 rounded-full" />
@@ -19,7 +21,7 @@ const NavBar = () => {
 
         <div className="h-4 w-[0.5px] bg-surface-100" />
 
-        <div className="h-8 flex-grow flex-center-y gap-1.5 items-center" onClick={() => console.log("click")}>
+        <div className="h-8 flex-grow flex-center-y gap-1.5 items-center" onClick={() => setShowSearch(true)}>
           <img
             src={searchIcon}
             alt="search"

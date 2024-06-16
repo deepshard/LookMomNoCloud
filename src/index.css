@@ -219,6 +219,10 @@ div.slick-slide > div {
     @apply min-h-[78px] min-w-[124px] rounded-sm overflow-hidden cursor-pointer relative !important;
   }
 
+  .model-my-models {
+    @apply min-h-[103px] min-w-[124px] cursor-pointer !important;
+  }
+
   .blurred-bg-img {
     @apply absolute top-0 left-0 w-full h-full blur-md opacity-85 !important;
   }

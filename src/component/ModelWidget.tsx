@@ -6,6 +6,7 @@ import { motion } from "framer-motion"
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
   model: TModel;
+  type?: 'regular' | 'my-model';
   onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
@@ -13,7 +14,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
   onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect, ...props }: ModelWidgetProps) => {
+const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete, onDisconnect, ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
@@ -107,6 +108,15 @@ const ModelWidget = ({ model, onInstall, onRun, onStop, onDelete, onDisconnect, 
     return (
       <div className="model-widget base-regular">
         <p className="opacity-75">"To-do: Error design goes here"</p>
+      </div>
+    )
+  }
+
+  if(type === 'my-model') {
+    return (
+      <div className={`model-my-models base-regular ${props.className}`}>
+        <img src={model.background_image} alt="" className="w-full min-h-[78px] rounded-sm"/>
+        <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
     )
   }

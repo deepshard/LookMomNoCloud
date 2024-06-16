@@ -29,8 +29,7 @@ export default function Home() {
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {/* {showMyModels && <MyModels onClose={() => setShowMyModels(false)}/>} */}
-      {<MyModels onClose={() => setShowMyModels(false)}/>}
+      {showMyModels && <MyModels onClose={() => setShowMyModels(false)}/>}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
           {/* DON'T DELETE – Meant for alignment purposes */}

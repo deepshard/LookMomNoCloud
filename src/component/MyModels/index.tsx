@@ -11,11 +11,6 @@ interface SearchProps {
 const MyModels = ({ onClose }: SearchProps) => {
   const { data: myModels, isLoading } = useGetMyModels();
 
-  let dummyData = [];
-  if (myModels) {
-    dummyData = [...myModels, ...myModels, ...myModels, ...myModels, ...myModels, ...myModels, ...myModels, ...myModels,];
-  }
-
   const handlePagination = (data: TModel[]) => {
     const dataCopy = [...data];
     const maxItemsPerPage = 9;
@@ -29,7 +24,7 @@ const MyModels = ({ onClose }: SearchProps) => {
   };
 
   const gridModelsFunc = useCallback(() => {
-    return handlePagination(dummyData || []);
+    return handlePagination(myModels || []);
   }, [myModels]);
 
   const gridModels = gridModelsFunc();
@@ -44,7 +39,7 @@ const MyModels = ({ onClose }: SearchProps) => {
   }, []);
   return (
     <div className="search">
-      <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
+      <img src="/assets/icons/close.svg" alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
       <div className="w-full h-full my-models-container">
         {gridModels.length > 0 && (
           <Carousel easing="linear" waitForAnimate className="w-full h-full">
@@ -63,10 +58,10 @@ interface PageProps {
 }
 const Page = ({ models }: PageProps) => {
   return (
-    <div className="w-full h-full flex justify-center items-center mx-[145px] py-[148px]">
+    <div className="w-full h-full flex justify-center items-center mx-[145px] pt-[148px]">
       <div className="w-full h-full grid grid-cols-3 gap-x-[140px] gap-y-[52px] justify-items-center content-start">
         {models.map((model) => (
-          <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />
+          <ModelWidget type="my-model" model={model} key={model.id} className="w-[124px] h-[78px]" />
         ))}
       </div>
     </div>

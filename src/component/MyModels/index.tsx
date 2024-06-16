@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useGetMyModels } from "../../lib/react-query/queriesAndMutations";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
@@ -10,7 +10,15 @@ interface SearchProps {
 
 const MyModels = ({ onClose }: SearchProps) => {
   const { data: myModels, isLoading } = useGetMyModels();
+  const carouselRef = useRef<any>();
 
+  const next = () => {
+    carouselRef.current.next();
+  };
+
+  const prev = () => {
+    carouselRef.current.prev();
+  };
   const handlePagination = (data: TModel[]) => {
     const dataCopy = [...data];
     const maxItemsPerPage = 9;
@@ -26,8 +34,8 @@ const MyModels = ({ onClose }: SearchProps) => {
   const gridModelsFunc = useCallback(() => {
     return handlePagination(myModels || []);
   }, [myModels]);
-
   const gridModels = gridModelsFunc();
+
   useEffect(() => {
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -37,12 +45,23 @@ const MyModels = ({ onClose }: SearchProps) => {
     window.addEventListener("keyup", handleKeyUp);
     return () => window.removeEventListener("keyup", handleKeyUp);
   }, []);
+
+  const handleWheel = useCallback((event) => {
+    const threshold = 50;
+    // Check if the horizontal scroll delta exceeds the threshold
+    if (event.deltaX > threshold) {
+      next();
+    } else if (event.deltaX < -threshold) {
+      prev();
+    }
+  }, []);
+
   return (
-    <div className="search">
-      <img src="/assets/icons/close.svg" alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
+    <div onWheel={handleWheel} className="search">
+      <img src="/assets/icons/close.svg" alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={next} />
       <div className="w-full h-full my-models-container">
         {gridModels.length > 0 && (
-          <Carousel easing="linear" waitForAnimate className="w-full h-full">
+          <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
             {gridModels.map((page, index) => (
               <Page models={page} key={index} />
             ))}

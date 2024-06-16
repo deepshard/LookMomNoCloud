@@ -1,10 +1,11 @@
 import { TModel } from "../types/schemas";
-import ApiClient, { ROOTURL } from "./client";
+import ApiClient, { LOCAL_ROOT_URL } from "./client";
 
-const client = new ApiClient("model").client;
+const localClient = new ApiClient("model").localClient;
+const client = new ApiClient("models").client;
 
 export const startInstallModel = async (model: TModel, signal: AbortSignal, callback: (response: Partial<TModel>) => void) => {
-    return fetch(ROOTURL + "/model/install", {
+    return fetch(LOCAL_ROOT_URL + "/model/install", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +48,7 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
 }
 
 export const startRunModels = async (models: TModel[], signalController: AbortController, callback: (response: Partial<TModel>, controller: AbortController) => void) => {
-    return fetch(ROOTURL + "/model/run", {
+    return fetch(LOCAL_ROOT_URL + "/model/run", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ export const startRunModels = async (models: TModel[], signalController: AbortCo
 }
 
 export const stopModel = async (model: TModel) => {
-  const response = await client.post("/stop", {
+  const response = await localClient.post("/stop", {
     id: model.id,
     instance: model.instance
   });
@@ -97,8 +98,21 @@ export const stopModel = async (model: TModel) => {
 }
 
 export const deleteModel = async (model: TModel) => {
-  const response = await client.post("/delete", {
+  const response = await localClient.post("/delete", {
     id: model.id
   });
+  return response.data;
+}
+
+export const getMyModels = async (): Promise<TModel[]> => {
+  const response = await localClient.get("/downloaded");
+  return response.data;
+}
+
+
+/** Remote API Calls */
+
+export const searchModels = async (query: string) => {
+  const response = await client.get(`/search/?query=${query}`);
   return response.data;
 }

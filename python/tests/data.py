@@ -29,7 +29,7 @@ MOCK_MODEL_1 = {
     "risks": "test",
     "hfLink": HF_API_URL,
     "evalId": "test",
-    "bg_image_url": "test",
+    "background_image": "test",
 }
 MOCK_MODEL_2 = {
     "id": ID_2,
@@ -44,7 +44,7 @@ MOCK_MODEL_2 = {
     "risks": "test",
     "hfLink": HF_API_URL,
     "evalId": "test",
-    "bg_image_url": "test",
+    "background_image": "test",
 }
 
 # Mock API responses
@@ -87,7 +87,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "bg_image_url": "test",
+        "background_image": "test",
     },
     {
         "id": "b438d015-ad45-4e9a-9aba-2e290348b078",
@@ -102,7 +102,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "bg_image_url": "test",
+        "background_image": "test",
     },
     {
         "id": "e1b7a151-ad5a-4929-b9a2-20e42f629c4c",
@@ -117,7 +117,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "bg_image_url": "test",
+        "background_image": "test",
     },
     {
         "id": "c081e038-a74c-4a7d-87d6-f36bbf7ff373",
@@ -132,7 +132,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "bg_image_url": "test",
+        "background_image": "test",
     },
     {
         "id": "da05e829-9e9b-43d8-8c26-6141318700cb",
@@ -147,7 +147,7 @@ MODELS = [
         "risks": "test",
         "hfLink": "test",
         "evalId": "test",
-        "bg_image_url": "test",
+        "background_image": "test",
     },
 ]
 

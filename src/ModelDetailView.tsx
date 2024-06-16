@@ -2,7 +2,7 @@ import React from 'react'
 
 function ModelDetailView() {
   return (
-    <div className='relative w-full h-full flex flex-col justify-start items-center bg-black/50 bg-blur-[150px]'>
+    <div className='relative w-full h-full flex flex-col justify-start items-center bg-black/50 bg-blur-[150px] overflow-auto'>
 
         {/* Nav Bar */}
         <div className='fixed top-0 w-full p-5 gap-5 flex justify-between items-center'>
@@ -74,9 +74,11 @@ function ModelDetailView() {
             {/* DON'T REMOVE – Used for alignment purposes */}
             <div/>
 
-            <div className='relative flex flex-col justify-start items-start'>
+            <div className='relative flex flex-col justify-start items-center'>
                 {/* Model's Image */}
-                <div className='w-[660px] h-[408px] glass-3d rounded-2xl' />
+                <div className='w-[660px] h-[408px] glass-3d rounded-2xl overflow-hidden'>
+                    <img src='https://storage.googleapis.com/model_background_images/119e0024-5a46-4ea2-8dfc-9ba6bd04770f.png' className=' glass-3d w-full h-full'/>
+                </div>
 
                 {/* Model's Name */}
                 <div className='absolute -bottom-10 flex flex-col items-start gap-0.5'>

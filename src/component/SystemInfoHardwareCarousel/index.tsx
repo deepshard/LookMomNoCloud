@@ -12,8 +12,8 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
   const { selection } = useSystemInfoHardwareCarouselContext();
 
   return (
-    <div className="relative">
-      <Carousel easing="linear" waitForAnimate className="w-80 h-80 widget-3d">
+    <div className="relative sys-info-hardware">
+      <Carousel easing="linear" waitForAnimate className="sys-info-hardware-carousel">
         <Sysinfo sysInfo={sysInfo} />
         <PreOrderTruffle />
       </Carousel>

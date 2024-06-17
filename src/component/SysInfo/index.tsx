@@ -34,7 +34,7 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
   if(!sysInfo) return null
 
   return (
-    <div className="w-full h-full relative ">
+    <div className="w-full h-full relative overflow-y-auto">
       <div className="sticky top-0 px-[16px] pt-[16px] w-full">
         <div className="flex justify-between items-center">
           <span className="flex">
@@ -66,9 +66,13 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
           textSize: "12px",
           pathTransitionDuration: 0.5,
         })}
-        className="h-[175px] w-[75px] mt-[40px]"
+        className="h-[175px] w-[75px] mt-[40px] sticky top-[80px]"
       />
-      <div className="px-[10px]">
+      <div className="px-[10px] relative">
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
         <SysInfoModelListItem />
         <SysInfoModelListItem />
         <SysInfoModelListItem />

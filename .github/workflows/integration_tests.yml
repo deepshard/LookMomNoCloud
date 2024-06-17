@@ -10,7 +10,8 @@ jobs:
       matrix:
         os: [
           ubuntu-latest, # no GPU
-          ubuntu-x64-1x-T4, # 1x T4 GPU
+          ubuntu-x64-1x-T4, # 1x T4
+          ubuntu-x64-2x-T4, # 2x T4
           macos-13, # no GPU
           macos-latest, # M1
         ]

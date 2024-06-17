@@ -136,6 +136,8 @@ div.slick-slide > div {
 }
 .sys-info-hardware > .ant-carousel {
   border-radius: 24px;
+  overflow: hidden;
+
 }
 
 .my-models-container > .ant-carousel {
@@ -261,7 +263,7 @@ div.slick-slide > div {
 
   .sys-info-hardware-carousel::before {
     content: '';
-    @apply widget-3d absolute top-0 left-0 w-full h-full;
+    @apply widget-3d absolute top-0 left-0 w-full h-full overflow-hidden;
   }
 
   .sysinfo-model-item {
@@ -270,7 +272,7 @@ div.slick-slide > div {
 
   .sysinfo-model-item::before {
     content: '';
-    @apply absolute top-0 left-0 w-full h-full rounded-sm bg-surface-100;
+    @apply absolute top-0 left-0 bottom-10 w-full h-full rounded-sm bg-surface-100;
     backdrop-filter: blur(30px);
   }
 }

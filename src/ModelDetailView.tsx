@@ -109,7 +109,7 @@ const { showSearch } = useHomePageContext();
                 {/* Close Icon */}
                 <div 
                     className="flex justify-center items-center p-1.5 bg-white bg-opacity-10 h-[30px] rounded-[93.75px] w-[30px] hover:bg-opacity-40 transition-colors duration-200"
-                    onClick={() => window.location.href = '/'}
+                    onClick={() => window.history.back()}
                 >
                     <img
                     loading="lazy"

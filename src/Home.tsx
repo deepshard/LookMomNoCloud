@@ -87,18 +87,18 @@ export default function Home() {
                 </Carousel>
 
                 <div className="w-full flex justify-between gap-5">
-                  <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
+                  {/* <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
                     <div className="grid grid-cols-2 gap-5 p-5">
                       {[...Array(4)].map((_, index) => (
                         <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
                       ))}
                     </div>
                     <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Apps</p>
-                  </div>
+                  </div> */}
 
-                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">
-                    <div className="grid grid-cols-2 gap-5 p-5">
-                      {[...Array(4)].map((_, index) => (
+                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
+                    <div className="grid grid-cols-4 gap-6 p-5">
+                      {[...Array(8)].map((_, index) => (
                         <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
                       ))}
                     </div>

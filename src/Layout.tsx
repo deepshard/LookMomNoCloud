@@ -1,16 +1,18 @@
-import React from "react";
 import NavBar from "./component/NavBar";
 import { Outlet } from "react-router-dom";
+import HomePageProvider from "./context/HomePageProvider";
 
 const Layout = () => {
   return (
     <>
-      <section>
-        <NavBar />
-      </section>
-      <section>
-        <Outlet />
-      </section>
+      <HomePageProvider>
+        <section>
+          <NavBar />
+        </section>
+        <section>
+          <Outlet />
+        </section>
+      </HomePageProvider>
     </>
   );
 };

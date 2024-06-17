@@ -14,7 +14,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
   onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete, onDisconnect, ...props }: ModelWidgetProps) => {
+const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete, onDisconnect, className, ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
@@ -106,7 +106,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
 
   if(model.error) {
     return (
-      <div className="model-widget base-regular">
+      <div className="model-widget base-regular" {...props}>
         <p className="opacity-75">"To-do: Error design goes here"</p>
       </div>
     )
@@ -114,7 +114,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
 
   if(type === 'my-model') {
     return (
-      <div className={`model-my-models base-regular ${props.className}`}>
+      <div className={`model-my-models base-regular ${className}`} {...props}>
         <img src={model.background_image} alt="" className="w-full min-h-[78px] rounded-sm"/>
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
@@ -122,7 +122,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
   }
 
   return (
-    <div className={`model-widget base-regular ${props.className}`}>
+    <div className={`model-widget base-regular ${className}`} {...props}>
       <img src={model.background_image} alt="" className="w-full h-full"/>
       <div className="absolute top-0 left-0 p-2">
         <p className="title-sm text-surface-main w-[60%]">{model.title}</p>

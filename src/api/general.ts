@@ -12,3 +12,8 @@ export const getHighlights = async (): Promise<TModel[]> => {
   const response = await client.get("/highlights");
   return response.data;
 };
+
+export const getModel = async (id: string): Promise<TModel> => {
+  const response = await client.get(`/models/${id}`);
+  return response.data;
+}

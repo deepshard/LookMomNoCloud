@@ -28,6 +28,8 @@ export const ModelSchema = z.object({
     risks: z.string(),
     hf_link: z.string(), //hflink
     eval_id: z.string().optional(),
+    createdAt: z.string(),
+    modifiedAt: z.string(),
     status: z.enum([ "ACKNOWLEDGED", "DOWNLOADING", "INSTALLING", "RUNNING", "STOPPED", "NOT_DOWNLOADED"]),
     background_image: z.string(),
     instance: z.number().optional(),

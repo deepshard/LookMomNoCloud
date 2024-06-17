@@ -62,7 +62,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
               <>
                 {searchModels ? (
                   <>
-                    <div className="flex justify-between mt-[42px]">{searchModels?.slice(0, 8).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
+                    <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">{searchModels?.slice(0, 12).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
                   </>
                 ) : (
                   <p>No results</p>

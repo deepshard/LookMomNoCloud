@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useGetMyModels } from "../../lib/react-query/queriesAndMutations";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
@@ -9,7 +9,7 @@ interface SearchProps {
 }
 
 const MyModels = ({ onClose }: SearchProps) => {
-  const { data: myModels, isLoading } = useGetMyModels();
+  const { data: myModels } = useGetMyModels();
   const carouselRef = useRef<any>();
 
   const next = () => {

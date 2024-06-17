@@ -19,5 +19,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: nvidia-smi
-        if: runner.os == 'Linux'
+      - run: uname -a
+

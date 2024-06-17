@@ -2,7 +2,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { getHighlights } from "../../api/general";
 import { deleteModel, getMyModels, searchModels, stopModel } from "../../api/model";
 import { TModel } from "../../types/schemas";
-import {debounce} from 'lodash'
 
 export const useGetHighlights = () => {
   return useQuery({
@@ -36,7 +35,7 @@ export const useSearchModels = (query: string) => {
       return searchModels(query)
     },
     retryOnMount: false,
-    enabled: false
+    enabled: !!query
   })
 }
 

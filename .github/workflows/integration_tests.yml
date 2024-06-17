@@ -8,7 +8,12 @@ jobs:
   integration_tests:
     strategy:
       matrix:
-        os: [ubuntu-x64-1x-T4, macos-latest]
+        os: [
+          ubuntu-latest, # no GPU
+          ubuntu-x64-1x-T4, # 1x T4 GPU
+          macos-13, # no GPU
+          macos-latest, # M1
+        ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

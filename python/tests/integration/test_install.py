@@ -38,7 +38,7 @@ async def test_install_devices(test_fixture):
         assert response.status_code == 200
         async for line in response.aiter_lines():
             if line:
-                event_data = json.loads(line.split('data: ', 1)[1])
+                event_data = json.loads(line.split("data: ", 1)[1])
                 responses.append(event_data)
 
     assert responses[0]["status"] == "ACKNOWLEDGED"

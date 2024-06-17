@@ -1,11 +1,11 @@
-name: Python integration ests
+name: Integration tests
 
 on: 
   pull_request:
   workflow_dispatch:
 
 jobs:
-  python_integration_tests:
+  integration_tests:
     strategy:
       matrix:
         os: [ubuntu-x64-1x-T4, macos-latest]

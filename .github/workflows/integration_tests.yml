@@ -12,6 +12,7 @@ jobs:
           ubuntu-latest, # no GPU
           ubuntu-x64-1x-T4, # 1x T4
           ubuntu-x64-2x-T4, # 2x T4
+          ubuntu-x64-2x-RTX4080, # 2x RTX4080
           macos-13, # no GPU
           macos-latest, # M1
         ]

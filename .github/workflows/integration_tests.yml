@@ -14,7 +14,6 @@ jobs:
           ubuntu-x64-2x-T4, # 2x T4
           macos-13, # no GPU
           macos-latest, # M1
-          self-hosted, # self-hosted
         ]
     runs-on: ${{ matrix.os }}
     steps:

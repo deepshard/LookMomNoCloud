@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from multiprocessing import Process, set_start_method, get_start_method
+from multiprocessing import Process, set_start_method
 
 from sqlalchemy import select
 from state import global_state_manager
@@ -23,9 +23,7 @@ async def fake_process():
 
 @pytest.fixture
 def mock_process():
-    start_method = get_start_method()
-    if start_method != "spawn":
-        set_start_method("spawn")
+    set_start_method("spawn", force=True)
     proc = Process(target=fake_process)
     proc.start()
     yield proc

@@ -32,8 +32,6 @@ export default function Home() {
       {showMyModels && <MyModels onClose={() => setShowMyModels(false)}/>}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-          {/* DON'T DELETE – Meant for alignment purposes */}
-          {/* <div /> */}
 
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
             <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
@@ -106,17 +104,11 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
-              {/* <div className="relative overflow-hidden widget-3d w-80 h-80">
-              </div> */}
               <SystemInfoHardwareCarouselProvider>
                 <SystemInfoHardwareCarousel sysInfo={sysInfo} />
               </SystemInfoHardwareCarouselProvider>
             </div>
           </div>
-
-          {/* DON'T DELETE – Meant for alignment purposes */}
-          {/* <div /> */}
         </div>
       </div>
     </>

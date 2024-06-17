@@ -14,6 +14,7 @@ interface SysInfoProps {
 const Sysinfo = ({ sysInfo }: SysInfoProps) => {
   const defaultListItemContainerHeight = 175;
   const { selection, setSelection } = useSystemInfoHardwareCarouselContext();
+  const [maxScrollHeight, setMaxScrollHeight] = useState(0);
   const [listItemContainerHeight, setListItemContainerHeight] = useState(defaultListItemContainerHeight);
 
   const onSelectionChange = (value: "memory" | "disk") => {
@@ -38,9 +39,12 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
       setListItemContainerHeight(defaultListItemContainerHeight);
       return;
     }
-    console.log(e.currentTarget.scrollTop);
-    const newHeight = Math.floor(defaultListItemContainerHeight / Math.round(e.currentTarget.scrollTop / 15));
 
+    const MAX_DISTANCE_FROM_BOTTOM = e.currentTarget.scrollHeight - e.currentTarget.clientHeight;
+    const distanceFromBottom = e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.clientHeight;
+
+    const scalingPct = 1 - (0.3 * (1 - (distanceFromBottom / MAX_DISTANCE_FROM_BOTTOM)));
+    const newHeight = Math.floor(defaultListItemContainerHeight * scalingPct);
     setListItemContainerHeight(newHeight);
   };
 

@@ -19,9 +19,15 @@ const createWindow = () => {
       // devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
-
     },
   });
+
+    // Disable zoom shortcuts
+    mainWindow.webContents.on("before-input-event", (event, input) => {
+      if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
+        event.preventDefault();
+      }
+    });
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -33,7 +39,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
   process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
 
   return mainWindow;
@@ -73,6 +79,8 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+
+
 
 app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the

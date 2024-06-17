@@ -10,7 +10,7 @@ from state import global_state_manager
 from server import init_state
 from endpoints.model.downloaded.downloaded import get_downloaded_models
 from constants import TRUFFLE_API_URL
-from tests.data import ID, ID_2
+from tests.unit.data import ID, ID_2
 
 
 # Helpers

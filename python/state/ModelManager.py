@@ -282,7 +282,9 @@ class ModelManager:
         """
 
         available_configurations = self.get_available_configurations(model_ids)
+        print(available_configurations)
         usable_configurations = self.get_usable_configurations(available_configurations)
+        print(usable_configurations)
 
         if len(usable_configurations) == 0:
             raise Exception("No usable configurations found")

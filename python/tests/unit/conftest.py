@@ -5,7 +5,7 @@ import os
 import shutil
 import asyncio
 from pathlib import Path
-import tests.data as data
+import tests.unit.data as data
 from unittest import mock
 from unittest.mock import MagicMock, patch
 from aioresponses import aioresponses

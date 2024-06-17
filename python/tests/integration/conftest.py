@@ -11,10 +11,13 @@ from state import global_state_manager
 from server import init_state, app
 from models import RunningModel
 from utils import get_app_data_path
+from tests.integration.data import models
+
 
 def clear_path():
-    if os.path.exists(get_app_data_path() / "models"):
-        shutil.rmtree(get_app_data_path() / "models")
+    for model in models:
+        if os.path.exists(get_app_data_path() / "models" / model["id"]):
+            shutil.rmtree(get_app_data_path() / "models" / model["id"])
 
 
 async def clear_db():

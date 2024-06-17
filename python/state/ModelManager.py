@@ -125,7 +125,7 @@ class ModelManager:
         """Fetch the size (param count) of a model from the Truffle API."""
 
         async with self.session.get(
-            f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image"
+            f"{TRUFFLE_API_URL}/models/{model_id}"
         ) as response:
             assert response.status == 200, f"Failed to fetch model size for {model_id}"
             model = await response.json()
@@ -282,9 +282,7 @@ class ModelManager:
         """
 
         available_configurations = self.get_available_configurations(model_ids)
-        print(available_configurations)
         usable_configurations = self.get_usable_configurations(available_configurations)
-        print(usable_configurations)
 
         if len(usable_configurations) == 0:
             raise Exception("No usable configurations found")

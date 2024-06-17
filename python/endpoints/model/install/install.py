@@ -472,16 +472,13 @@ async def install_generator(model_id: str, model_url: str):
 
     # Check if the quantization is already built
     try:
-        print("checking quantization")
         quantization = await get_base_quantization_decision(model_id)
-        print("quantization", quantization)
         if does_quantization_exist(model_id, quantization):
             logger.info(f"Conversion and quantization already exists for {model_dir}")
             progress_event.update(status=Status.STOPPED)
             yield str(progress_event)
             return
     except Exception as e:
-        print("error in quantization", e)
         progress_event.update(error=str(e))
         yield str(progress_event)
         return

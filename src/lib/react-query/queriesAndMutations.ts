@@ -36,7 +36,7 @@ export const useSearchModels = (query: string) => {
       return searchModels(query)
     },
     retryOnMount: false,
-    enabled: false
+    enabled: !!query
   })
 }
 

@@ -11,16 +11,22 @@ interface SearchProps {
 }
 const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
   const [search, setSearch] = useState("");
-  const { data: searchModels, refetch: onSearchModels, isLoading } = useSearchModels(search);
+  const [debouncedInput, setDebouncedInput] = useState(search);
+  const { data: searchModels, isLoading } = useSearchModels(debouncedInput);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    const handleSearch = debounce(() => {
-      onSearchModels();
-    }, 500);
+    setIsTyping(search.length > 0);
+    const debouncer = debounce((value) => {
+      setDebouncedInput(value);
+      setIsTyping(false);
+    }, 500); // Debounce for 300 milliseconds
+    debouncer(search);
 
-    if (search.length) {
-      handleSearch();
-    }
+    // Cleanup function to cancel any pending updates if the component unmounts
+    return () => {
+      debouncer.cancel();
+    };
   }, [search]);
 
   useEffect(() => {
@@ -32,6 +38,8 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
     window.addEventListener("keyup", handleKeyUp);
     return () => window.removeEventListener("keyup", handleKeyUp);
   }, []);
+
+  const loadingState = isTyping || isLoading;
 
   return (
     <div className="search">
@@ -48,7 +56,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
           </>
         ) : (
           <>
-            {isLoading ? (
+            {loadingState ? (
               <>loading...</>
             ) : (
               <>
@@ -57,9 +65,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
                     <div className="flex justify-between mt-[42px]">{searchModels?.slice(0, 8).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
                   </>
                 ) : (
-                  <p>
-                    No results
-                  </p>
+                  <p>No results</p>
                 )}
               </>
             )}

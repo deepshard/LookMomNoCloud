@@ -31,6 +31,8 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
     }
   }
 
+  console.log(getUsed())
+
   if(!sysInfo) return null
 
   return (
@@ -52,7 +54,7 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
               onClick={() => onSelectionChange("disk")}
             />
           </span>
-          <span>{bytesToHumanReadable(getUsed())}/{bytesToHumanReadable(sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}</span>
+          <span>{bytesToHumanReadable(getUsed(), false, 0)} of {bytesToHumanReadable(sysInfo.resources.total[selection === "memory" ? "ram" : "disk"], true, 0)}</span>
         </div>
       </div>
       <CircularProgressbar

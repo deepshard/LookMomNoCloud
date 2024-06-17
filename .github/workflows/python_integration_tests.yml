@@ -1,4 +1,4 @@
-name: Python tests
+name: Python integration ests
 
 on: 
   pull_request:
@@ -6,8 +6,12 @@ on:
 
 jobs:
   python_integration_tests:
-    runs-on: ubuntu-x64-1x-T4
+    strategy:
+      matrix:
+        os: [ubuntu-x64-1x-T4, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
       - run: nvidia-smi
+        if: runner.os == 'Linux'

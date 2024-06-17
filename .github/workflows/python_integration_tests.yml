@@ -1,0 +1,13 @@
+name: Python tests
+
+on: 
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python_integration_tests:
+    runs-on: ubuntu-x64-1x-T4
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: nvidia-smi

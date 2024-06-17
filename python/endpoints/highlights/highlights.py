@@ -72,9 +72,9 @@ async def get_trending_models(num: int) -> list[Model]:
 
 async def fetch_model_data(model):
     async with global_state_manager.session.get(
-        f"""{TRUFFLE_API_URL}/models?id={model["id"]}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"""
+        f"{TRUFFLE_API_URL}/models?id={model['id']}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
     ) as response:
-        assert response.status == 200, f"Failed to fetch model data for {model["id"]}"
+        assert response.status == 200, f"Failed to fetch model data for {model['id']}"
         model_data = await response.json()
         return Model(
             id=model_data["id"],

@@ -5,7 +5,8 @@ import { TModel } from "../types/schemas";
 import { motion } from "framer-motion"
 import { set } from "lodash";
 import { useNavigate } from "react-router-dom";
-
+import { toUnitOfCount } from "../utils/sysUtils";
+import ScrollingText from "./common/ScrollingText";
 
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
@@ -34,19 +35,6 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
     };
   }, []);
 
-  const formatModelSize = (size: number) => {
-    if (size >= 1e12) {
-      return `${(size / 1e12).toFixed(1)}T`;
-    } else if (size >= 1e9) {
-      return `${(size / 1e9).toFixed(1)}B`;
-    } else if (size >= 1e6) {
-      return `${(size / 1e6).toFixed(1)}M`;
-    } else if (size >= 1e3) {
-      return `${(size / 1e3).toFixed(1)}K`;
-    } else {
-      return `${size}B`;
-    }
-  }
   const handleAction = () => {
     switch (model.status) {
       case "NOT_DOWNLOADED":
@@ -158,54 +146,15 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
         
         >
           <div className="absolute inset-0  "></div>
-          <p className="text-sm nowrap relative "><ScrollingText text={model?.name.split('/')[1]} isHovered={isHovered}/> </p>
+          <ScrollingText className={"text-sm nowrap relative"} text={model?.name.split('/')[1]} isHovered={isHovered}/>
           <div className="flex items-start"> 
           <span className="text-xs text-surface-main relative opacity-75">
             <ScrollingText text={model?.author} isHovered={isHovered} /> </span>
-          <span className="text-xs text-surface-main relative opacity-75 "> • {formatModelSize(model?.size)}</span>
+          <span className="text-xs text-surface-main relative opacity-75 "> • {toUnitOfCount(model?.size)}</span>
           </div>
         </div>
       </div>
       <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
-    </div>
-  );
-};
-interface ScrollingTextProps {
-  text: string;
-  isHovered: boolean;
-}
-const ScrollingText: React.FC<ScrollingTextProps> = ({ text, isHovered }) => {
-  return (
-    <div className={`clip-rectangle ${text.length > 11 ? 'truncate' : ''}`}>
-      <div className={`scrolling-text ${isHovered && text.length > 10  ? 'scrolling' : ''}`}>
-        {text}
-        <style jsx>{`
-          .clip-rectangle {
-            overflow: hidden;
-          }
-          .truncate {
-            width: 10ch;
-          }
-          .scrolling-text {
-            white-space: nowrap;
-            display: inline-block;
-            transform: translateX(0);
-            text-overflow: ellipsis; // This will add "..." when the text overflows
-            overflow: hidden; // This is necessary for text-overflow to work
-          }
-          .scrolling {
-            animation: scroll 5s ease-out infinite;
-          }
-          @keyframes scroll {
-            0%, 100% {
-              transform: translateX(0);
-            }
-            50% {
-              transform: translateX(-45%);
-            }
-          }
-        `}</style>
-      </div>
     </div>
   );
 };

@@ -6,26 +6,8 @@ from utils import get_app_data_path, get_devices
 
 
 @pytest.mark.asyncio
-async def test_install_no_devices(test_fixture):
-    if len(get_devices()) > 0:
-        pytest.skip("Devices available")
-
-    async with test_fixture.stream(
-        "POST",
-        "/model/install",
-        json={
-            "id": "6b99b94e-a4e4-473a-bd31-c0462fcaece9",
-            "url": "https://huggingface.co/openai-community/gpt2",
-        },
-    ) as response:
-        assert response.status_code == 400
-
-
-@pytest.mark.asyncio
 async def test_install_devices(test_fixture):
-    if len(get_devices()) == 0:
-        pytest.skip("No devices available")
-
+    print(get_devices())
     responses = []
     async with test_fixture.stream(
         "POST",

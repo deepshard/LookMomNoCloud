@@ -6,8 +6,7 @@ from utils import get_app_data_path, get_devices
 
 
 @pytest.mark.asyncio
-async def test_install_devices(test_fixture):
-    print(get_devices())
+async def test_install(test_fixture):
     responses = []
     async with test_fixture.stream(
         "POST",

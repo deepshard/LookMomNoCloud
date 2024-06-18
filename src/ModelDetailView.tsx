@@ -56,7 +56,7 @@ const { showSearch } = useHomePageContext();
                 <img
                 loading="lazy"
                 srcSet={modelData?.background_image}
-                className="shrink-0 aspect-square rounded-full w-[30px]"
+                className="shrink-0 aspect-square rounded-full w-[30px] "
                 />
 
                 <div className='flex flex-col justify-center items-start gap-0.5'>
@@ -127,8 +127,8 @@ const { showSearch } = useHomePageContext();
 
             <div className='relative flex flex-col justify-start items-center'>
                 {/* Model's Image */}
-                <div className='w-[660px] h-[408px] glass-3d rounded-2xl overflow-hidden'>
-                    <img src={modelData?.background_image} className=' w-full h-full'/>
+                <div className='w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur'>
+                    <img src={modelData?.background_image} className=' w-full h-full '/>
                 </div>
 
                 {/* Model's Name */}
@@ -141,7 +141,7 @@ const { showSearch } = useHomePageContext();
 
             {/* Model's Info */}
             <div className='flex flex-col  items-center gap-5'>
-            <p className='text-surface-500'>Created {formatDate(modelData?.createdAt)} •  Last Modified: {formatDate(modelData?.modifiedAt)}</p>
+            <p className='text-surface-500'>Created {formatDate(modelData?.createdAt)} •  Last Modified {formatDate(modelData?.modifiedAt)}</p>
                 <div className="flex gap-2.5 text-sm text-white text-opacity-80">
                     {/* Author Tag */}
                     <div className="flex gap-2 py-1.5 px-2 whitespace-nowrap bg-surface-100 rounded-full">

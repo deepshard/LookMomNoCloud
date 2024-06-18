@@ -238,6 +238,37 @@ div.slick-slide > div {
     backdrop-filter: blur(50px);
   }
 
+  .glass-3d-no-blur {
+    @apply !important;
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+      0px 0px 15px 0px rgba(85, 85, 85, 0.1);
+  }
+
+  .nowrap{
+    white-space: nowrap;
+  }
+
+  .scroll-on-hover {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: 0.5s;
+  }
+
+  
+  .scroll-on-hover:hover {
+    text-overflow: clip;
+
+    overflow: auto;
+    animation: scroll 4s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+  }
+  
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-60%); }
+  }
+
+
   .widget-3d {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
   }

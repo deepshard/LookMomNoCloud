@@ -22,15 +22,19 @@ async def test_install_devices(test_fixture):
             if line:
                 event_data = json.loads(line.split("data: ", 1)[1])
                 responses.append(event_data)
-                print(event_data)
 
-    assert responses[0]["status"] == "ACKNOWLEDGED"
-    assert responses[1]["status"] == "DOWNLOADING"
-    assert responses[-2]["status"] == "INSTALLING"
-    assert responses[-1]["status"] == "STOPPED"
+    if len(get_devices()) == 0:
+        assert responses[-1]["error"] == "No usable configurations found."
+    else:
+        assert responses[0]["status"] == "ACKNOWLEDGED"
+        assert responses[1]["status"] == "DOWNLOADING"
+        assert responses[-2]["status"] == "INSTALLING"
+        assert responses[-1]["status"] == "STOPPED"
 
-    base_path = get_app_data_path() / "models" / "6b99b94e-a4e4-473a-bd31-c0462fcaece9" / "base"
-    assert base_path.exists()
+        base_path = get_app_data_path() / "models" / "6b99b94e-a4e4-473a-bd31-c0462fcaece9" / "base"
+        assert base_path.exists()
 
-    quant_path = get_app_data_path() / "models" / "6b99b94e-a4e4-473a-bd31-c0462fcaece9" / "q0f16"
-    assert quant_path.exists()
+        quant_path = (
+            get_app_data_path() / "models" / "6b99b94e-a4e4-473a-bd31-c0462fcaece9" / "q0f16"
+        )
+        assert quant_path.exists()

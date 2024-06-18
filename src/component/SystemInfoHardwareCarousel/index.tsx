@@ -4,7 +4,8 @@ import Sysinfo from "../SysInfo";
 import { TSysInfo } from "../../types/schemas";
 import { upperFirst } from "lodash";
 import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
+import {motion} from 'framer-motion'
 
 interface SystemInfoHardwareCarouselProps {
   sysInfo: TSysInfo | null;
@@ -12,6 +13,7 @@ interface SystemInfoHardwareCarouselProps {
 const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps) => {
   const { selection } = useSystemInfoHardwareCarouselContext();
   const carouselRef = useRef<any>();
+  const [showUsage, setShowUsage] = useState(1);
 
   const next = () => {
     carouselRef.current.next();
@@ -32,14 +34,26 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
   }, []);
   return (
     <div onWheel={handleWheel} className="relative">
-      <Carousel ref={carouselRef} easing="linear" waitForAnimate className="w-80 h-80 widget-3d">
+      <Carousel 
+        ref={carouselRef} 
+        beforeChange={(_, nextSlide) => {
+          if(nextSlide === 0) {
+            setShowUsage(1);
+          } else {
+            setShowUsage(0);
+          }
+        }} 
+        easing="linear" 
+        waitForAnimate 
+        className="w-80 h-80 widget-3d"
+      >
         <Sysinfo sysInfo={sysInfo} />
         <PreOrderTruffle />
       </Carousel>
-      <span className="absolute flex gap-[4px] bottom-[-35px] translate-x-[-50%] left-[50%]">
+      <motion.span className="absolute flex gap-[4px] bottom-[-35px] translate-x-[-50%] left-[50%]" initial={false} animate={{ opacity: showUsage }}>
         <img src="/assets/icons/monitor.svg" alt="" />
         <p>{upperFirst(selection)} Usage</p>
-      </span>
+      </motion.span>
     </div>
   );
 };

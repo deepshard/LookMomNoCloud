@@ -3,18 +3,63 @@ import SysInfoModelListItem from "./SysInfoModelListItem";
 import MemoryChip from "../../icons/MemoryChip";
 import ExternalDrive from "../../icons/ExternalDrive";
 import { TSysInfo } from "../../types/schemas";
-import { bytesToHumanReadable } from "../../utils/sysUtils";
+import { bytesToHumanReadable, roundTo } from "../../utils/sysUtils";
 import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {motion} from "framer-motion"
 
 interface SysInfoProps {
   sysInfo: TSysInfo | null;
 }
 
 const Sysinfo = ({ sysInfo }: SysInfoProps) => {
-  const defaultListItemContainerHeight = 175;
+  const defaultProgressBarContainerHeight = 175;
+  const targetProgressBarContainerHeight = 100;
   const { selection, setSelection } = useSystemInfoHardwareCarouselContext();
-  const [listItemContainerHeight, setListItemContainerHeight] = useState(defaultListItemContainerHeight);
+  const [progressBarContainerHeight, setProgressBarContainerHeight] = useState(defaultProgressBarContainerHeight);
+  const [progressBarOpacity, setProgressBarOpacity] = useState(1);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollViewRef = useRef<HTMLDivElement>(null);
+
+  const PERCENTAGE_OF_VIEW_THRESHOLD = 0.30;
+  const [targetPosition, setTargetPosition] = useState(0);
+  const [normalizerDenominator, setNormalizerDenominator] = useState(1);
+
+  // Scroll handler to determine the position
+  const handleScroll = useCallback(() => {
+    if (containerRef.current && scrollViewRef.current) {
+      const scrollViewTop = scrollViewRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
+
+      const currNume = Math.abs(targetPosition - scrollViewTop);
+      let normalized = roundTo(currNume / normalizerDenominator, 2);
+
+      const heightDifference = defaultProgressBarContainerHeight - targetProgressBarContainerHeight;
+      let newHeight = heightDifference * normalized + targetProgressBarContainerHeight;
+      
+      if (scrollViewTop <= targetPosition) {
+        // ScrollView top is at or has passed target position of the container height.
+        normalized = 0
+        newHeight = targetProgressBarContainerHeight
+      }
+      setProgressBarOpacity(normalized);
+      setProgressBarContainerHeight(newHeight);
+    }
+  }, [targetPosition, normalizerDenominator]);
+  
+  useEffect(() => {
+    setTimeout(() => {
+      if(containerRef.current && scrollViewRef.current) {
+        const containerHeight = containerRef.current.offsetHeight;
+        const scrollViewTop = scrollViewRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
+
+        const targPosition = containerHeight * PERCENTAGE_OF_VIEW_THRESHOLD;
+        setTargetPosition(targPosition);
+        setNormalizerDenominator(Math.abs(targPosition - scrollViewTop));
+      }
+    }, 200);
+  }, [])
+
 
   const onSelectionChange = (value: "memory" | "disk") => {
     setSelection(value);
@@ -33,20 +78,6 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
     }
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (e.currentTarget.scrollTop === 0) {
-      setListItemContainerHeight(defaultListItemContainerHeight);
-      return;
-    }
-
-    const MAX_DISTANCE_FROM_BOTTOM = e.currentTarget.scrollHeight - e.currentTarget.clientHeight;
-    const distanceFromBottom = e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.clientHeight;
-
-    const scalingPct = 1 - 0.4 * (1 - distanceFromBottom / MAX_DISTANCE_FROM_BOTTOM);
-    const newHeight = Math.floor(defaultListItemContainerHeight * scalingPct);
-    setListItemContainerHeight(newHeight);
-  };
-
   useEffect(() => {
     setTimeout(() => {
       const progressBar = document.getElementsByClassName("CircularProgressbar")[0];
@@ -62,8 +93,8 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
   if (!sysInfo) return null;
 
   return (
-    <div onScroll={handleScroll} className="sys-info-model-list-container w-full h-full relative overflow-y-auto">
-      <div className="sticky top-0 px-[16px] pt-[16px] w-full z-10">
+    <div ref={containerRef} onScroll={handleScroll} className="sys-info-model-list-container hide-scrollbar w-full h-full relative overflow-y-auto scroll-smooth">
+      <div className="sticky top-0 px-[16px] pt-[16px] w-full z-20">
         <div className="flex justify-between items-center">
           <span className="flex">
             <MemoryChip
@@ -85,8 +116,8 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
           </span>
         </div>
       </div>
-      <div className={`h-[${defaultListItemContainerHeight}px] mt-[40px] sticky top-[80px] w-full flex items-center`}>
-        <div className={`w-full`} style={{ height: `${listItemContainerHeight}px` }}>
+      <div className={`h-[${defaultProgressBarContainerHeight}px] mt-[40px] sticky top-[80px] w-full flex items-center px-8`}>
+        <motion.div className={`w-full relative`} initial={{ opacity: 0, height: 0 }} animate={{ opacity: progressBarOpacity, height: defaultProgressBarContainerHeight, transition: { duration: 0.2 } }}>
           <CircularProgressbar
             value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
             text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}
@@ -100,10 +131,17 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
             })}
             className="w-full h-full"
           />
-        </div>
+          <div className="w-full h-full bg-gradient-to-t from-black to-transparent from-[1%] to-40% absolute top-0" />
+        </motion.div>
       </div>
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black from-[18%] to-transparent to-50%" />
-      <div className="px-[16px] relative flex flex-col gap-[8px]">
+      <div ref={scrollViewRef} className="px-[16px] relative flex flex-col gap-[8px] scroll-view">
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
+        <SysInfoModelListItem />
         <SysInfoModelListItem />
         <SysInfoModelListItem />
         <SysInfoModelListItem />

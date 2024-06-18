@@ -24,7 +24,7 @@ async def test_install_devices(test_fixture):
                 responses.append(event_data)
 
     if len(get_devices()) == 0:
-        assert responses[-1]["error"] == "No usable configurations found."
+        assert responses[-1]["error"] == "No usable configurations found"
     else:
         assert responses[0]["status"] == "ACKNOWLEDGED"
         assert responses[1]["status"] == "DOWNLOADING"

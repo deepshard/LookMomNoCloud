@@ -25,8 +25,9 @@ const downloadServerIfNecessary = async () => {
   const version = app.getVersion();
   const osInfo = await si.osInfo();
   const graphicsInfo = await si.graphics();
+  const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
 
-  const url = `https://update-server.com/api/versions/${version}/${osInfo.platform}/${osInfo.arch}/${graphicsInfo.controllers[0].model}`;
+  const url = `https://update-server.com/api/versions/${version}/${osInfo.platform}/${osInfo.arch}/${gpu}`;
 
   try {
     const response = await axios({

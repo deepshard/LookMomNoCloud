@@ -22,6 +22,7 @@ async def test_install_devices(test_fixture):
             if line:
                 event_data = json.loads(line.split("data: ", 1)[1])
                 responses.append(event_data)
+                print(event_data)
 
     assert responses[0]["status"] == "ACKNOWLEDGED"
     assert responses[1]["status"] == "DOWNLOADING"

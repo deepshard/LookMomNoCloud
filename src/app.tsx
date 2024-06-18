@@ -7,7 +7,6 @@ import useSysInfo from "./hooks/sysInfo/useSysInfo";
 import { useStore } from "./store/store";
 import { LOCAL_ROOT_URL } from "./api/client";
 import QueryProvider from "./lib/react-query/QueryProvider";
-import ModelDetailView from "./ModelDetailView";
 
 const root = createRoot(document.getElementById("root"));
 

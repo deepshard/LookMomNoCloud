@@ -1,17 +1,22 @@
-import { app, BrowserWindow, session, screen, ipcMain, autoUpdater } from "electron";
+import { app, BrowserWindow, session, screen, ipcMain } from "electron";
+import { autoUpdater } from "electron-updater";
 import path from "path";
 import os from "os";
 import si from "systeminformation";
 import axios from "axios";
 import fs from "fs";
 
-const deleteServer = () => {
+const handleUpdate = () => {
+  // Delete current server binary
   const filePath = path.join(app.getPath("userData"), "bin", "server.exe");
   fs.unlink(filePath, (err) => {
     if (err) {
       console.error(err);
     }
   });
+
+  // Update app
+  autoUpdater.quitAndInstall();
 }
 
 const downloadServerIfNecessary = async () => {
@@ -68,7 +73,7 @@ const createWindow = () => {
   autoUpdater.on("checking-for-update", () => mainWindow.webContents.send("checking-for-update"));
   autoUpdater.on("update-available", () => mainWindow.webContents.send("update-available"));
   autoUpdater.on("update-not-available", () => mainWindow.webContents.send("update-not-available"));
-  autoUpdater.on("before-quit-for-update", deleteServer);
+  autoUpdater.on("download-progress", (progress) => mainWindow.webContents.send("download-progress", progress));
   autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
 
   // and load the index.html of the app.
@@ -113,7 +118,7 @@ app.on("ready", async function () {
     console.error("Failed to install extension:", error);
   }
 
-  ipcMain.on("restart-and-update", autoUpdater.quitAndInstall);
+  ipcMain.on("restart-and-update", handleUpdate);
   createWindow();
 });
 

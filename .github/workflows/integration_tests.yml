@@ -18,10 +18,10 @@ jobs:
             macos-latest, # M1
           ]
     runs-on: ${{ matrix.os }}
+    env:
+      DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
     steps:
       - uses: actions/checkout@v4
-
-      - run: uname -a
 
       - name: Set up Python
         uses: actions/setup-python@v5

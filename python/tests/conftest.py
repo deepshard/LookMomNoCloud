@@ -30,9 +30,10 @@ async def clear_db():
 
 # Fixtures
 @pytest_asyncio.fixture(autouse=True)
-async def session_fixture(request, mocker):
+async def session_fixture(mocker):
     def _patcher(module):
         mocker.patch(f"{module}.get_app_data_path", return_value=Path("/tmp"))
+        mocker.patch("utils.get_app_data_path", return_value=Path("/tmp"))
 
     yield _patcher
 
@@ -53,22 +54,11 @@ async def test_fixture(request):
     request.addfinalizer(teardown)
 
 
-@pytest.fixture
-def is_windows(mocker):
+@pytest.fixture(autouse=True, params=["Linux", "Darwin", "Windows"])
+def set_os(request, mocker):
     platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Windows")
-
-
-@pytest.fixture()
-def is_linux(mocker):
-    platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Linux")
-
-
-@pytest.fixture
-def is_macos(mocker):
-    platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Darwin")
+    mocker.patch.object(platform_module, "system", return_value=request.param)
+    return request.param
 
 
 @pytest.fixture(autouse=True)

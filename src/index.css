@@ -45,10 +45,22 @@ body {
 
 input {
   color: var(--input-text-color);
+  caret-color: white;
 }
 
-input::placeholder {
+input::placeholder, .ant-input::placeholder {
   color: var(--input-placeholder-color);
+}
+
+.ant-input {
+  outline: none !important;
+}
+.ant-input:hover, .ant-input:focus {
+  background-color: transparent !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
 }
 
 .react-multi-carousel-track {
@@ -112,12 +124,31 @@ div.slick-slide > div {
 
 div.slick-slide > div {
   padding: 0 !important;
-  overflow: overlay !important;
+  /* overflow: overlay !important; */
 
   &::-webkit-scrollbar {
     display: none;
   }
 }
+
+.ant-carousel {
+  overflow: auto;
+}
+.sys-info-hardware > .ant-carousel {
+  border-radius: 24px;
+  overflow: hidden;
+
+}
+
+.my-models-container > .ant-carousel {
+  height: 100% !important;
+
+  .slick-slide > div {
+    display: flex;
+    align-items: center;
+  }
+}
+
 
 @layer base {
 }
@@ -198,6 +229,10 @@ div.slick-slide > div {
     @apply min-h-[78px] min-w-[124px] rounded-sm overflow-hidden cursor-pointer relative !important;
   }
 
+  .model-my-models {
+    @apply min-h-[103px] min-w-[124px] cursor-pointer !important;
+  }
+
   .blurred-bg-img {
     @apply absolute top-0 left-0 w-full h-full blur-md opacity-85 !important;
   }
@@ -215,5 +250,30 @@ div.slick-slide > div {
 
   .widget-3d {
     @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
+  }
+
+  .search {
+    @apply absolute top-0 w-full h-full z-40;
+    backdrop-filter: blur(75px);
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), rgba(255, 255, 255, 0.10)
+  }
+
+  .sys-info-hardware-carousel {
+    @apply w-80 h-80 relative !important;
+  }
+
+  .sys-info-hardware-carousel::before {
+    content: '';
+    @apply widget-3d absolute top-0 left-0 w-full h-full overflow-hidden;
+  }
+
+  .sysinfo-model-item {
+    @apply relative flex items-center p-2.5 gap-2  !important;
+  }
+
+  .sysinfo-model-item::before {
+    content: '';
+    @apply absolute top-0 left-0 bottom-10 w-full h-full rounded-sm bg-surface-100;
+    backdrop-filter: blur(30px);
   }
 }

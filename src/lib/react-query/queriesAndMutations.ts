@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getHighlights } from "../../api/general";
-import { deleteModel, stopModel } from "../../api/model";
+import { deleteModel, getMyModels, searchModels, stopModel } from "../../api/model";
 import { TModel } from "../../types/schemas";
 
 export const useGetHighlights = () => {
@@ -24,6 +24,26 @@ export const useDeleteModel = () => {
   return useMutation({
     mutationFn: (model: TModel) => {
       return deleteModel(model);
+    },
+  })
+}
+
+export const useSearchModels = (query: string) => {
+  return  useQuery({
+    queryKey: ["searchModels", query],
+    queryFn: () => {
+      return searchModels(query)
+    },
+    retryOnMount: false,
+    enabled: !!query
+  })
+}
+
+export const useGetMyModels = () => {
+  return useQuery({
+    queryKey: ["myModels"],
+    queryFn: () => {
+      return getMyModels()
     },
   })
 }

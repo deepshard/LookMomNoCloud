@@ -5,10 +5,11 @@ interface SysInfoModelListItemProps {
 }
 function SysInfoModelListItem({model}: SysInfoModelListItemProps) {
   return (
-    <div className='flex w-full items-center p-2.5 gap-2 bg-surface-100 rounded-sm'>
-        <img src="/assets/images/llama1.png" alt="" className='w-[30px] h-[30px] rounded-xs ' />
+    <div className='sysinfo-model-item'>
+      
+        <img src="/assets/images/llama1.png" alt="" className='w-[30px] h-[30px] rounded-xs z-10' />
         
-        <div className='flex flex-col justify-center items-start grow'>
+        <div className='flex flex-col justify-center items-start grow z-10'>
             <p className='text-surface-750 title-sm'>{model?.title || "Llama-3"}</p>
             
             <span className='flex gap-1 items-center -mt-1'>
@@ -18,7 +19,7 @@ function SysInfoModelListItem({model}: SysInfoModelListItemProps) {
             </span>
         </div>
 
-        <p className='pr-1 text-surface-500'>30%</p>
+        <p className='pr-1 text-surface-500 z-10'>30%</p>
     </div>
   )
 }

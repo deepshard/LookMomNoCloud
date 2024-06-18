@@ -5,14 +5,16 @@ import ExternalDrive from "../../icons/ExternalDrive";
 import { TSysInfo } from "../../types/schemas";
 import { bytesToHumanReadable } from "../../utils/sysUtils";
 import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
+import { useEffect, useRef, useState } from "react";
 
 interface SysInfoProps {
-    sysInfo: TSysInfo | null;
+  sysInfo: TSysInfo | null;
 }
 
-const Sysinfo = ({sysInfo}: SysInfoProps) => {
-
-  const {selection, setSelection} = useSystemInfoHardwareCarouselContext();
+const Sysinfo = ({ sysInfo }: SysInfoProps) => {
+  const defaultListItemContainerHeight = 175;
+  const { selection, setSelection } = useSystemInfoHardwareCarouselContext();
+  const [listItemContainerHeight, setListItemContainerHeight] = useState(defaultListItemContainerHeight);
 
   const onSelectionChange = (value: "memory" | "disk") => {
     setSelection(value);
@@ -23,19 +25,45 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
   };
 
   const getUsed = () => {
-    if(!sysInfo) return 0
-    if(selection === "memory") {
-      return sysInfo.resources.total.ram - sysInfo.resources.available.ram
+    if (!sysInfo) return 0;
+    if (selection === "memory") {
+      return sysInfo.resources.total.ram - sysInfo.resources.available.ram;
     } else {
-      return sysInfo.resources.total.disk - sysInfo.resources.available.disk
+      return sysInfo.resources.total.disk - sysInfo.resources.available.disk;
     }
-  }
+  };
 
-  if(!sysInfo) return null
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (e.currentTarget.scrollTop === 0) {
+      setListItemContainerHeight(defaultListItemContainerHeight);
+      return;
+    }
+
+    const MAX_DISTANCE_FROM_BOTTOM = e.currentTarget.scrollHeight - e.currentTarget.clientHeight;
+    const distanceFromBottom = e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.clientHeight;
+
+    const scalingPct = 1 - 0.4 * (1 - distanceFromBottom / MAX_DISTANCE_FROM_BOTTOM);
+    const newHeight = Math.floor(defaultListItemContainerHeight * scalingPct);
+    setListItemContainerHeight(newHeight);
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      const progressBar = document.getElementsByClassName("CircularProgressbar")[0];
+      // @ts-ignore
+      progressBar.style.transform = 'rotate(-90deg)';
+      const percentText = progressBar.getElementsByTagName("text")[0];
+      percentText.style.transform = 'rotate(89deg)';
+      percentText.setAttribute('x', '50');
+      percentText.setAttribute('y', '-50');
+    }, 100);
+  }, []);
+
+  if (!sysInfo) return null;
 
   return (
-    <div className="w-full h-full relative ">
-      <div className="sticky top-0 px-[16px] pt-[16px] w-full">
+    <div onScroll={handleScroll} className="sys-info-model-list-container w-full h-full relative overflow-y-auto">
+      <div className="sticky top-0 px-[16px] pt-[16px] w-full z-10">
         <div className="flex justify-between items-center">
           <span className="flex">
             <MemoryChip
@@ -52,23 +80,30 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
               onClick={() => onSelectionChange("disk")}
             />
           </span>
-          <span>{bytesToHumanReadable(getUsed())}/{bytesToHumanReadable(sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}</span>
+          <span>
+            {bytesToHumanReadable(getUsed())}/{bytesToHumanReadable(sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
+          </span>
         </div>
       </div>
-      <CircularProgressbar
-        value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
-        text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}
-        strokeWidth={13}
-        styles={buildStyles({
-          textColor: "rgba(255, 255, 255, 0.75)",
-          pathColor: "rgba(255, 255, 255, 1)",
-          trailColor: "rgba(255, 255, 255, 0.1)",
-          textSize: "12px",
-          pathTransitionDuration: 0.5,
-        })}
-        className="h-[175px] w-[75px] mt-[40px]"
-      />
-      <div className="px-[10px]">
+      <div className={`h-[${defaultListItemContainerHeight}px] mt-[40px] sticky top-[80px] w-full flex items-center`}>
+        <div className={`w-full`} style={{ height: `${listItemContainerHeight}px` }}>
+          <CircularProgressbar
+            value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
+            text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}
+            strokeWidth={11}
+            styles={buildStyles({
+              textColor: "rgba(255, 255, 255, 0.75)",
+              pathColor: "rgba(255, 255, 255, 1)",
+              trailColor: "rgba(255, 255, 255, 0.1)",
+              textSize: "8px",
+              pathTransitionDuration: 0.5,
+            })}
+            className="w-full h-full"
+          />
+        </div>
+      </div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black from-[18%] to-transparent to-50%" />
+      <div className="px-[16px] relative flex flex-col gap-[8px]">
         <SysInfoModelListItem />
         <SysInfoModelListItem />
         <SysInfoModelListItem />

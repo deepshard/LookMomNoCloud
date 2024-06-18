@@ -90,31 +90,31 @@ def request_mocks(request, mocker):
 
         # Truffle
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id={data.ID}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models?id={data.ID}",
             status=200,
             payload=data.MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id={data.ID_2}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models?id={data.ID_2}",
             status=200,
             payload=data.MOCK_MODEL_2,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=5&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models/trending?k=5",
             status=200,
             payload=data.MODELS,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=4&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models/trending?k=4",
             status=200,
             payload=data.MODELS[1:],
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
             status=200,
             payload=data.MODELS[0],
             repeat=True,

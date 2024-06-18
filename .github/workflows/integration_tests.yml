@@ -9,14 +9,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [
-            ubuntu-latest, # no GPU
-            ubuntu-x64-1x-T4, # 1x T4
-            # ubuntu-x64-2x-T4, # 2x T4
-            ubuntu-x64-2x-RTX4080, # 2x RTX4080
-            macos-13, # no GPU
-            macos-latest, # M1
-          ]
+        include:
+          - displayTargetName: "Ubuntu (no GPU)"
+            os: ubuntu-latest
+            mlc_install: "pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly"
+
+          - displayTargetName: "Ubuntu (1x T4)"
+            os: ubuntu-x64-1x-T4
+            mlc_install: "pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly-cu122 mlc-llm-nightly-cu122"
+
+          - displayTargetName: "Ubuntu (2x RTX4080)"
+            os: ubuntu-x64-2x-RTX4080
+            mlc_install: "pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly-cu122 mlc-llm-nightly-cu122"
+
+          - displayTargetName: "macOS (M1)"
+            os: macos-latest
+            mlc_install: "pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly"
+
+          - displayTargetName: "macOS (no GPU)"
+            os: macos-13
+            mlc_install: "pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly"
+
     runs-on: ${{ matrix.os }}
     env:
       DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
@@ -32,7 +45,7 @@ jobs:
             **/requirements*.txt
 
       - run: pip install -r python/requirements.txt
-      - run: pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly mlc-llm-nightly
+      - run: ${{ matrix.mlc_install }}
 
       - name: Run database migrations
         run: |

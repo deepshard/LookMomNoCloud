@@ -5,7 +5,7 @@ import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../../context/HomePageProvider";
 interface SearchProps {
   onClose?: () => void;

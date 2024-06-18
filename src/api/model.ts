@@ -116,3 +116,9 @@ export const searchModels = async (query: string) => {
   const response = await client.get(`/search/?query=${query}`);
   return response.data;
 }
+
+
+export const getModel = async (id: string): Promise<TModel> => {
+  const response = await client.get(`/${id}`);
+  return response.data;
+}

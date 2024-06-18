@@ -112,6 +112,7 @@ app.on("ready", async function () {
     console.error("Failed to install extension:", error);
   }
 
+  ipcMain.on("restart-and-update", autoUpdater.quitAndInstall);
   createWindow();
 });
 

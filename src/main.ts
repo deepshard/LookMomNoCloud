@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session, screen } from "electron";
+import { app, BrowserWindow, session, screen, Menu} from "electron";
 import path from "path";
 import os from "os";
 
@@ -15,13 +15,32 @@ const createWindow = () => {
     height: 690 ,
     titleBarStyle: "hidden",
     webPreferences: {
-      zoomFactor: 1.0 / factor,
+
       // devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
   });
 
+  const template = [
+    {
+      label: 'View',
+      submenu: [
+        { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
+        { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+I', click: () => mainWindow.webContents.toggleDevTools() },
+        { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
+        { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
+      ]
+    }
+  ];
+
+  setTimeout(() => {
+    mainWindow.webContents.setZoomLevel(0);
+  }, 100);
+  
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+  
     // Disable zoom shortcuts
     mainWindow.webContents.on("before-input-event", (event, input) => {
       if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {

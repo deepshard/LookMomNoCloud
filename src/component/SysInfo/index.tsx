@@ -90,12 +90,12 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
           <CircularProgressbar
             value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
             text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}
-            strokeWidth={13}
+            strokeWidth={11}
             styles={buildStyles({
               textColor: "rgba(255, 255, 255, 0.75)",
               pathColor: "rgba(255, 255, 255, 1)",
               trailColor: "rgba(255, 255, 255, 0.1)",
-              textSize: "12px",
+              textSize: "8px",
               pathTransitionDuration: 0.5,
             })}
             className="w-full h-full"

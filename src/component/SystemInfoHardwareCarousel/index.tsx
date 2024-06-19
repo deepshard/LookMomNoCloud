@@ -33,7 +33,7 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
     }
   }, []);
   return (
-    <div onWheel={handleWheel} className="relative">
+    <div onWheel={handleWheel} className="relative sys-info-hardware">
       <Carousel 
         ref={carouselRef} 
         beforeChange={(_, nextSlide) => {
@@ -45,7 +45,7 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
         }} 
         easing="linear" 
         waitForAnimate 
-        className="w-80 h-80 widget-3d"
+        className="sys-info-hardware-carousel"
       >
         <Sysinfo sysInfo={sysInfo} />
         <PreOrderTruffle />

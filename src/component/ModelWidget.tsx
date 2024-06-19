@@ -22,6 +22,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
+  const errorIcon = process.env.NODE_ENV === "development" ? "/assets/icons/error.svg" : "../../renderer/main_window/assets/icons/error.svg";
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -112,10 +113,15 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
 
   if(model.error) {
     return (
-      <div className="model-widget base-regular" {...props}>
-        <p className="opacity-75">"To-do: Error design goes here"</p>
+      <div
+        onClick={() => {
+          handleAction();
+        }}
+        className={`h-[32.73px] w-[32.73px] absolute bottom-0 left-0 m-2 bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <img src={errorIcon} alt="" className="h-[32.73px] w-[32.73px]" />
       </div>
-    )
+    );
   }
 
   if(type === 'my-model') {

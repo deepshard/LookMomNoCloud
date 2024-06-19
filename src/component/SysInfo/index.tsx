@@ -31,8 +31,6 @@ const Sysinfo = ({sysInfo}: SysInfoProps) => {
     }
   }
 
-  console.log(getUsed())
-
   if(!sysInfo) return null
 
   return (

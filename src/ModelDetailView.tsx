@@ -2,7 +2,6 @@ import { TModel } from "./types/schemas";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getModel } from "./api/model";
-import ScrollingText from "./component/common/ScrollingText";
 import { formatDate } from "./utils/sysUtils";
 
 function ModelDetailView() {
@@ -66,24 +65,10 @@ function ModelDetailView() {
 
           <div className="flex flex-col justify-center items-start gap-0.5">
             <p className="text-surface-main">
-              {
-                <ScrollingText
-                  text={
-                    modelData && modelData?.name
-                      ? modelData.name.split("/")[1]
-                      : ""
-                  }
-                  isHovered={true}
-                />
-              }
+              {modelData && modelData?.name ? modelData.name.split("/")[1] : ""}
             </p>
             <p className="text-surface-500 callout-base">
-              {
-                <ScrollingText
-                  text={modelData && modelData?.author ? modelData.author : ""}
-                  isHovered={true}
-                />
-              }
+              {modelData && modelData?.author ? modelData.author : ""}
             </p>
           </div>
         </div>
@@ -255,7 +240,7 @@ function ModelDetailView() {
       </section>
 
       <section className="pt-16 pb-14">
-        <div >
+        <div>
           {/* Map with all sections – Limitations, Capabilities, Risks, Evals, etc */}
           {modelData && (
             <div className="w-[660px] flex flex-col justify-start items-start gap-5">

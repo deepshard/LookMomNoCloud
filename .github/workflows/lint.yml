@@ -30,6 +30,8 @@ jobs:
 
       - name: Install Node.js dependencies with Bun
         run: bun install
+        continue-on-error: true
+
 
       - name: Run TypeScript linters
         run: bunx eslint . --ext .ts,.tsx

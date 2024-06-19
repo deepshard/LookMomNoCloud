@@ -3,6 +3,7 @@ build
 bin
 dist
 .tmp
+python
 
 # Logs
 logs

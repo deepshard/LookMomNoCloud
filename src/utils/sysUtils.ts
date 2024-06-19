@@ -20,6 +20,7 @@ export const toUnitOfCount = (size: number) => {
     return `${size}B`;
   }
 
+}
   
 export function roundTo(n: number, decimals: number): number {
   return Number(n.toFixed(decimals));

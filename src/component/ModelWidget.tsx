@@ -146,11 +146,12 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
         
         >
           <div className="absolute inset-0  "></div>
-          <ScrollingText className={"text-sm nowrap relative"} text={model?.name.split('/')[1]} isHovered={isHovered}/>
-          <div className="flex items-start"> 
+          <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split('/')[1]} isHovered={isHovered}/>
+          <div className="flex items-start gap-0.5"> 
           <span className="text-xs text-surface-main relative opacity-75">
-            <ScrollingText text={model?.author} isHovered={isHovered} /> </span>
-          <span className="text-xs text-surface-main relative opacity-75 "> • {toUnitOfCount(model?.size)}</span>
+            <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} /> </span>
+            <span className="text-xs text-surface-main relative opacity-75"> • </span>
+          <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
           </div>
         </div>
       </div>

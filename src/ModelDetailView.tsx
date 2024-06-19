@@ -1,9 +1,10 @@
-import React from "react";
 import { TModel } from "./types/schemas";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getModel } from "./api/model";
 import ScrollingText from "./component/common/ScrollingText";
+import { formatDate } from "./utils/sysUtils"
+
 
 function ModelDetailView() {
   enum NavBarOptions {
@@ -52,15 +53,6 @@ function ModelDetailView() {
     }
   };
 
-  function formatDate(dateString: string | undefined) {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  }
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto ">

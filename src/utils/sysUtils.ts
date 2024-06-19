@@ -5,3 +5,14 @@ export function bytesToHumanReadable(bytes?: number, withUnit = true): string {
   const result = (bytes / Math.pow(1024, exponent)).toFixed(2);
   return withUnit ? `${result} ${units[exponent]}` : result;
 }
+
+
+export function formatDate(dateString: string | undefined) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}

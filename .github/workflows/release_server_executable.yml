@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [macos-latest]
     env:
-      SERVER_FILENAME: server-${{ github.sha }}-${{ matrix.os }}.tar.gz
+      SERVER_FILENAME: server-${{ matrix.os }}.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
       - name: Check directory structure
-        run: ls -l python/
+        run: ls -la
         # This will list the contents of the python directory to ensure 'dist' is created
 
       - name: Archive server executable
@@ -55,5 +55,4 @@ jobs:
         with:
           if-no-files-found: error
           name: ${{ env.SERVER_FILENAME }}
-          path: |
-            *.tar.gz
+          path: ${{ env.SERVER_FILENAME }}

@@ -80,9 +80,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
               onClick={() => onSelectionChange("disk")}
             />
           </span>
-          <span>
-            {bytesToHumanReadable(getUsed())}/{bytesToHumanReadable(sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
-          </span>
+          <span>{bytesToHumanReadable(getUsed(), false, 0)} of {bytesToHumanReadable(sysInfo.resources.total[selection === "memory" ? "ram" : "disk"], true, 0)}</span>
         </div>
       </div>
       <div className={`h-[${defaultListItemContainerHeight}px] mt-[40px] sticky top-[80px] w-full flex items-center`}>

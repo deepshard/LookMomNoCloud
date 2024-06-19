@@ -38,6 +38,10 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
+      - name: Check directory structure
+        run: ls -l python/
+        # This will list the contents of the python directory to ensure 'dist' is created
+
       - name: Archive server executable
         run: |
           tar -czvf ${{ env.SERVER_FILENAME }} -C python/dist server

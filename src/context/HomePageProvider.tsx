@@ -17,7 +17,7 @@ const HomePageContext = createContext<HomePageContextProps>({
 const HomePageProvider = ({ children }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [showMyModels, setShowMyModels] = useState(false);
-  return <HomePageContext.Provider value={{ showSearch, setShowSearch,  showMyModels, setShowMyModels }}>{children}</HomePageContext.Provider>;
+  return <HomePageContext.Provider value={{ showSearch, setShowSearch, showMyModels, setShowMyModels }}>{children}</HomePageContext.Provider>;
 };
 
 export const useHomePageContext = () => useContext(HomePageContext);

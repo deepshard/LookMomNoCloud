@@ -6,14 +6,10 @@ import shutil
 import asyncio
 from pathlib import Path
 import tests.data as data
-from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from aioresponses import aioresponses
-from db import get_db_session
-from state import global_state_manager
 from server import init_state
 from constants import TRUFFLE_API_URL
-from utils import get_app_data_path
 from models import RunningModel
 
 # Helpers
@@ -30,9 +26,10 @@ async def clear_db():
 
 # Fixtures
 @pytest_asyncio.fixture(autouse=True)
-async def session_fixture(request, mocker):
+async def session_fixture(mocker):
     def _patcher(module):
         mocker.patch(f"{module}.get_app_data_path", return_value=Path("/tmp"))
+        mocker.patch("utils.get_app_data_path", return_value=Path("/tmp"))
 
     yield _patcher
 
@@ -53,22 +50,11 @@ async def test_fixture(request):
     request.addfinalizer(teardown)
 
 
-@pytest.fixture
-def is_windows(mocker):
+@pytest.fixture(autouse=True, params=["Linux", "Darwin", "Windows"])
+def set_os(request, mocker):
     platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Windows")
-
-
-@pytest.fixture()
-def is_linux(mocker):
-    platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Linux")
-
-
-@pytest.fixture
-def is_macos(mocker):
-    platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Darwin")
+    mocker.patch.object(platform_module, "system", return_value=request.param)
+    return request.param
 
 
 @pytest.fixture(autouse=True)
@@ -90,33 +76,39 @@ def request_mocks(request, mocker):
 
         # Truffle
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id={data.ID}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models?id={data.ID}",
             status=200,
             payload=data.MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id={data.ID_2}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models?id={data.ID_2}",
             status=200,
             payload=data.MOCK_MODEL_2,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=5&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models/trending?k=5",
             status=200,
             payload=data.MODELS,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/trending?k=4&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models/trending?k=4",
             status=200,
             payload=data.MODELS[1:],
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image",
+            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
             status=200,
             payload=data.MODELS[0],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models?id=b438d015-ad45-4e9a-9aba-2e290348b078&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
+            status=200,
+            payload=data.MODELS[1],
             repeat=True,
         )
 

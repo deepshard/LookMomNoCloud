@@ -1,16 +1,10 @@
-import os
 import asyncio
 import pytest
-from uuid import uuid4
 from unittest import mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 import json
-import shutil
-import aiohttp
 from pathlib import Path
-from aioresponses import aioresponses
 from state import global_state_manager
-from server import init_state
 from endpoints.model.install.install import (
     install_generator,
     get_hf_name_for_url,

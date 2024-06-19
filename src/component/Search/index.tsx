@@ -47,7 +47,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
 
   return (
     <div className="search">
-      <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={() => { onClose && onClose(); setSearch(""); }} />
+      <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
       <div className="w-full mt-[131px] px-[145px]">
         <Input value={
           search

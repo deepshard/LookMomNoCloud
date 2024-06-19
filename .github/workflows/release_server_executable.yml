@@ -40,15 +40,13 @@ jobs:
         run: |
           tar -czvf server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz -C python/dist server
 
-      - name: List files 
-        run: ls -l
-        working-directory: python/dist
-
       - name: List files
         run: ls -l
 
       - name: Upload server executable
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: error
           name: server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz
-          path: server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz
+          path: |
+            *.tar.gz

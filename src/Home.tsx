@@ -11,6 +11,7 @@ import Search from "./component/Search";
 import Featured from "./component/Featured";
 import { useHomePageContext } from "./context/HomePageProvider";
 import MyModels from "./component/MyModels";
+import FeaturedCarousel from "./component/FeaturedCarousel";
 
 export default function Home() {
 
@@ -79,10 +80,7 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
               <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
-                <Carousel autoplay easing="linear" waitForAnimate className="w-80 h-[150px] widget-3d">
-                  <Featured />
-                  <Featured />
-                </Carousel>
+                <FeaturedCarousel />
 
                 <div className="w-full flex justify-between gap-5">
                   <div className="flex justify-center items-center min-w-[150px] md:w-[150px] min-h-[150px] widget-3d rounded-lg relative">

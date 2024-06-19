@@ -6,7 +6,6 @@ import { debounce } from "lodash";
 import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSuggestedQuery } from "@testing-library/react";
 interface SearchProps {
   onClose?: () => void;
   recentlyUsedModels?: TModel[];
@@ -68,7 +67,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
               <>
                 {searchModels ? (
                   <>
-                    <div  className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">{searchModels?.slice(0, 12).map((model) => <ModelWidget onClick={() => {setSearch(search);navigate(`/model/${model.id}`)}} model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
+                    <div  className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">{searchModels?.slice(0, 12).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
                   </>
                 ) : (
                   <p>No results</p>

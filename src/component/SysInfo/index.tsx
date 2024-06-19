@@ -14,10 +14,9 @@ interface SysInfoProps {
 
 const Sysinfo = ({ sysInfo }: SysInfoProps) => {
   const defaultProgressBarContainerHeight = 175;
-  const targetProgressBarContainerHeight = 100;
   const { selection, setSelection } = useSystemInfoHardwareCarouselContext();
-  const [progressBarContainerHeight, setProgressBarContainerHeight] = useState(defaultProgressBarContainerHeight);
   const [progressBarOpacity, setProgressBarOpacity] = useState(1);
+  const [progressBarScale, setProgressBarScale] = useState(1);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollViewRef = useRef<HTMLDivElement>(null);
@@ -32,18 +31,19 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
       const scrollViewTop = scrollViewRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
 
       const currNume = Math.abs(targetPosition - scrollViewTop);
-      let normalized = roundTo(currNume / normalizerDenominator, 2);
+      let normalized = roundTo(currNume / normalizerDenominator, 1);
+      let newScale = normalized
 
-      const heightDifference = defaultProgressBarContainerHeight - targetProgressBarContainerHeight;
-      let newHeight = heightDifference * normalized + targetProgressBarContainerHeight;
+      if(newScale <= 0.7) {
+        newScale = 0.7
+      }
       
       if (scrollViewTop <= targetPosition) {
         // ScrollView top is at or has passed target position of the container height.
         normalized = 0
-        newHeight = targetProgressBarContainerHeight
       }
       setProgressBarOpacity(normalized);
-      setProgressBarContainerHeight(newHeight);
+      setProgressBarScale(newScale);
     }
   }, [targetPosition, normalizerDenominator]);
   
@@ -117,7 +117,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
         </div>
       </div>
       <div className={`h-[${defaultProgressBarContainerHeight}px] mt-[40px] sticky top-[80px] w-full flex items-center px-8`}>
-        <motion.div className={`w-full relative`} initial={{ opacity: 0, height: 0 }} animate={{ opacity: progressBarOpacity, height: defaultProgressBarContainerHeight, transition: { duration: 0.2 } }}>
+        <motion.div className={`w-full relative`} initial={{ opacity: 0, height: 0 }} animate={{ opacity: progressBarOpacity, height: defaultProgressBarContainerHeight, scale:progressBarScale, transition: { duration: 0.2 } }}>
           <CircularProgressbar
             value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
             text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}

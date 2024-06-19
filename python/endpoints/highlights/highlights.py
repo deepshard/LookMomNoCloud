@@ -16,9 +16,15 @@ async def get_highlights() -> list[Model]:
         {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
     ]
     downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
-    
-    uuid_pattern = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-    downloaded_models = [model_id for model_id in downloaded_models if uuid_pattern.match(model_id["id"]) and await is_model_downloaded(model_id["id"])]
+
+    uuid_pattern = re.compile(
+        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    )
+    downloaded_models = [
+        model_id
+        for model_id in downloaded_models
+        if uuid_pattern.match(model_id["id"]) and await is_model_downloaded(model_id["id"])
+    ]
 
     # Dedupe model IDs
     for model in downloaded_models:

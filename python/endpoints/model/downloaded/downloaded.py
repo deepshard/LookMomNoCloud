@@ -23,9 +23,7 @@ async def is_model_downloaded(model_id: str) -> bool:
     if not os.path.isdir(model_path):
         return False
 
-    async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/{model_id}"
-    ) as response:
+    async with global_state_manager.session.get(f"{TRUFFLE_API_URL}/models/{model_id}") as response:
         assert response.status == 200, f"Failed to fetch model {model_id}"
         model = await response.json()
         hf_link = model["hfLink"]

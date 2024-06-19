@@ -138,16 +138,12 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
       <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur" ></div>
       <img src={model.background_image} alt="" className="w-full h-full" />
       <div className="absolute top-0 left-0 p-2 nowrap">
-        <div className="relative" 
+        <div className="relative flex flex-col items-start" 
       onClick={() => window.location.href = `/model/${model.id}`}
         >
-          <div className="absolute inset-0  "></div>
           <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split('/')[1]} isHovered={isHovered}/>
-          <div className="flex items-start gap-0.5"> 
-          <span className="text-xs text-surface-main relative opacity-75">
-            <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} /> </span>
-            <span className="text-xs text-surface-main relative opacity-75"> • </span>
-          <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
+          <div className="flex items-start gap-0.5 -mt-[6px]"> 
+          <span className="text-xs text-surface-main relative opacity-75"> <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} /> </span> <span className="text-xs text-surface-main relative opacity-75"> • </span> <span className="text-xs text-surface-main relative opacity-75 capitalize">{model?.author}</span>
           </div>
         </div>
       </div>

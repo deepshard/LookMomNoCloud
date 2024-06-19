@@ -6,7 +6,7 @@ import { debounce } from "lodash";
 import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useHomePageContext } from "../../context/HomePageProvider";
+import { getSuggestedQuery } from "@testing-library/react";
 interface SearchProps {
   onClose?: () => void;
   recentlyUsedModels?: TModel[];
@@ -17,7 +17,6 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
   const { data: searchModels, isLoading } = useSearchModels(debouncedInput);
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
-  const {searchQuery, setSearchQuery} = useHomePageContext();
 
   useEffect(() => {
     setIsTyping(search.length > 0);
@@ -35,10 +34,6 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
 
   useEffect(() => {
 
-    if (searchQuery) {
-      setSearch(searchQuery);
-    }
-
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose && onClose();
@@ -52,7 +47,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
 
   return (
     <div className="search">
-      <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={() => { onClose && onClose(); setSearchQuery(""); }} />
+      <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={() => { onClose && onClose(); setSearch(""); }} />
       <div className="w-full mt-[131px] px-[145px]">
         <Input value={
           search
@@ -75,7 +70,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
               <>
                 {searchModels ? (
                   <>
-                    <div  className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">{searchModels?.slice(0, 12).map((model) => <ModelWidget onClick={() => {setSearchQuery(search);navigate(`/model/${model.id}`)}} model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
+                    <div  className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">{searchModels?.slice(0, 12).map((model) => <ModelWidget onClick={() => {setSearch(search);navigate(`/model/${model.id}`)}} model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
                   </>
                 ) : (
                   <p>No results</p>

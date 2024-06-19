@@ -27,7 +27,6 @@ function App() {
             <Routes>
               <Route element={<Layout />}>
                 <Route index element={<Home />} />
-                <Route path="/model/:id" element={<ModelDetailView/>} />
               </Route>
             </Routes>
           </QueryProvider>

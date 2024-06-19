@@ -49,9 +49,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
     <div className="search">
       <img src="/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
       <div className="w-full mt-[131px] px-[145px]">
-        <Input value={
-          search
-        }  autoFocus onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-[38px] bg-transparent text-[32px] border-none" />
+        <Input value={search} autoFocus onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-[38px] bg-transparent text-[32px] border-none" />
         {search.length < 1 ? (
           <>
             <div className="flex justify-between mt-[52px]">

@@ -3,8 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getModel } from "./api/model";
 import ScrollingText from "./component/common/ScrollingText";
-import { formatDate } from "./utils/sysUtils"
-
+import { formatDate } from "./utils/sysUtils";
 
 function ModelDetailView() {
   enum NavBarOptions {
@@ -33,12 +32,11 @@ function ModelDetailView() {
         console.error("Error fetching model data:", error);
       });
   }, [id]);
-  
+
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const risksRef = useRef(null);
   const evalsRef = useRef(null);
-
 
   const scrollToSection = (sectionName) => {
     const sectionRef = {
@@ -53,12 +51,11 @@ function ModelDetailView() {
     }
   };
 
-
   return (
-    <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto ">
+    <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
       {/* Nav Bar */}
-      <div className="sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-10">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black to-transparent z-[1] glass-3d"></div>
+      <div className="sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/75 to-transparent z-[1] "></div>
         {/* Left Side – Model Info*/}
         <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
           <img
@@ -167,126 +164,144 @@ function ModelDetailView() {
       </div>
 
       {/* Main Section – 100VH */}
-      <div className="w-full h-[100vh] max-w-[660px] flex flex-col justify-between items-center space-y-auto">
-        <div className="relative flex flex-col justify-start items-center">
-          {/* Model's Image */}
-          <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
-            <img
-              src={modelData?.background_image}
-              className=" w-full h-full "
-            />
+      <section className={"h-[100vh] max-w-[660px] mb-10 "}>
+        <div className="w-full h-full flex flex-col items-center space-y-auto">
+          <div className="relative flex flex-col justify-start items-center">
+            {/* Model's Image */}
+            <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
+              <img
+                src={modelData?.background_image}
+                className=" w-full h-full "
+              />
+            </div>
+
+            {/* Model's Name */}
+            <div className=" -bottom-10 flex flex-col items-start gap-0.5 p-6">
+              <p className="heading-md text-surface-main ">
+                {modelData?.name.split("/")[1]}
+              </p>
+              {/* <p className='title-xs text-surface-500'>by Meta</p> */}
+            </div>
           </div>
 
-          {/* Model's Name */}
-          <div className=" -bottom-10 flex flex-col items-start gap-0.5 p-6">
-            <p className="heading-md text-surface-main">{modelData?.name}</p>
-            {/* <p className='title-xs text-surface-500'>by Meta</p> */}
-          </div>
-        </div>
-
-        {/* Model's Info */}
-        <div className="flex flex-col  items-center gap-5">
-          <p className="text-surface-500">
-            Created {formatDate(modelData?.createdAt)} • Last Modified{" "}
-            {formatDate(modelData?.modifiedAt)}
-          </p>
-          <div className="flex gap-2.5 text-sm text-white text-opacity-80">
-            {/* Author Tag */}
-            <Tag text={modelData?.author || ""} />
-            {/* Size Tag */}
-            <Tag 
-                text={modelData?.size
+          {/* Model's Info */}
+          <div className="flex flex-col  items-center gap-5">
+            <p className="text-surface-500">
+              Created {formatDate(modelData?.createdAt)} • Last Modified{" "}
+              {formatDate(modelData?.modifiedAt)}
+            </p>
+            <div className="flex gap-2.5 text-sm text-white text-opacity-80">
+              {/* Author Tag */}
+              <Tag text={modelData?.author || ""} />
+              {/* Size Tag */}
+              <Tag
+                text={
+                  modelData?.size
                     ? modelData.size >= 1e12
-                    ? (modelData.size / 1e12).toFixed(1).replace(/\.0$/, "") + "T"
-                    : modelData.size >= 1e9
-                    ? (modelData.size / 1e9).toFixed(1).replace(/\.0$/, "") + "B"
-                    : modelData.size >= 1e6
-                    ? (modelData.size / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
-                    : modelData.size >= 1e3
-                    ? (modelData.size / 1e3).toFixed(1).replace(/\.0$/, "") + "K"
-                    : modelData.size
-                    : "0"}
-            />
+                      ? (modelData.size / 1e12).toFixed(1).replace(/\.0$/, "") +
+                        "T"
+                      : modelData.size >= 1e9
+                      ? (modelData.size / 1e9).toFixed(1).replace(/\.0$/, "") +
+                        "B"
+                      : modelData.size >= 1e6
+                      ? (modelData.size / 1e6).toFixed(1).replace(/\.0$/, "") +
+                        "M"
+                      : modelData.size >= 1e3
+                      ? (modelData.size / 1e3).toFixed(1).replace(/\.0$/, "") +
+                        "K"
+                      : modelData.size
+                    : "0"
+                }
+              />
 
-            {/* Downloads Tag */}
-            <Tag 
-                imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/ca057c15afe4541dda72dcb2f8ca4f9f71c6d2b95d16f542b67d49e8075f2729?" 
-                text={modelData?.downloads
+              {/* Downloads Tag */}
+              <Tag
+                imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/ca057c15afe4541dda72dcb2f8ca4f9f71c6d2b95d16f542b67d49e8075f2729?"
+                text={
+                  modelData?.downloads
                     ? modelData.downloads >= 1e12
-                    ? (modelData.downloads / 1e12).toFixed(1) + "T"
-                    : modelData.downloads >= 1e9
-                    ? (modelData.downloads / 1e9).toFixed(1) + "B"
-                    : modelData.downloads >= 1e6
-                    ? (modelData.downloads / 1e6).toFixed(1) + "M"
-                    : modelData.downloads >= 1e3
-                    ? (modelData.downloads / 1e3).toFixed(1) + "K"
-                    : modelData.downloads
-                    : "0"}
-            />
+                      ? (modelData.downloads / 1e12).toFixed(1) + "T"
+                      : modelData.downloads >= 1e9
+                      ? (modelData.downloads / 1e9).toFixed(1) + "B"
+                      : modelData.downloads >= 1e6
+                      ? (modelData.downloads / 1e6).toFixed(1) + "M"
+                      : modelData.downloads >= 1e3
+                      ? (modelData.downloads / 1e3).toFixed(1) + "K"
+                      : modelData.downloads
+                    : "0"
+                }
+              />
 
-            {/* Likes/Bookmarks Tag */}
-            <Tag 
-                imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/e0bb8a4835580e7a1cfb71924c7fae68cb8d90ef93ccb81960418001d562993e?" 
-                text={modelData?.likes
+              {/* Likes/Bookmarks Tag */}
+              <Tag
+                imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/e0bb8a4835580e7a1cfb71924c7fae68cb8d90ef93ccb81960418001d562993e?"
+                text={
+                  modelData?.likes
                     ? modelData.likes >= 1e12
-                    ? (modelData.likes / 1e12).toFixed(1) + "T"
-                    : modelData.likes >= 1e9
-                    ? (modelData.likes / 1e9).toFixed(1) + "B"
-                    : modelData.likes >= 1e6
-                    ? (modelData.likes / 1e6).toFixed(1) + "M"
-                    : modelData.likes >= 1e3
-                    ? (modelData.likes / 1e3).toFixed(1) + "K"
-                    : modelData.likes
-                    : "0"}
-                />
+                      ? (modelData.likes / 1e12).toFixed(1) + "T"
+                      : modelData.likes >= 1e9
+                      ? (modelData.likes / 1e9).toFixed(1) + "B"
+                      : modelData.likes >= 1e6
+                      ? (modelData.likes / 1e6).toFixed(1) + "M"
+                      : modelData.likes >= 1e3
+                      ? (modelData.likes / 1e3).toFixed(1) + "K"
+                      : modelData.likes
+                    : "0"
+                }
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="pb-10">
-        {/* Map with all sections – Limitations, Capabilities, Risks, Evals, etc */}
-        {modelData && (
-          <div className="w-[660px] flex flex-col justify-start items-start gap-5">
-            {navBarOptions.map((section) => {
-              if (modelData[section] && modelData[section] !== "") {
-                let displayText;
-                let sectionRef;
-                switch (section) {
-                  case NavBarOptions.INTRO:
-                    displayText = "Introduction";
-                    sectionRef = introRef;
-                    break;
-                  case NavBarOptions.CAPABILITIES:
-                    displayText = "Capabilities";
-                    sectionRef = capabilitiesRef;
-                    break;
-                  case NavBarOptions.RISKS:
-                    displayText = "Risks";
-                    sectionRef = risksRef;
-                    break;
-                  case NavBarOptions.EVALS:
-                    displayText = "Evals";
-                    sectionRef = evalsRef;
-                    break;
-                  default:
-                    displayText = section;
+      <section className="pt-16 pb-14">
+        <div >
+          {/* Map with all sections – Limitations, Capabilities, Risks, Evals, etc */}
+          {modelData && (
+            <div className="w-[660px] flex flex-col justify-start items-start gap-5">
+              {navBarOptions.map((section) => {
+                if (modelData[section] && modelData[section] !== "") {
+                  let displayText;
+                  let sectionRef;
+                  switch (section) {
+                    case NavBarOptions.INTRO:
+                      displayText = "Introduction";
+                      sectionRef = introRef;
+                      break;
+                    case NavBarOptions.CAPABILITIES:
+                      displayText = "Capabilities";
+                      sectionRef = capabilitiesRef;
+                      break;
+                    case NavBarOptions.RISKS:
+                      displayText = "Risks";
+                      sectionRef = risksRef;
+                      break;
+                    case NavBarOptions.EVALS:
+                      displayText = "Evals";
+                      sectionRef = evalsRef;
+                      break;
+                    default:
+                      displayText = section;
+                  }
+                  return (
+                    <div key={section} ref={sectionRef}>
+                      {/* Section Title */}
+                      <p className="title-base text-surface-500">
+                        {displayText}
+                      </p>
+                      {/* Section Text */}
+                      <p className="text-surface-main body-long">
+                        {modelData[section]}
+                      </p>
+                    </div>
+                  );
                 }
-                return (
-                  <div key={section} ref={sectionRef}>
-                    {/* Section Title */}
-                    <p className="title-base text-surface-500">{displayText}</p>
-                    {/* Section Text */}
-                    <p className="text-surface-main body-long">
-                      {modelData[section]}
-                    </p>
-                  </div>
-                );
-              }
-              return null;
-            })}
-          </div>
-        )}
-      </div>
+                return null;
+              })}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -310,7 +325,5 @@ const Tag: React.FC<TagProps> = ({ imgSrc, text }) => {
     </div>
   );
 };
-
-  
 
 export default ModelDetailView;

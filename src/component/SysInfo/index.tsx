@@ -21,31 +21,40 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollViewRef = useRef<HTMLDivElement>(null);
 
-  const PERCENTAGE_OF_VIEW_THRESHOLD = 0.30;
-  const [targetPosition, setTargetPosition] = useState(0);
-  const [normalizerDenominator, setNormalizerDenominator] = useState(1);
+  const OPACITY_PERCENTAGE_OF_VIEW_THRESHOLD = 0.30;
+  const SCALE_PERCENTAGE_OF_VIEW_THRESHOLD = 0.5;
+
+  const [opacityTargetPosition, setOpacityTargetPosition] = useState(0);
+  const [opacityNormalizerDenominator, setOpacityNormalizerDenominator] = useState(1);
+  
+  const [scaleTargetPosition, setScaleTargetPosition] = useState(0);
+  const [scaleNormalizerDenominator, setScaleNormalizerDenominator] = useState(1);
+
 
   // Scroll handler to determine the position
   const handleScroll = useCallback(() => {
     if (containerRef.current && scrollViewRef.current) {
       const scrollViewTop = scrollViewRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
 
-      const currNume = Math.abs(targetPosition - scrollViewTop);
-      let normalized = roundTo(currNume / normalizerDenominator, 1);
-      let newScale = normalized
-
-      if(newScale <= 0.7) {
-        newScale = 0.7
-      }
-      
-      if (scrollViewTop <= targetPosition) {
+      // for the opacity
+      const opacityCurrNumerator = Math.abs(opacityTargetPosition - scrollViewTop);
+      let opacityNormalized = roundTo(opacityCurrNumerator / opacityNormalizerDenominator, 1);
+      if (scrollViewTop <= opacityTargetPosition) {
         // ScrollView top is at or has passed target position of the container height.
-        normalized = 0
+        opacityNormalized = 0
       }
-      setProgressBarOpacity(normalized);
-      setProgressBarScale(newScale);
+      setProgressBarOpacity(opacityNormalized);
+
+      // for the scale
+      const scaleCurrNumerator = Math.abs(scaleTargetPosition - scrollViewTop);
+      let scaleNormalized = roundTo(scaleCurrNumerator / scaleNormalizerDenominator, 3);
+      if (scrollViewTop <= scaleTargetPosition || scaleNormalized <= 0.7) {
+        // ScrollView top is at or has passed target position of the container height.
+        scaleNormalized = 0.7
+      }
+      setProgressBarScale(scaleNormalized);
     }
-  }, [targetPosition, normalizerDenominator]);
+  }, [opacityTargetPosition, opacityNormalizerDenominator, scaleTargetPosition, scaleNormalizerDenominator]);
   
   useEffect(() => {
     setTimeout(() => {
@@ -53,11 +62,17 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
         const containerHeight = containerRef.current.offsetHeight;
         const scrollViewTop = scrollViewRef.current.getBoundingClientRect().top - containerRef.current.getBoundingClientRect().top;
 
-        const targPosition = containerHeight * PERCENTAGE_OF_VIEW_THRESHOLD;
-        setTargetPosition(targPosition);
-        setNormalizerDenominator(Math.abs(targPosition - scrollViewTop));
+        // for the opacity
+        const opacityTargPosition = containerHeight * OPACITY_PERCENTAGE_OF_VIEW_THRESHOLD;
+        setOpacityTargetPosition(opacityTargPosition);
+        setOpacityNormalizerDenominator(Math.abs(opacityTargPosition - scrollViewTop));
+
+        // for the scale
+        const scaleTargPosition = containerHeight * SCALE_PERCENTAGE_OF_VIEW_THRESHOLD;
+        setScaleTargetPosition(scaleTargPosition);
+        setScaleNormalizerDenominator(Math.abs(scaleTargPosition - scrollViewTop));
       }
-    }, 200);
+    }, 100);
   }, [])
 
 
@@ -117,7 +132,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
         </div>
       </div>
       <div className={`h-[${defaultProgressBarContainerHeight}px] mt-[40px] sticky top-[80px] w-full flex items-center px-8`}>
-        <motion.div className={`w-full relative`} initial={{ opacity: 0, height: 0 }} animate={{ opacity: progressBarOpacity, height: defaultProgressBarContainerHeight, scale:progressBarScale, transition: { duration: 0.2 } }}>
+        <motion.div className={`w-full relative`} initial={{ opacity: 0, height: defaultProgressBarContainerHeight}} animate={{ opacity: progressBarOpacity, height: defaultProgressBarContainerHeight, scale:progressBarScale, transition: { duration: 0.2 } }}>
           <CircularProgressbar
             value={calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"])}
             text={`${calculatePercentage(sysInfo.resources.available[selection === "memory" ? "ram" : "disk"], sysInfo.resources.total[selection === "memory" ? "ram" : "disk"]).toFixed(0)}%`}

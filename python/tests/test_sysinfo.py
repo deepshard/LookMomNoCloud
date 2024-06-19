@@ -1,20 +1,12 @@
 import asyncio
 import json
-import os
-import httpx
-import psutil
 import pytest
 
 import json
-import httpx
 import pytest
-from jsonschema import validate, ValidationError
-import subprocess
 import pytest
-from state import global_state_manager
-from server import init_state
 from endpoints.sysinfo import sysinfo_generator, CHANGE_THRESHOLD
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 
 
 @pytest.mark.asyncio

@@ -1,30 +1,49 @@
+import os
 import asyncio
-import aiohttp
 from state import global_state_manager
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from models import RunningModel
+from utils import get_app_data_path
 
 
 async def get_highlights() -> list[Model]:
-    models = await RunningModel.get_all()
+    base_dir = get_app_data_path() / "models"
+    running_models = [
+        {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
+    ]
+    downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
+
+    # Dedupe model IDs
+    for model in downloaded_models:
+        if model["id"] in [running_model["id"] for running_model in running_models]:
+            continue
+
+        running_models.append(model)
+
     tasks = []
-    for model in models:
+    for model in running_models:
         task = fetch_model_data(model)
         tasks.append(task)
-    if len(models) < 5:
-        tasks.append(get_trending_models(5 - len(models)))
-        results = await asyncio.gather(*tasks)
-        trending = results.pop()
-        return results + trending
-    else:
-        return await asyncio.gather(*tasks)
+
+    tasks.append(get_trending_models(5))
+    results = await asyncio.gather(*tasks)
+    trending = results.pop()
+
+    # If trending model is already downloaded or running, do not append to results
+    for model in trending:
+        if model.id in [result.id for result in results]:
+            continue
+
+        results.append(model)
+
+    return results
 
 
 async def get_trending_models(num: int) -> list[Model]:
     async with global_state_manager.session.get(
-        f"""{TRUFFLE_API_URL}/models/trending?k={num}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image"""
+        f"{TRUFFLE_API_URL}/models/trending?k={num}"
     ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
@@ -53,9 +72,9 @@ async def get_trending_models(num: int) -> list[Model]:
 
 async def fetch_model_data(model):
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model.id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,background_image"
+        f"{TRUFFLE_API_URL}/models?id={model['id']}"
     ) as response:
-        assert response.status == 200, f"Failed to fetch model data for {model.id}"
+        assert response.status == 200, f"Failed to fetch model data for {model['id']}"
         model_data = await response.json()
         return Model(
             id=model_data["id"],
@@ -70,8 +89,8 @@ async def fetch_model_data(model):
             risks=model_data["risks"],
             hf_link=model_data["hfLink"],
             eval_id=model_data["evalId"],
-            status=ModelStatus.RUNNING,
+            status=ModelStatus.RUNNING if model["instance"] is not None else ModelStatus.STOPPED,
             background_image=model_data["background_image"],
-            instance=model.instance,
+            instance=model["instance"] if model["instance"] is not None else 0,
             progress=0,
         )

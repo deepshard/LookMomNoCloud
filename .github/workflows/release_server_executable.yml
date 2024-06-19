@@ -1,3 +1,11 @@
+name: Release server executable
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}

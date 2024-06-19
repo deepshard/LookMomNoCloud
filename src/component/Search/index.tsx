@@ -52,7 +52,7 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
               <Featured className="w-[303px] h-[150px] widget-3d" />
               <Featured className="w-[303px] h-[150px] widget-3d" />
             </div>
-            <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget model={model} className="w-[124px] h-[78px]" />)}</div>
+            <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
           </>
         ) : (
           <>

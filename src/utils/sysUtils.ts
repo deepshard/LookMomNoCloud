@@ -5,3 +5,7 @@ export function bytesToHumanReadable(bytes?: number, withUnit = true, decimals =
   const result = (bytes / Math.pow(1024, exponent)).toFixed(decimals);
   return withUnit ? `${result} ${units[exponent]}` : result;
 }
+
+export function roundTo(n: number, decimals: number): number {
+  return Number(n.toFixed(decimals));
+}

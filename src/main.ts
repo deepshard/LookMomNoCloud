@@ -5,35 +5,18 @@ import os from "os";
 import si from "systeminformation";
 import axios from "axios";
 import fs from "fs";
+import zlib from "zlib";
+import stream from "stream";
+import { promisify } from "util";
 
-const handleUpdate = () => {
-  // Delete current server binary
-  const filePath = path.join(app.getPath("userData"), "bin", "server.exe");
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
 
-  // Update app
-  autoUpdater.quitAndInstall();
-}
-
-const downloadServerIfNecessary = async () => {
-  // Check if the server is already downloaded
-  const filePath = path.join(app.getPath("userData"), "bin", "server.exe");
-  if (fs.existsSync(filePath)) {
-    return;
-  }
-
-  console.log("Downloading server...")
+const downloadServer = async (output: string) => {
   const version = app.getVersion();
   const osInfo = await si.osInfo();
   const graphicsInfo = await si.graphics();
   const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
 
   const url = `https://update-server.com/api/versions/${version}/${osInfo.platform}/${osInfo.arch}/${gpu}`;
-
   try {
     const response = await axios({
       method: "get",
@@ -41,12 +24,37 @@ const downloadServerIfNecessary = async () => {
       responseType: "stream",
     });
 
-    const filePath = path.join(app.getPath("userData"), "bin", "server.exe");
+    // Download gzip to bin, then unzip it
+    const pipeline = promisify(stream.pipeline);
+    const filePath = path.join(app.getPath("userData"), "bin", output);
     const writeStream = fs.createWriteStream(filePath);
-    response.data.pipe(writeStream);
+    await pipeline(response.data, zlib.createGunzip(), writeStream);
   } catch (error) {
     console.error(error);
   }
+}
+
+const handleUpdate = async () => {
+  // Download new server zip
+  await downloadServer("server_new.zip")
+
+  // Delete current server folder
+  const filePath = path.join(app.getPath("userData"), "bin", "server");
+  fs.rmdir(filePath, { recursive: true }, (err) => {
+    if (err) {
+      console.error(err);
+    }
+  });
+
+  // Rename new server folder to `server`
+  fs.rename(path.join(app.getPath("userData"), "bin", "server_new"), filePath, (err) => {
+    if (err) {
+      console.error(err);
+    }
+  });
+
+  // Update app
+  autoUpdater.quitAndInstall();
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -96,7 +104,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  await downloadServerIfNecessary();
+  await downloadServer("server.zip");
   autoUpdater.checkForUpdates();
 
   // todo: spawn the flask server here

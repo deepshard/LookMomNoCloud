@@ -3,8 +3,6 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
 import { motion } from "framer-motion"
-import { set } from "lodash";
-import { useNavigate } from "react-router-dom";
 import { toUnitOfCount } from "../utils/sysUtils";
 import ScrollingText from "./common/ScrollingText";
 
@@ -24,7 +22,6 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
-  const navigate = useNavigate();
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -142,8 +139,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
       <img src={model.background_image} alt="" className="w-full h-full" />
       <div className="absolute top-0 left-0 p-2 nowrap">
         <div className="relative" 
-      onClick={() => navigate(`/model/${model.id}`)}
-        
+      onClick={() => window.location.href = `/model/${model.id}`}
         >
           <div className="absolute inset-0  "></div>
           <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split('/')[1]} isHovered={isHovered}/>

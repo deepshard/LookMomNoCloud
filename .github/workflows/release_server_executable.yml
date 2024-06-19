@@ -38,10 +38,10 @@ jobs:
 
       - name: Archive server executable
         run: |
-          tar -czvf server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz -C python/dist/server
+          tar -czvf server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz -C python/dist server
 
       - name: Upload server executable
         uses: actions/upload-artifact@v4
         with:
           name: server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz
-          path: python/dist/server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz
+          path: server-${GITHUB_SHA:0:7}-${{ matrix.os }}.tar.gz

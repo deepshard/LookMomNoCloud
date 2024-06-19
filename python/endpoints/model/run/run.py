@@ -97,17 +97,30 @@ async def get_instances(model_ids: list[str]) -> list[int]:
 
 async def get_model_info(model_id: str) -> dict:
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model_id}&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url"
+        f"{TRUFFLE_API_URL}/models?id={model_id}"
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model_id}"
         return await response.json()
 
 
-async def get_gpu_memory_shares(configurations: list[str, Quantization]) -> list[float]:
-    total_score = await global_state_manager.model_manager.get_score(configurations)
+def get_gpu_memory_shares(
+    configurations: list[str, Quantization], model_sizes: dict
+) -> list[float]:
+    total_score = 0
+    for model_id, quant in configurations:
+        total_score += global_state_manager.model_manager.get_score(
+            model_id, quant, model_sizes[model_id]
+        )
+
     return [
-        (0.85 * (await global_state_manager.model_manager.get_score([configuration]) / total_score))
-        for configuration in configurations
+        (
+            0.85
+            * (
+                global_state_manager.model_manager.get_score(model_id, quant, model_sizes[model_id])
+                / total_score
+            )
+        )
+        for model_id, quant in configurations
     ]
 
 
@@ -263,11 +276,17 @@ async def run_models_generator(model_ids: list[str]):
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
     try:
+        model_sizes = {}
+        for model_id in model_ids:
+            model_sizes[model_id] = await global_state_manager.model_manager.get_model_size(
+                model_id
+            )
+
         configurations = (
             await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
         )
         quantizations = [config[1] for config in configurations]
-        mem_shares = await get_gpu_memory_shares(configurations)
+        mem_shares = get_gpu_memory_shares(configurations, model_sizes)
         instance_numbers = await get_instances(model_ids)
     except Exception as e:
         error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))

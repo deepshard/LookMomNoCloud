@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import MagicMock
 from pathlib import Path
 from state import global_state_manager
-from server import init_state
 from truffle_types import Quantization
 from tests.data import ID, ID_2
 
@@ -32,56 +31,91 @@ def mock_mlc(mocker):
 # - Multiple models, larger model gets quantized more (quantization)
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_one_model_fits_in_memory_no_quantization(
-    session_fixture, is_macos, mocker
+    session_fixture, set_os, mocker
 ):
     # Data
     model_ids = [ID]
 
     # Mocks
     session_fixture("state.ModelManager")
-    mocker.patch(
-        "psutil.virtual_memory",
-        return_value=MagicMock(total=100000000, available=100000000, wired=0),
-    )
     mocker.patch(
         "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
     )
     mocker.patch("state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
 
+    if set_os == "Darwin":
+        mocker.patch(
+            "psutil.virtual_memory",
+            return_value=MagicMock(total=100000000, available=100000000, wired=0),
+        )
+
+    if set_os == "Linux":
+        mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+        mocker.patch(
+            "tvm.runtime.device", return_value=MagicMock(available_global_memory=100000000)
+        )
+
     # Test
-    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
-    assert result == [(ID, Quantization.Q0F16)]
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+                model_ids
+            )
+    else:
+        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            model_ids
+        )
+        assert result == [(ID, Quantization.Q0F16)]
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_one_model_doesnt_fit_in_memory_quantization(
-    session_fixture, is_macos, mocker
+    session_fixture, set_os, mocker
 ):
     # Data
     model_ids = [ID]
 
     # Mocks
     session_fixture("state.ModelManager")
-    mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
     mocker.patch("utils.get_disk_usage", return_value=1000)
 
-    # Test
-    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
+    if set_os == "Darwin":
+        mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
 
-    assert result == [(ID, Quantization.Q4F16_2)]
+    if set_os == "Linux":
+        mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+        mocker.patch("tvm.runtime.device", return_value=MagicMock(available_global_memory=500))
+
+    # Test
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+                model_ids
+            )
+    else:
+        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            model_ids
+        )
+        assert result == [(ID, Quantization.Q4F16_2)]
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_no_quantization(
-    session_fixture, is_macos, mocker
+    session_fixture, set_os, mocker
 ):
     # Data
     model_ids = [ID]
 
     # Mocks
     session_fixture("state.ModelManager")
-    mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
     mocker.patch("utils.get_disk_usage", return_value=100000)
+
+    if set_os == "Darwin":
+        mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=500))
+
+    if set_os == "Linux":
+        mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+        mocker.patch("tvm.runtime.device", return_value=MagicMock(available_global_memory=500))
 
     # Test
     with pytest.raises(Exception):
@@ -92,7 +126,7 @@ async def test_get_adaptive_quantization_decision_one_model_cant_fit_in_memory_n
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_memory_no_quantization(
-    session_fixture, is_macos, mocker
+    session_fixture, set_os, mocker
 ):
     # Data
     model_ids = [ID, ID, ID_2]
@@ -100,33 +134,48 @@ async def test_get_adaptive_quantization_decision_multiple_models_all_fit_in_mem
     # Mocks
     session_fixture("state.ModelManager")
     mocker.patch(
-        "psutil.virtual_memory",
-        return_value=MagicMock(total=100000000, available=100000000, wired=0),
-    )
-    mocker.patch(
         "state.ModelManager.ModelManager.get_expected_memory_consumption", return_value=1000
     )
     mocker.patch("state.ModelManager.ModelManager.get_expected_disk_consumption", return_value=1000)
 
+    if set_os == "Darwin":
+        mocker.patch(
+            "psutil.virtual_memory",
+            return_value=MagicMock(total=100000000, available=100000000, wired=0),
+        )
+
+    if set_os == "Linux":
+        mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+        mocker.patch(
+            "tvm.runtime.device", return_value=MagicMock(available_global_memory=100000000)
+        )
+
     # Test
-    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
-    assert result == [
-        (ID, Quantization.Q0F16),
-        (ID, Quantization.Q0F16),
-        (ID_2, Quantization.Q0F16),
-    ]
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+                model_ids
+            )
+    else:
+        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            model_ids
+        )
+        assert result == [
+            (ID, Quantization.Q0F16),
+            (ID, Quantization.Q0F16),
+            (ID_2, Quantization.Q0F16),
+        ]
 
 
 @pytest.mark.asyncio
 async def test_get_adaptive_quantization_decision_multiple_models_larger_model_gets_quantized_more(
-    session_fixture, is_macos, mocker
+    session_fixture, set_os, mocker
 ):
     # Data
     model_ids = [ID, ID_2]
 
     # Mocks
     session_fixture("state.ModelManager")
-    mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=2000))
 
     def mock_disk_usage(weights_path):
         if weights_path == Path(f"/tmp/models/{ID}/base"):
@@ -138,9 +187,24 @@ async def test_get_adaptive_quantization_decision_multiple_models_larger_model_g
 
     mocker.patch("utils.get_disk_usage", side_effect=mock_disk_usage)
 
+    if set_os == "Darwin":
+        mocker.patch("psutil.virtual_memory", return_value=MagicMock(available=2000))
+
+    if set_os == "Linux":
+        mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+        mocker.patch("tvm.runtime.device", return_value=MagicMock(available_global_memory=2000))
+
     # Test
-    result = await global_state_manager.model_manager.get_adaptive_quantization_decision(model_ids)
-    assert result == [
-        (ID, Quantization.Q0F16),
-        (ID_2, Quantization.Q4F16_2),
-    ]
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+                model_ids
+            )
+    else:
+        result = await global_state_manager.model_manager.get_adaptive_quantization_decision(
+            model_ids
+        )
+        assert result == [
+            (ID, Quantization.Q0F16),
+            (ID_2, Quantization.Q4F16_2),
+        ]

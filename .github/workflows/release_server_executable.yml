@@ -13,11 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest]
-    env:
-      SERVER_FILENAME: server-macos-$(uname -m).tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set file name
+        run: echo "SERVER_FILENAME=server-macos-$(uname -m).tar.gz" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -38,17 +39,9 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
-      - name: Check directory structure
-        run: ls -la python
-
-      - name: Check directory structure
-        run: ls -la
-        # This will list the contents of the python directory to ensure 'dist' is created
-
       - name: Archive server executable
         run: |
-          tar -czvf ${{ env.SERVER_FILENAME }} -C python/dist server
-        working-directory: python
+          tar -czvf ${{ env.SERVER_FILENAME }} python/dist/server
 
       - name: List files
         run: ls -l

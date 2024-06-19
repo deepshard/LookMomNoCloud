@@ -21,7 +21,7 @@ async def fake_process():
 
 @pytest.fixture
 def mock_process():
-    set_start_method("spawn")
+    set_start_method("spawn", force=True)
     proc = Process(target=fake_process)
     proc.start()
     yield proc

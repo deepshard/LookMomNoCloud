@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import MagicMock
 from pathlib import Path
 from state import global_state_manager
-from server import init_state
 from truffle_types import Quantization
 from tests.data import ID, ID_2
 

@@ -6,14 +6,10 @@ import shutil
 import asyncio
 from pathlib import Path
 import tests.data as data
-from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from aioresponses import aioresponses
-from db import get_db_session
-from state import global_state_manager
 from server import init_state
 from constants import TRUFFLE_API_URL
-from utils import get_app_data_path
 from models import RunningModel
 
 # Helpers

@@ -1,7 +1,6 @@
 import { TModel } from "./types/schemas";
-import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { getModel } from "./api/model";
+import {  useRef } from "react"
+
 import { formatDate, formatParams } from "./utils/sysUtils";
 import { NavBarOptions } from "./types/enums";
 import { useLocation } from "react-router-dom";
@@ -17,7 +16,9 @@ function ModelDetailView() {
   ];
 
   const location = useLocation();
-  const modelData = location.state.model;
+  const modelData = location.state.model as TModel;
+
+  console.log(modelData)
 
 
   const introRef = useRef(null);
@@ -94,47 +95,33 @@ function ModelDetailView() {
             ) : null;
           })}
         </div>
+
         {/* Right Side – Icons */}
         <div className="w-1/4 flex gap-2 justify-end items-center z-[999]">
           {/* Play Icon */}
-          <div className="flex justify-center items-center p-1.5 bg-white bg-opacity-10 h-[30px] rounded-[93.75px] w-[30px] hover:bg-opacity-40 transition-colors duration-200">
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/c31ab92a4fd3645efeccc34ee16f392935732535f5c30535bc0d1075fa51c4d7?"
-              className="aspect-[0.92] w-[11px]"
-            />
-          </div>
+          <Icon
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/c31ab92a4fd3645efeccc34ee16f392935732535f5c30535bc0d1075fa51c4d7?"
+            className="aspect-[0.92] w-[11px]"
+          />
 
           {/* Share Icon */}
-          <div className="flex justify-center items-center p-1.5 bg-white bg-opacity-10 h-[30px] rounded-[93.75px] w-[30px] hover:bg-opacity-40 transition-colors duration-200">
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/23374506a336f27a2db17d46661c1a3759cb478ef77dd3c76958392ef94852b3?"
-              className="w-2.5 aspect-[0.83]"
-            />
-          </div>
+          <Icon
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/23374506a336f27a2db17d46661c1a3759cb478ef77dd3c76958392ef94852b3?"
+            className="w-2.5 aspect-[0.83]"
+          />
 
           {/* Remove Icon */}
-          <div className="flex justify-center items-center p-1.5 bg-white bg-opacity-10 h-[30px] rounded-[93.75px] w-[30px] hover:bg-opacity-40 transition-colors duration-200">
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/d00e4348b5eb774375ed982383fe536b2371afb02773dd032362e43438f93a00?"
-              className="aspect-[0.92] w-[11px]"
-            />
-          </div>
+          <Icon
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/d00e4348b5eb774375ed982383fe536b2371afb02773dd032362e43438f93a00?"
+            className="aspect-[0.92] w-[11px]"
+          />
 
           {/* Close Icon */}
-          <div
-            className="flex justify-center items-center p-1.5 bg-white bg-opacity-10 h-[30px] rounded-[93.75px] w-[30px] hover:bg-opacity-40 transition-colors duration-200"
+          <Icon
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/186a093a1b5a30895745f9abc67aecc81152635a0a268b0f5251519055ec5078?"
+            className="w-2.5 aspect-[0.83]"
             onClick={() => window.history.back()}
-          >
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/186a093a1b5a30895745f9abc67aecc81152635a0a268b0f5251519055ec5078?"
-              className="w-2.5 aspect-[0.83]"
-              onClick={() => window.history.back()}
-            />
-          </div>
+          />
         </div>
       </div>
 
@@ -266,5 +253,23 @@ const Tag: React.FC<TagProps> = ({ imgSrc, text }) => {
     </div>
   );
 };
+
+
+
+
+interface IconProps {
+  src: string;
+  className?: string;
+  onClick?: () => void;
+}
+
+const Icon: React.FC<IconProps> = ({ src, className, onClick }) => (
+  <div
+    className="flex justify-center items-center p-1.5 bg-white bg-opacity-10 h-[30px] rounded-[93.75px] w-[30px] hover:bg-opacity-40 transition-colors duration-200"
+    onClick={onClick}
+  >
+    <img loading="lazy" src={src} className={className} />
+  </div>
+);
 
 export default ModelDetailView;

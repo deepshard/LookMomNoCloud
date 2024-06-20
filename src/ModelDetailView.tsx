@@ -2,15 +2,12 @@ import { TModel } from "./types/schemas";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getModel } from "./api/model";
-import { formatDate } from "./utils/sysUtils";
+import { formatDate, formatParams } from "./utils/sysUtils";
+import { NavBarOptions } from "./types/enums";
+import { useLocation } from "react-router-dom";
+
 
 function ModelDetailView() {
-  enum NavBarOptions {
-    INTRO = "intro",
-    CAPABILITIES = "capabilities",
-    RISKS = "risks",
-    EVALS = "evals",
-  }
 
   const navBarOptions: NavBarOptions[] = [
     NavBarOptions.INTRO,
@@ -19,23 +16,15 @@ function ModelDetailView() {
     NavBarOptions.EVALS,
   ];
 
-  const { id } = useParams();
-  const [modelData, setModelData] = useState<TModel | null>(null);
-  useEffect(() => {
-    getModel(id || "")
-      .then((response) => {
-        console.log("Model data:", response);
-        setModelData(response);
-      })
-      .catch((error) => {
-        console.error("Error fetching model data:", error);
-      });
-  }, [id]);
+  const location = useLocation();
+  const modelData = location.state.model;
+
 
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const risksRef = useRef(null);
   const evalsRef = useRef(null);
+
 
   const scrollToSection = (sectionName) => {
     const sectionRef = {
@@ -49,6 +38,7 @@ function ModelDetailView() {
       sectionRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
+
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
@@ -181,21 +171,7 @@ function ModelDetailView() {
               {/* Size Tag */}
               <Tag
                 text={
-                  modelData?.size
-                    ? modelData.size >= 1e12
-                      ? (modelData.size / 1e12).toFixed(1).replace(/\.0$/, "") +
-                        "T"
-                      : modelData.size >= 1e9
-                      ? (modelData.size / 1e9).toFixed(1).replace(/\.0$/, "") +
-                        "B"
-                      : modelData.size >= 1e6
-                      ? (modelData.size / 1e6).toFixed(1).replace(/\.0$/, "") +
-                        "M"
-                      : modelData.size >= 1e3
-                      ? (modelData.size / 1e3).toFixed(1).replace(/\.0$/, "") +
-                        "K"
-                      : modelData.size
-                    : "0"
+                 formatParams(modelData?.size)
                 }
               />
 
@@ -203,17 +179,7 @@ function ModelDetailView() {
               <Tag
                 imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/ca057c15afe4541dda72dcb2f8ca4f9f71c6d2b95d16f542b67d49e8075f2729?"
                 text={
-                  modelData?.downloads
-                    ? modelData.downloads >= 1e12
-                      ? (modelData.downloads / 1e12).toFixed(1) + "T"
-                      : modelData.downloads >= 1e9
-                      ? (modelData.downloads / 1e9).toFixed(1) + "B"
-                      : modelData.downloads >= 1e6
-                      ? (modelData.downloads / 1e6).toFixed(1) + "M"
-                      : modelData.downloads >= 1e3
-                      ? (modelData.downloads / 1e3).toFixed(1) + "K"
-                      : modelData.downloads
-                    : "0"
+                 formatParams(modelData?.downloads)
                 }
               />
 
@@ -221,17 +187,7 @@ function ModelDetailView() {
               <Tag
                 imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/e0bb8a4835580e7a1cfb71924c7fae68cb8d90ef93ccb81960418001d562993e?"
                 text={
-                  modelData?.likes
-                    ? modelData.likes >= 1e12
-                      ? (modelData.likes / 1e12).toFixed(1) + "T"
-                      : modelData.likes >= 1e9
-                      ? (modelData.likes / 1e9).toFixed(1) + "B"
-                      : modelData.likes >= 1e6
-                      ? (modelData.likes / 1e6).toFixed(1) + "M"
-                      : modelData.likes >= 1e3
-                      ? (modelData.likes / 1e3).toFixed(1) + "K"
-                      : modelData.likes
-                    : "0"
+                  formatParams(modelData?.likes)
                 }
               />
             </div>
@@ -240,7 +196,7 @@ function ModelDetailView() {
       </section>
 
       <section className="pt-16 pb-14">
-        <div>
+      <div>
           {/* Map with all sections – Limitations, Capabilities, Risks, Evals, etc */}
           {modelData && (
             <div className="w-[660px] flex flex-col justify-start items-start gap-5">
@@ -298,7 +254,7 @@ interface TagProps {
 
 const Tag: React.FC<TagProps> = ({ imgSrc, text }) => {
   return (
-    <div className="flex gap-2 py-1.5 pr-2.5 pl-1.5 whitespace-nowrap bg-surface-100 rounded-full">
+    <div className="flex gap-2 py-1 pr-2.5 pl-1.5 whitespace-nowrap bg-surface-100 rounded-full justify-center items-center">
       {imgSrc && (
         <img
           loading="lazy"

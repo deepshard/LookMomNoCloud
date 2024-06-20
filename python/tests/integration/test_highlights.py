@@ -6,7 +6,7 @@ from tests.integration.data import models
 
 @pytest.mark.asyncio
 async def test_highlights(test_fixture):
-    response = await test_fixture.get("/model/highlights")
+    response = await test_fixture.get("/highlights")
     assert response.status_code == 200
 
     assert len(response.json()) == 5
@@ -16,16 +16,17 @@ async def test_highlights(test_fixture):
 
 @pytest.mark.asyncio
 async def test_highlights_downloaded(test_fixture, model_downloaded):
-    response = await test_fixture.get("/model/highlights")
+    response = await test_fixture.get("/highlights")
     assert response.status_code == 200
 
     assert len(response.json()) == 5
+    print(response.json())
     assert response.json()[0]["status"] == "STOPPED"
 
 
 @pytest.mark.asyncio
 async def test_highlights_running(test_fixture, model_running):
-    response = await test_fixture.get("/model/highlights")
+    response = await test_fixture.get("/highlights")
     assert response.status_code == 200
 
     assert len(response.json()) == 5

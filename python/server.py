@@ -105,8 +105,12 @@ async def stop_model(request: StopRequest):
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    delete_model_handler(model_id)
-    return {}
+    try:
+        delete_model_handler(model_id)
+        return {}
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Failed to delete model")
 
 
 if __name__ == "__main__":

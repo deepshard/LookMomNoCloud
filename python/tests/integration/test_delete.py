@@ -16,4 +16,4 @@ async def test_delete(test_fixture, model_downloaded):
 async def test_delete_non_existent(test_fixture):
     model_id = models[0]["id"]
     response = await test_fixture.delete(f"/model/{model_id}")
-    assert response.status_code == 400
+    assert response.status_code == 500

@@ -1,13 +1,12 @@
 import { TModel } from "./types/schemas";
-import {  useRef } from "react"
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { formatDate, formatParams } from "./utils/sysUtils";
 import { NavBarOptions } from "./types/enums";
 import { useLocation } from "react-router-dom";
-
+import { useGetModel } from "./lib/react-query/queriesAndMutations";
 
 function ModelDetailView() {
-
   const navBarOptions: NavBarOptions[] = [
     NavBarOptions.INTRO,
     NavBarOptions.CAPABILITIES,
@@ -16,16 +15,28 @@ function ModelDetailView() {
   ];
 
   const location = useLocation();
-  const modelData = location.state.model as TModel;
 
-  console.log(modelData)
+  debugger
 
+  const [modelData, setModelData] = useState<TModel | null>(
+    location.state.model
+  );
+  const { refetch: getModel } = useGetModel(modelData);
+
+  useLayoutEffect(() => {
+    const modelData = location.state.model as TModel;
+    if(!modelData || !modelData.createdAt || !modelData.modifiedAt) {
+      getModel()
+      .then(({data: model}) => {
+        setModelData(model as TModel)
+      })
+    }
+  }, [location.state.model]);
 
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const risksRef = useRef(null);
   const evalsRef = useRef(null);
-
 
   const scrollToSection = (sectionName) => {
     const sectionRef = {
@@ -39,7 +50,6 @@ function ModelDetailView() {
       sectionRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
-
 
   return (
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
@@ -156,26 +166,18 @@ function ModelDetailView() {
               {/* Author Tag */}
               <Tag text={modelData?.author || ""} />
               {/* Size Tag */}
-              <Tag
-                text={
-                 formatParams(modelData?.size)
-                }
-              />
+              <Tag text={formatParams(modelData?.size)} />
 
               {/* Downloads Tag */}
               <Tag
                 imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/ca057c15afe4541dda72dcb2f8ca4f9f71c6d2b95d16f542b67d49e8075f2729?"
-                text={
-                 formatParams(modelData?.downloads)
-                }
+                text={formatParams(modelData?.downloads)}
               />
 
               {/* Likes/Bookmarks Tag */}
               <Tag
                 imgSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/e0bb8a4835580e7a1cfb71924c7fae68cb8d90ef93ccb81960418001d562993e?"
-                text={
-                  formatParams(modelData?.likes)
-                }
+                text={formatParams(modelData?.likes)}
               />
             </div>
           </div>
@@ -183,7 +185,7 @@ function ModelDetailView() {
       </section>
 
       <section className="pt-16 pb-14">
-      <div>
+        <div>
           {/* Map with all sections – Limitations, Capabilities, Risks, Evals, etc */}
           {modelData && (
             <div className="w-[660px] flex flex-col justify-start items-start gap-5">
@@ -253,9 +255,6 @@ const Tag: React.FC<TagProps> = ({ imgSrc, text }) => {
     </div>
   );
 };
-
-
-
 
 interface IconProps {
   src: string;

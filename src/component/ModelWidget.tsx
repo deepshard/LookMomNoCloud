@@ -23,12 +23,6 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate(`/model/${model.id}`, { state: { model } });
-  }
-
 
   useEffect(() => {
     return () => {
@@ -133,7 +127,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
   }
 
   return (
-    <div onClick={handleClick} className={`model-widget base-regular ${className}`} {...props}>
+    <div className={`model-widget base-regular ${className}`} {...props}>
       <img src={model.background_image} alt="" className="w-full h-full"/>
       <div className="absolute top-0 left-0 p-2">
         <p className="title-sm text-surface-main w-[60%]">{model.title}</p>

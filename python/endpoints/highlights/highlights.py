@@ -8,6 +8,10 @@ from state import global_state_manager
 from models import RunningModel
 from endpoints.model.downloaded.downloaded import is_model_downloaded
 from utils import get_app_data_path
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 async def get_highlights() -> list[Model]:
@@ -54,7 +58,8 @@ async def get_highlights() -> list[Model]:
 
 async def get_trending_models(num: int) -> list[Model]:
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/trending?k={num}"
+        f"{TRUFFLE_API_URL}/models/trending?k={num}",
+        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
@@ -83,7 +88,8 @@ async def get_trending_models(num: int) -> list[Model]:
 
 async def fetch_model_data(model):
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/{model['id']}"
+        f"{TRUFFLE_API_URL}/models/{model['id']}",
+        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch model data for {model['id']}"
         model_data = await response.json()

@@ -45,10 +45,21 @@ module.exports = {
         spin: {
           from: { transform: 'rotate(0deg)' },
           to: { transform: 'rotate(360deg)' }
+        },
+        "in-out": {
+          '0%, 100%': { 
+            width: '20%',
+            opacity: '1'
+          },
+          '50%': { 
+            width: '110%',
+            opacity: '0.2'
+          },
         }
       },
       animation: {
-        spin: 'spin 1s linear infinite'
+        spin: 'spin 1s linear infinite',
+        "in-out": 'in-out 2s linear infinite'
       }
     },
   },

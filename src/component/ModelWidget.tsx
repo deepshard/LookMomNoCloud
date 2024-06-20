@@ -17,7 +17,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDelete, onDisconnect, className, ...props }: ModelWidgetProps) => {
+const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDelete, onDisconnect, className = "", ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
@@ -61,7 +61,11 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   const getWidgetButton = () => {
     switch (model.status) {
       case "ACKNOWLEDGED":
-        return <p>To-Do: ACKNOWLEDGED</p>;
+        return (
+          <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">
+            <div className="w-[20%] bg-surface-750 rounded-full animate-in-out" />
+          </div>
+        );
       case "DOWNLOADING":
         return (
           <motion.div
@@ -127,22 +131,24 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   }
 
   return (
-    <div className={`model-widget base-regular ${className}`} {...props} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-      <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
-      <img src={model.background_image} alt="" className="w-full h-full" />
-      <div className="absolute top-0 left-0 p-2 nowrap">
-        <div className="relative" onClick={() => (window.location.href = `/model/${model.id}`)}>
-          <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
-          <div className="flex items-start gap-0.5 -mt-[6px]">
-            <span className="text-xs text-surface-main relative opacity-75">
-              <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
-            </span>
-            <span className="text-xs text-surface-main relative opacity-75"> • </span>
-            <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
+    <div className="relative">
+      <div className={`model-widget base-regular ${className}`} {...props} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
+        <img src={model.background_image} alt="" className="w-full h-full" />
+        <div className="absolute top-0 left-0 p-2 nowrap">
+          <div className="relative" onClick={() => (window.location.href = `/model/${model.id}`)}>
+            <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
+            <div className="flex items-start gap-0.5 -mt-[6px]">
+              <span className="text-xs text-surface-main relative opacity-75">
+                <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
+              </span>
+              <span className="text-xs text-surface-main relative opacity-75"> • </span>
+              <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
+            </div>
           </div>
         </div>
+        <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
       </div>
-      <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
       {getWidgetButton()}
       {model.error && getErrorButton(model.error)}
     </div>

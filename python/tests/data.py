@@ -27,9 +27,9 @@ MOCK_MODEL_1 = {
     "intro": "test",
     "capabilities": "test",
     "risks": "test",
-    "hfLink": HF_API_URL,
     "evalId": "test",
-    "background_image": "test",
+    "hfLink": HF_API_URL,
+    "backgroundImage": "test",
 }
 MOCK_MODEL_2 = {
     "id": ID_2,
@@ -42,9 +42,9 @@ MOCK_MODEL_2 = {
     "intro": "test",
     "capabilities": "test",
     "risks": "test",
-    "hfLink": HF_API_URL,
     "evalId": "test",
-    "background_image": "test",
+    "hfLink": HF_API_URL,
+    "backgroundImage": "test",
 }
 
 # Mock API responses
@@ -85,9 +85,9 @@ MODELS = [
         "intro": "test",
         "capabilities": "test",
         "risks": "test",
-        "hfLink": "test",
         "evalId": "test",
-        "background_image": "test",
+        "hfLink": "openai-community/gpt2",
+        "backgroundImage": "test",
     },
     {
         "id": "b438d015-ad45-4e9a-9aba-2e290348b078",
@@ -100,9 +100,9 @@ MODELS = [
         "intro": "test",
         "capabilities": "test",
         "risks": "test",
-        "hfLink": "test",
         "evalId": "test",
-        "background_image": "test",
+        "hfLink": "openai-community/gpt2",
+        "backgroundImage": "test",
     },
     {
         "id": "e1b7a151-ad5a-4929-b9a2-20e42f629c4c",
@@ -115,9 +115,9 @@ MODELS = [
         "intro": "test",
         "capabilities": "test",
         "risks": "test",
-        "hfLink": "test",
         "evalId": "test",
-        "background_image": "test",
+        "hfLink": "openai-community/gpt2",
+        "backgroundImage": "test",
     },
     {
         "id": "c081e038-a74c-4a7d-87d6-f36bbf7ff373",
@@ -130,9 +130,9 @@ MODELS = [
         "intro": "test",
         "capabilities": "test",
         "risks": "test",
-        "hfLink": "test",
         "evalId": "test",
-        "background_image": "test",
+        "hfLink": "openai-community/gpt2",
+        "backgroundImage": "test",
     },
     {
         "id": "da05e829-9e9b-43d8-8c26-6141318700cb",
@@ -145,9 +145,9 @@ MODELS = [
         "intro": "test",
         "capabilities": "test",
         "risks": "test",
-        "hfLink": "test",
         "evalId": "test",
-        "background_image": "test",
+        "hfLink": "openai-community/gpt2",
+        "backgroundImage": "test",
     },
 ]
 

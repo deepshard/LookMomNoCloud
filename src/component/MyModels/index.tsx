@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useGetMyModels } from "../../lib/react-query/queriesAndMutations";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import Carousel from "../Carousel/Carousel";
 
 interface SearchProps {
   onClose?: () => void;
+  myModels?: TModel[];
 }
 
-const MyModels = ({ onClose }: SearchProps) => {
-  const { data: myModels } = useGetMyModels();
+const MyModels = ({ onClose, myModels=[] }: SearchProps) => {
   const carouselRef = useRef<any>();
 
   const next = () => {
@@ -32,7 +31,8 @@ const MyModels = ({ onClose }: SearchProps) => {
   };
 
   const gridModelsFunc = useCallback(() => {
-    return handlePagination(myModels || []);
+    const modelsArray = Object.values(myModels || {});
+    return handlePagination(modelsArray || []);
   }, [myModels]);
   const gridModels = gridModelsFunc();
 

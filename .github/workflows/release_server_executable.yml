@@ -60,3 +60,5 @@ jobs:
       - name: Upload to S3
         run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
 
+      - name: Upload latest metadata
+        run: aws s3 cp python/dist/server/latest.txt s3://truffle-binaries/latest.txt

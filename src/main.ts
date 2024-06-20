@@ -9,7 +9,6 @@ import zlib from "zlib";
 import stream from "stream";
 import { promisify } from "util";
 
-
 const downloadServer = async (output: string) => {
   const version = app.getVersion();
   const osInfo = await si.osInfo();

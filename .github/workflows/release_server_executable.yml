@@ -15,9 +15,9 @@ jobs:
         os: [macos-latest, ubuntu-cuda12.1-1xt4-x86_64]
         include:
           - os: macos-latest
-            filename: server-macos-arm64.tar.gz
+            filename: latest-darwin-metal-arm64.tar.gz
           - os: ubuntu-cuda12.1-1xt4-x86_64
-            filename: server-ubuntu-cuda-x86_64.tar.gz
+            filename: latest-ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,7 +46,8 @@ jobs:
 
       - name: Archive server executable
         run: |
-          tar -czvhf ${{ matrix.filename }} python/dist/server
+          cd python/dist 
+          tar -czvhf ${{ matrix.filename }} server
 
       - name: GCP auth
         uses: 'google-github-actions/auth@v2'
@@ -57,5 +58,6 @@ jobs:
       - name: Upload server executable to GCP
         uses: google-github-actions/upload-cloud-storage@v0.7.0
         with:
-          path: ${{ matrix.filename }}
+          path: python/dist/${{ matrix.filename }}
           destination: truffle-binaries
+

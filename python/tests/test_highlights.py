@@ -10,6 +10,24 @@ from db import get_db_session
 from models import RunningModel
 
 
+# Helpers
+def create_model_dir(model_id: str):
+    model_dir = Path(f"/tmp/models/{model_id}/base")
+    model_dir.mkdir(parents=True, exist_ok=True)
+    with open(model_dir / "pytorch_model.bin", "wb") as f:
+        f.write(os.urandom(1024))
+    with open(model_dir / "config.json", "wb") as f:
+        f.write(os.urandom(1024))
+    onnx_dir = model_dir / "onnx"
+    onnx_dir.mkdir(parents=True, exist_ok=True)
+    with open(onnx_dir / "onnx_model.onnx", "wb") as f:
+        f.write(os.urandom(1024))
+    tf_dir = model_dir / "tf_model"
+    tf_dir.mkdir(parents=True, exist_ok=True)
+    with open(tf_dir / "tf_model.pb", "wb") as f:
+        f.write(os.urandom(1024))
+
+
 @pytest.mark.asyncio
 async def test_get_highlights_new_user(session_fixture):
     # Mocks
@@ -54,12 +72,15 @@ async def test_get_highlights_models_running(session_fixture):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_models_downloaded_and_running(session_fixture):
+async def test_get_highlights_models_downloaded_and_running(session_fixture, mocker):
     # Downloaded mocks
     session_fixture("endpoints.highlights.highlights")
+    mocker.patch(
+        "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
+    )
     base_dir = Path("/tmp/models")
-    os.makedirs(base_dir / MODELS[0]["id"] / "base", exist_ok=True)
-    os.makedirs(base_dir / MODELS[1]["id"] / "base", exist_ok=True)
+    create_model_dir(MODELS[0]["id"])
+    create_model_dir(MODELS[1]["id"])
 
     # Running mock
     mock_model = {

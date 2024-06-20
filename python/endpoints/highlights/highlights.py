@@ -1,10 +1,12 @@
 import os
+import re
 import asyncio
 from state import global_state_manager
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from models import RunningModel
+from endpoints.model.downloaded.downloaded import is_model_downloaded
 from utils import get_app_data_path
 
 
@@ -14,6 +16,15 @@ async def get_highlights() -> list[Model]:
         {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
     ]
     downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
+
+    uuid_pattern = re.compile(
+        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    )
+    downloaded_models = [
+        model_id
+        for model_id in downloaded_models
+        if uuid_pattern.match(model_id["id"]) and await is_model_downloaded(model_id["id"])
+    ]
 
     # Dedupe model IDs
     for model in downloaded_models:
@@ -72,7 +83,7 @@ async def get_trending_models(num: int) -> list[Model]:
 
 async def fetch_model_data(model):
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model['id']}"
+        f"{TRUFFLE_API_URL}/models/{model['id']}"
     ) as response:
         assert response.status == 200, f"Failed to fetch model data for {model['id']}"
         model_data = await response.json()

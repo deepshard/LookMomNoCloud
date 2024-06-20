@@ -80,10 +80,10 @@ async def get_model_details(model_id):
                 intro=model["intro"],
                 capabilities=model["capabilities"],
                 risks=model["risks"],
-                hf_link=model["hfLink"],
                 eval_id=model["evalId"],
+                hf_link=model["hfLink"],
                 status=await get_model_status(model_id),
-                background_image=model["background_image"],
+                background_image=model["backgroundImage"],
                 instance=0,
                 progress=0,
             )

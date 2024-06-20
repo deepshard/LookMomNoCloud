@@ -22,7 +22,13 @@
     "productName": "Truffle",
     "mac": {
       "target": "dmg"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "public",
+        "to": "public"
+      }
+    ]
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",

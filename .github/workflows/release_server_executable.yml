@@ -15,9 +15,9 @@ jobs:
         os: [macos-latest, ubuntu-cuda12.1-1xt4-x86_64]
         include:
           - os: macos-latest
-            filename: latest-darwin-metal-arm64.tar.gz
+            filename: darwin-metal-arm64.tar.gz
           - os: ubuntu-cuda12.1-1xt4-x86_64
-            filename: latest-ubuntu-cuda-x86_64.tar.gz
+            filename: ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,17 +47,16 @@ jobs:
       - name: Archive server executable
         run: |
           cd python/dist 
+          echo ${{ github.sha[:7] }} > server/latest.txt
           tar -czvhf ${{ matrix.filename }} server
 
-      - name: GCP auth
-        uses: 'google-github-actions/auth@v2'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-
-      - name: Upload server executable to GCP
-        uses: google-github-actions/upload-cloud-storage@v0.7.0
-        with:
-          path: python/dist/${{ matrix.filename }}
-          destination: truffle-binaries
+      - name: Upload to S3
+        run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha[:7] }}/
 

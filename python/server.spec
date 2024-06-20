@@ -6,7 +6,7 @@ datas = []
 binaries = []
 hiddenimports = []
 
-for pkg in ['mlc_llm', 'tvm']:
+for pkg in ['mlc_llm', 'tvm', 'aiosqlite']:
     d,b,h = collect_all(pkg)
     datas += d
     binaries += b
@@ -47,7 +47,7 @@ exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
-    codesign_identity=None,
+    codesign_identity="3B8E76E1DB3AC6283C16BEFC1071BDBECEF1C2C5",
     entitlements_file=None,
 )
 

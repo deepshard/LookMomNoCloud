@@ -23,6 +23,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
   const [isHovered, setIsHovered] = useState(false);
+  model.status = 'STOPPED'
 
   useEffect(() => {
     return () => {
@@ -86,7 +87,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         );
       case "STOPPED":
         return (
-          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <div onClick={handleAction} className={`h-[32.73px] w-[32.73px] absolute bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%] bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d ${isHovered ? "opacity-100" : "opacity-0"}`}>
             <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -125,7 +126,6 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
       <img src={model.background_image} alt="" className="w-full h-full" />
       <div className="absolute top-0 left-0 p-2 nowrap">
         <div className="relative" onClick={() => (window.location.href = `/model/${model.id}`)}>
-          <div className="absolute inset-0  "></div>
           <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
           <div className="flex items-start gap-0.5">
             <span className="text-xs text-surface-main relative opacity-75">

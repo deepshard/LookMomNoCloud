@@ -106,7 +106,7 @@ def request_mocks(request, mocker):
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models/b438d015-ad45-4e9a-9aba-2e290348b078&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
+            f"{TRUFFLE_API_URL}/models/b438d015-ad45-4e9a-9aba-2e290348b078",
             status=200,
             payload=data.MODELS[1],
             repeat=True,

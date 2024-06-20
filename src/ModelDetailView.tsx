@@ -16,7 +16,6 @@ function ModelDetailView() {
 
   const location = useLocation();
 
-  debugger
 
   const [modelData, setModelData] = useState<TModel | null>(
     location.state.model
@@ -60,7 +59,7 @@ function ModelDetailView() {
         <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
           <img
             loading="lazy"
-            srcSet={modelData?.background_image}
+            srcSet={modelData?.backgroundImage}
             className="shrink-0 aspect-square rounded-full w-[30px] "
           />
 
@@ -142,7 +141,7 @@ function ModelDetailView() {
             {/* Model's Image */}
             <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
               <img
-                src={modelData?.background_image}
+                src={modelData?.backgroundImage}
                 className=" w-full h-full "
               />
             </div>

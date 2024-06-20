@@ -109,7 +109,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   if (model.error) {
     return (
       <div className="model-widget base-regular">
-        <img src={model.background_image} alt="" className="w-full h-full" />
+        <img src={model.backgroundImage} alt="" className="w-full h-full" />
         <div className="absolute top-0 left-0 p-2">
           <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
           <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
@@ -122,7 +122,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   if (type === "my-model") {
     return (
       <div className={`model-my-models base-regular ${className}`} {...props}>
-        <img src={model.background_image} alt="" className="w-full min-h-[78px] rounded-sm"/>
+        <img src={model.backgroundImage} alt="" className="w-full min-h-[78px] rounded-sm"/>
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
     );
@@ -131,7 +131,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   return (
     <div className="relative">
     <div className={`model-widget base-regular ${className}`} {...props}>
-        <img src={model.background_image} alt="" className="w-full h-full" />
+        <img src={model.backgroundImage} alt="" className="w-full h-full" />
         <div className="absolute top-0 left-0 p-2">
           <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
           <p className="title-sm text-surface-main w-[60%]">{model.author}</p>

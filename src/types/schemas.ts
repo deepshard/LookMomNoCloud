@@ -31,7 +31,7 @@ export const ModelSchema = z.object({
     createdAt: z.string(),
     modifiedAt: z.string(),
     status: z.enum([ "ACKNOWLEDGED", "DOWNLOADING", "INSTALLING", "RUNNING", "STOPPED", "NOT_DOWNLOADED"]),
-    background_image: z.string(),
+    backgroundImage: z.string(),
     instance: z.number().optional(),
     progress: z.number().optional(),
     description: z.string(),

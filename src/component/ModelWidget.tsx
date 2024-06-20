@@ -20,7 +20,8 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
 const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDelete, onDisconnect, className = "", ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
-  const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
+  const stopIcon = process.env.NODE_ENV === "development" ? "/assets/icons/stop.svg" : "../../renderer/main_window/assets/icons/stop.svg";
+  const runningIcon = process.env.NODE_ENV === "development" ? "/assets/icons/running.svg" : "../../renderer/main_window/assets/icons/running.svg";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
   const errorIcon = process.env.NODE_ENV === "development" ? "/assets/icons/error.svg" : "../../renderer/main_window/assets/icons/error.svg";
 
@@ -60,12 +61,6 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
 
   const getWidgetButton = () => {
     switch (model.status) {
-      case "ACKNOWLEDGED":
-        return (
-          <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">
-            <div className="w-[20%] bg-surface-750 rounded-full animate-in-out" />
-          </div>
-        );
       case "DOWNLOADING":
         return (
           <motion.div
@@ -105,14 +100,14 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         return (
           <div
             onClick={handleAction}
-            className={`h-[32.73px] w-[32.73px] absolute bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%] bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d `}>
+            className={`h-[32.73px] w-[32.73px] absolute bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%] bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d cursor-pointer`}>
             <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
       case "RUNNING":
         return (
-          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 widget-3d rounded-full">
-            <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
+          <div onClick={handleAction} className={`h-[30px] w-[30px] absolute transition-opacity ${isHovered ? 'bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%]' : 'bottom-0 right-0 m-2'} widget-3d rounded-full flex-center cursor-pointer`}>
+            <img src={isHovered ? stopIcon : runningIcon} alt="" className={`${isHovered ? 'h-[10px] w-[10px]' : 'h-[20px] w-[20px]' }`} />
           </div>
         );
 
@@ -148,8 +143,13 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
           </div>
         </div>
         <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
+        {getWidgetButton()}
       </div>
-      {getWidgetButton()}
+      {(model.status === "ACKNOWLEDGED") && (
+        <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">
+          <div className="w-[20%] bg-surface-750 rounded-full animate-in-out" />
+        </div>
+      )}
       {model.error && getErrorButton(model.error)}
     </div>
   );

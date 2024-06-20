@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 import { toUnitOfCount } from "../utils/sysUtils";
 import ScrollingText from "./common/ScrollingText";
 
-
-interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
+interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
-  type?: 'regular' | 'my-model';
+  type?: "regular" | "my-model";
   onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
@@ -17,14 +16,13 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
   onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete, onDisconnect, className, ...props }: ModelWidgetProps) => {
+const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDelete, onDisconnect, className, ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
   const [isHovered, setIsHovered] = useState(false);
-
 
   useEffect(() => {
     return () => {
@@ -50,13 +48,11 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
 
   const getWidgetButton = () => {
     switch (model.status) {
-      case 'ACKNOWLEDGED':
-        return (
-          <p>To-Do: ACKNOWLEDGED</p>        
-        )
+      case "ACKNOWLEDGED":
+        return <p>To-Do: ACKNOWLEDGED</p>;
       case "DOWNLOADING":
         return (
-          <motion.div 
+          <motion.div
             className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D]  z-[99999] rounded-full"
             initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
             animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
@@ -84,8 +80,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
             onClick={() => {
               handleAction();
             }}
-            className={`h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-          >
+            className={`h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d ${isHovered ? "opacity-100" : "opacity-0"}`}>
             <img src={downloadIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -97,10 +92,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
         );
       case "RUNNING":
         return (
-          <div 
-            onClick={handleAction}
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
-          >
+          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -110,48 +102,42 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
     }
   };
 
-  if(model.error) {
+  if (model.error) {
     return (
       <div className="model-widget base-regular" {...props}>
         <p className="opacity-75">"To-do: Error design goes here"</p>
       </div>
-    )
+    );
   }
 
-  if(type === 'my-model') {
+  if (type === "my-model") {
     return (
       <div className={`model-my-models base-regular ${className}`} {...props}>
-        <img src={model.background_image} alt="" className="w-full min-h-[78px] rounded-sm"/>
+        <img src={model.background_image} alt="" className="w-full min-h-[78px] rounded-sm" />
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
-    )
-  } 
+    );
+  }
 
   return (
-    <div 
-      className={`model-widget base-regular ${className}`} 
-      {...props} 
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {getWidgetButton()}
-      <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur" ></div>
+    <div className={`model-widget base-regular ${className}`} {...props} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
       <img src={model.background_image} alt="" className="w-full h-full" />
       <div className="absolute top-0 left-0 p-2 nowrap">
-        <div className="relative" 
-      onClick={() => window.location.href = `/model/${model.id}`}
-        >
+        <div className="relative" onClick={() => (window.location.href = `/model/${model.id}`)}>
           <div className="absolute inset-0  "></div>
-          <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split('/')[1]} isHovered={isHovered}/>
-          <div className="flex items-start gap-0.5"> 
-          <span className="text-xs text-surface-main relative opacity-75">
-            <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} /> </span>
+          <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
+          <div className="flex items-start gap-0.5">
+            <span className="text-xs text-surface-main relative opacity-75">
+              <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
+            </span>
             <span className="text-xs text-surface-main relative opacity-75"> • </span>
-          <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
+            <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
           </div>
         </div>
       </div>
       <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
+      {getWidgetButton()}
     </div>
   );
 };

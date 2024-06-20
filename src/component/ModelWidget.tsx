@@ -23,7 +23,6 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
   const [isHovered, setIsHovered] = useState(false);
-  model.status = 'STOPPED'
 
   useEffect(() => {
     return () => {
@@ -54,7 +53,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
       case "DOWNLOADING":
         return (
           <motion.div
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D]  z-[99999] rounded-full"
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 widget-3d z-[99999] rounded-full"
             initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
             animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
             transition={{ duration: 0.1, ease: "easeInOut" }} // duration and timing function
@@ -63,8 +62,10 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
               value={model.progress || 0}
               text={`${model.progress}%`}
               styles={{
-                path: { stroke: "#00C920" },
-                text: { fill: "#00C920" },
+                path: { stroke: "rgba(255, 255, 255, 1)",  },
+                trail: { stroke: "rgba(255, 255, 255, 0.4)" },
+                text: { fill: "rgba(255, 255, 255, 0.75)", fontSize: "25px" },
+
               }}
             />
           </motion.div>

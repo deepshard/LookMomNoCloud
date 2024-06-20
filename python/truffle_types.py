@@ -72,8 +72,8 @@ class Model:
     intro: str
     capabilities: str
     risks: str
-    hf_link: str
     eval_id: str | None
+    hf_link: str
     status: ModelStatus
     background_image: str
     instance: int

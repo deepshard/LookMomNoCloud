@@ -17,7 +17,7 @@ jobs:
           - os: macos-latest
             filename: server-macos-arm64.tar.gz
           - os: ubuntu-cuda12.1-1xt4-x86_64
-            filename: server-ubuntu-x86_64.tar.gz
+            filename: server-ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,14 +28,12 @@ jobs:
           python-version: "3.10"
       
       - name: Install MLC
-        if: matrix.os == 'macos-latest'
         run: |
-          pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
-
-      - name: Install MLC
-        if: matrix.os == 'ubuntu-cuda12.1-1xt4-x86_64'
-        run: |
-          pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
+          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
+          fi
 
       - name: Install rest of the dependencies
         run: |
@@ -50,9 +48,11 @@ jobs:
         run: |
           tar -czvhf ${{ matrix.filename }} python/dist/server
 
-      - name: Upload server executable
-        uses: actions/upload-artifact@v4
+
+      - name: Upload server executable to GCP
+        uses: google-github-actions/upload-cloud-storage@v0.7.0
         with:
-          if-no-files-found: error
-          name: ${{ matrix.filename }}
           path: ${{ matrix.filename }}
+          destination: gs://truffle-binaries/${{ matrix.filename }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}

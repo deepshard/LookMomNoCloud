@@ -49,8 +49,6 @@ const ModelWidget = ({
       : "../../renderer/main_window/assets/icons/error.svg";
 
   const [isHovered, setIsHovered] = useState(false);
-  // model.status = 'ACKNOWLEDGED'
-  model.error = "error";
 
   useEffect(() => {
     return () => {
@@ -91,7 +89,7 @@ const ModelWidget = ({
       case "DOWNLOADING":
         return (
           <motion.div
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] z-[99999] rounded-full flex items-center justify-center"
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 widget-3d z-[99999] rounded-full"
             initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
             animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
             transition={{ duration: 0.1, ease: "easeInOut" }} // duration and timing function
@@ -100,8 +98,10 @@ const ModelWidget = ({
               value={model.progress || 0}
               text={`${model.progress}%`}
               styles={{
-                path: { stroke: "#00C920" },
-                text: { fill: "#FFFFFF", fontSize: "32px" },
+                path: { stroke: "rgba(255, 255, 255, 1)",  },
+                trail: { stroke: "rgba(255, 255, 255, 0.4)" },
+                text: { fill: "rgba(255, 255, 255, 0.75)", fontSize: "25px" },
+
               }}
             />
           </motion.div>

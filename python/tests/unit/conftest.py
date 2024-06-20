@@ -6,14 +6,10 @@ import shutil
 import asyncio
 from pathlib import Path
 import tests.unit.data as data
-from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from aioresponses import aioresponses
-from db import get_db_session
-from state import global_state_manager
 from server import init_state
 from constants import TRUFFLE_API_URL
-from utils import get_app_data_path
 from models import RunningModel
 
 # Helpers
@@ -30,9 +26,10 @@ async def clear_db():
 
 # Fixtures
 @pytest_asyncio.fixture(autouse=True)
-async def session_fixture(request, mocker):
+async def session_fixture(mocker):
     def _patcher(module):
         mocker.patch(f"{module}.get_app_data_path", return_value=Path("/tmp"))
+        mocker.patch("utils.get_app_data_path", return_value=Path("/tmp"))
 
     yield _patcher
 
@@ -53,22 +50,11 @@ async def test_fixture(request):
     request.addfinalizer(teardown)
 
 
-@pytest.fixture
-def is_windows(mocker):
+@pytest.fixture(autouse=True, params=["Linux", "Darwin", "Windows"])
+def set_os(request, mocker):
     platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Windows")
-
-
-@pytest.fixture()
-def is_linux(mocker):
-    platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Linux")
-
-
-@pytest.fixture
-def is_macos(mocker):
-    platform_module = sys.modules["platform"]
-    mocker.patch.object(platform_module, "system", return_value="Darwin")
+    mocker.patch.object(platform_module, "system", return_value=request.param)
+    return request.param
 
 
 @pytest.fixture(autouse=True)
@@ -117,6 +103,12 @@ def request_mocks(request, mocker):
             f"{TRUFFLE_API_URL}/models/3fec7228-04de-485d-9f09-bde6e8ea350f",
             status=200,
             payload=data.MODELS[0],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/b438d015-ad45-4e9a-9aba-2e290348b078",
+            status=200,
+            payload=data.MODELS[1],
             repeat=True,
         )
 

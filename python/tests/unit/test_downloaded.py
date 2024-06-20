@@ -1,15 +1,7 @@
 import os
-import asyncio
 import pytest
-from unittest.mock import patch, MagicMock
-from uuid import uuid4
-import shutil
 from pathlib import Path
-from aioresponses import aioresponses
-from state import global_state_manager
-from server import init_state
 from endpoints.model.downloaded.downloaded import get_downloaded_models
-from constants import TRUFFLE_API_URL
 from tests.unit.data import ID, ID_2
 
 

@@ -147,69 +147,34 @@ class ModelManager:
         # Else, return 1
         return 1
 
-    async def get_quantization_time_penalty(
-        self, model_id: str, quantization: Quantization
-    ) -> float:
-        """
-        If a model has not been quantized, then there is a 10% penalty based on its size.
-        Quantizing a model takes time, so we want to penalize the score for models that
-        are not ready to be served immediately.
-        """
+    def get_expected_memory_consumption(self, model: str, quantization: Quantization) -> int:
+        """Estimates the expected memory consumption of a model configuration."""
 
-        if not does_quantization_exist(model_id, quantization):
-            model_size = await self.get_model_size(model_id)
-            return 0.1 * self.get_model_size_score(model_size)
+        base_weights_path = get_app_data_path() / "models" / model / "base"
+        _, compressed_size = get_model_size_info(base_weights_path, quantization)
+        return compressed_size
 
-        return 0
-
-    def get_expected_memory_consumption(self, models: list[str, Quantization]) -> int:
-        """Estimates the expected memory consumption of a list of model configurations."""
-
-        total_size = 0
-        for model_id, quantization in models:
-            base_weights_path = get_app_data_path() / "models" / model_id / "base"
-            _, compressed_size = get_model_size_info(base_weights_path, quantization)
-            total_size += compressed_size
-
-        return total_size
-
-    def get_expected_disk_consumption(self, models: list[str, Quantization]) -> int:
+    def get_expected_disk_consumption(self, model: str, quantization: Quantization) -> int:
         """Estimates the expected disk consumption of a list of model configurations."""
 
-        total_size = 0
-        for model_id, quantization in models:
-            if not does_quantization_exist(model_id, quantization):
-                base_weights_path = get_app_data_path() / "models" / model_id / "base"
-                _, compressed_size = get_model_size_info(base_weights_path, quantization)
-                total_size += compressed_size
+        base_weights_path = get_app_data_path() / "models" / model / "base"
+        _, compressed_size = get_model_size_info(base_weights_path, quantization)
+        return compressed_size if not does_quantization_exist(model, quantization) else 0
 
-        return total_size
-
-    async def get_capabilities_score(self, model_id: str, quantization: Quantization) -> float:
-        """
-        Returns a capabilities score based on the model's size and the expected impact of
-        quantization on model downstream performance.
-        """
-
-        model_size = await self.get_model_size(model_id)
-        model_size_score = self.get_model_size_score(model_size)
-        quantization_score = self.quantization_scores[quantization]
-        return model_size_score * quantization_score
-
-    async def get_score(self, models) -> dict[str, float]:
+    def get_score(
+        self, model_id: str, quantization: Quantization, model_size: int
+    ) -> dict[str, float]:
         """Returns an overall score taking into account capabilities and quantization time penalty."""
 
-        score = 0
-        for configuration in models:
-            capabilities_score = await self.get_capabilities_score(
-                configuration[0], configuration[1]
-            )
-            quantization_time_penalty = await self.get_quantization_time_penalty(
-                configuration[0], configuration[1]
-            )
-            score += capabilities_score - quantization_time_penalty
-
-        return score
+        capabilities_score = (
+            self.get_model_size_score(model_size) * self.quantization_scores[quantization]
+        )
+        quantization_time_penalty = (
+            (0.1 * self.get_model_size_score(model_size))
+            if not does_quantization_exist(model_id, quantization)
+            else 0
+        )
+        return capabilities_score - quantization_time_penalty
 
     def get_quantization_options(self, model_id: str) -> list[Quantization]:
         """Returns the quantization options available for a model and converts them to Quantization enum."""
@@ -248,22 +213,34 @@ class ModelManager:
         available resources.
         """
 
-        # Create a list of all possible combinations of model x quantization options
+        # Create a table of model->quant->expected resource usage and a list of
+        # all possible combinations of model x quantization options
+        usage_table = {}
         quant_options = []
         for model_id, quant in configurations:
             quant_options.append([(model_id, quant) for quant in quant])
+            for quantization in quant:
+                memory = self.get_expected_memory_consumption(model_id, quantization)
+                disk = self.get_expected_disk_consumption(model_id, quantization)
+                usage_table[(model_id, quantization)] = {"memory": memory, "disk": disk}
         all_combinations = itertools.product(*quant_options)
+
+        # Cache resource availability
+        available_memory, disk_space, bytes_remaining = self.get_space_check_info(True)
 
         usable_configurations = []
         for combination in all_combinations:
             models = [(model_id, quant) for model_id, quant in combination]
 
             # Collect expected memory and disk consumption for the combination
-            expected_memory = self.get_expected_memory_consumption(models)
-            expected_disk = self.get_expected_disk_consumption(models)
+            expected_memory = sum(
+                [usage_table[(model_id, quant)]["memory"] for model_id, quant in models]
+            )
+            expected_disk = sum(
+                [usage_table[(model_id, quant)]["disk"] for model_id, quant in models]
+            )
 
             # Check if the combination is usable based on available resources
-            available_memory, disk_space, bytes_remaining = self.get_space_check_info(True)
             if expected_memory < available_memory and expected_disk + bytes_remaining < disk_space:
                 usable_configurations.append(models)
 
@@ -285,10 +262,19 @@ class ModelManager:
         if len(usable_configurations) == 0:
             raise Exception("No usable configurations found")
 
+        # Get model sizes for each model
+        model_sizes = {}
+        for model_id in model_ids:
+            model_sizes[model_id] = await self.get_model_size(model_id)
+
+        # Find the best combination of models and quantization options
         best_combination = None
         max_score = 0
         for combination in usable_configurations:
-            score = await self.get_score(combination)
+            score = 0
+            for model_id, quantization in combination:
+                score += self.get_score(model_id, quantization, model_sizes[model_id])
+
             if score > max_score:
                 max_score = score
                 best_combination = combination

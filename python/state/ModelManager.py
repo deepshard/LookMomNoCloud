@@ -1,3 +1,4 @@
+import os
 import itertools
 import psutil
 from pathlib import Path
@@ -12,6 +13,10 @@ from utils import (
     does_quantization_exist,
 )
 from constants import TRUFFLE_API_URL
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 class ModelManager:
@@ -124,7 +129,10 @@ class ModelManager:
     async def get_model_size(self, model_id: str) -> int:
         """Fetch the size (param count) of a model from the Truffle API."""
 
-        async with self.session.get(f"{TRUFFLE_API_URL}/models?id={model_id}") as response:
+        async with self.session.get(
+            f"{TRUFFLE_API_URL}/models/{model_id}",
+            headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
+        ) as response:
             assert response.status == 200, f"Failed to fetch model size for {model_id}"
             model = await response.json()
             return model["size"]

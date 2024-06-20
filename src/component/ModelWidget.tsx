@@ -6,10 +6,9 @@ import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom";
 
 
-
-interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
+interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
-  type?: 'regular' | 'my-model';
+  type?: "regular" | "my-model";
   onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
@@ -17,7 +16,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement>  {
   onDisconnect?: () => void;
 }
 
-const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete, onDisconnect, className, ...props }: ModelWidgetProps) => {
+const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDelete, onDisconnect, className = "", ...props }: ModelWidgetProps) => {
   const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
   const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
@@ -49,13 +48,15 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
 
   const getWidgetButton = () => {
     switch (model.status) {
-      case 'ACKNOWLEDGED':
+      case "ACKNOWLEDGED":
         return (
-          <p>To-Do: ACKNOWLEDGED</p>        
-        )
+          <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">
+            <div className="w-[20%] bg-surface-750 rounded-full animate-in-out" />
+          </div>
+        );
       case "DOWNLOADING":
         return (
-          <motion.div 
+          <motion.div
             className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
             initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
             animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
@@ -83,8 +84,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
             onClick={() => {
               handleAction();
             }}
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
-          >
+            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={downloadIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -96,10 +96,7 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
         );
       case "RUNNING":
         return (
-          <div 
-            onClick={handleAction}
-            className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full"
-          >
+          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={pauseIcon} alt="" className="h-[32.73px] w-[32.73px]" />
           </div>
         );
@@ -109,31 +106,38 @@ const ModelWidget = ({ model, type='regular', onInstall, onRun, onStop, onDelete
     }
   };
 
-  if(model.error) {
+  if (model.error) {
     return (
-      <div className="model-widget base-regular" {...props}>
-        <p className="opacity-75">"To-do: Error design goes here"</p>
+      <div className="model-widget base-regular">
+        <img src={model.background_image} alt="" className="w-full h-full" />
+        <div className="absolute top-0 left-0 p-2">
+          <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
+          <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
+        </div>
+        <div className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">To-do: Error design goes here</div>
       </div>
-    )
+    );
   }
 
-  if(type === 'my-model') {
+  if (type === "my-model") {
     return (
       <div className={`model-my-models base-regular ${className}`} {...props}>
         <img src={model.background_image} alt="" className="w-full min-h-[78px] rounded-sm"/>
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
-    )
+    );
   }
 
   return (
+    <div className="relative">
     <div className={`model-widget base-regular ${className}`} {...props}>
-      <img src={model.background_image} alt="" className="w-full h-full"/>
-      <div className="absolute top-0 left-0 p-2">
-        <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
-        <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
+        <img src={model.background_image} alt="" className="w-full h-full" />
+        <div className="absolute top-0 left-0 p-2">
+          <p className="title-sm text-surface-main w-[60%]">{model.title}</p>
+          <p className="title-sm text-surface-main w-[60%]">{model.author}</p>
+        </div>
+        <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2"></p>
       </div>
-      <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2"></p>
       {getWidgetButton()}
     </div>
   );

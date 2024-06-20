@@ -56,7 +56,7 @@ async def model_downloaded():
     model_url = models[0]["url"]
 
     model_path = get_app_data_path() / "models" / model_id / "base"
-    files_to_download = await get_files_to_download(model_url)
+    files_to_download = await get_files_to_download(model_url, model_path)
     progress_tracker = {"downloaded_bytes": 0}
     tasks = [
         download_file(

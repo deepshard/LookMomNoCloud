@@ -148,17 +148,17 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
         </motion.div>
       </div>
       <div ref={scrollViewRef} className="px-[16px] relative flex flex-col gap-[8px] scroll-view">
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
-        <SysInfoModelListItem />
+        {sysInfo.resources.models.map((model, index) => (
+          <SysInfoModelListItem 
+            key={index} 
+            selection={selection} 
+            model={model} 
+            total={{
+              ram: sysInfo.resources.total.ram,
+              disk: sysInfo.resources.total.disk
+            }} 
+          />
+        ))}
       </div>
     </div>
   );

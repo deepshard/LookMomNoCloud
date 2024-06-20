@@ -5,6 +5,7 @@ import { TModel } from "../types/schemas";
 import { motion } from "framer-motion";
 import { toUnitOfCount } from "../utils/sysUtils";
 import ScrollingText from "./common/ScrollingText";
+import Tooltip from "./common/Tooltip";
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
@@ -50,6 +51,7 @@ const ModelWidget = ({
 
   const [isHovered, setIsHovered] = useState(false);
 
+
   useEffect(() => {
     return () => {
       onDisconnect && onDisconnect();
@@ -72,13 +74,14 @@ const ModelWidget = ({
     }
   };
 
-  const getErrorButton = () => {
+
+  const getErrorButton = (errorMessage: string) => {
     return (
-      <div
-        className={`error-icon`}
-      >
-        <img src={errorIcon} alt="errorIcon" className="w-full h-full text-red-500" />
-      </div>
+      <Tooltip overlayClassName='rounded-sm glass-3d' overlayInnerStyle={{ color: 'surface-500', padding:'10px', fontSize:'12px' }} placement='bottom' color='transparent'  title={errorMessage} >
+        <div className={`error-icon`}>
+          <img src={errorIcon} alt="errorIcon" className="w-full h-full" />
+        </div>
+      </Tooltip>
     );
   };
 
@@ -163,7 +166,7 @@ const ModelWidget = ({
         <img
           src={model.background_image}
           alt=""
-          className="w-full min-h-[78px] rounded-sm"
+          className="w-full min-h-[78px] rounded-lg"
         />
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">
           {model.title}
@@ -211,7 +214,8 @@ const ModelWidget = ({
       </div>
       <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
       {getWidgetButton()}
-      {model.error && getErrorButton()}
+      {model.error && getErrorButton(model.error)}
+      
     </div>
   );
 };

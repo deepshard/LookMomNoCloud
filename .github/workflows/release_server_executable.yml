@@ -47,7 +47,7 @@ jobs:
       - name: Archive server executable
         run: |
           cd python/dist 
-          echo ${{ github.sha[:7] }} > server/latest.txt
+          echo ${{ github.sha }} > server/latest.txt
           tar -czvhf ${{ matrix.filename }} server
 
       - name: Configure AWS credentials
@@ -58,5 +58,5 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload to S3
-        run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha[:7] }}/
+        run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
 

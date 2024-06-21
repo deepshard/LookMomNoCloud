@@ -55,13 +55,13 @@ async def test_run_already_installed(test_fixture, model_installed):
     assert responses[0]["status"] == "ACKNOWLEDGED"
     assert responses[1]["status"] == "RUNNING"
     assert responses[1]["instance"] == 1
-    assert responses[1]["port"] == 8899
+    assert responses[1]["port"] == 8900
 
     running_models = await RunningModel.get_all()
     assert len(running_models) == 1
     assert running_models[0].id == models[0]["id"]
     assert running_models[0].instance == 1
-    assert running_models[0].port == 8899
+    assert running_models[0].port == 8900
 
 
 @pytest.mark.asyncio

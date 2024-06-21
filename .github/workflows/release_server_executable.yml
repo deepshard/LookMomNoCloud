@@ -47,20 +47,7 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
-      - name: Run integration tests
-        run: |
-          echo "Copying alembic migrations"
-          cp -r python/alembic python/dist/server/alembic
-          echo ${{ github.sha }} > python/dist/server/version.txt
-          cd python/dist/server 
-          nohup ./server &
-          sleep 5
-          {{ cuda_patch }}
-          curl --retry 5 --retry-connrefused http://localhost:8899
-          cd ../../
-          PYTHONPATH="." pytest --maxfail=1 -v tests/integration
-
-      - name: Disable local cuda for tests
+      - name: Disable local cuda for integration tests
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
             export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
@@ -72,6 +59,19 @@ jobs:
               echo "** CUDA compiler not accessible, as expected. **"
             fi
           fi
+
+      - name: Run integration tests
+        run: |
+          echo "Copying alembic migrations"
+          cp -r python/alembic python/dist/server/alembic
+          echo ${{ github.sha }} > python/dist/server/version.txt
+          cd python/dist/server 
+          nohup ./server &
+          sleep 5
+          curl --retry 5 --retry-connrefused http://localhost:8899
+          cd ../../
+          PYTHONPATH="." pytest --maxfail=1 -v tests/integration
+
 
       - name: Archive server executable
         run: |

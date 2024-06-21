@@ -12,7 +12,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-cuda12.1-1xt4-x86_64]
+        os: [
+            macos-latest, 
+            # ubuntu-cuda12.1-1xt4-x86_64,
+        ]
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.tar.gz
@@ -43,6 +46,20 @@ jobs:
         run: |
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
+
+      - name: Run server binary in the background
+        run: |
+          cd python/dist/server
+          nohup ./server &
+
+      - name: Run integration tests
+        run: |
+          cd python
+          PYTHONPATH="." pytest --maxfail=1 -v tests/integration
+
+      - name: Kill running server
+        run: |
+          killall server
 
       - name: Archive server executable
         run: |

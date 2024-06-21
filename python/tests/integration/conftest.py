@@ -45,7 +45,7 @@ async def test_fixture(request):
     os.makedirs(get_app_data_path() / "models", exist_ok=True)
 
     async with init_state():
-        async with AsyncClient(app=app, base_url="http://testserver") as client:
+        async with AsyncClient(base_url="http://localhost:8899") as client:
             yield client
 
     def teardown():

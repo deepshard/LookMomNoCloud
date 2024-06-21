@@ -98,7 +98,7 @@ export const stopModel = async (model: TModel) => {
 }
 
 export const deleteModel = async (model: TModel) => {
-  const response = await localClient.delete(`/delete/${model.id}`);
+  const response = await localClient.delete(`/${model.id}`);
   return response.data;
 }
 

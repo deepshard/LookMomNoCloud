@@ -1,6 +1,5 @@
 import { TModel } from "../types/schemas";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-
 import { formatDate, formatParams } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
@@ -10,12 +9,14 @@ import Tag from "../component/Tag";
 import useModelActions from "../hooks/modelActions/useModelActions";
 import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
+import { motion } from "framer-motion";
+import { CircularProgressbar } from "react-circular-progressbar";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
 
   const location = useLocation();
-  const { runModels, stopModel, installModel, deleteModel, } = useModelActions();
+  const { runModels, stopModel, installModel, deleteModel } = useModelActions();
   const { downloads, updateModels, sysInfo } = useAppStore();
   const [modelData, setModelData] = useState<TModel | null>(location.state.model);
   const { refetch: getModel } = useGetModel(modelData);
@@ -28,7 +29,6 @@ function ModelDetailView() {
       });
     }
   }, [location.state.model]);
-
 
   useEffect(() => {
     if (modelData) {
@@ -53,6 +53,74 @@ function ModelDetailView() {
 
     if (sectionRef && sectionRef.current) {
       sectionRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const getModelStatusIcon = () => {
+    switch (modelData?.status) {
+      case "ACKNOWLEDGED":
+        return <Icon src="/public/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
+
+      case "DOWNLOADING":
+        return (
+          <Icon>
+            <motion.div
+              className="w-full h-full rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
+              animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
+              transition={{ duration: 0.1, ease: "easeInOut" }} // duration and timing function
+            >
+              <CircularProgressbar
+                value={modelData.progress || 0}
+                text={`${modelData.progress}%`}
+                styles={{
+                  path: { stroke: "#00C920" },
+                  text: { fill: "#00C920" },
+                }}
+              />
+            </motion.div>
+          </Icon>
+        );
+
+      case "INSTALLING":
+        return <Icon src="/public/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
+
+      case "RUNNING":
+        return (
+          <Icon
+            src="/public/assets/icons/stop.svg"
+            imgClassName="h-[11px] w-[11px]"
+            onClick={() => {
+              stopModel(modelData).then((_) => {
+                updateModels({
+                  ...modelData,
+                  status: "STOPPED",
+                });
+              });
+            }}
+          />
+        );
+
+      case "STOPPED":
+        return (
+          <Icon
+            src="/public/assets/icons/play.svg"
+            imgClassName="h-[11px] w-[11px]"
+            onClick={() =>
+              runModels([modelData], undefined, (updatedModel, controller) => {
+                updateModels({
+                  ...modelData,
+                  ...updatedModel,
+                });
+                if (updatedModel.status === "RUNNING") {
+                  controller.abort();
+                }
+              })
+            }
+          />
+        );
+      default:
+        break;
     }
   };
 
@@ -87,45 +155,7 @@ function ModelDetailView() {
         <div className="w-1/4 flex gap-2 justify-end items-center z-[999]">
           {modelData?.status && modelData?.status !== "NOT_DOWNLOADED" ? (
             <>
-              {modelData?.status === "RUNNING" ? (
-                <Icon
-                  src="/public/assets/icons/stop.svg"
-                  imgClassName="h-[11px] w-[11px]"
-                  onClick={() => {
-                    stopModel(modelData).then((_) => {
-                      updateModels({
-                        ...modelData,
-                        status: "STOPPED",
-                      });
-                    });
-                  }}
-                />
-              ) : (
-                <>
-                  {modelData.status === "ACKNOWLEDGED" ? (
-                    <Icon
-                      src="/public/assets/icons/install.svg"
-                      imgClassName="h-full w-full animate-spin"
-                    />
-                  ) : (
-                    <Icon
-                      src="/public/assets/icons/play.svg"
-                      imgClassName="h-[11px] w-[11px]"
-                      onClick={() =>
-                        runModels([modelData], undefined, (updatedModel, controller) => {
-                          updateModels({
-                            ...modelData,
-                            ...updatedModel,
-                          });
-                          if (updatedModel.status === "RUNNING") {
-                            controller.abort();
-                          }
-                        })
-                      }
-                    />
-                  )}
-                </>
-              )}
+              {getModelStatusIcon()}
 
               {/* Share Icon */}
               <Icon src="/public/assets/icons/share.svg" imgClassName="h-[11px] w-[11px]" />
@@ -142,7 +172,6 @@ function ModelDetailView() {
           ) : (
             <Icon
               src="/public/assets/icons/download.svg"
-              text="Install"
               imgClassName="h-[11px] w-[11px]"
               className="w-auto flex-center gap-2 px-[24px] text-white"
               onClick={() => {
@@ -153,8 +182,9 @@ function ModelDetailView() {
                       ...progress,
                     });
                   });
-              }}
-            />
+              }}>
+              <p className="text-sm">Install</p>
+            </Icon>
           )}
 
           {/* Close Icon */}

@@ -26,6 +26,22 @@ export function formatParams(size: number | undefined): string {
   return size.toString();
 }
 
+
+export const toUnitOfCount = (size: number) => {
+  if (size >= 1e12) {
+    return `${(size / 1e12).toFixed(1)}T`;
+  } else if (size >= 1e9) {
+    return `${(size / 1e9).toFixed(1)}B`;
+  } else if (size >= 1e6) {
+    return `${(size / 1e6).toFixed(1)}M`;
+  } else if (size >= 1e3) {
+    return `${(size / 1e3).toFixed(1)}K`;
+  } else {
+    return `${size}B`;
+  }
+
+}
+  
 export function roundTo(n: number, decimals: number): number {
   return Number(n.toFixed(decimals));
 }

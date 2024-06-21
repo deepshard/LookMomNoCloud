@@ -3,10 +3,11 @@
 @tailwind utilities;
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
   font-size: 14px;
   line-height: 1.3;
-  font-weight: 400;  /* Regular */
+  font-weight: 400; /* Regular */
   color: #fff;
   background-color: rgba(0, 0, 0, 0.75);
 
@@ -34,7 +35,10 @@ body {
   flex-direction: column;
   overflow: auto;
   background: url("/assets/images/truffle-background.png");
-  box-shadow: 0px 20px 50px 0px rgba(0, 0, 0, 0.25), 0px 0px 100px 0px rgba(255, 255, 255, 0.10) inset, 0px 3.59px 89.756px 0px rgba(0, 0, 0, 0.10), 0px 0px 44.878px 0px rgba(255, 255, 255, 0.10) inset;
+  box-shadow: 0px 20px 50px 0px rgba(0, 0, 0, 0.25),
+    0px 0px 100px 0px rgba(255, 255, 255, 0.1) inset,
+    0px 3.59px 89.756px 0px rgba(0, 0, 0, 0.1),
+    0px 0px 44.878px 0px rgba(255, 255, 255, 0.1) inset;
   backdrop-filter: blur(75px);
 }
 
@@ -48,14 +52,16 @@ input {
   caret-color: white;
 }
 
-input::placeholder, .ant-input::placeholder {
+input::placeholder,
+.ant-input::placeholder {
   color: var(--input-placeholder-color);
 }
 
 .ant-input {
   outline: none !important;
 }
-.ant-input:hover, .ant-input:focus {
+.ant-input:hover,
+.ant-input:focus {
   background-color: transparent !important;
   outline: none !important;
   border: none !important;
@@ -102,17 +108,18 @@ button.ant-btn.preorder-btn {
   transform: translateX(-50%) !important;
   bottom: 16px !important;
 
-  li, button {
+  li,
+  button {
     width: 6px !important;
     height: 6px !important;
   }
 
   .slick-active > button {
-    background-color: rgba(255, 255, 255, 0.50) !important;
+    background-color: rgba(255, 255, 255, 0.5) !important;
   }
 
   :not(.slick-active) > button:hover {
-    background-color: rgba(255, 255, 255, 0.50) !important;
+    background-color: rgba(255, 255, 255, 0.5) !important;
   }
 }
 
@@ -243,9 +250,46 @@ div.slick-slide > div {
 
   .glass-3d {
     @apply !important;
-    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+      0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset,
+      0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
       0px 0px 15px 0px rgba(85, 85, 85, 0.1);
     backdrop-filter: blur(50px);
+  }
+
+  .glass-3d-no-blur {
+    @apply !important;
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+      0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset,
+      0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+      0px 0px 15px 0px rgba(85, 85, 85, 0.1);
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  .scroll-on-hover {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: 0.5s;
+  }
+
+  .scroll-on-hover:hover {
+    text-overflow: clip;
+
+    overflow: auto;
+    animation: scroll 4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-60%);
+    }
   }
 
   .widget-3d {
@@ -255,8 +299,41 @@ div.slick-slide > div {
   .search {
     @apply absolute top-0 w-full h-full z-40;
     backdrop-filter: blur(75px);
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), rgba(255, 255, 255, 0.10)
+    background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0.5) 100%
+      ),
+      rgba(255, 255, 255, 0.1);
   }
+
+  .clip-rectangle {
+    overflow: hidden;
+  }
+  .truncate {
+    width: 10ch;
+  }
+  
+  .scrolling-text {
+    white-space: nowrap;
+    display: inline-block;
+    transform: translateX(0);
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .scrolling {
+    animation: scroll 5s ease-out infinite;
+  }
+  @keyframes scroll {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(-45%);
+    }
+  }
+  
 
   .sys-info-hardware-carousel {
     @apply w-80 h-80 relative !important;
@@ -286,5 +363,9 @@ div.slick-slide > div {
     &::-webkit-scrollbar {
       display: none;
     }
+  }
+
+  .error-icon {
+    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px] z-[99999];
   }
 }

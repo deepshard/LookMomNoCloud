@@ -17,8 +17,8 @@ jobs:
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.tar.gz
-          - os: ubuntu-cuda12.1-1xt4-x86_64
-            filename: ubuntu-cuda-x86_64.tar.gz
+          # - os: ubuntu-cuda12.1-1xt4-x86_64
+            # filename: ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,26 +45,23 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
-      - name: Run server binary in the background
-        run: |
-          cd python/dist/server
-          nohup ./server &
-
       - name: Run integration tests
-        run: |
-          cd python
-          PYTHONPATH="." pytest --maxfail=1 -v tests/integration
-
-      - name: Kill running server
-        run: |
-          killall server
-
-      - name: Archive server executable
         run: |
           echo "Copying alembic migrations"
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
-          cd python/dist 
+          cd python/dist/server 
+          nohup ./server &
+          sleep 5
+          curl --retry 5 --retry-connrefused http://localhost:8899
+          cd ../../
+          PYTHONPATH="." pytest --maxfail=1 -v tests/integration
+
+      - run: killall server
+
+      - name: Archive server executable
+        run: |
+          cd python/dist
           tar -czvhf ${{ matrix.filename }} server
 
       - name: Configure AWS credentials
@@ -79,4 +76,3 @@ jobs:
 
       - name: Upload latest metadata
         run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
-

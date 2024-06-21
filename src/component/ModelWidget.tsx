@@ -2,9 +2,8 @@ import { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { TModel } from "../types/schemas";
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
@@ -22,13 +21,11 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   const pauseIcon = process.env.NODE_ENV === "development" ? "/assets/icons/pause.svg" : "../../renderer/main_window/assets/icons/pause.svg";
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
 
-
   useEffect(() => {
     return () => {
       onDisconnect && onDisconnect();
     };
   }, []);
-
 
   const handleAction = () => {
     switch (model.status) {
@@ -90,8 +87,8 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         );
       case "STOPPED":
         return (
-          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <img src={playIcon} alt="" className="h-[32.73px] w-[32.73px]" />
+          <div onClick={handleAction} className="h-[32.73px] w-[32.73px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full flex-center">
+            <img src={playIcon} alt="" className="h-[11px] w-[11px]" />
           </div>
         );
       case "RUNNING":
@@ -122,7 +119,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   if (type === "my-model") {
     return (
       <div className={`model-my-models base-regular ${className}`} {...props}>
-        <img src={model.backgroundImage} alt="" className="w-full min-h-[78px] rounded-sm"/>
+        <img src={model.backgroundImage} alt="" className="w-full min-h-[78px] rounded-sm" />
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
     );
@@ -130,7 +127,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
 
   return (
     <div className="relative">
-    <div className={`model-widget base-regular ${className}`} {...props}>
+      <div className={`model-widget base-regular ${className}`} {...props}>
         <img src={model.backgroundImage} alt="" className="w-full h-full" />
         <div className="absolute top-0 left-0 p-2">
           <p className="title-sm text-surface-main w-[60%]">{model.title}</p>

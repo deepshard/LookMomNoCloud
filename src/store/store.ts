@@ -9,6 +9,7 @@ interface State {
   downloads: { [key: string]: TModel };
   setDownloads: (downloadedModels: TModel[]) => void;
   updateModels: (model: TModel) => void;
+  onDeleteModel: (model: TModel) => void;
   clearData: () => void;
 }
 
@@ -46,6 +47,12 @@ export const useStore = create<State>((set) => ({
     return { 
       downloads: { ...state.downloads, [model.id]: { ...state.downloads[model.id], ...model} }, 
       highlights
+    }
+  }),
+  onDeleteModel: (model) => set((state) => {
+    delete state.downloads[model.id]
+    return { 
+      downloads: { ...state.downloads},
     }
   }),
   clearData: () => set({ sysInfo: null, highlights: [] }), // Method to clear all data

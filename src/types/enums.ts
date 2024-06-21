@@ -1,6 +1,1 @@
-export enum NavBarOptions {
-    INTRO = "intro",
-    CAPABILITIES = "capabilities",
-    RISKS = "risks",
-    EVALS = "evals",
-  }
+export type NavBarOptions = "intro" | "capabilities" | "risks" | "evals";

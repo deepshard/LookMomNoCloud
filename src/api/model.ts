@@ -12,7 +12,7 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
           'Accept': 'text/event-stream',
         },
         body: JSON.stringify({
-            url: model.hf_link,
+            url: model.hfLink,
             id: model.id
         }),
         signal: signal
@@ -98,9 +98,7 @@ export const stopModel = async (model: TModel) => {
 }
 
 export const deleteModel = async (model: TModel) => {
-  const response = await localClient.post("/delete", {
-    id: model.id
-  });
+  const response = await localClient.delete(`/delete/${model.id}`);
   return response.data;
 }
 

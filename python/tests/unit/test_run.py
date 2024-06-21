@@ -7,7 +7,7 @@ from state import global_state_manager
 from endpoints.model.run.run import run_models_generator, get_instances
 from models import RunningModel
 from db import get_db_session
-from tests.data import ID, ID_2, MOCK_VALID_FILES
+from tests.unit.data import ID, ID_2, MOCK_VALID_FILES
 
 schema = {
     "type": "object",

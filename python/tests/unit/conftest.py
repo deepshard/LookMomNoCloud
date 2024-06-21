@@ -5,7 +5,7 @@ import os
 import shutil
 import asyncio
 from pathlib import Path
-import tests.data as data
+import tests.unit.data as data
 from unittest.mock import MagicMock
 from aioresponses import aioresponses
 from server import init_state
@@ -76,13 +76,13 @@ def request_mocks(request, mocker):
 
         # Truffle
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id={data.ID}",
+            f"{TRUFFLE_API_URL}/models/{data.ID}",
             status=200,
             payload=data.MOCK_MODEL_1,
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id={data.ID_2}",
+            f"{TRUFFLE_API_URL}/models/{data.ID_2}",
             status=200,
             payload=data.MOCK_MODEL_2,
             repeat=True,
@@ -100,13 +100,13 @@ def request_mocks(request, mocker):
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id=3fec7228-04de-485d-9f09-bde6e8ea350f",
+            f"{TRUFFLE_API_URL}/models/3fec7228-04de-485d-9f09-bde6e8ea350f",
             status=200,
             payload=data.MODELS[0],
             repeat=True,
         )
         mocked.get(
-            f"{TRUFFLE_API_URL}/models?id=b438d015-ad45-4e9a-9aba-2e290348b078&filter=id,name,title,size,author,downloads,likes,intro,capabilities,risks,evalId,hfLink,bg_image_url",
+            f"{TRUFFLE_API_URL}/models/b438d015-ad45-4e9a-9aba-2e290348b078",
             status=200,
             payload=data.MODELS[1],
             repeat=True,

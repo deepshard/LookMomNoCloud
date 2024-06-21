@@ -1,14 +1,11 @@
 import ModelWidget from "./component/ModelWidget";
 import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
 import { useEffect } from "react";
-
-import Carousel from "./component/Carousel/Carousel";
 import { useAppStore, useStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
-import Featured from "./component/Featured";
 import { useHomePageContext } from "./context/HomePageProvider";
 import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
@@ -16,7 +13,7 @@ import FeaturedCarousel from "./component/FeaturedCarousel";
 export default function Home() {
 
   const { data: highlights } = useGetHighlights();
-  const { highlights: storeHighlights, setHighlights, sysInfo } = useAppStore();
+  const { highlights: storeHighlights, setHighlights, sysInfo, downloads } = useAppStore();
   const { updateModels } = useStore();
   const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
@@ -30,7 +27,7 @@ export default function Home() {
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels onClose={() => setShowMyModels(false)}/>}
+      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)}/>}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
 

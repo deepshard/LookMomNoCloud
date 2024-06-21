@@ -1,3 +1,4 @@
+import os
 import multiprocessing
 import asyncio
 import aiohttp
@@ -23,6 +24,9 @@ from utils import (
 )
 from truffle_types import Quantization
 from constants import TRUFFLE_API_URL
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Status(Enum):
@@ -97,7 +101,8 @@ async def get_instances(model_ids: list[str]) -> list[int]:
 
 async def get_model_info(model_id: str) -> dict:
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models?id={model_id}"
+        f"{TRUFFLE_API_URL}/models/{model_id}",
+        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model_id}"
         return await response.json()
@@ -241,6 +246,8 @@ async def run_model(
                 name=model_info["name"],
                 size=model_info["size"],
                 pid=proc.pid,
+                port=port,
+                quantization=quantization.value,
             )
         )
         await session.commit()

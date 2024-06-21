@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from pathlib import Path
 from state import global_state_manager
 from truffle_types import Quantization
-from tests.data import ID, ID_2
+from tests.unit.data import ID, ID_2
 
 
 @pytest.fixture(autouse=True)

@@ -6,7 +6,7 @@ from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from models import RunningModel
-from endpoints.model.downloaded.downloaded import is_model_downloaded
+from endpoints.model.downloaded.downloaded import get_downloaded_model_ids
 from utils import get_app_data_path
 from dotenv import load_dotenv
 
@@ -14,20 +14,11 @@ load_dotenv()
 
 
 async def get_highlights() -> list[Model]:
-    base_dir = get_app_data_path() / "models"
     running_models = [
         {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
     ]
-    downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
-
-    uuid_pattern = re.compile(
-        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-    )
-    downloaded_models = [
-        model_id
-        for model_id in downloaded_models
-        if uuid_pattern.match(model_id["id"]) and await is_model_downloaded(model_id["id"])
-    ]
+    downloaded_model_ids = await get_downloaded_model_ids()
+    downloaded_models = [{"id": model_id, "instance": None} for model_id in downloaded_model_ids]
 
     # Dedupe model IDs
     for model in downloaded_models:

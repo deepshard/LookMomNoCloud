@@ -19,7 +19,6 @@ async def test_install(test_fixture):
             if line:
                 event_data = json.loads(line.split("data: ", 1)[1])
                 responses.append(event_data)
-                print(event_data)
 
     if len(get_devices()) == 0:
         assert responses[-1]["error"] == "No usable configurations found"

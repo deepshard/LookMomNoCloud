@@ -246,6 +246,8 @@ async def run_model(
                 name=model_info["name"],
                 size=model_info["size"],
                 pid=proc.pid,
+                port=port,
+                quantization=quantization.value,
             )
         )
         await session.commit()

@@ -1,6 +1,7 @@
 import pytest
 import pytest_asyncio
 import os
+import signal
 import shutil
 import asyncio
 from httpx import AsyncClient
@@ -29,6 +30,10 @@ def clear_path():
 
 
 async def clear_db():
+    models = await RunningModel.get_all()
+    for model in models:
+        os.kill(model.pid, signal.SIGTERM)
+
     await RunningModel.delete_all()
 
 
@@ -75,7 +80,7 @@ async def model_installed(model_downloaded):
     model_id = models[0]["id"]
     base_weights_path = get_app_data_path() / "models" / model_id / "base"
     quant_weights_path = get_app_data_path() / "models" / model_id / "q0f16"
-    await convert_quantize_compile(base_weights_path, quant_weights_path, Quantization.Q0F16)
+    convert_quantize_compile(base_weights_path, quant_weights_path, Quantization.Q0F16)
 
 
 @pytest_asyncio.fixture

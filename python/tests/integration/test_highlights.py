@@ -20,7 +20,6 @@ async def test_highlights_downloaded(test_fixture, model_downloaded):
     assert response.status_code == 200
 
     assert len(response.json()) == 5
-    print(response.json())
     assert response.json()[0]["status"] == "STOPPED"
 
 

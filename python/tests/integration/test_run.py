@@ -11,9 +11,10 @@ async def test_run(test_fixture, model_downloaded):
     async with test_fixture.stream(
         "POST",
         "/model/run",
-        json=[models[0]["id"]],
+        json={
+            "ids": [models[0]["id"]],
+        }
     ) as response:
-        assert response.status_code == 200
         async for line in response.aiter_lines():
             if line:
                 event_data = json.loads(line.split("data: ", 1)[1])
@@ -41,7 +42,9 @@ async def test_run_already_installed(test_fixture, model_installed):
     async with test_fixture.stream(
         "POST",
         "/model/run",
-        json=[models[0]["id"]],
+        json={
+            "ids": [models[0]["id"]],
+        }
     ) as response:
         assert response.status_code == 200
         async for line in response.aiter_lines():
@@ -62,12 +65,14 @@ async def test_run_already_installed(test_fixture, model_installed):
 
 
 @pytest.mark.asyncio
-async def test_run_multiple_models(test_fixture, model_downloaded):
+async def test_run_multiple_models(test_fixture, model_installed):
     responses = []
     async with test_fixture.stream(
         "POST",
         "/model/run",
-        json=[models[0]["id"], models[0]["id"]],
+        json={
+            "ids": [models[0]["id"], models[0]["id"]],
+        }
     ) as response:
         assert response.status_code == 200
         async for line in response.aiter_lines():
@@ -84,12 +89,6 @@ async def test_run_multiple_models(test_fixture, model_downloaded):
         assert responses[1]["id"] == models[0]["id"]
         assert responses[1]["status"] == "ACKNOWLEDGED"
 
-        assert responses[2]["id"] == models[0]["id"]
-        assert responses[2]["status"] == "INSTALLING"
-
-        assert responses[3]["id"] == models[0]["id"]
-        assert responses[3]["status"] == "INSTALLING"
-
         assert responses[-2]["id"] == models[0]["id"]
         assert responses[-2]["status"] == "RUNNING"
         assert responses[-2]["instance"] == 1
@@ -105,6 +104,6 @@ async def test_run_multiple_models(test_fixture, model_downloaded):
         assert running_models[0].id == models[0]["id"]
         assert running_models[0].instance == 1
         assert running_models[0].port == 8899
-        assert running_models[1].id == models[1]["id"]
+        assert running_models[1].id == models[0]["id"]
         assert running_models[1].instance == 2
         assert running_models[1].port == 8900

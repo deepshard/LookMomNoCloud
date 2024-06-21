@@ -37,6 +37,8 @@ async def get_highlights() -> list[Model]:
 
         running_models.append(model)
 
+
+
     tasks = []
     for model in running_models:
         task = fetch_model_data(model)
@@ -53,7 +55,7 @@ async def get_highlights() -> list[Model]:
 
         results.append(model)
 
-    return results
+    return results[:5]
 
 
 async def get_trending_models(num: int) -> list[Model]:

@@ -73,8 +73,6 @@ jobs:
             fi
           fi
 
-      - run: killall server
-
       - name: Archive server executable
         run: |
           cd python/dist
@@ -92,3 +90,7 @@ jobs:
 
       - name: Upload latest metadata
         run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+
+      - name: Cleanup
+        if: always()
+        run: killall server

@@ -364,15 +364,8 @@ div.slick-slide > div {
       display: none;
     }
   }
-}
 
-.error-icon {
-  height: 17px;
-  width: 17px;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  margin-left: 10px;
-  margin-bottom: 10px;
-  z-index: 99999;
+  .error-icon {
+    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px] z-[99999];
+  }
 }

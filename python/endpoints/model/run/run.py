@@ -171,10 +171,10 @@ def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
         device="auto",
         model_lib=str(model_path / "compilation.so"),
         mode="local",
-        enable_debug=False,
         additional_models=[],  # Not relevant
         tensor_parallel_shards=shards,
         max_num_sequence=None,
+        enable_debug=False,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
         max_single_sequence_length=None,

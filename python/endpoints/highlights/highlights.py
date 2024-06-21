@@ -37,8 +37,6 @@ async def get_highlights() -> list[Model]:
 
         running_models.append(model)
 
-
-
     tasks = []
     for model in running_models:
         task = fetch_model_data(model)

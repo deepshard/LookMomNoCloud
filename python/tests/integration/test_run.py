@@ -13,7 +13,7 @@ async def test_run(test_fixture, model_downloaded):
         "/model/run",
         json={
             "ids": [models[0]["id"]],
-        }
+        },
     ) as response:
         async for line in response.aiter_lines():
             if line:
@@ -44,7 +44,7 @@ async def test_run_already_installed(test_fixture, model_installed):
         "/model/run",
         json={
             "ids": [models[0]["id"]],
-        }
+        },
     ) as response:
         assert response.status_code == 200
         async for line in response.aiter_lines():
@@ -72,7 +72,7 @@ async def test_run_multiple_models(test_fixture, model_installed):
         "/model/run",
         json={
             "ids": [models[0]["id"], models[0]["id"]],
-        }
+        },
     ) as response:
         assert response.status_code == 200
         async for line in response.aiter_lines():

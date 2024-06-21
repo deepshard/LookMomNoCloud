@@ -60,16 +60,17 @@ jobs:
           cd ../../
           PYTHONPATH="." pytest --maxfail=1 -v tests/integration
 
-      {{ cuda_patch }}
-      - if: matrix.os == 'ubuntu-cuda12.1-1xt4-x86_64'
+      - name: Disable local cuda for tests
         run: |
-          export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-          export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-          if nvcc -V; then
-            echo "** CUDA compiler is still accessible, failing the test. **"
-            exit 1
-          else
-            echo "** CUDA compiler not accessible, as expected. **"
+          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+            export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+            export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+            if nvcc -V; then
+              echo "** CUDA compiler is still accessible, failing the test. **"
+              exit 1
+            else
+              echo "** CUDA compiler not accessible, as expected. **"
+            fi
           fi
 
       - run: killall server

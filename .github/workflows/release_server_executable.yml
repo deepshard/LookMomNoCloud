@@ -14,13 +14,13 @@ jobs:
       matrix:
         os: [
             macos-latest, 
-            # ubuntu-cuda12.1-1xt4-x86_64,
+            ubuntu-cuda12.1-1xt4-x86_64,
         ]
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.tar.gz
-          # - os: ubuntu-cuda12.1-1xt4-x86_64
-            # filename: ubuntu-cuda-x86_64.tar.gz
+          - os: ubuntu-cuda12.1-1xt4-x86_64
+            filename: ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,9 +55,22 @@ jobs:
           cd python/dist/server 
           nohup ./server &
           sleep 5
+          {{ cuda_patch }}
           curl --retry 5 --retry-connrefused http://localhost:8899
           cd ../../
           PYTHONPATH="." pytest --maxfail=1 -v tests/integration
+
+      {{ cuda_patch }}
+      - if: matrix.os == 'ubuntu-cuda12.1-1xt4-x86_64'
+        run: |
+          export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+          export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+          if nvcc -V; then
+            echo "** CUDA compiler is still accessible, failing the test. **"
+            exit 1
+          else
+            echo "** CUDA compiler not accessible, as expected. **"
+          fi
 
       - run: killall server
 

@@ -2,60 +2,12 @@ import { app, BrowserWindow, session, screen, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import os from "os";
-import si from "systeminformation";
-import axios from "axios";
-import fs from "fs";
-import zlib from "zlib";
-import stream from "stream";
-import { promisify } from "util";
+import { OTAUpdater } from "./ota";
 
-const downloadServer = async (output: string) => {
-  const version = app.getVersion();
-  const osInfo = await si.osInfo();
-  const graphicsInfo = await si.graphics();
-  const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
 
-  // TODO: Set up with correct URL
-  const url = `https://update-server.com/api/versions/${version}/${osInfo.platform}/${osInfo.arch}/${gpu}`;
-  try {
-    const response = await axios({
-      method: "get",
-      url: url,
-      responseType: "stream",
-    });
+autoUpdater.autoDownload = false;
+let otaUpdater: OTAUpdater;
 
-    // Download gzip to bin, then unzip it
-    const pipeline = promisify(stream.pipeline);
-    const filePath = path.join(app.getPath("userData"), "bin", output);
-    const writeStream = fs.createWriteStream(filePath);
-    await pipeline(response.data, zlib.createGunzip(), writeStream);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-const handleUpdate = async () => {
-  // Download new server zip
-  await downloadServer("server_new.zip")
-
-  // Delete current server folder
-  const filePath = path.join(app.getPath("userData"), "bin", "server");
-  fs.rmdir(filePath, { recursive: true }, (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
-
-  // Rename new server folder to `server`
-  fs.rename(path.join(app.getPath("userData"), "bin", "server_new"), filePath, (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
-
-  // Update app
-  autoUpdater.quitAndInstall();
-}
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -77,10 +29,8 @@ const createWindow = () => {
     },
   });
 
-  autoUpdater.on("checking-for-update", () => mainWindow.webContents.send("checking-for-update"));
-  autoUpdater.on("update-available", () => mainWindow.webContents.send("update-available"));
-  autoUpdater.on("update-not-available", () => mainWindow.webContents.send("update-not-available"));
-  autoUpdater.on("download-progress", (progress) => mainWindow.webContents.send("download-progress", progress));
+  otaUpdater = new OTAUpdater(mainWindow, autoUpdater);
+  autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
 
   // and load the index.html of the app.
@@ -103,8 +53,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  await downloadServer("server.zip");
-  autoUpdater.checkForUpdates();
+  
 
   // todo: spawn the flask server here
   // on macOS
@@ -125,7 +74,7 @@ app.on("ready", async function () {
     console.error("Failed to install extension:", error);
   }
 
-  ipcMain.on("restart-and-update", handleUpdate);
+  ipcMain.on("restart-and-update", otaUpdater?.restartAndInstall);
   createWindow();
 });
 

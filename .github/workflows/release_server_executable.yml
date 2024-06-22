@@ -71,8 +71,7 @@ jobs:
           sleep 5
           curl --retry 5 --retry-connrefused http://localhost:8899
           cd ../../
-          PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration/test_install.py
-          PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration/test_run.py
+          PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration
 
 
       - name: Archive server executable

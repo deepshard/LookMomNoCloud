@@ -64,7 +64,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
       case "DOWNLOADING":
         return (
           <motion.div
-            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d z-[99999] rounded-full"
+            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
             initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
             animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
             transition={{ duration: 0.1, ease: "easeInOut" }} // duration and timing function
@@ -82,31 +82,38 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         );
       case "INSTALLING":
         return (
-          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] z-[99999] rounded-full">
+          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={installIcon} alt="" className="animate-spin" />
           </div>
         );
       case "NOT_DOWNLOADED":
         return (
           <div
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               handleAction();
             }}
-            className={`h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d ${isHovered ? "opacity-100" : "opacity-0"}`}>
+            className={`h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full transition transition-200 widget-3d ${isHovered ? "opacity-100" : "opacity-0"}`}>
             <img src={downloadIcon} alt="" />
           </div>
         );
       case "STOPPED":
         return (
           <div
-            onClick={handleAction}
-            className={`flex-center h-[30px] w-[30px] absolute bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%] bg-[#D9D9D94D] rounded-full transition transition-200 z-[99999] widget-3d cursor-pointer`}>
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAction();
+            }}
+            className={`flex-center h-[30px] w-[30px] absolute bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%] bg-[#D9D9D94D] rounded-full transition transition-200  widget-3d cursor-pointer`}>
             <img src={playIcon} alt="" />
           </div>
         );
       case "RUNNING":
         return (
-          <div onClick={handleAction} className={`h-[30px] w-[30px] absolute transition-opacity ${isHovered ? 'bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%]' : 'bottom-0 right-0 m-2'} widget-3d rounded-full flex-center cursor-pointer`}>
+          <div onClick={(e) => {
+            e.stopPropagation();
+            handleAction()
+          }} className={`h-[30px] w-[30px] absolute transition-opacity ${isHovered ? 'bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%]' : 'bottom-0 right-0 m-2'} widget-3d rounded-full flex-center cursor-pointer`}>
             <img src={isHovered ? stopIcon : runningIcon} alt="" className={`${isHovered ? '' : 'h-full w-full' }`} />
           </div>
         );
@@ -119,7 +126,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   if (type === "my-model") {
     return (
       <div className={`model-my-models base-regular ${className}`} {...props}>
-        <img src={model.backgroundImage} alt="" className="w-full min-h-[78px] rounded-lg" />
+        <img src={model.backgroundImage} alt="" className="w-full min-h-[78px] rounded-[13px]" />
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
     );

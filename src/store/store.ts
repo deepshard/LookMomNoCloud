@@ -30,11 +30,15 @@ export const useStore = create<State>((set) => ({
   setHighlights: (highlights) => set({ highlights }),
   downloads: {},
   setDownloads: (downloadedModels) => set((state) => {
+    const stateCp = { ...state }
     downloadedModels.forEach((model) => {
-      state.downloads[model.id] = model
+      stateCp.downloads = { ...stateCp.downloads, [model.id]: model }
+      const hModelIndex = stateCp.highlights.findIndex((highlight) => highlight.id === model.id)
+      if(hModelIndex > -1) {
+        stateCp.highlights[hModelIndex] = { ...stateCp.highlights[hModelIndex], ...model }
+      } 
     })
-
-    return { downloads: state.downloads }
+    return { ...stateCp, downloads: stateCp.downloads, highlights: stateCp.highlights }
   }),
   updateModels: (model) => set((state) => {
     const highlights = state.highlights.map((highlight) => {
@@ -45,17 +49,20 @@ export const useStore = create<State>((set) => ({
     })
 
     return { 
+      ...state,
       downloads: { ...state.downloads, [model.id]: { ...state.downloads[model.id], ...model} }, 
       highlights
     }
   }),
   onDeleteModel: (model) => set((state) => {
-    delete state.downloads[model.id]
+    const stateCp = { ...state }
+    delete stateCp.downloads[model.id]
     return { 
-      downloads: { ...state.downloads},
+      ...stateCp,
+      downloads: { ...stateCp.downloads},
     }
   }),
-  clearData: () => set({ sysInfo: null, highlights: [] }), // Method to clear all data
+  clearData: () => set((state) => ({ ...state, sysInfo: null, highlights: [], downloads: {} })), // Method to clear all data
 }));
 
 export const useAppStore = () => useStore((state) => state)

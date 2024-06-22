@@ -1,15 +1,17 @@
-import { createContext, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 import useSysInfo from "../hooks/sysInfo/useSysInfo";
 import { LOCAL_ROOT_URL } from "../api/client";
 import { useGetHighlights, useGetMyModels } from "../lib/react-query/queriesAndMutations";
 import { useAppStore } from "../store/store";
 
-const AppWrapperContext = createContext({});
+const AppWrapperContext = createContext({
+  isLoadingMyModels: false
+});
 
 const AppWrapperProvider = ({ children }) => {
-  const { data: myModels } = useGetMyModels();
-  const { data: highlights, refetch: getHighlights } = useGetHighlights();
-  const { addSysInfo, setDownloads, setHighlights, onDeleteModel } = useAppStore();
+  const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
+  const { data: highlights } = useGetHighlights();
+  const { addSysInfo, setDownloads, setHighlights } = useAppStore();
   useSysInfo({
     rootUrl: LOCAL_ROOT_URL,
     addSysInfo,
@@ -27,10 +29,10 @@ const AppWrapperProvider = ({ children }) => {
       setHighlights(highlights);
     }
   }, [highlights]);
-
-  useEffect(() => {
-    getHighlights();
-  }, [onDeleteModel]);
-  return <AppWrapperContext.Provider value={{}}>{children}</AppWrapperContext.Provider>;
+  return <AppWrapperContext.Provider value={{isLoadingMyModels}}>{children}</AppWrapperContext.Provider>;
 };
+
+export const useAppWrapper = () => {
+  return useContext(AppWrapperContext);
+}
 export default AppWrapperProvider;

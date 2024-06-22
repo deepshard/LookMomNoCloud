@@ -3,23 +3,27 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { formatDate, formatParams } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
-import { useGetModel } from "../lib/react-query/queriesAndMutations";
+import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
 import Icon from "../component/Icon";
 import Tag from "../component/Tag";
 import useModelActions from "../hooks/modelActions/useModelActions";
 import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
-import { motion } from "framer-motion";
 import { CircularProgressbar } from "react-circular-progressbar";
+import { useAppWrapper } from "../context/AppWrapperProvider";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
 
   const location = useLocation();
   const { runModels, stopModel, installModel, deleteModel } = useModelActions();
-  const { downloads, updateModels, sysInfo } = useAppStore();
+  const { downloads, updateModels, sysInfo, onDeleteModel } = useAppStore();
+  const { isLoadingMyModels } = useAppWrapper();
   const [modelData, setModelData] = useState<TModel | null>(location.state.model);
+
   const { refetch: getModel } = useGetModel(modelData);
+  const { refetch: getMyModels } = useGetMyModels();
+  const { refetch: getHighlights } = useGetHighlights();
 
   useLayoutEffect(() => {
     const modelData = location.state.model as TModel;
@@ -31,12 +35,16 @@ function ModelDetailView() {
   }, [location.state.model]);
 
   useEffect(() => {
-    if (modelData) {
+    if (modelData && !isLoadingMyModels) {
       if (downloads[modelData.id]) {
         setModelData({ ...modelData, ...downloads[modelData.id] });
+      } else {
+        getModel().then(({ data: model }) => {
+          model && setModelData({ ...model });
+        });
       }
     }
-  }, [updateModels, downloads, sysInfo]);
+  }, [downloads, sysInfo, isLoadingMyModels]);
 
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
@@ -64,21 +72,17 @@ function ModelDetailView() {
       case "DOWNLOADING":
         return (
           <Icon>
-            <motion.div
-              className="w-full h-full rounded-full"
-              initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
-              animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
-              transition={{ duration: 0.1, ease: "easeInOut" }} // duration and timing function
-            >
+            <div className="w-full h-full rounded-full">
               <CircularProgressbar
                 value={modelData.progress || 0}
                 text={`${modelData.progress}%`}
                 styles={{
-                  path: { stroke: "#00C920" },
-                  text: { fill: "#00C920" },
+                  path: { stroke: "rgba(255, 255, 255, 1)" },
+                  trail: { stroke: "rgba(255, 255, 255, 0.4)" },
+                  text: { fill: "rgba(255, 255, 255, 0.75)", fontSize: "25px" },
                 }}
               />
-            </motion.div>
+            </div>
           </Icon>
         );
 
@@ -165,7 +169,11 @@ function ModelDetailView() {
                 src="/public/assets/icons/trash.svg"
                 imgClassName="h-[11px] w-[11px]"
                 onClick={() => {
-                  deleteModel(modelData);
+                  deleteModel(modelData).then((_) => {
+                    onDeleteModel(modelData);
+                    getMyModels();
+                    getHighlights();
+                  });
                 }}
               />
             </>

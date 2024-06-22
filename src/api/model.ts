@@ -27,19 +27,23 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
         return new ReadableStream({
           start(controller) {
             function push() {
-              // Read from the stream
-              reader?.read().then(({ done, value }) => {
-                if (done) {
-                  controller.close();
-                  return;
-                }
-                // Decode and process the chunk
-                const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
-                const downloadResponse: Partial<TModel> = JSON.parse(text);
-                callback(downloadResponse)
-                controller.enqueue(value);
-                push();
-              });
+              try {
+                // Read from the stream
+                reader?.read().then(({ done, value }) => {
+                  if (done) {
+                    controller.close();
+                    return;
+                  }
+                  // Decode and process the chunk
+                  const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
+                  const downloadResponse: Partial<TModel> = JSON.parse(text);
+                  callback(downloadResponse)
+                  controller.enqueue(value);
+                  push();
+                });
+              } catch (error) {
+                controller.error(error);
+              }
             }
             push();
           }
@@ -112,5 +116,10 @@ export const getMyModels = async (): Promise<TModel[]> => {
 
 export const searchModels = async (query: string) => {
   const response = await client.get(`/search/?query=${query}`)
+  return response.data;
+}
+
+export const getModel = async (id: string): Promise<TModel> => {
+  const response = await client.get(`/${id}`);
   return response.data;
 }

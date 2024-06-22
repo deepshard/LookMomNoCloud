@@ -8,6 +8,7 @@ import fs from "fs";
 import zlib from "zlib";
 import stream from "stream";
 import { promisify } from "util";
+import tar from "tar";
 
 interface DownloadProgress {
   downloadedBytes: number;
@@ -19,8 +20,8 @@ export class OTAUpdater {
   private mainWindow: BrowserWindow;
   private appUpdater: AppUpdater;
   private downloadProgress: DownloadProgress;
-  private updateServer: boolean = false;
-  private updateApp: boolean = false;
+  private updateServer = false;
+  private updateApp = false;
 
   constructor(mainWindow: BrowserWindow, appUpdater: AppUpdater) {
     this.mainWindow = mainWindow;
@@ -30,6 +31,42 @@ export class OTAUpdater {
       totalBytes: 0,
       progress: 0,
     };
+  }
+
+  unzipTarGz = async (inputPath: string, outputPath: string) => {
+    try {
+      const tmpPath = path.join(app.getPath("userData"), "bin", "tmp");
+
+      // Create output path if it doesn't exist
+      if (!fs.existsSync(tmpPath)) {
+        fs.mkdirSync(tmpPath, { recursive: true });
+      }
+
+      // Unzip tar.gz to temp folder
+      await tar.x({
+        file: inputPath,
+        C: tmpPath,
+        sync: true,
+      });
+
+      // Find the server folder in the temp folder
+      const extractedContents = fs.readdirSync(tmpPath);
+      const serverDir = extractedContents.find(dir => fs.statSync(path.join(tmpPath, dir)).isDirectory() && dir === 'server');
+      if (!serverDir) {
+        throw new Error("Server directory not found in tar.gz");
+      }
+
+      // Move server folder to output path
+      fs.renameSync(path.join(tmpPath, serverDir), outputPath);
+      fs.rmSync(tmpPath, { recursive: true, force: true });
+
+  
+      // Delete tar.gz
+      fs.unlinkSync(inputPath);
+      return outputPath;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   addBytesToDownload = (bytes: number): void => {
@@ -49,7 +86,12 @@ export class OTAUpdater {
     }
 
     // Send progress to renderer process
+    let last_progress = 0;
     const progress = this.downloadProgress.downloadedBytes / this.downloadProgress.totalBytes;
+    if (progress - last_progress > 0.1) {
+      console.log(progress);
+      last_progress = progress;
+    }
     this.mainWindow.webContents.send(
       "update-download-progress",
       {
@@ -61,13 +103,18 @@ export class OTAUpdater {
   }
 
   getServerUpdateSize = async (url: string): Promise<number> => {
-    const response = await axios.head(url);
-    return parseInt(response.headers["content-length"]);
+    console.log(url);
+    try {
+      const response = await axios.head(url);
+      return parseInt(response.headers["content-length"]);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   checkForServerUpdate = async () => {
     // Read hash from latest.txt
-    const filePath = path.join(app.getPath("userData"), "bin", "server", "latest.txt");
+    const filePath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     let latestHash = "";
     try {
       latestHash = fs.readFileSync(filePath, "utf8");
@@ -85,8 +132,10 @@ export class OTAUpdater {
     }
   
     // Compare hashes
+    console.log("Latest hash locally: ", latestHash);
+    console.log("Response hash: ", response.data);
     if (response && latestHash !== response.data) {
-      return latestHash;
+      return response.data;
     }
   
     return null;
@@ -113,24 +162,22 @@ export class OTAUpdater {
     });
 
     // Unzip tar.gz
-    const pipeline = promisify(stream.pipeline);
-    await pipeline(fs.createReadStream(filePath), zlib.createGunzip(), fs.createWriteStream(filePath.replace(".tar.gz", "")));
-
-    // Delete tar.gz
-    fs.unlinkSync(filePath);
+    await this.unzipTarGz(filePath, path.join(app.getPath("userData"), "bin", "server_new").toString());
   }
 
   downloadUpdate = async () => {
     // Check if updates are available
     const serverUpdateInfo = await this.checkForServerUpdate();
-    const appUpdateInfo = await this.appUpdater.checkForUpdates();
+    // const appUpdateInfo = await this.appUpdater.checkForUpdates();
 
     this.updateServer = serverUpdateInfo != null;
-    this.updateApp = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
+    this.updateApp = false; // appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
+    console.log("Server update: ", this.updateServer);
 
     // Get update sizes
     let url = "";
     if (this.updateServer) {
+      console.log("Getting server size")
       // Get platform information
       const osInfo = await si.osInfo();
       const graphicsInfo = await si.graphics();
@@ -138,8 +185,9 @@ export class OTAUpdater {
       url = `https://truffle-binaries.s3.amazonaws.com/${serverUpdateInfo}/${osInfo.platform}-${gpu}-${osInfo.arch}.tar.gz`;
 
       // Add server update size to total bytes to download
-      this.addBytesToDownload(await this.getServerUpdateSize(serverUpdateInfo));
-    }
+      this.addBytesToDownload(await this.getServerUpdateSize(url));
+      console.log("Server update size: ", this.downloadProgress.totalBytes)
+;    }
 
     if (this.updateApp) {
       const files = appUpdateInfo.updateInfo.files;
@@ -167,20 +215,15 @@ export class OTAUpdater {
 
   restartAndInstall = () => {
     if (this.updateServer) {
-        // Delete current server folder
-        const filePath = path.join(app.getPath("userData"), "bin", "server");
-        fs.rmdir(filePath, { recursive: true }, (err) => {
-          if (err) {
-            console.error(err);
-          }
-        });
+      const binPath = path.join(app.getPath("userData"), "bin");
+      const serverPath = path.join(binPath, "server");
+      const newServerPath = path.join(binPath, "server_new");
 
-        // Rename new server folder to `server`
-        fs.rename(path.join(app.getPath("userData"), "bin", "server_new"), filePath, (err) => {
-          if (err) {
-            console.error(err);
-          }
-        });
+      fs.rmdirSync(serverPath, { recursive: true });
+      console.log("Deleted server folder");
+
+      fs.renameSync(newServerPath, serverPath);
+      console.log("Renamed new server folder");
     }
 
     if (this.updateApp) {

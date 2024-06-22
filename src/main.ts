@@ -6,7 +6,6 @@ import { OTAUpdater } from "./ota";
 
 
 autoUpdater.autoDownload = false;
-let otaUpdater: OTAUpdater;
 
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -29,7 +28,6 @@ const createWindow = () => {
     },
   });
 
-  otaUpdater = new OTAUpdater(mainWindow, autoUpdater);
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
 
@@ -53,8 +51,6 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  
-
   // todo: spawn the flask server here
   // on macOS
   const reactDevToolsPath = path.join(
@@ -74,8 +70,13 @@ app.on("ready", async function () {
     console.error("Failed to install extension:", error);
   }
 
+  const window = createWindow();
+  const otaUpdater = new OTAUpdater(window, autoUpdater);
   ipcMain.on("restart-and-update", otaUpdater?.restartAndInstall);
-  createWindow();
+
+  console.log(otaUpdater);
+  await otaUpdater.downloadUpdate();
+  await otaUpdater.restartAndInstall();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

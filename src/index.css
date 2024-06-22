@@ -233,7 +233,7 @@ div.slick-slide > div {
   }
 
   .model-widget {
-    @apply min-h-[78px] min-w-[124px] rounded-sm overflow-hidden cursor-pointer relative !important;
+    @apply max-h-[78px] max-w-[124px] rounded-sm overflow-hidden cursor-pointer relative !important;
   }
 
   .model-my-models {

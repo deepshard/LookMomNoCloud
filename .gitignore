@@ -108,3 +108,4 @@ __pycache__/
 truffle.db
 
 src/output.css
+*storybook.log

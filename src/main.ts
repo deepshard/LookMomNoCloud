@@ -72,9 +72,9 @@ app.on("ready", async function () {
 
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
-  ipcMain.on("restart-and-update", otaUpdater?.restartAndInstall);
-
-  console.log(otaUpdater);
+  ipcMain.on("download-update", otaUpdater.downloadUpdate);
+  ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
+  await otaUpdater.checkForUpdates();
   await otaUpdater.downloadUpdate();
   await otaUpdater.restartAndInstall();
 });

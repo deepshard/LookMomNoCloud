@@ -52,7 +52,7 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
       </Carousel>
       <motion.span className="absolute flex gap-[4px] bottom-[-35px] translate-x-[-50%] left-[50%]" initial={false} animate={{ opacity: showUsage }}>
         <img src="/assets/icons/monitor.svg" alt="" />
-        <p>{upperFirst(selection)} Usage</p>
+        <p className="text-surface-400 text-xs">{upperFirst(selection)} Usage</p>
       </motion.span>
     </div>
   );

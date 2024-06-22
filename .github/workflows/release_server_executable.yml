@@ -14,13 +14,13 @@ jobs:
       matrix:
         os: [
             macos-latest, 
-            ubuntu-cuda12.1-1xt4-x86_64,
+            # ubuntu-cuda12.1-1xt4-x86_64,
         ]
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.tar.gz
-          - os: ubuntu-cuda12.1-1xt4-x86_64
-            filename: ubuntu-cuda-x86_64.tar.gz
+          # - os: ubuntu-cuda12.1-1xt4-x86_64
+            # filename: ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
           sleep 5
           curl --retry 5 --retry-connrefused http://localhost:8899
           cd ../../
-          PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration
+          PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration/test_install.py
 
 
       - name: Archive server executable

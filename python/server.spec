@@ -41,7 +41,7 @@ exe = EXE(
     debug=True,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     console=True,
     upx_exclude=[],
     disable_windowed_traceback=False,
@@ -56,7 +56,7 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='server',
 )

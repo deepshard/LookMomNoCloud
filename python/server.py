@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +19,7 @@ from endpoints import (
     get_downloaded_models,
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
+from utils import get_app_data_path
 
 
 @asynccontextmanager
@@ -112,6 +114,8 @@ async def delete_model(model_id: str):
 if __name__ == "__main__":
     import uvicorn
 
+    # Setup: create models dir if it doesn't exist, and run migrations
+    os.makedirs(get_app_data_path() / "models", exist_ok=True)
     run_migrations()
 
     uvicorn.run(app, host="0.0.0.0", port=8899)

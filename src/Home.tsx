@@ -1,7 +1,5 @@
 import ModelWidget from "./component/ModelWidget";
-import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
-import { useEffect } from "react";
-import { useAppStore, useStore } from "./store/store";
+import { useAppStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
@@ -9,20 +7,19 @@ import Search from "./component/Search";
 import { useHomePageContext } from "./context/HomePageProvider";
 import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
+import { useNavigate } from "react-router-dom";
+import { TModel } from "./types/schemas";
 
 export default function Home() {
-
-  const { data: highlights } = useGetHighlights();
-  const { highlights: storeHighlights, setHighlights, sysInfo, downloads } = useAppStore();
-  const { updateModels } = useStore();
+  const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
 
-  useEffect(() => {
-    if (highlights) {
-      setHighlights(highlights);
-    }
-  }, [highlights]);
+  const navigate = useNavigate();
+
+  const handleHighlightClick = (model: TModel) => {
+    navigate(`/model/${model.id}`, { state: { model } });
+  }
 
   return (
     <>
@@ -62,7 +59,7 @@ export default function Home() {
                   })}
                   onStop={() => {
                     stopModel(model)
-                    .then((res) => {
+                    .then((_) => {
                       updateModels({
                         ...model,
                         status: 'STOPPED',
@@ -71,6 +68,7 @@ export default function Home() {
                   }}
                   onDelete={() => deleteModel(model)}
                   onDisconnect={() => cleanupInstall(model)}
+                  onClick={() => handleHighlightClick(model)}
                 />
               ))}
             </div>

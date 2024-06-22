@@ -7,7 +7,7 @@ interface SearchProps {
   myModels?: TModel[];
 }
 
-const MyModels = ({ myModels=[] }: SearchProps) => {
+const MyModels = ({ myModels = [] }: SearchProps) => {
   const carouselRef = useRef<any>();
 
   const next = () => {
@@ -46,16 +46,14 @@ const MyModels = ({ myModels=[] }: SearchProps) => {
   }, []);
 
   return (
-    <div onWheel={handleWheel} className="search">
-      <div className="w-full h-full my-models-container">
-        {gridModels.length > 0 && (
-          <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
-            {gridModels.map((page, index) => (
-              <Page models={page} key={index} />
-            ))}
-          </Carousel>
-        )}
-      </div>
+    <div onWheel={handleWheel} className="w-full h-full my-models-container">
+      {gridModels.length > 0 && (
+        <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
+          {gridModels.map((page, index) => (
+            <Page models={page} key={index} />
+          ))}
+        </Carousel>
+      )}
     </div>
   );
 };

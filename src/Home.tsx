@@ -9,6 +9,8 @@ import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import { AnimatePresence } from "framer-motion";
+import AnimateModal from "./component/AnimateModal";
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
@@ -19,15 +21,12 @@ export default function Home() {
 
   const handleHighlightClick = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
-  }
+  };
 
   return (
     <>
-      {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)}/>}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
             <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
               <div className="h-4 w-4 rounded-full bg-surface-750" />
@@ -48,23 +47,24 @@ export default function Home() {
                       });
                     });
                   }}
-                  onRun={() => runModels([model], undefined, (updatedModel, controller) => {
-                    updateModels({
-                      ...model,
-                      ...updatedModel,
-                    });
-                    if(updatedModel.status === 'RUNNING') {
-                      controller.abort();
-                    }
-                  })}
-                  onStop={() => {
-                    stopModel(model)
-                    .then((_) => {
+                  onRun={() =>
+                    runModels([model], undefined, (updatedModel, controller) => {
                       updateModels({
                         ...model,
-                        status: 'STOPPED',
-                      })
+                        ...updatedModel,
+                      });
+                      if (updatedModel.status === "RUNNING") {
+                        controller.abort();
+                      }
                     })
+                  }
+                  onStop={() => {
+                    stopModel(model).then((_) => {
+                      updateModels({
+                        ...model,
+                        status: "STOPPED",
+                      });
+                    });
                   }}
                   onDelete={() => deleteModel(model)}
                   onDisconnect={() => cleanupInstall(model)}
@@ -95,6 +95,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
+        <Search recentlyUsedModels={storeHighlights} />
+      </AnimateModal>
+      <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
+        <MyModels myModels={Object.values(downloads)} />
+      </AnimateModal>
     </>
   );
 }

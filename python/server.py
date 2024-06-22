@@ -107,7 +107,7 @@ async def stop_model(request: StopRequest):
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    delete_model_handler(model_id)
+    await delete_model_handler(model_id)
     return {}
 
 

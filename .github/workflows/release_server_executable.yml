@@ -39,8 +39,6 @@ jobs:
         shell: pwsh
         run: conda list
 
-      - run: conda activate base
-
       - name: Install MLC
         run: |
           echo "****"

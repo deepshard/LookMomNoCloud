@@ -116,10 +116,10 @@ if __name__ == "__main__":
     import warnings
     import multiprocessing
 
-    warnings.simplefilter('always') 
+    warnings.simplefilter("always")
     # multiprocessing and pyinstaller dont play nicely together
     multiprocessing.freeze_support()
-    multiprocessing.set_start_method('spawn', force=True)
+    multiprocessing.set_start_method("spawn", force=True)
 
     # Setup: create models dir if it doesn't exist, and run migrations
     os.makedirs(get_app_data_path() / "models", exist_ok=True)

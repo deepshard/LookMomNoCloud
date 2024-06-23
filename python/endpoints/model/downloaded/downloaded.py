@@ -18,6 +18,34 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+async def get_all_local_models():
+    """Fetches all local models."""
+
+    uuid_pattern = re.compile(
+        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    )
+    base_dir = get_app_data_path() / "models"
+
+    # Get all local models that are either running or downloaded
+    running_models = await RunningModel.get_all()
+    downloaded_models = [
+        {"id": model_id, "instance": None, "port": None}
+        for model_id in os.listdir(base_dir)
+        if uuid_pattern.match(model_id) and await is_model_downloaded(model_id)
+    ]
+
+    # Combine running and downloaded models
+    all_models = {
+        model.id: {"id": model.id, "instance": model.instance, "port": model.port}
+        for model in running_models
+    }
+    all_models.update(
+        {model["id"]: model for model in downloaded_models if model["id"] not in all_models}
+    )
+
+    return all_models
+
+
 async def is_model_downloaded(model_id: str) -> bool:
     """Checks if a model is fully downloaded."""
 
@@ -40,27 +68,7 @@ async def is_model_downloaded(model_id: str) -> bool:
 
 async def get_downloaded_models():
     """Returns a list of all downloaded models"""
-
-    uuid_pattern = re.compile(
-        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-    )
-    base_dir = get_app_data_path() / "models"
-
-    # Get all local models that are either running or downloaded
-    running_models = await RunningModel.get_all()
-    downloaded_models = [
-        {"id": model_id, "instance": None, "port": None}
-        for model_id in os.listdir(base_dir)
-        if uuid_pattern.match(model_id) and await is_model_downloaded(model_id)
-    ]
-
-    # Combine running and downloaded models
-    all_models = {
-        model.id: {"id": model.id, "instance": model.instance, "port": model.port} for model in running_models
-    }
-    all_models.update(
-        {model["id"]: model for model in downloaded_models if model["id"] not in all_models}
-    )
+    all_models = await get_all_local_models()
 
     tasks = [get_model_details(model) for model in all_models.values()]
     models = await asyncio.gather(*tasks)

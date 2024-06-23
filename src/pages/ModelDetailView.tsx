@@ -67,7 +67,7 @@ function ModelDetailView() {
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
-        return <Icon src="/public/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
+        return <Icon src="/src/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
 
       case "DOWNLOADING":
         return (
@@ -87,12 +87,12 @@ function ModelDetailView() {
         );
 
       case "INSTALLING":
-        return <Icon src="/public/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
+        return <Icon src="/src/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
 
       case "RUNNING":
         return (
           <Icon
-            src="/public/assets/icons/stop.svg"
+            src="/src/assets/icons/stop.svg"
             imgClassName="h-[11px] w-[11px]"
             onClick={() => {
               stopModel(modelData).then((_) => {
@@ -108,7 +108,7 @@ function ModelDetailView() {
       case "STOPPED":
         return (
           <Icon
-            src="/public/assets/icons/play.svg"
+            src="/src/assets/icons/play.svg"
             imgClassName="h-[11px] w-[11px]"
             onClick={() =>
               runModels([modelData], undefined, (updatedModel, controller) => {
@@ -162,11 +162,11 @@ function ModelDetailView() {
               {getModelStatusIcon()}
 
               {/* Share Icon */}
-              <Icon src="/public/assets/icons/share.svg" imgClassName="h-[11px] w-[11px]" />
+              <Icon src="/src/assets/icons/share.svg" imgClassName="h-[11px] w-[11px]" />
 
               {/* Remove Icon */}
               <Icon
-                src="/public/assets/icons/trash.svg"
+                src="/src/assets/icons/trash.svg"
                 imgClassName="h-[11px] w-[11px]"
                 onClick={() => {
                   deleteModel(modelData).then((_) => {
@@ -179,7 +179,7 @@ function ModelDetailView() {
             </>
           ) : (
             <Icon
-              src="/public/assets/icons/download.svg"
+              src="/src/assets/icons/download.svg"
               imgClassName="h-[11px] w-[11px]"
               className="w-auto flex-center gap-2 px-[24px] text-white"
               onClick={() => {
@@ -196,7 +196,7 @@ function ModelDetailView() {
           )}
 
           {/* Close Icon */}
-          <Icon src="/public/assets/icons/close.svg" imgClassName="h-[11px] w-[11px]" onClick={() => window.history.back()} />
+          <Icon src="/src/assets/icons/close.svg" imgClassName="h-[11px] w-[11px]" onClick={() => window.history.back()} />
         </div>
       </div>
 
@@ -229,10 +229,10 @@ function ModelDetailView() {
               <Tag text={formatParams(modelData?.size)} />
 
               {/* Downloads Tag */}
-              <Tag imgSrc="/public/assets/icons/download-circle-fill.svg" text={formatParams(modelData?.downloads)} />
+              <Tag imgSrc="/src/assets/icons/download-circle-fill.svg" text={formatParams(modelData?.downloads)} />
 
               {/* Likes/Bookmarks Tag */}
-              <Tag imgSrc="/public/assets/icons/like-circle-fill.svg" text={formatParams(modelData?.likes)} />
+              <Tag imgSrc="/src/assets/icons/like-circle-fill.svg" text={formatParams(modelData?.likes)} />
             </div>
           </div>
         </div>

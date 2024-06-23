@@ -15,7 +15,6 @@ from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 

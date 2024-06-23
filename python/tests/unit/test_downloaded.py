@@ -2,7 +2,7 @@ import os
 import pytest
 from pathlib import Path
 from endpoints.model.downloaded.downloaded import get_downloaded_models
-from tests.data import ID, ID_2
+from tests.unit.data import ID, ID_2
 
 
 # Helpers

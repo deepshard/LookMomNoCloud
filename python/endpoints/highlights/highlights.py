@@ -52,7 +52,7 @@ async def get_highlights() -> list[Model]:
 
         results.append(model)
 
-    return results
+    return results[:5]
 
 
 async def get_trending_models(num: int) -> list[Model]:

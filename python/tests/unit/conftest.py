@@ -6,7 +6,7 @@ import shutil
 import asyncio
 from pathlib import Path
 from multiprocessing import Process, set_start_method
-import tests.data as data
+import tests.unit.data as data
 from unittest.mock import MagicMock
 from aioresponses import aioresponses
 from server import init_state

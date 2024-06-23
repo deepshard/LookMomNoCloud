@@ -5,7 +5,7 @@ from state import global_state_manager
 from server import init_state
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
-from tests.data import MODELS
+from tests.unit.data import MODELS
 from db import get_db_session
 from models import RunningModel
 

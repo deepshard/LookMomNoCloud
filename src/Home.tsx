@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)}/>}
+      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
 
@@ -53,18 +53,18 @@ export default function Home() {
                       ...model,
                       ...updatedModel,
                     });
-                    if(updatedModel.status === 'RUNNING') {
+                    if (updatedModel.status === 'RUNNING') {
                       controller.abort();
                     }
                   })}
                   onStop={() => {
                     stopModel(model)
-                    .then((_) => {
-                      updateModels({
-                        ...model,
-                        status: 'STOPPED',
+                      .then((_) => {
+                        updateModels({
+                          ...model,
+                          status: 'STOPPED',
+                        })
                       })
-                    })
                   }}
                   onDelete={() => deleteModel(model)}
                   onDisconnect={() => cleanupInstall(model)}

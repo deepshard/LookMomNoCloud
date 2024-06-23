@@ -69,18 +69,18 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
-      # - name: Disable local cuda for integration tests
-      #   run: |
-      #     if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
-      #       export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-      #       export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-      #       if nvcc -V; then
-      #         echo "** CUDA compiler is still accessible, failing the test. **"
-      #         exit 1
-      #       else
-      #         echo "** CUDA compiler not accessible, as expected. **"
-      #       fi
-      #     fi
+      - name: Disable local cuda for integration tests
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+            export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+            export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+            if nvcc -V; then
+              echo "** CUDA compiler is still accessible, failing the test. **"
+              exit 1
+            else
+              echo "** CUDA compiler not accessible, as expected. **"
+            fi
+          fi
 
       # - name: Run integration tests
       #   run: |
@@ -95,30 +95,29 @@ jobs:
       #     PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration
 
 
-      # - name: Archive server executable
-      #   run: |
-      #     cd python/dist
-      #     zip -r ${{ matrix.filename }} server
+      - name: Archive server executable
+        run: |
+          cd python/dist
+          zip -r ${{ matrix.filename }} server
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      # - name: Upload to S3
-      #   run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
+      - name: Upload to S3
+        run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
 
-      # - name: Upload latest metadata
-      #   run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+      - name: Upload latest metadata
+        run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
 
-      # - name: Notarize the binary from apple
-      #   run: |
-      #     if [ "${{ matrix.os }}" == "macos-latest" ]; then
-      #       xcrun notarytool submit python/dist/${{ matrix.filename }} --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV
-      #     fi
+      - name: Notarize the binary from apple
+        run: |
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            xcrun notarytool submit python/dist/${{ matrix.filename }} --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV
+          fi
 
-      # - name: Cleanup
-      #   if: always()
-      #   run: killall server
+      - name: Cleanup
+        run: killall server || true

@@ -80,6 +80,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
             />
           </motion.div>
         );
+      case "ACKNOWLEDGED":
       case "INSTALLING":
         return (
           <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
@@ -154,11 +155,6 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
         {getWidgetButton()}
       </div>
-      {model.status === "ACKNOWLEDGED" && (
-        <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">
-          <div className="w-[20%] bg-surface-750 rounded-full animate-in-out" />
-        </div>
-      )}
       {model.error && getErrorButton(model.error)}
     </div>
   );

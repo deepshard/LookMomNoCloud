@@ -107,7 +107,7 @@ jobs:
       - name: Notarize the binary from apple
         run: |
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            xcrun notarytool submit python/dist/server.zip --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV
+            xcrun notarytool submit python/dist/${{ matrix.filename }} --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV
           fi
 
       - name: Cleanup

@@ -34,10 +34,8 @@ jobs:
           python-version: "3.10"
           channels: conda-forge,spyder-ide
           auto-activate-base: false
-      - run: |
-          conda info
-          conda list
 
+      - run: conda init
       - run: conda activate truffle
 
       - run: |

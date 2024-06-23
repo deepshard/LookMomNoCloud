@@ -33,10 +33,9 @@ jobs:
           activate-environment: truffle
           python-version: "3.10"
           channels: conda-forge,spyder-ide
-          auto-activate-base: false
 
-      - run: conda init
-      - run: conda activate truffle
+      # - run: conda init
+      # - run: conda activate truffle
 
       - run: |
           python -V

@@ -1,4 +1,4 @@
-@keyframes rotate-border {
+@keyframes border-glow {
     0% {
         transform: rotate(0deg);
     }
@@ -8,29 +8,22 @@
     }
 }
 
-.model-widget-running {
-    position: relative;
-    overflow: hidden;
-}
-
-.model-widget-running::before {
-    content: '';
+.glow-container {
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(transparent, transparent, transparent, rgb(255, 255, 255));
-    animation: rotate-border 4s linear infinite;
-    z-index: -1;
-}
-
-.model-widget-running::after {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    /* Adjust this value to control border thickness */
-    background: inherit;
+    inset: -2px;
+    /* Adjust for desired border thickness */
     border-radius: inherit;
-    z-index: -1;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 13px;
+}
+
+.glow-effect {
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(from 0deg,
+            transparent,
+            rgb(255, 255, 255),
+            transparent 50%);
+    animation: border-glow 2.5s linear infinite;
 }

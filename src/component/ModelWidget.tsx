@@ -18,12 +18,12 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDelete, onDisconnect, className = "", ...props }: ModelWidgetProps) => {
-  const downloadIcon = process.env.NODE_ENV === "development" ? "/assets/icons/download-fill.svg" : "../../renderer/main_window/assets/icons/download-fill.svg";
-  const playIcon = process.env.NODE_ENV === "development" ? "/assets/icons/play.svg" : "../../renderer/main_window/assets/icons/play.svg";
-  const stopIcon = process.env.NODE_ENV === "development" ? "/assets/icons/stop.svg" : "../../renderer/main_window/assets/icons/stop.svg";
-  const runningIcon = process.env.NODE_ENV === "development" ? "/assets/icons/running.svg" : "../../renderer/main_window/assets/icons/running.svg";
-  const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
-  const errorIcon = process.env.NODE_ENV === "development" ? "/assets/icons/error.svg" : "../../renderer/main_window/assets/icons/error.svg";
+  const downloadIcon = "/src/assets/icons/download-fill.svg"
+  const playIcon = "/src/assets/icons/play.svg"
+  const stopIcon = "/src/assets/icons/stop.svg"
+  const runningIcon = "/src/assets/icons/running.svg"
+  const installIcon = "/src/assets/icons/install.svg"
+  const errorIcon = "/src/assets/icons/error.svg" 
 
   const [isHovered, setIsHovered] = useState(false);
 

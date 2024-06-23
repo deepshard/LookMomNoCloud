@@ -29,14 +29,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install python version
-        uses: gabrielfalcao/pyenv-action@v18
-        with:
-          default: "3.10"
-          command: pip install -U pip  # upgrade pip after installing python
-
-      - name: Setup pyenv
+      - name: Setup python 
         run: |
+          curl https://pyenv.run | bash
+          echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+          echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+          echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
+          echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+          echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
+          source ~/.bashrc
+          pyenv install 3.10
+          pyenv global 3.10
           pyenv virtualenv 3.10 truffle-server
           pyenv activate truffle-server
 

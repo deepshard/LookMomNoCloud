@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { TModel } from '../types/schemas'
+import { TModel } from "../types/schemas";
 import { motion } from "framer-motion";
 import { toUnitOfCount } from "../utils/sysUtils";
 import ScrollingText from "./common/ScrollingText";
@@ -110,11 +110,13 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         );
       case "RUNNING":
         return (
-          <div onClick={(e) => {
-            e.stopPropagation();
-            handleAction()
-          }} className={`h-[30px] w-[30px] absolute transition-opacity ${isHovered ? 'bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%]' : 'bottom-0 right-0 m-2'} widget-3d rounded-full flex-center cursor-pointer`}>
-            <img src={isHovered ? stopIcon : runningIcon} alt="" className={`${isHovered ? '' : 'h-full w-full' }`} />
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAction();
+            }}
+            className={`h-[30px] w-[30px] absolute transition-opacity ${isHovered ? "bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%]" : "bottom-0 right-0 m-2"} widget-3d rounded-full flex-center cursor-pointer`}>
+            <img src={isHovered ? stopIcon : runningIcon} alt="" className={`${isHovered ? "" : "h-full w-full"}`} />
           </div>
         );
 
@@ -152,7 +154,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
         <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
         {getWidgetButton()}
       </div>
-      {(model.status === "ACKNOWLEDGED") && (
+      {model.status === "ACKNOWLEDGED" && (
         <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">
           <div className="w-[20%] bg-surface-750 rounded-full animate-in-out" />
         </div>

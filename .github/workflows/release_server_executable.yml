@@ -32,6 +32,7 @@ jobs:
         id: cp310
         uses: actions/setup-python@v5
         with:
+          update-environment: false
           python-version: "3.10"
 
       - run: ${{ steps.cp310.outputs.python-path }} -V

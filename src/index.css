@@ -4,12 +4,13 @@
 
 @font-face {
   font-family: 'TruffleRegular'; /*a name to be used later*/
-  src: url('http://domain.example/fonts/font.ttf'); /*URL to font*/
+  src: url('/src/assets/fonts/NeueMontreal-Regular.otf'); /*URL to font*/
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif; */
+  font-family: 'TruffleRegular';
   font-size: 14px;
   line-height: 1.3;
   font-weight: 400; /* Regular */

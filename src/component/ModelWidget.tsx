@@ -6,8 +6,6 @@ import { motion } from "framer-motion";
 import { toUnitOfCount } from "../utils/sysUtils";
 import ScrollingText from "./common/ScrollingText";
 import Tooltip from "./common/Tooltip";
-import { LazyLoadImage } from "react-lazy-load-image-component";
-import 'react-lazy-load-image-component/src/effects/blur.css';
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
@@ -129,18 +127,8 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   if (type === "my-model") {
     return (
       <div className={`model-my-models base-regular ${className}`} {...props}>
-        <LazyLoadImage
-          className="w-full min-h-[78px] rounded-[13px]"
-          src={model.backgroundImage}
-          alt=""
-          effect="blur"
-          onLoad={() => setIsImageLoaded(true)}
-        />
-        {isImageLoaded && (
-          <>
-            <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
-          </>
-        )}
+        <img src={model.backgroundImage} alt="" className="w-full min-h-[78px] rounded-[13px]" />
+        <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
     );
   }
@@ -148,29 +136,17 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   return (
     <div className="relative">
       <div className={`model-widget base-regular ${className}`} {...props} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-        <LazyLoadImage
-          className="w-full min-h-[78px] rounded-[13px]"
-          src={model.backgroundImage}
-          alt=""
-          effect="blur"
-          wrapperProps={{
-            style: {transitionDelay: "0.5s"},
-          }}
-          onLoad={() => setIsImageLoaded(true)}
-        />
-        {isImageLoaded && (
-          <>
-          <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
-            <div className="absolute top-0 left-0 p-2 nowrap">
-            <div className="relative">
-              <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
-              <div className="flex items-start gap-0.5 -mt-[6px]">
-                <span className="text-xs text-surface-main relative opacity-75">
-                  <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
-                </span>
-                <span className="text-xs text-surface-main relative opacity-75"> • </span>
-                <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
-              </div>
+        <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
+        <img src={model.backgroundImage} alt="" className="w-full h-full" />
+        <div className="absolute top-0 left-0 p-2 nowrap">
+          <div className="relative">
+            <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
+            <div className="flex items-start gap-0.5 -mt-[6px]">
+              <span className="text-xs text-surface-main relative opacity-75">
+                <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
+              </span>
+              <span className="text-xs text-surface-main relative opacity-75"> • </span>
+              <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
             </div>
           </div>
           <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>

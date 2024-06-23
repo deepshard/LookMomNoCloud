@@ -30,8 +30,9 @@ jobs:
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
+          activate-environment: truffle-server
           auto-update-conda: true
-          python-version: "3.10"
+          python-version: 3.10
       - name: Conda info
         shell: bash -el {0}
         run: conda info

@@ -169,6 +169,10 @@ div.slick-slide>div {
 @layer base {}
 
 @layer utilities {
+  .running-info {
+    @apply bg-bg-wdget-active text-surface-500 rounded-lg p-2.5 !important;
+  }
+
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
     @apply flex justify-between items-center z-10 w-full top-0 p-5;
@@ -302,7 +306,7 @@ div.slick-slide>div {
   }
 
   .widget-3d {
-    @apply glass-3d bg-[rgba(0, 0, 0, 0.1)] rounded-lg !important;
+    @apply glass-3d bg-bg-wdget rounded-lg !important;
   }
 
   .search {

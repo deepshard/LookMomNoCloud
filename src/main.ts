@@ -57,8 +57,8 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
-  mainWindow.setResizable(false);
+  mainWindow.webContents.openDevTools();
+  // mainWindow.setResizable(false);
 
   return mainWindow;
 };

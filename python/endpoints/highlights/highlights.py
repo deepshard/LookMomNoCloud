@@ -16,9 +16,9 @@ load_dotenv()
 async def get_highlights() -> list[Model]:
     base_dir = get_app_data_path() / "models"
     running_models = [
-        {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
+        {"id": model.id, "instance": model.instance, "port": model.port} for model in (await RunningModel.get_all())
     ]
-    downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
+    downloaded_models = [{"id": model_id, "instance": None, "port": None} for model_id in os.listdir(base_dir)]
 
     uuid_pattern = re.compile(
         r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
@@ -79,6 +79,7 @@ async def get_trending_models(num: int) -> list[Model]:
                 status=ModelStatus.NOT_DOWNLOADED,
                 backgroundImage=model["backgroundImage"],
                 instance=0,
+                port=None,
                 progress=0,
             )
             for model in data
@@ -108,5 +109,6 @@ async def fetch_model_data(model):
             status=ModelStatus.RUNNING if model["instance"] is not None else ModelStatus.STOPPED,
             backgroundImage=model_data["backgroundImage"],
             instance=model["instance"] if model["instance"] is not None else 0,
+            port=model["port"] if model["port"] is not None else None,
             progress=0,
         )

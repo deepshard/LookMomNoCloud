@@ -64,6 +64,30 @@ function ModelDetailView() {
     }
   };
 
+  const getModelInfoHeader = () => {
+    switch (modelData?.status) {
+      case "RUNNING":
+        return (
+          <div className="absolute top-0 left-0 flex w-full h-full justify-between" style={{ padding: "16px" }}>
+            <div className="running-info flex items-center px-3 py-1 rounded-sm h-[32px]" style={{ width: "173px" }}>
+              <img src={"/src/assets/icons/running-man.svg"} className="w-[16px] h-[16px]" style={{ marginRight: "10px"}} />
+              <p className="text-surface-500 text-xs">
+                https://localhost:{modelData.port}
+              </p>
+            </div>
+            <div className="running-info flex items-center px-3 py-1 rounded-sm h-[32px]" style={{ width: "72px" }}>
+              <img src={"/src/assets/icons/docs.svg"} className="w-[16px] h-[16px]" style={{ marginRight: "10px"}} />
+              <p className="text-surface-500 text-xs">
+                Docs
+              </p>
+            </div>
+          </div>
+        );
+      default:
+        break;
+    }
+  }
+
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
@@ -206,6 +230,7 @@ function ModelDetailView() {
           <div className="relative flex flex-col justify-start items-center">
             {/* Model's Image */}
             <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
+              {getModelInfoHeader()}
               <img src={modelData?.backgroundImage} className=" w-full h-full " />
             </div>
 

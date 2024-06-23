@@ -26,7 +26,7 @@ const AnimateModal = ({children, show, onClose}: AnimateModalProps) => {
           exit={{ opacity: 0 }}
           className='animate-modal'
         >
-            <img src="/src/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
+            <img src="/src/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px] z-[9999]" onClick={onClose} />
             {children}
         </motion.div>
       )}

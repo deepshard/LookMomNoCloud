@@ -37,25 +37,18 @@ jobs:
       - run: |
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle
-          python -V
-          pip -V
-          which python
-          which pip
 
-      - run: ${{ steps.cp310.outputs.python-path }} -V
-      
-      - name: Install MLC
+      - name: Install dependencies
         run: |
-          ${{ steps.cp310.outputs.python-path }} -m pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+          pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            ${{ steps.cp310.outputs.python-path }} -m pip install --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl
+            pip install --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl
           elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
-            ${{ steps.cp310.outputs.python-path }} -m pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
-
-      - name: Install rest of the dependencies
-        run: |
-          ${{ steps.cp310.outputs.python-path }} -m pip install -r python/requirements.txt
+          pip install -r python/requirements.txt
 
       - name: Import certificate to keychain
         if: matrix.os == 'macos-latest'
@@ -71,8 +64,10 @@ jobs:
 
       - name: Build server executable
         run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
           cd python
-          ${{ steps.cp310.outputs.python-path }} -m PyInstaller server.spec --clean --noconfirm --log-level=DEBUG
+          pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
       # - name: Disable local cuda for integration tests
       #   run: |

@@ -62,7 +62,7 @@ jobs:
         run: |
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
-          codesign --remove-signature dist/server/_internal/Python
+          codesign --remove-signature dist/server/_internal/Python.framework/Python
 
       - name: Disable local cuda for integration tests
         run: |

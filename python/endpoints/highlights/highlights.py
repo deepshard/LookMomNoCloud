@@ -8,6 +8,9 @@ from state import global_state_manager
 from models import RunningModel
 from endpoints.model.downloaded.downloaded import is_model_downloaded
 from utils import get_app_data_path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 async def get_highlights() -> list[Model]:
@@ -54,7 +57,8 @@ async def get_highlights() -> list[Model]:
 
 async def get_trending_models(num: int) -> list[Model]:
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/trending?k={num}"
+        f"{TRUFFLE_API_URL}/models/trending?k={num}",
+        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
@@ -70,10 +74,10 @@ async def get_trending_models(num: int) -> list[Model]:
                 intro=model["intro"],
                 capabilities=model["capabilities"],
                 risks=model["risks"],
-                hf_link=model["hfLink"],
-                eval_id=model["evalId"],
+                evalId=model["evalId"],
+                hfLink=model["hfLink"],
                 status=ModelStatus.NOT_DOWNLOADED,
-                background_image=model["background_image"],
+                backgroundImage=model["backgroundImage"],
                 instance=0,
                 progress=0,
             )
@@ -83,7 +87,8 @@ async def get_trending_models(num: int) -> list[Model]:
 
 async def fetch_model_data(model):
     async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/{model['id']}"
+        f"{TRUFFLE_API_URL}/models/{model['id']}",
+        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch model data for {model['id']}"
         model_data = await response.json()
@@ -98,10 +103,10 @@ async def fetch_model_data(model):
             intro=model_data["intro"],
             capabilities=model_data["capabilities"],
             risks=model_data["risks"],
-            hf_link=model_data["hfLink"],
-            eval_id=model_data["evalId"],
+            evalId=model_data["evalId"],
+            hfLink=model_data["hfLink"],
             status=ModelStatus.RUNNING if model["instance"] is not None else ModelStatus.STOPPED,
-            background_image=model_data["background_image"],
+            backgroundImage=model_data["backgroundImage"],
             instance=model["instance"] if model["instance"] is not None else 0,
             progress=0,
         )

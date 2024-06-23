@@ -72,10 +72,10 @@ class Model:
     intro: str
     capabilities: str
     risks: str
-    hf_link: str
-    eval_id: str | None
+    evalId: str | None
+    hfLink: str
     status: ModelStatus
-    background_image: str
+    backgroundImage: str
     instance: int
     progress: int
 

@@ -137,7 +137,9 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className={`h-[30px] w-[30px] absolute bottom-[50%] translate-y-[50%] bg-[#d9d9d9] flex-center rounded-full left-[50%] translate-x-[-50%]`}
+            className={`h-[30px] w-[30px] z-[100] absolute bottom-[50%] translate-y-[50%] flex-center rounded-full left-[50%] translate-x-[-50%] bg-white/10
+        shadow-[inset_0px_4px_30px_0px_rgba(255,255,255,0.15),inset_0px_-4px_20px_0px_rgba(85,85,85,0.10),inset_0px_0px_8.976px_0px_rgba(255,255,255,0.10),0px_0px_15px_0px_rgba(85,85,85,0.10)]
+        backdrop-blur-[50px]`}
           >
             <img src={stopIcon} alt="" className="" />
           </div>
@@ -176,7 +178,13 @@ const ModelWidget = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="absolute inset-0 bg-black/10 z-88  glass-3d-no-blur"></div>
+        <div
+          className={`
+            absolute inset-0 z-88 glass-3d-no-blur
+            transition-colors duration-300 ease-in-out
+            ${model.status === "RUNNING" ? 'bg-black/70' : 'bg-black/10'}
+          `}
+        ></div>
         <img src={model.backgroundImage} alt="" className="w-full h-full" />
         <div className="absolute top-0 left-0 p-2 nowrap">
           <div className="relative">

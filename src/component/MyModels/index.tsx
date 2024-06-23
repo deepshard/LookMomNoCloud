@@ -58,7 +58,7 @@ const MyModels = ({ onClose, myModels=[] }: SearchProps) => {
 
   return (
     <div onWheel={handleWheel} className="search">
-      <img src="/assets/icons/close.svg" alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
+      <img src="/src/assets/icons/close.svg" alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
       <div className="w-full h-full my-models-container">
         {gridModels.length > 0 && (
           <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">

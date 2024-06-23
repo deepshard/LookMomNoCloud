@@ -26,9 +26,11 @@ const useModelActions = () => {
   }
 
   const deleteModel = async (model: TModel) => {
-    console.log("TODO: deleteModel")
     return startDeleteModel(model)
       .catch(err => console.error('Delete model error:', err));
+    // return new Promise((resolve, reject) => {
+    //   resolve('startDeleteModel(model)')
+    // })
   }
 
   const cleanupInstall = (model: TModel) => {

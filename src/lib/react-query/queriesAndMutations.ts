@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getHighlights } from "../../api/general";
-import { deleteModel, getMyModels, searchModels, stopModel } from "../../api/model";
+import { deleteModel, getMyModels, getModel, searchModels, stopModel } from "../../api/model";
 import { TModel } from "../../types/schemas";
 
 export const useGetHighlights = () => {
@@ -44,6 +44,19 @@ export const useGetMyModels = () => {
     queryKey: ["myModels"],
     queryFn: () => {
       return getMyModels()
+    },
+  })
+}
+
+export const useGetModel = (model?: Partial<TModel> | null) => {
+
+  if(!model) {
+    throw new Error("Model ID is required")
+  }
+  return useQuery({
+    queryKey: ["model", model.id],
+    queryFn: () => {
+      return getModel(model.id as string)
     },
   })
 }

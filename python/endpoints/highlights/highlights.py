@@ -10,7 +10,6 @@ from endpoints.model.downloaded.downloaded import is_model_downloaded
 from utils import get_app_data_path
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 
@@ -75,10 +74,10 @@ async def get_trending_models(num: int) -> list[Model]:
                 intro=model["intro"],
                 capabilities=model["capabilities"],
                 risks=model["risks"],
-                eval_id=model["evalId"],
-                hf_link=model["hfLink"],
+                evalId=model["evalId"],
+                hfLink=model["hfLink"],
                 status=ModelStatus.NOT_DOWNLOADED,
-                background_image=model["backgroundImage"],
+                backgroundImage=model["backgroundImage"],
                 instance=0,
                 progress=0,
             )
@@ -104,10 +103,10 @@ async def fetch_model_data(model):
             intro=model_data["intro"],
             capabilities=model_data["capabilities"],
             risks=model_data["risks"],
-            eval_id=model_data["evalId"],
-            hf_link=model_data["hfLink"],
+            evalId=model_data["evalId"],
+            hfLink=model_data["hfLink"],
             status=ModelStatus.RUNNING if model["instance"] is not None else ModelStatus.STOPPED,
-            background_image=model_data["backgroundImage"],
+            backgroundImage=model_data["backgroundImage"],
             instance=model["instance"] if model["instance"] is not None else 0,
             progress=0,
         )

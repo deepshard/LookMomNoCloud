@@ -38,15 +38,20 @@ jobs:
       - name: Conda list
         shell: pwsh
         run: conda list
-      
+
+      - run: conda activate base
+
       - name: Install MLC
         run: |
           echo "****"
+          which python
+          python -V
           conda run which pip
           conda run which python
+          conda run python -V
           conda run pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            conda run pip install --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl
+            conda run pip install --verbose --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl
           elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
             conda run pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi

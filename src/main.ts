@@ -1,6 +1,7 @@
 import { app, BrowserWindow, session, screen } from "electron";
 import path from "path";
 import os from "os";
+import { spawn } from "child_process";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -42,7 +43,13 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  // todo: spawn the flask server here
+  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  const serverProcess = spawn(serverPath, [], {
+    detached: true,
+    cwd: path.join(app.getPath("userData"), "bin", "server"),
+  });
+  serverProcess.unref();
+
   // on macOS
   const reactDevToolsPath = path.join(
     os.homedir(),

@@ -68,15 +68,15 @@ function ModelDetailView() {
     switch (modelData?.status) {
       case "RUNNING":
         return (
-          <div className="absolute top-0 left-0 flex w-full h-full justify-between" style={{ padding: "16px" }}>
-            <div className="running-info flex items-center px-3 py-1 rounded-sm h-[32px]" style={{ width: "173px" }}>
-              <img src={"/src/assets/icons/running-man.svg"} className="w-[16px] h-[16px]" style={{ marginRight: "10px"}} />
+          <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-between">
+            <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[173px] h-[32px]">
+              <img src={"/src/assets/icons/running-man.svg"} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">
                 https://localhost:{modelData.port}
               </p>
             </div>
-            <div className="running-info flex items-center px-3 py-1 rounded-sm h-[32px]" style={{ width: "72px" }}>
-              <img src={"/src/assets/icons/docs.svg"} className="w-[16px] h-[16px]" style={{ marginRight: "10px"}} />
+            <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px]">
+              <img src={"/src/assets/icons/docs.svg"} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">
                 Docs
               </p>

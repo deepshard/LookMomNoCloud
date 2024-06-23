@@ -290,7 +290,7 @@ div.slick-slide > div {
   
   .text-content {
     @apply relative z-10;
-    letter-spacing: 0.01em
+
   }
 
   .model-my-models {

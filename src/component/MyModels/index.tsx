@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import ModelWidget from "../ModelWidget";
+import ModelWidget from "../ModelWidget/ModelWidget";
 import { TModel } from "../../types/schemas";
 import Carousel from "../Carousel/Carousel";
 

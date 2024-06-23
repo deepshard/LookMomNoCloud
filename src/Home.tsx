@@ -1,4 +1,4 @@
-import ModelWidget from "./component/ModelWidget";
+import ModelWidget from "./component/ModelWidget/ModelWidget";
 import { useAppStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";

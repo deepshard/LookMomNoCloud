@@ -18,7 +18,7 @@ jobs:
         ]
         include:
           - os: macos-latest
-            filename: darwin-metal-arm64.tar.gz
+            filename: darwin-metal-arm64.zip
           # - os: ubuntu-cuda12.1-1xt4-x86_64
             # filename: ubuntu-cuda-x86_64.tar.gz
     steps:
@@ -89,7 +89,7 @@ jobs:
       - name: Archive server executable
         run: |
           cd python/dist
-          tar -czvhf ${{ matrix.filename }} server
+          zip -r ${{ matrix.filename }} server
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -103,6 +103,12 @@ jobs:
 
       - name: Upload latest metadata
         run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+
+      - name: Notarize the binary from apple
+        run: |
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            xcrun notarytool submit python/dist/server.zip --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV
+          fi
 
       - name: Cleanup
         if: always()

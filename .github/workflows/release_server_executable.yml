@@ -82,17 +82,11 @@ jobs:
             fi
           fi
 
-      # - name: Run integration tests
-      #   run: |
-      #     echo "Copying alembic migrations"
-      #     cp -r python/alembic python/dist/server/alembic
-      #     echo ${{ github.sha }} > python/dist/server/version.txt
-      #     cd python/dist/server 
-      #     nohup ./server &
-      #     sleep 5
-      #     curl --retry 5 --retry-connrefused http://localhost:8899
-      #     cd ../../
-      #     PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration
+      - name: Run integration tests
+        run: |
+          echo "Copying alembic migrations"
+          cp -r python/alembic python/dist/server/alembic
+          echo ${{ github.sha }} > python/dist/server/version.txt
 
 
       - name: Archive server executable

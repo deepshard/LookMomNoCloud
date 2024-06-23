@@ -50,7 +50,7 @@ async def get_highlights() -> list[Model]:
         results.extend(model for model in trending_models if model.id not in all_models)
         results = results[:5]
 
-    return results
+    return results[:5]
 
 
 async def get_trending_models(num: int) -> list[Model]:

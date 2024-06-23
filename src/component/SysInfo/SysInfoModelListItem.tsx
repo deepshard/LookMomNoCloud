@@ -6,7 +6,7 @@ interface SysInfoModelListItemProps {
   selection?: "memory" | "disk";
   total: { ram: number; disk: number };
 }
-function SysInfoModelListItem({ model, selection="memory", total }: SysInfoModelListItemProps) {
+function SysInfoModelListItem({ model, selection = "memory", total }: SysInfoModelListItemProps) {
   const ramOrDiskKey = selection === "memory" ? "ram" : "disk";
 
   const calculatePercentage = (used: number, total: number) => {

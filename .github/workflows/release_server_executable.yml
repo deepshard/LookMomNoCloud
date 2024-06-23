@@ -29,22 +29,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup python 
+      - name: Setup python
         run: |
           curl https://pyenv.run | bash
-          echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-          echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-          echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
-          echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-          echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
-          source ~/.bashrc
-          pyenv install 3.10
-          pyenv global 3.10
-          pyenv virtualenv 3.10 truffle-server
-          pyenv activate truffle-server
+          echo 'export PYENV_ROOT="$HOME/.pyenv"' >> $GITHUB_ENV
+          echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> $GITHUB_ENV
+          echo 'eval "$(pyenv init --path)"' >> $GITHUB_ENV
+          echo 'eval "$(pyenv init -)"' >> $GITHUB_ENV
+          echo 'eval "$(pyenv virtualenv-init -)"' >> $GITHUB_ENV
 
       - name: Install MLC
         run: |
+          source $GITHUB_ENV
+          pyenv install 3.10
+          pyenv global 3.10
+          pyenv virtualenv 3.10 truffle-server
           pyenv activate truffle-server
           which python
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
@@ -56,6 +55,7 @@ jobs:
 
       - name: Install rest of the dependencies
         run: |
+          source $GITHUB_ENV
           pyenv activate truffle-server
           pip install -r python/requirements.txt
 

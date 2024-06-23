@@ -11,7 +11,6 @@ import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 
 export default function Home() {
-
   const { data: highlights } = useGetHighlights();
   const { highlights: storeHighlights, setHighlights, sysInfo, downloads } = useAppStore();
   const { updateModels } = useStore();

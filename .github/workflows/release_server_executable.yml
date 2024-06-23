@@ -1,7 +1,7 @@
 name: Release server executable
 
 
-on: [push, pull_request]
+on: [push]
 # on:
 #   pull_request:
 #     branches:
@@ -45,6 +45,7 @@ jobs:
 
       - name: Install MLC
         run: |
+          pyenv activate truffle-server
           which python
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
@@ -55,6 +56,7 @@ jobs:
 
       - name: Install rest of the dependencies
         run: |
+          pyenv activate truffle-server
           pip install -r python/requirements.txt
 
       - name: Import certificate to keychain

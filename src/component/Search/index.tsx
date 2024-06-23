@@ -1,4 +1,4 @@
-import { Input } from "antd";
+import { Input , Skeleton } from "antd";
 import Featured from "../Featured";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
@@ -7,6 +7,7 @@ import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../../context/HomePageProvider";
+
 interface SearchProps {
   onClose?: () => void;
   recentlyUsedModels?: TModel[];
@@ -66,7 +67,13 @@ const Search = ({ onClose, recentlyUsedModels }: SearchProps) => {
         ) : (
           <>
             {loadingState ? (
-              <>loading...</>
+              <>
+                <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">
+                  {[...Array(12)].map((_, index) => (
+                    <Skeleton className="model-widget p-3 bg-gray-400 opacity-25 rounded-md" key={index} active round title={false} paragraph={{ rows: 2, width: [72, 51] }} />
+                  ))}
+                </div>
+              </>
             ) : (
               <>
                 {searchModels ? (

@@ -1,10 +1,12 @@
 name: Release server executable
 
-on:
-  pull_request:
-    branches:
-      - release
-  workflow_dispatch:
+
+on: [push, pull_request]
+# on:
+#   pull_request:
+#     branches:
+#       - release
+#   workflow_dispatch:
 
 jobs:
   release:
@@ -27,13 +29,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install python version
+        uses: gabrielfalcao/pyenv-action@v18
         with:
-          python-version: "3.10"
-      
+          default: "3.10"
+          command: pip install -U pip  # upgrade pip after installing python
+
+      - name: Setup pyenv
+        run: |
+          pyenv virtualenv 3.10 truffle-server
+          pyenv activate truffle-server
+
       - name: Install MLC
         run: |
+          which python
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl

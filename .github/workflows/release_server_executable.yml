@@ -28,6 +28,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        id: cp310
+        with:
+          python-version: '3.10'
+          update-environment: false
+      - run: ${{ steps.cp310.outputs.python-path }} -V
+
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: truffle-server

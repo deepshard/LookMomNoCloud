@@ -34,6 +34,7 @@ const ModelWidget = ({
   const stopIcon = '/src/assets/icons/stop.svg'
   const installIcon = '/src/assets/icons/install.svg'
   const errorIcon = '/src/assets/icons/error.svg'
+  const progressiveBlur = '/src/assets/icons/progressive-blur.svg'
 
   const [isHovered, setIsHovered] = useState(false)
 
@@ -156,7 +157,7 @@ const ModelWidget = ({
         <img
           src={model.backgroundImage}
           alt=""
-          className="w-full min-h-[78px] rounded-[13px]"
+          className="w-full min-h-[78px]"
         />
         <p className="callout-regular text-surface-main w-full text-center mt-[11px]">
           {model.title}
@@ -178,19 +179,27 @@ const ModelWidget = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
+        
+        <img src={model.backgroundImage} alt="" className="w-full h-full" />
+        
+        {/* This part is the background image and its blur overlay, control directly from the css in this folder */}
         <div
           className={`
-            absolute inset-0 z-88 glass-3d-no-blur
-            transition-colors duration-300 ease-in-out
+            absolute inset-0 z-99
+            h-full w-full
             ${model.status === "RUNNING" ? 'bg-black/70' : 'bg-black/10'}
           `}
-        ></div>
-        <img src={model.backgroundImage} alt="" className="w-full h-full" />
-        <div className="absolute top-0 left-0 p-2 nowrap">
+        >
+          <div className='blur-overlay'></div>
+          <div className='linear-overlay'></div>
+        </div>
+
+        {/* This part is the widget content */}
+        <div className="absolute top-0 left-0 p-2 nowrap z-[100]">
           <div className="relative">
             {' '}
             {/* Add this wrapper */}
-            <div className="model-widget-text-holder"></div>
+            {/* <div className="model-widget-text-holder"></div> */}
             <div className="text-content">
               {' '}
               {/* Wrap text content */}

@@ -27,7 +27,6 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   const installIcon = process.env.NODE_ENV === "development" ? "/assets/icons/install.svg" : "../../renderer/main_window/assets/icons/install.svg";
   const errorIcon = process.env.NODE_ENV === "development" ? "/assets/icons/error.svg" : "../../renderer/main_window/assets/icons/error.svg";
 
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -134,13 +133,8 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
           src={model.backgroundImage}
           alt=""
           effect="blur"
-          onLoad={() => setIsImageLoaded(true)}
         />
-        {isImageLoaded && (
-          <>
-            <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
-          </>
-        )}
+        <p className="callout-regular text-surface-main w-full text-center mt-[11px]">{model.title}</p>
       </div>
     );
   }
@@ -148,35 +142,27 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   return (
     <div className="relative">
       <div className={`model-widget base-regular ${className}`} {...props} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
         <LazyLoadImage
           className="w-full min-h-[78px] rounded-[13px]"
           src={model.backgroundImage}
           alt=""
           effect="blur"
-          wrapperProps={{
-            style: {transitionDelay: "0.5s"},
-          }}
-          onLoad={() => setIsImageLoaded(true)}
         />
-        {isImageLoaded && (
-          <>
-          <div className="absolute inset-0 bg-black/50 z-88 rounded-sm glass-3d-no-blur"></div>
-            <div className="absolute top-0 left-0 p-2 nowrap">
-            <div className="relative">
-              <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
-              <div className="flex items-start gap-0.5 -mt-[6px]">
-                <span className="text-xs text-surface-main relative opacity-75">
-                  <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
-                </span>
-                <span className="text-xs text-surface-main relative opacity-75"> • </span>
-                <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
-              </div>
+        <div className="absolute top-0 left-0 p-2 nowrap">
+          <div className="relative">
+            <ScrollingText className={"text-sm nowrap relative capitalize"} text={model?.name.split("/")[1]} isHovered={isHovered} />
+            <div className="flex items-start gap-0.5 -mt-[6px]">
+              <span className="text-xs text-surface-main relative opacity-75">
+                <ScrollingText text={toUnitOfCount(model?.size)} isHovered={isHovered} />{" "}
+              </span>
+              <span className="text-xs text-surface-main relative opacity-75"> • </span>
+              <span className="text-xs text-surface-main relative opacity-75 capitalize"> {model?.author} </span>
             </div>
           </div>
-          <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
-          {getWidgetButton()}
-          </>
-        )}
+        </div>
+        <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
+        {getWidgetButton()}
       </div>
       {(model.status === "ACKNOWLEDGED") && (
         <div className="absolute w-[20px] h-[3px]  flex justify-center -bottom-[9px] left-[50%] translate-x-[-50%]">

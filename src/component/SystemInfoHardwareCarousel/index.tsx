@@ -51,7 +51,7 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
         <PreOrderTruffle />
       </Carousel>
       <motion.span className="absolute flex gap-[4px] bottom-[-35px] translate-x-[-50%] left-[50%]" initial={false} animate={{ opacity: showUsage }}>
-        <img src="/assets/icons/monitor.svg" alt="" />
+        <img src="/src/assets/icons/monitor.svg" alt="" />
         <p>{upperFirst(selection)} Usage</p>
       </motion.span>
     </div>

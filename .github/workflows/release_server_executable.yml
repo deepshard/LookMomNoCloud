@@ -28,12 +28,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        id: cp310
-        uses: actions/setup-python@v5
+      - uses: conda-incubator/setup-miniconda@v3
         with:
-          update-environment: false
-          python-version: "3.10"
+          activate-environment: truffle
+          python-version: 3.10
+          auto-activate-base: false
+      - run: |
+          conda info
+          conda list
+
+      - run: conda activate truffle
+
+      - run: |
+          python -V
+          pip -V
+          which python
+          which pip
 
       - run: ${{ steps.cp310.outputs.python-path }} -V
       

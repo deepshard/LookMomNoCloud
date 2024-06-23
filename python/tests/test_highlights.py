@@ -106,3 +106,25 @@ async def test_get_highlights_models_downloaded_and_running(session_fixture, moc
     assert models[4].status == ModelStatus.NOT_DOWNLOADED
     assert models[0].id != models[2].id
     assert models[1].id != models[2].id
+
+
+@pytest.mark.asyncio
+async def test_get_highlights_six_downloaded(session_fixture, mocker):
+    # Downloaded mocks
+    session_fixture("endpoints.highlights.highlights")
+    mocker.patch(
+        "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
+    )
+
+    for model in MODELS:
+        create_model_dir(model["id"])
+
+    # Test
+    models = await get_highlights()
+    assert len(models) == 6
+    assert models[0].status == ModelStatus.STOPPED
+    assert models[1].status == ModelStatus.STOPPED
+    assert models[2].status == ModelStatus.STOPPED
+    assert models[3].status == ModelStatus.STOPPED
+    assert models[4].status == ModelStatus.STOPPED
+    assert models[5].status == ModelStatus.STOPPED

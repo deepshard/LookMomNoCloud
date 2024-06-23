@@ -95,13 +95,13 @@ def request_mocks(request, mocker):
         mocked.get(
             f"{TRUFFLE_API_URL}/models/trending?k=5",
             status=200,
-            payload=data.MODELS,
+            payload=data.MODELS[:5],
             repeat=True,
         )
         mocked.get(
             f"{TRUFFLE_API_URL}/models/trending?k=4",
             status=200,
-            payload=data.MODELS[1:],
+            payload=data.MODELS[:4],
             repeat=True,
         )
         mocked.get(
@@ -114,6 +114,30 @@ def request_mocks(request, mocker):
             f"{TRUFFLE_API_URL}/models/b438d015-ad45-4e9a-9aba-2e290348b078",
             status=200,
             payload=data.MODELS[1],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/e1b7a151-ad5a-4929-b9a2-20e42f629c4c",
+            status=200,
+            payload=data.MODELS[2],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/c081e038-a74c-4a7d-87d6-f36bbf7ff373",
+            status=200,
+            payload=data.MODELS[3],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/da05e829-9e9b-43d8-8c26-6141318700cb",
+            status=200,
+            payload=data.MODELS[4],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/ead12fba-9e9b-43d8-8c26-6141318700cb",
+            status=200,
+            payload=data.MODELS[5],
             repeat=True,
         )
 

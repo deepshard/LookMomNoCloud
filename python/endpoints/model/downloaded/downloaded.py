@@ -91,7 +91,7 @@ async def get_model_details(model):
         f"{TRUFFLE_API_URL}/models/{model['id']}",
         headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
-        assert response.status == 200, f"Failed to fetch model {model["id"]}"
+        assert response.status == 200, f"Failed to fetch model {model['id']}"
         model_data = await response.json()
         return Model(
             id=model_data["id"],

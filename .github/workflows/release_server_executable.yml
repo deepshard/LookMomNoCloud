@@ -35,7 +35,8 @@ jobs:
           channels: conda-forge,spyder-ide
 
       - run: |
-          conda init && conda activate truffle
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
           python -V
           pip -V
           which python

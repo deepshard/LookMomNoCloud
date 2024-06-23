@@ -5,6 +5,7 @@ import os
 import shutil
 import asyncio
 from pathlib import Path
+from multiprocessing import Process, set_start_method
 import tests.data as data
 from unittest.mock import MagicMock
 from aioresponses import aioresponses
@@ -12,7 +13,11 @@ from server import init_state
 from constants import TRUFFLE_API_URL
 from models import RunningModel
 
+
 # Helpers
+async def fake_process():
+    while True:
+        await asyncio.sleep(10)
 
 
 def clear_path():
@@ -116,3 +121,11 @@ def request_mocks(request, mocker):
         mock_head.return_value.__aenter__.return_value = MagicMock(headers={"Content-Length": 1024})
 
         yield mocked
+
+
+@pytest.fixture
+def mock_process():
+    set_start_method("spawn", force=True)
+    proc = Process(target=fake_process)
+    proc.start()
+    yield proc

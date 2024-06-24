@@ -132,7 +132,7 @@ function ModelDetailView() {
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
       {/* Nav Bar */}
       <div className="sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/75 to-transparent z-[1] "></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black via-black/60 to-black/0 from-75% via-90% z-[1] "></div>
         {/* Left Side – Model Info*/}
         <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
           <img loading="lazy" srcSet={modelData?.backgroundImage} className="shrink-0 aspect-square rounded-full w-[30px] " />

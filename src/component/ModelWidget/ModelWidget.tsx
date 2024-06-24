@@ -100,6 +100,7 @@ const ModelWidget = ({
             />
           </motion.div>
         )
+      case "ACKNOWLEDGED":
       case 'INSTALLING':
         return (
           <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
@@ -182,23 +183,12 @@ const ModelWidget = ({
         <div className="absolute top-0 left-0 p-2 nowrap z-[100]">
           <div className="relative">
             <div className="text-content">
-              <ScrollingText
-                className="text-sm nowrap relative capitalize"
-                text={model?.name.split('/')[1]}
-                isHovered={isHovered}
-              />
-              <div className="flex items-start gap-0.5 -mt-[6px]">
-                <span className="text-xs text-surface-main relative opacity-75">
-                  <ScrollingText text={model?.author} isHovered={isHovered} />{' '}
-                </span>
-                <span className="text-xs text-surface-main relative opacity-75">
-                  {' '}
-                  •{' '}
-                </span>
-                <span className="text-xs text-surface-main relative opacity-75 capitalize">
-                  {toUnitOfCount(model?.size)}
-                </span>
-              </div>
+              <span className='title-xs inline-block relative capitalize max-w-80 truncate text-surface-main'>
+                {model?.name.split('/')[1]}
+              </span>
+              <span className='title-xs inline-block relative capitalize max-w-120 truncate text-surface-750'>
+                {toUnitOfCount(model?.size)} • {model?.author}
+              </span>
             </div>
           </div>
         </div>

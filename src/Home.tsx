@@ -9,6 +9,7 @@ import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import ModelCarousel from "./component/ModelCarousel";
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
@@ -36,6 +37,11 @@ export default function Home() {
             </div>
 
             <div className="flex gap-1.5 w-[660px]">
+              <ModelCarousel 
+                models={storeHighlights} 
+                isLoading={false} 
+                
+              />
               {storeHighlights?.map((model) => (
                 <ModelWidget
                   model={model}

@@ -101,7 +101,6 @@ export class OTAUpdater {
 
     // Send progress to renderer process
     const progress = this.downloadProgress.downloadedBytes / this.downloadProgress.totalBytes;
-    console.log(progress);
     this.mainWindow.webContents.send(
       "update-download-progress",
       {
@@ -181,8 +180,6 @@ export class OTAUpdater {
     const serverUpdateInfo = await this.checkForServerUpdate();
     const appUpdateInfo = null; // await this.checkForAppUpdate();
 
-    console.log(serverUpdateInfo);
-
     // Check if server update is available and track data if so
     if (serverUpdateInfo != null) {
       // Get platform information
@@ -190,7 +187,6 @@ export class OTAUpdater {
       const graphicsInfo = await si.graphics();
       const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
       const url = `https://truffle-binaries.s3.amazonaws.com/${serverUpdateInfo}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
-      console.log(url);
 
       this.updateServer = {
         available: true,
@@ -199,7 +195,6 @@ export class OTAUpdater {
 
       // Add server update size to total bytes to download
       this.addBytesToDownload(await this.getServerUpdateSize(url));
-      console.log(this.downloadProgress.totalBytes);
     }
 
     // Check if app update is available and track data if so

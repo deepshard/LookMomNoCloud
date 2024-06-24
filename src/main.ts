@@ -75,8 +75,8 @@ app.on("ready", async function () {
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
   await otaUpdater.checkForUpdates();
-  await otaUpdater.downloadUpdate();
-  await otaUpdater.restartAndInstall();
+  // await otaUpdater.downloadUpdate();
+  // await otaUpdater.restartAndInstall();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

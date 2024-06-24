@@ -17,7 +17,7 @@ function SysInfoModelListItem({ model, selection = "memory", total }: SysInfoMod
     <>
       {model?.title && (
         <div className="sysinfo-model-item">
-          <img src="/src/assets/images/llama1.png" alt="" className="w-[30px] h-[30px] rounded-xs z-10" />
+          <img src={model.backgroundImage} alt="" className="w-[30px] h-[30px] rounded-xs z-10 object-contain" />
 
           <div className="flex flex-col justify-center items-start grow z-10">
             <p className="text-surface-750 title-sm">{model.title}</p>

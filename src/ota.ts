@@ -186,7 +186,8 @@ export class OTAUpdater {
 
     // Check for server and app updates
     const serverUpdateInfo = await this.checkForServerUpdate();
-    const appUpdateInfo = null; // await this.checkForAppUpdate();
+    const appUpdateInfo = await this.checkForAppUpdate();
+    console.log(serverUpdateInfo, appUpdateInfo);
 
     // Check if server update is available and track data if so
     if (serverUpdateInfo != null) {

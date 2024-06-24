@@ -17,6 +17,7 @@ const meta: Meta<typeof ModelCarousel> = {
     // More on argTypes: https://storybook.js.org/docs/api/argtypes
     argTypes: {
         models: { control: 'object' },
+        isLoading: { control: 'boolean' },
     },
     // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
     args: { },
@@ -26,8 +27,9 @@ export default meta;
 type Story = StoryObj<typeof ModelCarousel>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const mymodels: Story = {
+export const AllModels: Story = {
     args: {
+        isLoading: true,
         models: [
             {
                 "id": "1293854612354123",

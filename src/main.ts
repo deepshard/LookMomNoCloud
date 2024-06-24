@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session, screen } from "electron";
+import { app, BrowserWindow, session, screen, Menu} from "electron";
 import path from "path";
 import os from "os";
 
@@ -18,9 +18,34 @@ const createWindow = () => {
       // devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
-
     },
   });
+
+  const template = [
+    {
+      label: 'View',
+      submenu: [
+        { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
+        { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+I', click: () => mainWindow.webContents.toggleDevTools() },
+        { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
+        { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
+      ]
+    }
+  ];
+
+  setTimeout(() => {
+    mainWindow.webContents.setZoomLevel(0);
+  }, 100);
+  
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+  
+    // Disable zoom shortcuts
+    mainWindow.webContents.on("before-input-event", (event, input) => {
+      if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
+        event.preventDefault();
+      }
+    });
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -32,8 +57,8 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-  process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
+  // mainWindow.webContents.openDevTools();
+  mainWindow.setResizable(false);
 
   return mainWindow;
 };
@@ -72,6 +97,8 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+
+
 
 app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the

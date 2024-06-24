@@ -1,9 +1,10 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../context/HomePageProvider";
 
 const NavBar = () => {
   const searchIcon = "/src/assets/icons/search-icon.svg"
   const {setShowSearch} = useHomePageContext();
+  const navigate = useNavigate();
   return (
     <div className="navbar">
       <div className="bg-transparent h-5 w-5 rounded-full" />
@@ -33,7 +34,7 @@ const NavBar = () => {
       
       
 
-      <div className="bg-surface-500 h-5 w-5 rounded-full" />
+      <div className="bg-surface-500 h-5 w-5 rounded-full cursor-pointer" onClick={() => navigate(`/update`)} />
     </div>
   );
 };

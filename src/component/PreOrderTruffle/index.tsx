@@ -1,4 +1,4 @@
-import { Button } from "antd"
+import Button from "../common/Button"
 
 
 const PreOrderTruffle = () => {
@@ -10,7 +10,7 @@ const PreOrderTruffle = () => {
           <p>$1,299.00</p>
           <p>Truffle–1</p>
         </span>
-        <Button className='!px-[10px] rounded-[100px] bg-surface-100 border-none glass-3d text-surface-main'>Pre-order</Button>
+        <Button className='!px-[10px] !rounded-[100px]'>Pre-order</Button>
       </div>
     </div>
   )

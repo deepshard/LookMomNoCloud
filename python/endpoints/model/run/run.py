@@ -166,11 +166,11 @@ def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
         model=str(model_path),
         device="auto",
         model_lib=str(model_path / "compilation.so"),
-        mode="local",
-        enable_debug=False,
+        mode="interactive",
         additional_models=[],  # Not relevant
         tensor_parallel_shards=shards,
         max_num_sequence=None,
+        enable_debug=False,
         # This lets the AsyncMLEngine determine the max sequence length based on vRAM
         max_total_sequence_length=None,
         max_single_sequence_length=None,
@@ -184,7 +184,7 @@ def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
         prefix_cache_mode="disable",
         prefix_cache_max_num_recycling_seqs=None,
         enable_tracing=False,
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=port,
         allow_credentials=["*"],
         allow_origins=["*"],
@@ -196,6 +196,7 @@ def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
 async def is_server_running(port: int, timeout: int = 120) -> bool:
     seconds_elapsed = 0
     url = f"http://localhost:{port}/v1/models"
+    logger.info(f"Checking if server is running at {url}")
 
     # Check if the server is running and the endpoints are accessible
     while seconds_elapsed < timeout:
@@ -204,10 +205,11 @@ async def is_server_running(port: int, timeout: int = 120) -> bool:
                 return response.status == 200
         except Exception as e:
             pass
-
         await asyncio.sleep(1)
         seconds_elapsed += 1
+        logger.debug(f"Retry in 1 second. Elapsed time: {seconds_elapsed} seconds.")
 
+    logger.error("Server did not start within the timeout period.")
     return False
 
 
@@ -242,6 +244,8 @@ async def run_model(
                 name=model_info["name"],
                 size=model_info["size"],
                 pid=proc.pid,
+                port=port,
+                quantization=quantization.value,
             )
         )
         await session.commit()
@@ -250,6 +254,7 @@ async def run_model(
 
 
 async def kill_models(models: list[ProgressEvent]):
+    logger.info(f"Killing models: {models}")
     # Kill all of the running models and remove them from the database
     for model in models:
         await stop_model_handler(model.model_id, model.instance)

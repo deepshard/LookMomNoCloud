@@ -11,43 +11,41 @@ from utils import get_app_data_path
 
 
 async def get_highlights() -> list[Model]:
-    base_dir = get_app_data_path() / "models"
-    running_models = [
-        {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
-    ]
-    downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
-
     uuid_pattern = re.compile(
         r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     )
+    base_dir = get_app_data_path() / "models"
+
+    # Get all local models that are either running or downloaded
+    running_models = await RunningModel.get_all()
     downloaded_models = [
-        model_id
-        for model_id in downloaded_models
-        if uuid_pattern.match(model_id["id"]) and await is_model_downloaded(model_id["id"])
+        {"id": model_id, "instance": None}
+        for model_id in os.listdir(base_dir)
+        if uuid_pattern.match(model_id) and await is_model_downloaded(model_id)
     ]
 
-    # Dedupe model IDs
-    for model in downloaded_models:
-        if model["id"] in [running_model["id"] for running_model in running_models]:
-            continue
+    # Combine running and downloaded models
+    all_models = {
+        model.id: {"id": model.id, "instance": model.instance} for model in running_models
+    }
+    all_models.update(
+        {model["id"]: model for model in downloaded_models if model["id"] not in all_models}
+    )
 
-        running_models.append(model)
+    # Fetch data for all running/downloaded models
+    tasks = [fetch_model_data(model) for model in all_models.values()]
 
-    tasks = []
-    for model in running_models:
-        task = fetch_model_data(model)
-        tasks.append(task)
+    # If we have less than 5 models, fetch trending models to pad the list
+    if len(all_models) < 5:
+        tasks.append(get_trending_models(5))
 
-    tasks.append(get_trending_models(5))
     results = await asyncio.gather(*tasks)
-    trending = results.pop()
 
-    # If trending model is already downloaded or running, do not append to results
-    for model in trending:
-        if model.id in [result.id for result in results]:
-            continue
-
-        results.append(model)
+    # If we have less than 5 models, pad the list with trending models up to 5
+    if len(all_models) < 5:
+        trending_models = results.pop()
+        results.extend(model for model in trending_models if model.id not in all_models)
+        results = results[:5]
 
     return results
 

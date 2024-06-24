@@ -2,9 +2,9 @@ import pytest
 from pathlib import Path
 from sqlalchemy import select
 from endpoints import delete_model_handler
+from tests.unit.data import ID, MOCK_FILES
 from models import RunningModel
 from db import get_db_session
-from tests.data import ID, MOCK_FILES
 
 
 # Helpers

@@ -75,7 +75,7 @@ function ModelDetailView() {
                 https://localhost:{modelData.port}
               </p>
             </div>
-            <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px]">
+            <div onClick={() => window.open(`https://google.com/search?q=${modelData.name}`)} className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px] cursor-pointer">
               <img src={"/src/assets/icons/docs.svg"} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">
                 Docs

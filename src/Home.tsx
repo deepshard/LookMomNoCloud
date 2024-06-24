@@ -22,6 +22,55 @@ export default function Home() {
     navigate(`/model/${model.id}`, { state: { model } });
   }
 
+  const models = () => {
+    return storeHighlights?.map((model) => {
+      model.onInstall = () => {
+        installModel(model, undefined, (progress) => {
+          updateModels({
+            ...model,
+            ...progress,
+          });
+        });
+      };
+
+      model.onRun = () => {
+        runModels([model], undefined, (updatedModel, controller) => {
+          updateModels({
+            ...model,
+            ...updatedModel,
+          });
+          if(updatedModel.status === 'RUNNING') {
+            controller.abort();
+          }
+        });
+      };
+
+      model.onStop = () => {
+        stopModel(model)
+        .then((_) => {
+          updateModels({
+            ...model,
+            status: 'STOPPED',
+          });
+        });
+      };
+
+      model.onDelete = () => {
+        deleteModel(model);
+      };
+
+      model.onDisconnect = () => {
+        cleanupInstall(model);
+      };
+
+      model.onClick = () => {
+        handleHighlightClick(model);
+      };
+
+      return model;
+    });
+  }
+
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
@@ -38,45 +87,9 @@ export default function Home() {
 
             <div className="flex gap-1.5 w-[660px]">
               <ModelCarousel 
-                models={storeHighlights} 
+                models={models()}
                 isLoading={false} 
-                
               />
-              {storeHighlights?.map((model) => (
-                <ModelWidget
-                  model={model}
-                  key={model.id}
-                  onInstall={() => {
-                    installModel(model, undefined, (progress) => {
-                      updateModels({
-                        ...model,
-                        ...progress,
-                      });
-                    });
-                  }}
-                  onRun={() => runModels([model], undefined, (updatedModel, controller) => {
-                    updateModels({
-                      ...model,
-                      ...updatedModel,
-                    });
-                    if(updatedModel.status === 'RUNNING') {
-                      controller.abort();
-                    }
-                  })}
-                  onStop={() => {
-                    stopModel(model)
-                    .then((_) => {
-                      updateModels({
-                        ...model,
-                        status: 'STOPPED',
-                      })
-                    })
-                  }}
-                  onDelete={() => deleteModel(model)}
-                  onDisconnect={() => cleanupInstall(model)}
-                  onClick={() => handleHighlightClick(model)}
-                />
-              ))}
             </div>
 
             <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">

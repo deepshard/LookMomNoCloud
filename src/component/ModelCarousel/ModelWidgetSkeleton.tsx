@@ -1,8 +1,8 @@
 import React from 'react';
 import './index.css';
 
-const SkeletonModelWidget: React.FC = () => {
+const ModelWidgetSkeleton: React.FC = () => {
   return <div className="skeleton-model-widget" />;
 };
 
-export default SkeletonModelWidget;
+export default ModelWidgetSkeleton;

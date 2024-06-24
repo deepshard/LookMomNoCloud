@@ -1,4 +1,4 @@
-import ModelWidget from "../../component/ModelWidget/ModelWidget";
+import ModelWidget from "../../component/ModelWidget";
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';

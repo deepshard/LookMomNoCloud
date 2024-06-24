@@ -1,31 +1,71 @@
 import { useEffect, useState } from 'react'
 import { CircularProgressbar } from 'react-circular-progressbar'
-import 'react-circular-progressbar/dist/styles.css'
 import { TModel } from '../../types/schemas'
 import { motion } from 'framer-motion'
 import { toUnitOfCount } from '../../utils/sysUtils'
-import ScrollingText from '../common/ScrollingText'
 import Tooltip from '../common/Tooltip'
-import './ModelWidget.css'
+import './index.css'
+import 'react-circular-progressbar/dist/styles.css'
+
+const OverlaySVG = ({ width = 128, height = 82 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={width}
+    height={height}
+    viewBox="0 0 124 79"
+    fill="none"
+  >
+    <defs>
+      <filter
+        id="blur_filter"
+        x="-50%"
+        y="-50%"
+        width="200%"
+        height="200%"
+        filterUnits="userSpaceOnUse"
+        color-interpolation-filters="sRGB"
+      >
+        <feGaussianBlur stdDeviation="25" />
+      </filter>
+      <linearGradient
+        id="overlay_gradient"
+        x1="62"
+        y1="79"
+        x2="61.9999"
+        y2="2.96496e-06"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stop-opacity="0" />
+        <stop offset="0.268371" stop-opacity="0.3" />
+        <stop offset="1" stop-opacity="0.5" />
+      </linearGradient>
+    </defs>
+
+    <rect
+      width="100%"
+      height="100%"
+      rx="13"
+      fill="black"
+      fill-opacity="0.2"
+      filter="url(#blur_filter)"
+    />
+
+    <rect
+      width="100%"
+      height="100%"
+      rx="13"
+      fill="url(#overlay_gradient)"
+      fill-opacity="0.8"
+    />
+  </svg>
+)
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel
-  type?: 'regular' | 'my-model'
-  onInstall?: () => void
-  onRun?: () => void
-  onStop?: () => void
-  onDelete?: () => void
-  onDisconnect?: () => void
 }
 
 const ModelWidget = ({
   model,
-  type = 'regular',
-  onInstall,
-  onRun,
-  onStop,
-  onDelete,
-  onDisconnect,
   className = '',
   ...props
 }: ModelWidgetProps) => {
@@ -39,20 +79,20 @@ const ModelWidget = ({
 
   useEffect(() => {
     return () => {
-      onDisconnect && onDisconnect()
+      model.onDisconnect && model.onDisconnect()
     }
   }, [])
 
   const handleAction = () => {
     switch (model.status) {
       case 'NOT_DOWNLOADED':
-        onInstall && onInstall()
+        model.onInstall && model.onInstall()
         break
       case 'RUNNING':
-        onStop && onStop()
+        model.onStop && model.onStop()
         break
       case 'STOPPED':
-        onRun && onRun()
+        model.onRun && model.onRun()
         break
       default:
         break
@@ -84,10 +124,10 @@ const ModelWidget = ({
       case 'DOWNLOADING':
         return (
           <motion.div
-            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
-            initial={{ opacity: 0, scale: 0.8 }} // starts from invisible and scaled down
-            animate={{ opacity: 1, scale: 1 }} // animate to fully visible and normal size
-            transition={{ duration: 0.1, ease: 'easeInOut' }} // duration and timing function
+            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full z-50"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.1, ease: 'easeInOut' }}
           >
             <CircularProgressbar
               value={model.progress || 0}
@@ -95,15 +135,15 @@ const ModelWidget = ({
               styles={{
                 path: { stroke: 'rgba(255, 255, 255, 1)' },
                 trail: { stroke: 'rgba(255, 255, 255, 0.4)' },
-                text: { fill: 'rgba(255, 255, 255, 0.75)', fontSize: '25px' },
+                text: { fill: 'rgba(255, 255, 255, 0.85)', fontSize: '30px' },
               }}
             />
           </motion.div>
         )
-      case "ACKNOWLEDGED":
+      case 'ACKNOWLEDGED':
       case 'INSTALLING':
         return (
-          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
+          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full z-50">
             <img src={installIcon} alt="" className="animate-spin" />
           </div>
         )
@@ -114,7 +154,7 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className="play-button"
+            className="play-button z-50"
           >
             <img src={playIcon} alt="" />
           </div>
@@ -126,30 +166,27 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className="stop-button"
+            className="stop-button z-50"
           >
             <img src={stopIcon} alt="" className="" />
           </div>
         )
-
+      case 'NOT_DOWNLOADED':
+        return (
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              handleAction()
+            }}
+            className="install-button absolute z-50"
+          >
+            <img src={downloadIcon} alt="" className="icon-small" />
+            <span className="text-xs nowrap relative capitalize">Install</span>
+          </div>
+        )
       default:
-        break
+        return null
     }
-  }
-
-  if (type === 'my-model') {
-    return (
-      <div className={`model-my-models base-regular ${className}`} {...props}>
-        <img
-          src={model.backgroundImage}
-          alt=""
-          className="w-full min-h-[78px]"
-        />
-        <p className="callout-regular text-surface-main w-full text-center mt-[11px]">
-          {model.title}
-        </p>
-      </div>
-    )
   }
 
   return (
@@ -165,50 +202,33 @@ const ModelWidget = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img src={model.backgroundImage} alt="" className="w-full h-full" />
-
-        {/* This part is the background image and its blur overlay, control directly from the css in this folder */}
+        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover z-20" />
+  
         <div
           className={`
-            absolute inset-0 z-99
+            absolute inset-0 z-30
             h-full w-full
             ${model.status === 'RUNNING' ? 'bg-black/70' : 'bg-black/10'}
           `}
         >
-          <div className="blur-overlay"></div>
-          <div className="linear-overlay"></div>
+          <OverlaySVG />
         </div>
-
-        {/* This part is the widget content */}
-        <div className="absolute top-0 left-0 p-2 nowrap z-[100]">
-          <div className="relative">
-            <div className="text-content">
-              <span className='title-xs inline-block relative capitalize max-w-80 truncate text-surface-main'>
+  
+        <div className="absolute top-0 left-0 p-2 z-40 w-full">
+          <div className="relative flex flex-col w-full">
+            <div className="text-content flex flex-col overflow-hidden w-full">
+              <span className='title-xs inline-block capitalize truncate text-surface-main leading-normal'>
                 {model?.name.split('/')[1]}
               </span>
-              <span className='title-xs inline-block relative capitalize max-w-120 truncate text-surface-750'>
+              <span className='title-xs inline-block capitalize truncate text-surface-750 leading-normal'>
                 {toUnitOfCount(model?.size)} • {model?.author}
               </span>
             </div>
           </div>
         </div>
-        <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
-        {getWidgetButton()}
       </div>
-
-      {model.status == 'NOT_DOWNLOADED' && (
-        <div
-          onClick={(e) => {
-            e.stopPropagation()
-            handleAction()
-          }}
-          className="install-button absolute"
-        >
-          <img src={downloadIcon} alt="" className="icon-small" />
-          <span className="text-xs nowrap relative capitalize">Install</span>
-        </div>
-      )}
-      {model.error && getErrorButton(model.error)}
+      {getWidgetButton()}
+      {model.error && <div className="z-50 absolute top-2 right-2">{getErrorButton(model.error)}</div>}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { on } from 'events';
 import { infer as Infer, z } from 'zod';
 
 export const SysinfoSchema = z.object({
@@ -37,6 +38,12 @@ export const ModelSchema = z.object({
     description: z.string(),
     params: z.number(),
     error: z.string().optional(),
+    onInstall: z.function().optional(),
+    onRun: z.function().optional(),
+    onStop: z.function().optional(),
+    onDelete: z.function().optional(),
+    onDisconnect: z.function().optional(),
+    onClick: z.function().optional(),
 })
 
 export type TModel = Infer<typeof ModelSchema>;

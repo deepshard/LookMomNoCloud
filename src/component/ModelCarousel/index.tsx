@@ -1,14 +1,32 @@
 // ModelCarousel.tsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { TModel } from '../../types/schemas'
-import ModelWidget from '../ModelWidget/ModelWidget'
-import SkeletonModelWidget from './skeleton'
+import ModelWidget from '../ModelWidget'
+import SkeletonModelWidget from './ModelWidgetSkeleton'
 import { motion, AnimatePresence } from 'framer-motion'
 import './index.css'
+
 
 interface ModelCarouselProps {
   models: TModel[]
   isLoading: boolean
+}
+
+const getSortValue = (status: string) => {
+  switch (status) {
+    case 'RUNNING':
+      return 0
+    case 'DOWNLOADING':
+      return 1
+    case 'INSTALLING':
+      return 2
+    case 'STOPPED':
+      return 3
+    case 'NOT_DOWNLOADED':
+      return 4
+    default:
+      return 5
+  }
 }
 
 const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
@@ -24,42 +42,63 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
     }
   }, [isLoading])
 
+  const sortedModels = useMemo(() => {
+    return [...models].sort((a, b) => {
+      return getSortValue(a.status) - getSortValue(b.status)
+    })
+  }, [models])
+
   return (
-    <div className="model-carousel">
+    <div className="model-carousel custom-scrollbar">
       <div className="model-carousel-inner">
-        {(isLoading || !showModels) && 
-          Array(skeletonCount).fill(null).map((_, index) => (
-            <div key={`skeleton-wrapper-${index}`} className="model-item-wrapper">
-              <AnimatePresence>
-                <motion.div
-                  key={`skeleton-${index}`}
-                  initial={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <SkeletonModelWidget />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          ))
-        }
-        {showModels && models.map((model, index) => (
-          <div key={`model-wrapper-${model.id}`} className="model-item-wrapper">
-            <AnimatePresence>
-              <motion.div
-                key={model.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
+        {(isLoading || !showModels) &&
+          Array(skeletonCount)
+            .fill(null)
+            .map((_, index) => (
+              <div
+                key={`skeleton-wrapper-${index}`}
+                className="model-item-wrapper"
               >
-                <ModelWidget model={model} className="flex-shrink-0" />
+                <AnimatePresence>
+                  <motion.div
+                    key={`skeleton-${index}`}
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <SkeletonModelWidget />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            ))}
+        <AnimatePresence>
+          {showModels &&
+            sortedModels.map((model) => (
+              <motion.div
+                key={`model-wrapper-${model.id}`}
+                className="model-item-wrapper"
+                layout
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 30,
+                  duration: 0.5,
+                }}
+              >
+                <ModelWidget
+                  key={`${model.id}-${model.status}`}
+                  model={model}
+                  className="flex-shrink-0"
+                />
               </motion.div>
-            </AnimatePresence>
-          </div>
-        ))}
+            ))}
+        </AnimatePresence>
       </div>
     </div>
   )
 }
 
-export default ModelCarousel;
+export default ModelCarousel

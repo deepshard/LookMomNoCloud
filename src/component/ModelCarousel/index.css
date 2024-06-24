@@ -1,54 +1,78 @@
 .model-carousel {
     width: 100%;
     overflow-x: auto;
-  }
-  
-  .model-carousel-inner {
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+    position: relative;
+}
+
+.model-carousel::-webkit-scrollbar {
+    height: 4px;
+}
+
+.model-carousel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.model-carousel::-webkit-scrollbar-thumb {
+    background-color: rgba(155, 155, 155, 0.5);
+    border-radius: 2px;
+}
+
+.model-carousel-inner {
     display: flex;
     gap: 16px;
     padding: 16px;
-  }
-  
-  .model-item-wrapper {
+    padding-bottom: 20px;
+    /* Add some space for the scrollbar */
+}
+
+.model-item-wrapper {
     position: relative;
     width: 124px;
     height: 78px;
     flex-shrink: 0;
-  }
-  
-  .model-item-wrapper > div {
+}
+
+.model-item-wrapper>div {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-  }
-  
-  .skeleton-model-widget {
+}
+
+.skeleton-model-widget {
     width: 100%;
     height: 100%;
-    background-color: #E5E7EB;
+    background-color: #e5e7eb37;
     border-radius: 13px;
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 0.5) infinite;
     clip-path: path("M 104.5 0 c 6.0572 0 9.0859 0 11.4749 0.9896 a 13.0000 13.0000 0 0 1 7.0355 7.0355 c 0.9896 2.3890 0.9896 5.4176 0.9896 11.4749 L 124 58.5 c 0 6.0572 0 9.0859 -0.9896 11.4749 a 13.0000 13.0000 0 0 1 -7.0355 7.0355 c -2.3890 0.9896 -5.4176 0.9896 -11.4749 0.9896 L 19.5 78 c -6.0572 0 -9.0859 0 -11.4749 -0.9896 a 13.0000 13.0000 0 0 1 -7.0355 -7.0355 c -0.9896 -2.3890 -0.9896 -5.4176 -0.9896 -11.4749 L 0 19.5 c 0 -6.0572 0 -9.0859 0.9896 -11.4749 a 13.0000 13.0000 0 0 1 7.0355 -7.0355 c 2.3890 -0.9896 5.4176 -0.9896 11.4749 -0.9896 Z");
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
     }
+
     50% {
-      opacity: .5;
+        opacity: .5;
     }
-  }
-  
-  @media (max-width: 640px) {
+}
+
+@media (max-width: 640px) {
     .model-carousel-inner {
-      gap: 12px;
-      padding: 12px;
+        gap: 12px;
+        padding: 12px;
+        padding-bottom: 16px;
     }
+
     .model-item-wrapper {
-      width: 110px;
-      height: 70px;
+        width: 110px;
+        height: 70px;
     }
-  }
+}

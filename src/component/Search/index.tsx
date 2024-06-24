@@ -1,6 +1,6 @@
 import { Input } from "antd";
 import Featured from "../Featured";
-import ModelWidget from "../ModelWidget/ModelWidget";
+import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useSearchModels } from "../../lib/react-query/queriesAndMutations";

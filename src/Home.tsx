@@ -1,14 +1,13 @@
-import ModelWidget from "./component/ModelWidget/ModelWidget";
+import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
+import { useNavigate } from "react-router-dom";
+import { TModel } from "./types/schemas";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
-import { useHomePageContext } from "./context/HomePageProvider";
 import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
-import { useNavigate } from "react-router-dom";
-import { TModel } from "./types/schemas";
 import ModelCarousel from "./component/ModelCarousel";
 
 export default function Home() {

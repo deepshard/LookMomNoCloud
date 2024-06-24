@@ -4,8 +4,8 @@ import path from "path";
 import os from "os";
 import { OTAUpdater } from "./ota";
 
-
 autoUpdater.autoDownload = false;
+autoUpdater.forceDevUpdateConfig = true;
 
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -21,7 +21,7 @@ const createWindow = () => {
     height: 690 ,
     titleBarStyle: "hidden",
     webPreferences: {
-      // devTools: false,
+      devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
@@ -60,14 +60,20 @@ const createWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
+      path.join(__dirname, `../dist/index.html`)
     );
   }
   
   // Open the DevTools.
+<<<<<<< HEAD
   process.env.NODE_ENV === "development" && mainWindow.webContents.openDevTools();
   process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
 
+=======
+  mainWindow.webContents.openDevTools();
+  // process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
+  
+>>>>>>> 8da5e13 (stash)
   return mainWindow;
 };
 

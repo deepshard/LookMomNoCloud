@@ -1,4 +1,4 @@
-import { BrowserWindow, app, autoUpdater, ipcMain } from "electron";
+import { BrowserWindow, app, autoUpdater } from "electron";
 import { AppUpdater } from "electron-updater";
 import path from "path";
 import os from "os";
@@ -139,8 +139,6 @@ export class OTAUpdater {
   
     // Compare hashes
     if (response && latestHash !== response.data) {
-      console.log('Server update response:', response.data);
-      console.log('Server update latest:', latestHash);
       return response.data.trim();
     }
   
@@ -154,11 +152,15 @@ export class OTAUpdater {
   
 
   checkForAppUpdate = async () => {
-    const appUpdateInfo = await this.appUpdater.checkForUpdates();
-    const appUpdateAvailable = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
-
-    if (appUpdateAvailable) {
-      return appUpdateInfo;
+    try {
+      const appUpdateInfo = await this.appUpdater.checkForUpdates();
+      const appUpdateAvailable = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
+  
+      if (appUpdateAvailable) {
+        return appUpdateInfo;
+      }
+    } catch (error) {
+      console.error(error);
     }
 
     return null;
@@ -187,7 +189,6 @@ export class OTAUpdater {
     // Check for server and app updates
     const serverUpdateInfo = await this.checkForServerUpdate();
     const appUpdateInfo = await this.checkForAppUpdate();
-    console.log(serverUpdateInfo, appUpdateInfo);
 
     // Check if server update is available and track data if so
     if (serverUpdateInfo != null) {
@@ -214,6 +215,8 @@ export class OTAUpdater {
       };
       this.addBytesToDownload(await this.getAppUpdateSize(appUpdateInfo));
     }
+
+    console.log(this.downloadProgress.totalBytes);
 
     // Send update information to renderer
     if (this.updateServer.available || this.updateApp.available) {

@@ -9,6 +9,8 @@ import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import { AnimatePresence } from "framer-motion";
+import AnimateModal from "./component/AnimateModal";
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
@@ -19,15 +21,12 @@ export default function Home() {
 
   const handleHighlightClick = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
-  }
+  };
 
   return (
     <>
-      {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
 
             <div className="flex gap-1.5 w-[660px]">
@@ -90,6 +89,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
+        <Search recentlyUsedModels={storeHighlights} />
+      </AnimateModal>
+      <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
+        <MyModels myModels={Object.values(downloads)} />
+      </AnimateModal>
     </>
   );
 }

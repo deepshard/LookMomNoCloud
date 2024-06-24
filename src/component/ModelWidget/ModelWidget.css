@@ -43,7 +43,7 @@
 }
 
 .install-button {
-    width: 65px;
+    width: 66px;
     height: 20px;
     border-radius: 100px;
     background: rgba(0, 0, 0, 0.10);
@@ -61,4 +61,48 @@
     bottom: -10px;
     left: 25%;
     z-index: 100;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Smoothen transition */
+}
+
+.install-button:hover {
+    transform: scale(1.05);
+}
+
+.stop-button {
+    height: 30px;
+    width: 30px;
+    z-index: 100;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateY(50%) translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        inset 0px 4px 30px 0px rgba(255, 255, 255, 0.15),
+        inset 0px -4px 20px 0px rgba(85, 85, 85, 0.10),
+        inset 0px 0px 8.976px 0px rgba(255, 255, 255, 0.10),
+        0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+    backdrop-filter: blur(50px);
+    transition: transform 0.1s ease-out, box-shadow 0.3s ease-out;
+    cursor: pointer;
+}
+
+.stop-button:hover {
+    transform: translateY(50%) translateX(-50%) scale(1.09);
+    box-shadow:
+        inset 0px 4px 30px 0px rgba(255, 255, 255, 0.2),
+        inset 0px -4px 20px 0px rgba(85, 85, 85, 0.15),
+        inset 0px 0px 8.976px 0px rgba(255, 255, 255, 0.15),
+        0px 0px 20px 0px rgba(85, 85, 85, 0.15);
+}
+
+.icon-small {
+    width: 8px;
+    height: 8px;
 }

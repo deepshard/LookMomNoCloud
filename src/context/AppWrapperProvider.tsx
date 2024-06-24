@@ -29,7 +29,7 @@ const AppWrapperProvider = ({ children }) => {
       setHighlights(highlights);
     }
   }, [highlights]);
-  return <AppWrapperContext.Provider value={{isLoadingMyModels}}>{children}</AppWrapperContext.Provider>;
+  return <AppWrapperContext.Provider value={{ isLoadingMyModels }}>{children}</AppWrapperContext.Provider>;
 };
 
 export const useAppWrapper = () => {

@@ -149,6 +149,21 @@ MODELS = [
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
     },
+    {
+        "id": "ead12fba-9e9b-43d8-8c26-6141318700cb",
+        "name": "test",
+        "title": "test",
+        "size": 1,
+        "author": "test",
+        "downloads": 1,
+        "likes": 1,
+        "intro": "test",
+        "capabilities": "test",
+        "risks": "test",
+        "evalId": "test",
+        "hfLink": "openai-community/gpt2",
+        "backgroundImage": "test",
+    },
 ]
 
 # Mock file data

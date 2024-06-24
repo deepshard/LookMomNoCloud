@@ -23,7 +23,7 @@ const ModelWidget = ({ model, type = "regular", onInstall, onRun, onStop, onDele
   const stopIcon = "/src/assets/icons/stop.svg"
   const runningIcon = "/src/assets/icons/running.svg"
   const installIcon = "/src/assets/icons/install.svg"
-  const errorIcon = "/src/assets/icons/error.svg" 
+  const errorIcon = "/src/assets/icons/error.svg"
 
   const [isHovered, setIsHovered] = useState(false);
 

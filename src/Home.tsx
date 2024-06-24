@@ -24,16 +24,11 @@ export default function Home() {
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)}/>}
+      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
 
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
-            <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
-              <div className="h-4 w-4 rounded-full bg-surface-750" />
-
-              <h1 className="text-surface-750 w-full">Welcome, Peter</h1>
-            </div>
 
             <div className="flex gap-1.5 w-[660px]">
               {storeHighlights?.map((model) => (
@@ -53,18 +48,18 @@ export default function Home() {
                       ...model,
                       ...updatedModel,
                     });
-                    if(updatedModel.status === 'RUNNING') {
+                    if (updatedModel.status === 'RUNNING') {
                       controller.abort();
                     }
                   })}
                   onStop={() => {
                     stopModel(model)
-                    .then((_) => {
-                      updateModels({
-                        ...model,
-                        status: 'STOPPED',
+                      .then((_) => {
+                        updateModels({
+                          ...model,
+                          status: 'STOPPED',
+                        })
                       })
-                    })
                   }}
                   onDelete={() => deleteModel(model)}
                   onDisconnect={() => cleanupInstall(model)}

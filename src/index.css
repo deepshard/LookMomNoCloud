@@ -6,7 +6,8 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.3;
-  font-weight: 400; /* Regular */
+  font-weight: 400;
+  /* Regular */
   color: #fff;
   background-color: rgba(0, 0, 0, 0.75);
 
@@ -16,10 +17,14 @@ body {
   font-smooth: never;
 
   /* No Select */
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera, Firefox, Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently supported by Chrome, Edge, Opera, Firefox, Safari */
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -60,6 +65,7 @@ input::placeholder,
 .ant-input {
   outline: none !important;
 }
+
 .ant-input:hover,
 .ant-input:focus {
   background-color: transparent !important;
@@ -72,6 +78,7 @@ input::placeholder,
 .react-multi-carousel-track {
   height: 100% !important;
 }
+
 .react-multi-carousel-list {
   position: static !important;
 
@@ -83,6 +90,7 @@ input::placeholder,
     bottom: -35px !important;
     height: 35px;
   }
+
   .react-multi-carousel-dot-list.discover-carousel-dots {
     bottom: 14px !important;
   }
@@ -114,22 +122,22 @@ button.ant-btn.preorder-btn {
     height: 6px !important;
   }
 
-  .slick-active > button {
+  .slick-active>button {
     background-color: rgba(255, 255, 255, 0.5) !important;
   }
 
-  :not(.slick-active) > button:hover {
+  :not(.slick-active)>button:hover {
     background-color: rgba(255, 255, 255, 0.5) !important;
   }
 }
 
 div.slick-list,
 div.slick-track,
-div.slick-slide > div {
+div.slick-slide>div {
   height: 100% !important;
 }
 
-div.slick-slide > div {
+div.slick-slide>div {
   padding: 0 !important;
   /* overflow: overlay !important; */
 
@@ -141,15 +149,16 @@ div.slick-slide > div {
 .ant-carousel {
   overflow: auto;
 }
-.sys-info-hardware > .ant-carousel {
+
+.sys-info-hardware>.ant-carousel {
   border-radius: 24px;
   overflow: hidden;
 }
 
-.my-models-container > .ant-carousel {
+.my-models-container>.ant-carousel {
   height: 100% !important;
 
-  .slick-slide > div {
+  .slick-slide>div {
     display: flex;
     align-items: center;
   }
@@ -180,13 +189,12 @@ div.slick-slide > div {
   backdrop-filter: blur(50px);
 }
 
-@layer base {
-}
+@layer base {}
 
 @layer utilities {
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply flex justify-between items-center z-10  w-full top-0 p-5;
+    @apply flex justify-between items-center z-10 w-full top-0 p-5;
   }
 
   /* --------  TYPOGRAPHY  -------- */
@@ -268,7 +276,7 @@ div.slick-slide > div {
   }
 
   .radial-gradient {
-    @apply bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] !important;
+    @apply bg-[radial-gradient(ellipse_at_top, _var(--tw-gradient-stops))] !important;
   }
 
   .truffle-btn {
@@ -320,13 +328,14 @@ div.slick-slide > div {
     0% {
       transform: translateX(0);
     }
+
     100% {
       transform: translateX(-60%);
     }
   }
 
   .widget-3d {
-    @apply glass-3d bg-[rgba(0,0,0,0.1)] rounded-lg !important;
+    @apply glass-3d bg-[rgba(0, 0, 0, 0.1)] rounded-lg !important;
   }
 
   .search {
@@ -344,6 +353,7 @@ div.slick-slide > div {
   .clip-rectangle {
     overflow: hidden;
   }
+
   .truncate {
     width: 10ch;
   }
@@ -355,14 +365,18 @@ div.slick-slide > div {
     text-overflow: ellipsis;
     overflow: hidden;
   }
+
   .scrolling {
     animation: scroll 5s ease-out infinite;
   }
+
   @keyframes scroll {
+
     0%,
     100% {
       transform: translateX(0);
     }
+
     50% {
       transform: translateX(-45%);
     }
@@ -378,7 +392,7 @@ div.slick-slide > div {
   }
 
   .sysinfo-model-item {
-    @apply relative flex items-center p-2.5 gap-2  !important;
+    @apply relative flex items-center p-2.5 gap-2 !important;
   }
 
   .sysinfo-model-item::before {

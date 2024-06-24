@@ -13,9 +13,6 @@ from utils import get_app_data_path
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 async def is_model_downloaded(model_id: str) -> bool:
@@ -28,7 +25,6 @@ async def is_model_downloaded(model_id: str) -> bool:
 
     async with global_state_manager.session.get(
         f"{TRUFFLE_API_URL}/models/{model_id}",
-        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model_id}"
         model = await response.json()
@@ -65,7 +61,6 @@ async def get_model_details(model_id):
     if downloaded:
         async with global_state_manager.session.get(
             f"{TRUFFLE_API_URL}/models/{model_id}",
-            headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
         ) as response:
             assert response.status == 200, f"Failed to fetch model {model_id}"
             model = await response.json()

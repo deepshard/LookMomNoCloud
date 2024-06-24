@@ -29,12 +29,11 @@ const ModelWidget = ({
   className = '',
   ...props
 }: ModelWidgetProps) => {
-  const downloadIcon = '/src/assets/icons/download-fill.svg'
+  const downloadIcon = '/src/assets/icons/download.svg'
   const playIcon = '/src/assets/icons/play.svg'
   const stopIcon = '/src/assets/icons/stop.svg'
   const installIcon = '/src/assets/icons/install.svg'
   const errorIcon = '/src/assets/icons/error.svg'
-  const progressiveBlur = '/src/assets/icons/progressive-blur.svg'
 
   const [isHovered, setIsHovered] = useState(false)
 
@@ -105,18 +104,6 @@ const ModelWidget = ({
         return (
           <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={installIcon} alt="" className="animate-spin" />
-          </div>
-        )
-      case 'NOT_DOWNLOADED':
-        return (
-          <div
-            onClick={(e) => {
-              e.stopPropagation()
-              handleAction()
-            }}
-            className={`h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full transition transition-200 widget-3d`}
-          >
-            <img src={downloadIcon} alt="" />
           </div>
         )
       case 'STOPPED':
@@ -197,12 +184,7 @@ const ModelWidget = ({
         {/* This part is the widget content */}
         <div className="absolute top-0 left-0 p-2 nowrap z-[100]">
           <div className="relative">
-            {' '}
-            {/* Add this wrapper */}
-            {/* <div className="model-widget-text-holder"></div> */}
             <div className="text-content">
-              {' '}
-              {/* Wrap text content */}
               <ScrollingText
                 className="text-sm nowrap relative capitalize"
                 text={model?.name.split('/')[1]}
@@ -226,6 +208,18 @@ const ModelWidget = ({
         <p className="title-sm text-surface-750 absolute bottom-0 left-0 p-2 scroll-on-hover"></p>
         {getWidgetButton()}
       </div>
+
+      {
+        (model.status == "NOT_DOWNLOADED" && 
+          <div onClick={(e) => {
+            e.stopPropagation()
+            handleAction()
+          }} className='install-button absolute'>
+            <img src={downloadIcon} alt="" />
+            <span className='text-xs nowrap relative capitalize'>Install</span>
+          </div>
+        )
+      }
       {model.error && getErrorButton(model.error)}
     </div>
   )

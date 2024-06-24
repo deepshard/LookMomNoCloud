@@ -41,3 +41,24 @@
     background: rgba(0, 0, 0, 0.20);
     backdrop-filter: blur(1.25px);
 }
+
+.install-button {
+    width: 65px;
+    height: 20px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.10);
+
+    /* Glass-Texture/3D */
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.10) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+    backdrop-filter: blur(50px);
+
+    display: flex;
+    padding: 3px 12px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+
+    bottom: -10px;
+    left: 25%;
+    z-index: 100;
+}

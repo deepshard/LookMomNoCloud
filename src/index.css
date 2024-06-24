@@ -279,14 +279,6 @@ div.slick-slide > div {
     @apply h-[78px] w-[124px] overflow-hidden cursor-pointer relative !important;
     clip-path: path("M 104.5 0 c 6.0572 0 9.0859 0 11.4749 0.9896 a 13.0000 13.0000 0 0 1 7.0355 7.0355 c 0.9896 2.3890 0.9896 5.4176 0.9896 11.4749 L 124 58.5 c 0 6.0572 0 9.0859 -0.9896 11.4749 a 13.0000 13.0000 0 0 1 -7.0355 7.0355 c -2.3890 0.9896 -5.4176 0.9896 -11.4749 0.9896 L 19.5 78 c -6.0572 0 -9.0859 0 -11.4749 -0.9896 a 13.0000 13.0000 0 0 1 -7.0355 -7.0355 c -0.9896 -2.3890 -0.9896 -5.4176 -0.9896 -11.4749 L 0 19.5 c 0 -6.0572 0 -9.0859 0.9896 -11.4749 a 13.0000 13.0000 0 0 1 7.0355 -7.0355 c 2.3890 -0.9896 5.4176 -0.9896 11.4749 -0.9896 Z");
   }
-
-  .model-widget-text-holder {
-    border-radius: 1px;
-    background: rgba(0, 0, 0, 0.2);
-    filter: blur(10px);
-    backdrop-filter: blur(9px);
-    @apply absolute inset-0 z-0;
-  }
   
   .text-content {
     @apply relative z-10;

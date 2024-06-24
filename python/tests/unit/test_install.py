@@ -100,9 +100,9 @@ def mock_mlc(mocker):
     mocker.patch(f"{module}.detect_weight", return_value=(MagicMock(), MagicMock()))
     mocker.patch(f"{module}.detect_device", return_value=MagicMock())
     mocker.patch(f"{module}.detect_target_and_host", return_value=(MagicMock(), MagicMock()))
-    convert_weight = mocker.patch(f"{module}.convert_weight_mlc", return_value=MagicMock())
-    compile = mocker.patch(f"{module}.compile_mlc", return_value=MagicMock())
-    gen_config = mocker.patch(f"{module}.gen_config_mlc", return_value=MagicMock())
+    convert_weight = mocker.patch(f"{module}.convert_weight", return_value=MagicMock())
+    compile = mocker.patch(f"{module}.compile", return_value=MagicMock())
+    gen_config = mocker.patch(f"{module}.gen_config", return_value=MagicMock())
 
     mocker.patch("json.load", return_value={})
 

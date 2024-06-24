@@ -8,7 +8,7 @@ import fs from "fs";
 import zlib from "zlib";
 import stream from "stream";
 import { promisify } from "util";
-import tar from "tar";
+import unzipper from 'unzipper';
 
 
 interface ServerUpdateInformation {
@@ -58,12 +58,10 @@ export class OTAUpdater {
         fs.mkdirSync(tmpPath, { recursive: true });
       }
 
-      // Unzip tar.gz to temp folder
-      await tar.x({
-        file: inputPath,
-        C: tmpPath,
-        sync: true,
-      });
+      // Unzip file to temp folder
+      await fs.createReadStream(inputPath)
+        .pipe(unzipper.Extract({ path: tmpPath }))
+        .promise();
 
       // Find the server folder in the temp folder
       const extractedContents = fs.readdirSync(tmpPath);

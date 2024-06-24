@@ -335,7 +335,7 @@ div.slick-slide>div {
   }
 
   .widget-3d {
-    @apply glass-3d bg-[rgba(0, 0, 0, 0.1)] rounded-lg !important;
+    @apply glass-3d bg-black/10 rounded-lg !important;
   }
 
   .search {

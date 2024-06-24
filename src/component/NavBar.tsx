@@ -12,18 +12,6 @@ const NavBar = () => {
   const { setShowSearch } = useHomePageContext();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleUpdateAvailable = (value: any) => {
-      console.log(value);
-    }
-    //@ts-ignore
-    window.ipc.onUpdateAvailable(handleUpdateAvailable);
-    return () => {
-      //@ts-ignore
-      window.ipc.onUpdateAvailable(() => {});
-    };
-  }, []);
-
   const getWelcomeInfo = (): WelcomeInfo => {
     // If local time is between 5:00 and 11:59, return morning message
     // If local time is between 12:00 and 19:59, return afternoon message
@@ -73,7 +61,7 @@ const NavBar = () => {
         </div>
       </div>
 
-      <div className="bg-surface-500 h-5 w-5 rounded-full cursor-pointer" onClick={() => navigate(`/update`)} />
+      <div className="bg-surface-500 h-5 w-5 rounded-full cursor-pointer" />
     </div>
   );
 };

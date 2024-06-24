@@ -27,6 +27,12 @@ interface DownloadProgress {
   progress: number;
 }
 
+export interface TruffleUpdateInfo {
+  server: ServerUpdateInformation,
+  app: AppUpdateInformation,
+  bytes: number,
+}
+
 export class OTAUpdater {
   private mainWindow: BrowserWindow;
   private appUpdater: AppUpdater;
@@ -133,6 +139,8 @@ export class OTAUpdater {
   
     // Compare hashes
     if (response && latestHash !== response.data) {
+      console.log('Server update response:', response.data);
+      console.log('Server update latest:', latestHash);
       return response.data.trim();
     }
   

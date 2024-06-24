@@ -9,17 +9,33 @@ import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import UpdateTruffle from "./component/UpdateTruffle";
+import { useEffect, useState } from "react";
+import { TruffleUpdateInfo } from "./ota";
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
+  const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
 
   const navigate = useNavigate();
 
   const handleHighlightClick = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
-  }
+  };
+
+  useEffect(() => {
+    const handleUpdateAvailable = (newUpdateInfo: TruffleUpdateInfo) => {
+      setUpdateInfo(newUpdateInfo);
+    };
+    //@ts-ignore
+    window.ipc.onUpdateAvailable(handleUpdateAvailable);
+    return () => {
+      //@ts-ignore
+      window.ipc.onUpdateAvailable(() => {});
+    };
+  }, []);
 
   return (
     <>
@@ -27,9 +43,7 @@ export default function Home() {
       {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
-
             <div className="flex gap-1.5 w-[660px]">
               {storeHighlights?.map((model) => (
                 <ModelWidget
@@ -43,23 +57,24 @@ export default function Home() {
                       });
                     });
                   }}
-                  onRun={() => runModels([model], undefined, (updatedModel, controller) => {
-                    updateModels({
-                      ...model,
-                      ...updatedModel,
-                    });
-                    if (updatedModel.status === 'RUNNING') {
-                      controller.abort();
-                    }
-                  })}
+                  onRun={() =>
+                    runModels([model], undefined, (updatedModel, controller) => {
+                      updateModels({
+                        ...model,
+                        ...updatedModel,
+                      });
+                      if (updatedModel.status === "RUNNING") {
+                        controller.abort();
+                      }
+                    })
+                  }
                   onStop={() => {
-                    stopModel(model)
-                      .then((_) => {
-                        updateModels({
-                          ...model,
-                          status: 'STOPPED',
-                        })
-                      })
+                    stopModel(model).then((_) => {
+                      updateModels({
+                        ...model,
+                        status: "STOPPED",
+                      });
+                    });
                   }}
                   onDelete={() => deleteModel(model)}
                   onDisconnect={() => cleanupInstall(model)}
@@ -90,6 +105,8 @@ export default function Home() {
           </div>
         </div>
       </div>
+      {updateInfo && <UpdateTruffle className="fixed bottom-5 left-5" onClick={() => navigate(`/update`)} />}
+
     </>
   );
 }

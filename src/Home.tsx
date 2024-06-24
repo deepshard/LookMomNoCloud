@@ -1,7 +1,5 @@
 import ModelWidget from "./component/ModelWidget";
-import { useGetHighlights } from "./lib/react-query/queriesAndMutations";
-import { useEffect } from "react";
-import { useAppStore, useStore } from "./store/store";
+import { useAppStore } from "./store/store";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
@@ -9,25 +7,24 @@ import Search from "./component/Search";
 import { useHomePageContext } from "./context/HomePageProvider";
 import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
+import { useNavigate } from "react-router-dom";
+import { TModel } from "./types/schemas";
 
 export default function Home() {
-
-  const { data: highlights } = useGetHighlights();
-  const { highlights: storeHighlights, setHighlights, sysInfo, downloads } = useAppStore();
-  const { updateModels } = useStore();
+  const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
 
-  useEffect(() => {
-    if (highlights) {
-      setHighlights(highlights);
-    }
-  }, [highlights]);
+  const navigate = useNavigate();
+
+  const handleHighlightClick = (model: TModel) => {
+    navigate(`/model/${model.id}`, { state: { model } });
+  }
 
   return (
     <>
       {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)}/>}
+      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
 
@@ -56,21 +53,22 @@ export default function Home() {
                       ...model,
                       ...updatedModel,
                     });
-                    if(updatedModel.status === 'RUNNING') {
+                    if (updatedModel.status === 'RUNNING') {
                       controller.abort();
                     }
                   })}
                   onStop={() => {
                     stopModel(model)
-                    .then((res) => {
-                      updateModels({
-                        ...model,
-                        status: 'STOPPED',
+                      .then((_) => {
+                        updateModels({
+                          ...model,
+                          status: 'STOPPED',
+                        })
                       })
-                    })
                   }}
                   onDelete={() => deleteModel(model)}
                   onDisconnect={() => cleanupInstall(model)}
+                  onClick={() => handleHighlightClick(model)}
                 />
               ))}
             </div>

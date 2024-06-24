@@ -14,7 +14,7 @@ from endpoints.model.install.install import (
     get_hf_repo_info,
 )
 from truffle_types import FileInfo, Quantization
-from tests.data import (
+from tests.unit.data import (
     ID,
     MODEL_URL,
     MOCK_API_RESPONSE,

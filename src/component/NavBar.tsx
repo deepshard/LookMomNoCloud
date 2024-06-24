@@ -2,7 +2,7 @@ import React from "react";
 import { useHomePageContext } from "../context/HomePageProvider";
 
 const NavBar = () => {
-  const searchIcon = process.env.NODE_ENV === "development" ? "/assets/icons/search-icon.svg" : "../../renderer/main_window/assets/icons/search-icon.svg";
+  const searchIcon = "/src/assets/icons/search-icon.svg"
   const {setShowSearch} = useHomePageContext();
   return (
     <div className="navbar">
@@ -11,8 +11,6 @@ const NavBar = () => {
       <div className="flex w-full max-w-[660px] gap-3 justify-start items-center">
         <div className="flex justify-start items-center gap-1.5">
           <div
-            // src={""}
-            // alt="search"
             className="w-[18px] h-[18px] rounded-full object-cover bg-surface-main"
           />
 

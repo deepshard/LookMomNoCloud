@@ -15,7 +15,6 @@ from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 
@@ -81,10 +80,10 @@ async def get_model_details(model_id):
                 intro=model["intro"],
                 capabilities=model["capabilities"],
                 risks=model["risks"],
-                eval_id=model["evalId"],
-                hf_link=model["hfLink"],
+                evalId=model["evalId"],
+                hfLink=model["hfLink"],
                 status=await get_model_status(model_id),
-                background_image=model["backgroundImage"],
+                backgroundImage=model["backgroundImage"],
                 instance=0,
                 progress=0,
             )

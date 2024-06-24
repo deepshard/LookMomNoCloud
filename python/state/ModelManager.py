@@ -15,7 +15,6 @@ from utils import (
 from constants import TRUFFLE_API_URL
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 

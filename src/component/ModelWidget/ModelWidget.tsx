@@ -113,7 +113,7 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className={`flex-center h-[30px] w-[30px] absolute bottom-[50%] translate-y-[50%] left-[50%] translate-x-[-50%] bg-[#D9D9D94D] rounded-full transition transition-200  widget-3d cursor-pointer`}
+            className="play-button"
           >
             <img src={playIcon} alt="" />
           </div>
@@ -164,19 +164,18 @@ const ModelWidget = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        
         <img src={model.backgroundImage} alt="" className="w-full h-full" />
-        
+
         {/* This part is the background image and its blur overlay, control directly from the css in this folder */}
         <div
           className={`
             absolute inset-0 z-99
             h-full w-full
-            ${model.status === "RUNNING" ? 'bg-black/70' : 'bg-black/10'}
+            ${model.status === 'RUNNING' ? 'bg-black/70' : 'bg-black/10'}
           `}
         >
-          <div className='blur-overlay'></div>
-          <div className='linear-overlay'></div>
+          <div className="blur-overlay"></div>
+          <div className="linear-overlay"></div>
         </div>
 
         {/* This part is the widget content */}
@@ -207,17 +206,18 @@ const ModelWidget = ({
         {getWidgetButton()}
       </div>
 
-      {
-        (model.status == "NOT_DOWNLOADED" && 
-          <div onClick={(e) => {
+      {model.status == 'NOT_DOWNLOADED' && (
+        <div
+          onClick={(e) => {
             e.stopPropagation()
             handleAction()
-          }} className='install-button absolute'>
-            <img src={downloadIcon} alt="" className='icon-small'/>
-            <span className='text-xs nowrap relative capitalize'>Install</span>
-          </div>
-        )
-      }
+          }}
+          className="install-button absolute"
+        >
+          <img src={downloadIcon} alt="" className="icon-small" />
+          <span className="text-xs nowrap relative capitalize">Install</span>
+        </div>
+      )}
       {model.error && getErrorButton(model.error)}
     </div>
   )

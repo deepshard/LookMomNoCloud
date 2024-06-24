@@ -102,6 +102,36 @@
         0px 0px 20px 0px rgba(85, 85, 85, 0.15);
 }
 
+.play-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    width: 30px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 8px;
+    background-color: rgba(217, 217, 217, 0.3);
+    border-radius: 9999px;
+    transition: transform 0.1s ease-out, box-shadow 0.3s ease-out;
+    cursor: pointer;
+    box-shadow: 
+        0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+        0px -4px 20px 0px rgba(85, 85, 85, 0.10) inset,
+        0px 0px 8.976px 0px rgba(255, 255, 255, 0.10) inset,
+        0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+}
+
+.play-button:hover {
+    transform: scale(1.09);
+    box-shadow:
+        inset 0px 4px 30px 0px rgba(255, 255, 255, 0.2),
+        inset 0px -4px 20px 0px rgba(85, 85, 85, 0.15),
+        inset 0px 0px 8.976px 0px rgba(255, 255, 255, 0.15),
+        0px 0px 20px 0px rgba(85, 85, 85, 0.15);
+}
+
 .icon-small {
     width: 8px;
     height: 8px;

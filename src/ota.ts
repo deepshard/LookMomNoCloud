@@ -50,7 +50,7 @@ export class OTAUpdater {
     };
   }
 
-  unzipTarGz = async (inputPath: string, outputPath: string) => {
+  unzipFile = async (inputPath: string, outputPath: string) => {
     try {
       // Create temp folder
       const tmpPath = path.join(app.getPath("userData"), "bin", "tmp");
@@ -67,7 +67,7 @@ export class OTAUpdater {
       const extractedContents = fs.readdirSync(tmpPath);
       const serverDir = extractedContents.find(dir => fs.statSync(path.join(tmpPath, dir)).isDirectory() && dir === 'server');
       if (!serverDir) {
-        throw new Error("Server directory not found in tar.gz");
+        throw new Error("Server directory not found in .zip");
       }
 
       // Move server folder to output path
@@ -75,7 +75,7 @@ export class OTAUpdater {
       fs.rmSync(tmpPath, { recursive: true, force: true });
 
   
-      // Delete tar.gz
+      // Delete .zip
       fs.unlinkSync(inputPath);
       return outputPath;
     } catch (error) {
@@ -171,6 +171,13 @@ export class OTAUpdater {
   }
 
   checkForUpdates = async () => {
+    // If bin folder does not exist, create it
+    const binPath = path.join(app.getPath("userData"), "bin");
+    if (!fs.existsSync(binPath)) {
+      fs.mkdirSync(binPath, { recursive: true });
+    }
+
+    // Check for server and app updates
     const serverUpdateInfo = await this.checkForServerUpdate();
     const appUpdateInfo = null; // await this.checkForAppUpdate();
 
@@ -236,7 +243,7 @@ export class OTAUpdater {
     });
 
     // Unzip tar.gz
-    await this.unzipTarGz(filePath, path.join(app.getPath("userData"), "bin", "server_new").toString());
+    await this.unzipFile(filePath, path.join(app.getPath("userData"), "bin", "server_new").toString());
   }
 
   downloadUpdate = async () => {
@@ -263,7 +270,10 @@ export class OTAUpdater {
       const serverPath = path.join(binPath, "server");
       const newServerPath = path.join(binPath, "server_new");
 
-      fs.rmdirSync(serverPath, { recursive: true });
+      // Delete old server folder (if it exists) and replace with new one
+      if (fs.existsSync(serverPath)) {
+        fs.rmdirSync(serverPath, { recursive: true });
+      }
 
       fs.renameSync(newServerPath, serverPath);
     }

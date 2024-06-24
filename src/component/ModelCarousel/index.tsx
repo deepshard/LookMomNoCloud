@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react'
+// ModelCarousel.tsx
+import React, { useState, useEffect } from 'react'
 import { TModel } from '../../types/schemas'
 import ModelWidget from '../ModelWidget/ModelWidget'
 import SkeletonModelWidget from './skeleton'
 import { motion, AnimatePresence } from 'framer-motion'
+import './index.css'
 
 interface ModelCarouselProps {
   models: TModel[]
@@ -11,43 +13,53 @@ interface ModelCarouselProps {
 
 const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
   const skeletonCount = 5
-  const [displayedModels, setDisplayedModels] = useState<TModel[]>([])
+  const [showModels, setShowModels] = useState(false)
 
   useEffect(() => {
     if (!isLoading) {
-      const timer = setTimeout(() => {
-        setDisplayedModels(models)
-      }, 500) // Delay to allow skeletons to fade out
+      const timer = setTimeout(() => setShowModels(true), 300)
       return () => clearTimeout(timer)
     } else {
-      setDisplayedModels([])
+      setShowModels(false)
     }
-  }, [isLoading, models])
+  }, [isLoading])
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="flex space-x-4 p-4">
-        <AnimatePresence>
-          {isLoading
-            ? Array(skeletonCount)
-                .fill(null)
-                .map((_, index) => (
-                  <SkeletonModelWidget key={`skeleton-${index}`} />
-                ))
-            : displayedModels.map((model, index) => (
+    <div className="model-carousel">
+      <div className="model-carousel-inner">
+        {(isLoading || !showModels) && 
+          Array(skeletonCount).fill(null).map((_, index) => (
+            <div key={`skeleton-wrapper-${index}`} className="model-item-wrapper">
+              <AnimatePresence>
                 <motion.div
-                  key={model.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  key={`skeleton-${index}`}
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <ModelWidget model={model} className="flex-shrink-0" />
+                  <SkeletonModelWidget />
                 </motion.div>
-              ))}
-        </AnimatePresence>
+              </AnimatePresence>
+            </div>
+          ))
+        }
+        {showModels && models.map((model, index) => (
+          <div key={`model-wrapper-${model.id}`} className="model-item-wrapper">
+            <AnimatePresence>
+              <motion.div
+                key={model.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <ModelWidget model={model} className="flex-shrink-0" />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-export default ModelCarousel
+export default ModelCarousel;

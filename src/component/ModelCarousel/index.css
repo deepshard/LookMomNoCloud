@@ -1,0 +1,54 @@
+.model-carousel {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  .model-carousel-inner {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .model-item-wrapper {
+    position: relative;
+    width: 130px;
+    height: 82px;
+    flex-shrink: 0;
+  }
+  
+  .model-item-wrapper > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .skeleton-model-widget {
+    width: 100%;
+    height: 100%;
+    background-color: #E5E7EB;
+    border-radius: 13px;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    clip-path: path("M 110.5 0 c 6.0572 0 9.0859 0 11.4749 0.9896 a 13.0000 13.0000 0 0 1 7.0355 7.0355 c 0.9896 2.3890 0.9896 5.4176 0.9896 11.4749 L 130 62.5 c 0 6.0572 0 9.0859 -0.9896 11.4749 a 13.0000 13.0000 0 0 1 -7.0355 7.0355 c -2.3890 0.9896 -5.4176 0.9896 -11.4749 0.9896 L 19.5 82 c -6.0572 0 -9.0859 0 -11.4749 -0.9896 a 13.0000 13.0000 0 0 1 -7.0355 -7.0355 c -0.9896 -2.3890 -0.9896 -5.4176 -0.9896 -11.4749 L 0 19.5 c 0 -6.0572 0 -9.0859 0.9896 -11.4749 a 13.0000 13.0000 0 0 1 7.0355 -7.0355 c 2.3890 -0.9896 5.4176 -0.9896 11.4749 -0.9896 Z");
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .model-carousel-inner {
+      gap: 12px;
+      padding: 12px;
+    }
+    .model-item-wrapper {
+      width: 110px;
+      height: 70px;
+    }
+  }

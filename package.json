@@ -15,7 +15,9 @@
     "format:py": "black python",
     "format:ts": "eslint . --ext .ts,.tsx --fix",
     "test": "bun test --watch",
-    "build:fe": "electron-builder build"
+    "build:fe": "vite build && electron-builder build --publish always",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "build": {
     "appId": "com.truffle.app",
@@ -23,14 +25,10 @@
     "mac": {
       "target": "dmg"
     },
-    "extraResources": [
-      {
-        "from": "public",
-        "to": "public"
-      }
-    ],
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "publish": {
+      "provider": "s3",
+      "bucket": "truffle-fe"
+    }
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^1.5.0",

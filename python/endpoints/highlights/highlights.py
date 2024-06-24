@@ -6,34 +6,15 @@ from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from models import RunningModel
-from endpoints.model.downloaded.downloaded import is_model_downloaded
+from endpoints.model.downloaded.downloaded import get_all_local_models, get_model_details
 from utils import get_app_data_path
 
 
 async def get_highlights() -> list[Model]:
-    uuid_pattern = re.compile(
-        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-    )
-    base_dir = get_app_data_path() / "models"
-
-    # Get all local models that are either running or downloaded
-    running_models = await RunningModel.get_all()
-    downloaded_models = [
-        {"id": model_id, "instance": None}
-        for model_id in os.listdir(base_dir)
-        if uuid_pattern.match(model_id) and await is_model_downloaded(model_id)
-    ]
-
-    # Combine running and downloaded models
-    all_models = {
-        model.id: {"id": model.id, "instance": model.instance} for model in running_models
-    }
-    all_models.update(
-        {model["id"]: model for model in downloaded_models if model["id"] not in all_models}
-    )
+    all_models = await get_all_local_models()
 
     # Fetch data for all running/downloaded models
-    tasks = [fetch_model_data(model) for model in all_models.values()]
+    tasks = [get_model_details(model) for model in all_models.values()]
 
     # If we have less than 5 models, fetch trending models to pad the list
     if len(all_models) < 5:
@@ -73,33 +54,8 @@ async def get_trending_models(num: int) -> list[Model]:
                 status=ModelStatus.NOT_DOWNLOADED,
                 backgroundImage=model["backgroundImage"],
                 instance=0,
+                port=None,
                 progress=0,
             )
             for model in data
         ]
-
-
-async def fetch_model_data(model):
-    async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/{model['id']}",
-    ) as response:
-        assert response.status == 200, f"Failed to fetch model data for {model['id']}"
-        model_data = await response.json()
-        return Model(
-            id=model_data["id"],
-            name=model_data["name"],
-            title=model_data["title"],
-            size=model_data["size"],
-            author=model_data["author"],
-            downloads=model_data["downloads"],
-            likes=model_data["likes"],
-            intro=model_data["intro"],
-            capabilities=model_data["capabilities"],
-            risks=model_data["risks"],
-            evalId=model_data["evalId"],
-            hfLink=model_data["hfLink"],
-            status=ModelStatus.RUNNING if model["instance"] is not None else ModelStatus.STOPPED,
-            backgroundImage=model_data["backgroundImage"],
-            instance=model["instance"] if model["instance"] is not None else 0,
-            progress=0,
-        )

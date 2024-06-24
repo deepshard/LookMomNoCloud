@@ -29,9 +29,12 @@ def create_model_dir(model_id: str):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_new_user(session_fixture):
+async def test_get_highlights_new_user(session_fixture, mocker):
     # Mocks
     session_fixture("endpoints.highlights.highlights")
+    mocker.patch(
+        "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
+    )
 
     # Test
     models = await get_highlights()
@@ -44,9 +47,12 @@ async def test_get_highlights_new_user(session_fixture):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_models_running(session_fixture):
+async def test_get_highlights_models_running(session_fixture, mocker):
     # Mocks
     session_fixture("endpoints.highlights.highlights")
+    mocker.patch(
+        "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
+    )
     mock_model = {
         "id": MODELS[0]["id"],
         "instance": 1,

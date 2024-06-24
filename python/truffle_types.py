@@ -77,6 +77,7 @@ class Model:
     status: ModelStatus
     backgroundImage: str
     instance: int
+    port: int
     progress: int
 
 

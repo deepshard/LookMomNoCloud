@@ -1,12 +1,17 @@
+import os
 from alembic.config import Config
 from alembic import command
 from utils import get_db_path
 
 
+def get_alembic_path():
+    return "alembic" if os.getenv("ENV") == "dev" else "server/alembic"
+
+
 def run_migrations():
     print("-- Running migrations:", get_db_path())
     alembic_cfg = Config()
-    alembic_cfg.set_main_option("script_location", "alembic")
+    alembic_cfg.set_main_option("script_location", get_alembic_path())
     alembic_cfg.set_main_option("sqlalchemy.url", get_db_path())
     command.upgrade(alembic_cfg, "head")
     print("-- Done.")

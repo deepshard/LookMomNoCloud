@@ -109,7 +109,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
 
   return (
     <div ref={containerRef} onScroll={handleScroll} className="sys-info-model-list-container hide-scrollbar w-full h-full relative overflow-y-auto scroll-smooth">
-      <div className="sticky top-0 px-[16px] pt-[16px] w-full z-20">
+      <div className="sticky top-0 px-[16px] pt-[16px] w-full z-20 backdrop-blur-[3px] rounded-t-lg">
         <div className="flex justify-between items-center">
           <span className="flex">
             <MemoryChip

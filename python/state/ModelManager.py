@@ -13,9 +13,6 @@ from utils import (
     does_quantization_exist,
 )
 from constants import TRUFFLE_API_URL
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 class ModelManager:
@@ -130,7 +127,6 @@ class ModelManager:
 
         async with self.session.get(
             f"{TRUFFLE_API_URL}/models/{model_id}",
-            headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
         ) as response:
             assert response.status == 200, f"Failed to fetch model size for {model_id}"
             model = await response.json()

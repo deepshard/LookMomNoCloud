@@ -8,9 +8,6 @@ from state import global_state_manager
 from models import RunningModel
 from endpoints.model.downloaded.downloaded import get_all_local_models, get_model_details
 from utils import get_app_data_path
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 async def get_highlights() -> list[Model]:
@@ -37,7 +34,6 @@ async def get_highlights() -> list[Model]:
 async def get_trending_models(num: int) -> list[Model]:
     async with global_state_manager.session.get(
         f"{TRUFFLE_API_URL}/models/trending?k={num}",
-        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()

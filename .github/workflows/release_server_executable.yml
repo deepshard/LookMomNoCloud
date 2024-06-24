@@ -27,22 +27,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: conda-incubator/setup-miniconda@v3
         with:
+          activate-environment: truffle
           python-version: "3.10"
-      
-      - name: Install MLC
+          channels: conda-forge,spyder-ide
+
+      - run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+
+      - name: Install dependencies
         run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl
           elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
-
-      - name: Install rest of the dependencies
-        run: |
           pip install -r python/requirements.txt
 
       - name: Import certificate to keychain
@@ -59,6 +63,8 @@ jobs:
 
       - name: Build server executable
         run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
@@ -87,7 +93,6 @@ jobs:
           cd ../../
           PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration
 
-
       - name: Archive server executable
         run: |
           cd python/dist
@@ -113,5 +118,4 @@ jobs:
           fi
 
       - name: Cleanup
-        if: always()
-        run: killall server
+        run: killall server || true

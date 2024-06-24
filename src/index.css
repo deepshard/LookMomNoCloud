@@ -115,6 +115,7 @@ button.ant-btn.preorder-btn {
   left: 50% !important;
   transform: translateX(-50%) !important;
   bottom: 16px !important;
+  z-index: auto !important;
 
   li,
   button {
@@ -309,8 +310,8 @@ div.slick-slide>div {
     @apply glass-3d bg-bg-wdget rounded-lg !important;
   }
 
-  .search {
-    @apply absolute top-0 w-full h-full z-40;
+  .animate-modal {
+    @apply fixed top-0 w-full h-full;
     backdrop-filter: blur(75px);
     background: linear-gradient(0deg,
         rgba(0, 0, 0, 0.5) 0%,

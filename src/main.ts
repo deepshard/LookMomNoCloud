@@ -28,9 +28,8 @@ const createWindow = () => {
     },
   });
 
-  autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
-
+  
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -39,11 +38,11 @@ const createWindow = () => {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
     );
   }
-
+  
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
   process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
-
+  
   return mainWindow;
 };
 
@@ -57,26 +56,25 @@ app.on("ready", async function () {
     os.homedir(),
     "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
   );
-
+  
   const reduxTools = path.join(
     os.homedir(),
     "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
   );
-
+  
   try {
     await session.defaultSession.loadExtension(reactDevToolsPath);
     await session.defaultSession.loadExtension(reduxTools);
   } catch (error) {
     console.error("Failed to install extension:", error);
   }
-
+  
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
+  autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   await otaUpdater.checkForUpdates();
-  // await otaUpdater.downloadUpdate();
-  // await otaUpdater.restartAndInstall();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

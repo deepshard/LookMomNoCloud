@@ -1,9 +1,11 @@
 import React, { useCallback, useRef, useState } from "react";
 import Carousel from "../Carousel/Carousel";
 import Featured from "../Featured";
+import { useGetNews } from "../../lib/react-query/queriesAndMutations";
 
 const FeaturedCarousel = () => {
   const carouselRef = useRef<any>();
+  const { data: news, isFetching: isGettingNews } = useGetNews();
   const next = () => {
     carouselRef.current.next();
   };
@@ -25,12 +27,17 @@ const FeaturedCarousel = () => {
     <div onWheel={handleWheel}>
       <Carousel
         ref={carouselRef}
-        autoplay
+        autoplay={!isGettingNews}
         easing="linear"
         waitForAnimate
         className="w-80 h-[150px] widget-3d">
-        <Featured />
-        <Featured />
+        {news.slice(0, 5).map((item) => (
+          <Featured key={item.id} news={item} isLoading={isGettingNews} onClick={() => {
+            if(isGettingNews) return;
+            //@ts-ignore
+            window.electronShell.openExternal(item.url);
+          }}/>
+        ))}
       </Carousel>
     </div>
   );

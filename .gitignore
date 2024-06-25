@@ -4,6 +4,7 @@ bin
 dist
 .tmp
 python/lib
+python/env
 
 # Logs
 logs

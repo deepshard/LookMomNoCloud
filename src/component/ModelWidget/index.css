@@ -43,6 +43,7 @@
 }
 
 .install-button {
+    position: absolute;
     width: 66px;
     height: 20px;
     border-radius: 100px;
@@ -60,9 +61,8 @@
 
     bottom: -10px;
     left: 25%;
-    z-index: 50;
     cursor: pointer;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     /* Smoothen transition */
 }
 
@@ -73,7 +73,6 @@
 .stop-button {
     height: 30px;
     width: 30px;
-    z-index: 100;
     position: absolute;
     bottom: 50%;
     left: 50%;

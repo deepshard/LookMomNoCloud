@@ -124,7 +124,7 @@ const ModelWidget = ({
       case 'DOWNLOADING':
         return (
           <motion.div
-            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full z-50"
+            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.1, ease: 'easeInOut' }}
@@ -143,7 +143,7 @@ const ModelWidget = ({
       case 'ACKNOWLEDGED':
       case 'INSTALLING':
         return (
-          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full z-50">
+          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
             <img src={installIcon} alt="" className="animate-spin" />
           </div>
         )
@@ -154,7 +154,7 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className="play-button z-50"
+            className="play-button"
           >
             <img src={playIcon} alt="" />
           </div>
@@ -166,7 +166,7 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className="stop-button z-50"
+            className="stop-button"
           >
             <img src={stopIcon} alt="" className="" />
           </div>
@@ -178,7 +178,7 @@ const ModelWidget = ({
               e.stopPropagation()
               handleAction()
             }}
-            className="install-button absolute z-50"
+            className="install-button absolute"
           >
             <img src={downloadIcon} alt="" className="icon-small" />
             <span className="text-xs nowrap relative capitalize">Install</span>
@@ -197,16 +197,16 @@ const ModelWidget = ({
         </div>
       )}
       <div
-        className={`model-widget base-regular ${className} relative z-10`}
+        className={`model-widget base-regular ${className} relative`}
         {...props}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover z-20" />
+        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
   
         <div
           className={`
-            absolute inset-0 z-30
+            absolute inset-0
             h-full w-full
             ${model.status === 'RUNNING' ? 'bg-black/70' : 'bg-black/10'}
           `}
@@ -214,7 +214,7 @@ const ModelWidget = ({
           <OverlaySVG />
         </div>
   
-        <div className="absolute top-0 left-0 p-2 z-40 w-full">
+        <div className="absolute top-0 left-0 p-2 w-full">
           <div className="relative flex flex-col w-full">
             <div className="text-content flex flex-col overflow-hidden w-full">
               <span className='title-xs inline-block capitalize truncate text-surface-main leading-normal'>
@@ -228,8 +228,9 @@ const ModelWidget = ({
         </div>
       </div>
       {getWidgetButton()}
-      {model.error && <div className="z-50 absolute top-2 right-2">{getErrorButton(model.error)}</div>}
+      {model.error && <div className="absolute top-2 right-2">{getErrorButton(model.error)}</div>}
     </div>
   )
 }
-export default ModelWidget
+
+export default ModelWidget;

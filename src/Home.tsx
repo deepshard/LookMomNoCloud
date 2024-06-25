@@ -84,12 +84,10 @@ export default function Home() {
               <h1 className="text-surface-750 w-full">Welcome, Peter</h1>
             </div>
 
-            <div className="flex gap-1.5 w-[660px]">
-              <ModelCarousel 
-                models={models()}
-                isLoading={false} 
-              />
-            </div>
+            <ModelCarousel 
+              models={models()}
+              isLoading={false} 
+            />
 
             <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
               <div className="col-span-1 flex flex-col gap-5 justify-between w-80">

@@ -1,7 +1,9 @@
 .model-carousel {
-    width: 100%;
+    width: 670px;
+    height: auto;
+    gap: 10px;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     scrollbar-width: thin;
     scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
     position: relative;
@@ -22,9 +24,10 @@
 
 .model-carousel-inner {
     display: flex;
-    gap: 16px;
-    padding: 16px;
+    gap: 10px;
+    padding: 16px 0;
     padding-bottom: 20px;
+    justify-content: center;
     /* Add some space for the scrollbar */
 }
 
@@ -36,7 +39,7 @@
 }
 
 .model-item-wrapper>div {
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
     width: 100%;

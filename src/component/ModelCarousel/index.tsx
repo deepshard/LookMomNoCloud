@@ -16,14 +16,16 @@ const getSortValue = (status: string) => {
   switch (status) {
     case 'RUNNING':
       return 0
+    case "ACKNOWLEDGED":
+        return 1
     case 'DOWNLOADING':
-      return 1
-    case 'INSTALLING':
       return 2
-    case 'STOPPED':
+    case 'INSTALLING':
       return 3
-    case 'NOT_DOWNLOADED':
+    case 'STOPPED':
       return 4
+    case 'NOT_DOWNLOADED':
+      return 5
     default:
       return 5
   }

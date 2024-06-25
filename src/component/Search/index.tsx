@@ -19,12 +19,15 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [loadingState, setLoadingState] = useState(false);
 
+
   const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);
   const { data: predictionData } = useGetPrediction(search);
 
   const navigate = useNavigate();
   const { setSearchQuery } = useHomePageContext();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const searchIcon = "/src/assets/icons/search-suggestions.svg";
 
 
   useLayoutEffect(() => {
@@ -95,7 +98,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
 
   return (
     <div className="w-full mt-[131px] px-[145px]">
-      <div className="relative">
+      <div className="relative -ml-[10px]">
         <Input
           ref={inputRef}
           value={search}
@@ -120,7 +123,14 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                 className="w-[124px] h-[78px]"
               />
             ))}
+
           </div>
+          <div className="flex flex-row justify-center mt-4 w-full gap-4">
+          <SearchSuggestions title="Best math models" count={34} icon = {searchIcon} className="rounded-lg p-3 flex items-center space-x-3 glass-3d w-full "/>
+          <SearchSuggestions title="Best models for code" count={54} icon = {searchIcon} className="rounded-lg p-3 flex items-center space-x-3 glass-3d w-full" />
+
+          </div>
+
         </>
       ) : (
         <>
@@ -174,10 +184,25 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
               {renderSearchResults()}
             </>
           )}
+          
         </>
       )}
     </div>
   );
 };
+
+const SearchSuggestions = ({ title, count, icon, ...rest }) => {
+  return (
+    <div {...rest}>
+      <div className="rounded-sm p-2 w-[43px] h-[43px] glass-3d flex justify-center">
+        <img src={icon} className="w-full" />
+      </div>
+      <div className="flex flex-col justify-center">
+        <span className="text-surface-main ">{title}</span>
+        <span className="text-surface-750 text-sm">{count} Suggestions</span>
+      </div>
+    </div>
+  );
+}
 
 export default Search;

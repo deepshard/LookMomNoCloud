@@ -74,6 +74,7 @@ const ModelWidget = ({
   const stopIcon = '/src/assets/icons/stop.svg'
   const installIcon = '/src/assets/icons/install.svg'
   const errorIcon = '/src/assets/icons/error.svg'
+  const retryIcon = '/src/assets/icons/retry.svg'
 
   const [isHovered, setIsHovered] = useState(false)
 
@@ -112,9 +113,7 @@ const ModelWidget = ({
         color="transparent"
         title={errorMessage}
       >
-        <div className={`error-icon`}>
-          <img src={errorIcon} alt="errorIcon" className="w-full h-full" />
-        </div>
+        <img src={errorIcon} alt="errorIcon" className="error-icon" />
       </Tooltip>
     )
   }
@@ -123,28 +122,37 @@ const ModelWidget = ({
     switch (model.status) {
       case 'DOWNLOADING':
         return (
-          <motion.div
-            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.1, ease: 'easeInOut' }}
-          >
-            <CircularProgressbar
-              value={model.progress || 0}
-              text={`${model.progress}%`}
-              styles={{
-                path: { stroke: 'rgba(255, 255, 255, 1)' },
-                trail: { stroke: 'rgba(255, 255, 255, 0.4)' },
-                text: { fill: 'rgba(255, 255, 255, 0.85)', fontSize: '30px' },
-              }}
-            />
-          </motion.div>
+          model.error ?
+            (
+            <div className="play-button">
+              <img src={retryIcon} style={{ width: '17px', height: '17px' }} />
+            </div>) :
+            (<motion.div
+              className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.1, ease: 'easeInOut' }}
+            >
+              <CircularProgressbar
+                value={model.progress || 0}
+                text={`${model.progress}%`}
+                styles={{
+                  path: { stroke: 'rgba(255, 255, 255, 1)' },
+                  trail: { stroke: 'rgba(255, 255, 255, 0.4)' },
+                  text: { fill: 'rgba(255, 255, 255, 0.85)', fontSize: '30px' },
+                }}
+              />
+            </motion.div>)
         )
       case 'ACKNOWLEDGED':
       case 'INSTALLING':
         return (
-          <div className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 bg-[#D9D9D94D] rounded-full">
-            <img src={installIcon} alt="" className="animate-spin" />
+          <div className="play-button">
+            {
+              model.error ? 
+              (<img src={retryIcon} alt="retryIcon" style={{ width: '17px', height: '17px' }}/>) :
+              (<img src={installIcon} alt="installIcon" className="animate-spin" />)
+            }
           </div>
         )
       case 'STOPPED':
@@ -156,7 +164,11 @@ const ModelWidget = ({
             }}
             className="play-button"
           >
-            <img src={playIcon} alt="" />
+            {
+              model.error ?
+              (<img src={retryIcon} alt="retryIcon" style={{ width: '17px', height: '17px' }} />) :
+              (<img src={playIcon} alt="playIcon" />)
+            }
           </div>
         )
       case 'RUNNING':
@@ -227,8 +239,13 @@ const ModelWidget = ({
           </div>
         </div>
       </div>
-      {getWidgetButton()}
-      {model.error && <div className="absolute top-2 right-2">{getErrorButton(model.error)}</div>}
+      { 
+        model.error && 
+        getErrorButton(model.error)
+      }
+      { 
+        getWidgetButton()
+      }
     </div>
   )
 }

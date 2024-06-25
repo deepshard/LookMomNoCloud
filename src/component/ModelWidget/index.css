@@ -70,6 +70,18 @@
     transform: scale(1.05);
 }
 
+.error-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    width: 20px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 8px;
+}
+
 .stop-button {
     height: 30px;
     width: 30px;

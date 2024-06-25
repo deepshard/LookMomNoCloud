@@ -147,3 +147,12 @@ def test_get_tensor_parallelism_multiple_gpus(set_os, mocker):
         )
         mocker.patch("utils.get_model_size_info", return_value=(0, 70 * 1024 * 1024 * 1024))
         assert get_tensor_parallelism("model_weights_dir", Quantization.Q4F16_0) == 8
+
+
+def test_find_port_run_queue(mocker):
+    mocker.mock("utils.socket.socket.connect_ex", return_value=0)
+
+    assert find_port() == 8899
+
+    state.global_state_manager.model_manager.reserve_ports([8899])
+    assert find_port() == 8900

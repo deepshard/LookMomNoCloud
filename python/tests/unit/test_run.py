@@ -126,7 +126,11 @@ async def test_run_quantization_does_not_exist(session_fixture, mock_mlc, model_
     async for response in stream:
         responses.append(json.loads(response[5:]))
 
+        if len(responses) == 2:
+            assert len(global_state_manager.model_manager.run_queue) == 1
+
     # Check the responses
+    assert len(global_state_manager.model_manager.run_queue) == 0
     assert mock_mlc.call_count == 1
     assert len(responses) == 3
     assert responses[0]["id"] == ID
@@ -154,7 +158,11 @@ async def test_run_quantization_exists(session_fixture, mock_mlc, model_weights,
     async for response in stream:
         responses.append(json.loads(response[5:]))
 
+        if len(responses) == 2:
+            assert len(global_state_manager.model_manager.run_queue) == 1
+
     # Check the responses
+    assert len(global_state_manager.model_manager.run_queue) == 0
     assert mock_mlc.call_count == 0
     assert len(responses) == 2
     assert responses[0]["id"] == ID
@@ -180,13 +188,17 @@ async def test_run_multiple_models(session_fixture, mock_mlc, model_weights, moc
     async for response in stream:
         responses.append(json.loads(response[5:]))
 
-        if len(responses) == 6:
+        if len(response) == 3:
+            assert len(global_state_manager.model_manager.run_queue) == 2
+
+        if len(responses) == 2:
             find_port.return_value = 8900
 
-        if len(responses) == 7:
+        if find_port.call_count == 1:
             find_port.return_value = 8901
 
     # Check the responses
+    assert len(global_state_manager.model_manager.run_queue) == 0
     assert mock_mlc.call_count == 2
     assert len(responses) == 8
     assert responses[0] == {
@@ -303,7 +315,11 @@ async def test_run_not_convertable_format(session_fixture, mock_mlc, mocker):
     async for response in stream:
         responses.append(json.loads(response[5:]))
 
+        if len(responses) == 2:
+            assert len(global_state_manager.model_manager.run_queue) == 1
+
     # Check the responses
+    assert len(global_state_manager.model_manager.run_queue) == 0
     assert mock_mlc.call_count == 0
     assert len(responses) == 2
     assert responses[0]["id"] == ID
@@ -332,7 +348,11 @@ async def test_run_not_enough_space(session_fixture, mock_mlc, model_weights, mo
     async for response in stream:
         responses.append(json.loads(response[5:]))
 
+        if len(responses) == 4:
+            assert len(global_state_manager.model_manager.run_queue) == 3
+
     # Check the responses
+    assert len(global_state_manager.model_manager.run_queue) == 0
     assert mock_mlc.call_count == 0
     assert len(responses) == 4
     assert responses[0]["id"] == ID
@@ -363,7 +383,11 @@ async def test_run_not_enough_memory_quantization(session_fixture, model_weights
     async for response in stream:
         responses.append(json.loads(response[5:]))
 
+        if len(responses) == 4:
+            assert len(global_state_manager.model_manager.run_queue) == 3
+
     # Check the responses
+    assert len(global_state_manager.model_manager.run_queue) == 0
     assert len(responses) == 4
     assert responses[0]["id"] == ID
     assert responses[0]["status"] == "ACKNOWLEDGED"

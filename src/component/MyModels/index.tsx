@@ -80,7 +80,7 @@ const Page = ({ models }: PageProps) => {
     <div className="w-full h-full flex justify-center items-center mx-[145px] pt-[148px]">
       <div className="w-full h-full grid grid-cols-3 gap-x-[140px] gap-y-[52px] justify-items-center content-start">
         {models.map((model) => (
-          <ModelWidget type="my-model" model={model} key={model.id} className="w-[124px] h-[78px]" />
+          <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />
         ))}
       </div>
     </div>

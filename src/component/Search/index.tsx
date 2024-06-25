@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Input, Skeleton, Title } from "antd";
 import ModelWidget from "../ModelWidget";
-import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useNavigate } from "react-router-dom";
 import ModelWidgetSkeleton from "../ModelWidgetSkeleton/ModelWidgetSkeleton";
@@ -10,6 +9,9 @@ import {
   useGetPrediction,
 } from "../../lib/react-query/queriesAndMutations";
 import { useHomePageContext } from "../../context/HomePageProvider";
+import { TModel } from "../../types/schemas";
+// import Title from "antd/es/skeleton/Title";
+import DiscoverItem from "./DiscoverItem";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
@@ -213,42 +215,65 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                   </div>
                 </div>
                 {renderSearchResults()}
-              </>
-          </>
-        )}
+                </>
+              
+            </>
+          )}
+          
+          <div className="flex flex-col gap-1">
+            {/* RESULTS LIST ITEM */}
+            {/* TO DO: REMOVE FROM HERE – PUT ON RESULTS LIST */}
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer">
+                <div className="flex items-center gap-2">
+                  {/* TO DO: Replace for model's actual image */}
+                  <div className="w-8 h-8 rounded-[8px] bg-surface-100" />
 
-        <div className="flex flex-col gap-1">
-          {/* RESULTS LIST ITEM */}
-          {/* TO DO: REMOVE FROM HERE – PUT ON RESULTS LIST */}
-          {[...Array(8)].map((_, index) => (
-            <div
-              key={index}
-              className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                {/* TO DO: Replace for model's actual image */}
-                <div className="w-8 h-8 rounded-[8px] bg-surface-100" />
-
-                <div className="flex flex-col gap-1 -mt-1">
-                  {/* TO DO: Replace for Model's Name */}
-                  <p className="text-surface-750 title-sm h-3.5 leading-tight">
-                    LlaMa–3
-                  </p>
-                  {/* TO DO: R eplace for Model's Author • Size */}
-                  <p className="text-surface-500 text-xs h-3.5 leading-normal">
-                    "Meta • 7B"
-                  </p>
+                  <div className="flex flex-col gap-1 -mt-1">
+                    {/* TO DO: Replace for Model's Name */}
+                    <p className="text-surface-750 title-sm h-3.5 leading-tight">LlaMa–3</p>
+                    {/* TO DO: R eplace for Model's Author • Size */}
+                    <p className="text-surface-500 text-xs h-3.5 leading-normal">"Meta • 7B"</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* TO DO: Add action to the button */}
-              <button className="text-surface-500 title-sm">
-                View Details
-              </button>
-            </div>
+                {/* TO DO: Add action to the button */}
+                <button className="text-surface-500 title-sm">View Details</button>
+              </div>
+            ))}
+          </div>
+      </div>
+
+      {/* DISCOVER SECTION */}
+      <div className="w-full flex flex-col justify-between">
+        {/* DISCOVER TAB */}
+        <div className="flex justify-center items-center gap-2.5">
+          <button className="flex gap-1.5 text-surface-400 hover:text-surface-500 px-2.5 py-1.5">
+            <div className="h-3.5 w-3.5 bg-surface-400" />
+            <p>New</p>
+          </button>
+
+          <button className="flex gap-1.5 text-surface-400 hover:text-surface-500 px-2.5 py-1.5">
+            <div className="h-3.5 w-3.5 bg-surface-400" />
+            <p>Popular</p>
+          </button>
+
+          <button className="flex gap-1.5 text-surface-400 hover:text-surface-500 px-2.5 py-1.5">
+            <div className="h-3.5 w-3.5 bg-surface-400" />
+            <p>Trending</p>
+          </button>
+        </div>
+
+        {/* DISCOVER GRID */}
+        <div className="w-full p-8 grid grid-cols-4 gap-x-6 gap-y-6">
+          {/* TO DO: Replace for Model's Image */}
+          {[...Array(32)].map((_, index) => (
+            // <div key={index} className="w-[200px] h-[228px] bg-bg-wdget glass-3d rounded-lg" />
+            <DiscoverItem key={index} />
           ))}
         </div>
       </div>
+      
     </div>
   );
 };
@@ -256,12 +281,12 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
 const SearchSuggestions = ({ title, count, icon, ...rest }) => {
   return (
     <div {...rest}>
-      <div className="rounded-xs p-2 w-10 h-10 bg-surface-main/5 flex justify-center">
+      <div className="rounded-xs p-2 w-10 h-10 bg-surface-main/0 flex justify-center">
         <img src={icon} className="w-4" />
       </div>
       <div className="flex flex-col justify-center">
-        <span className="text-surface-main ">{title}</span>
-        <span className="text-surface-750 text-sm">{count} Suggestions</span>
+        <span className="text-surface-main text-xs capitalize">{title}</span>
+        <span className="text-surface-750 text-xs capitalize">{count} Suggestions</span>
       </div>
     </div>
   );

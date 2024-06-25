@@ -162,10 +162,12 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                 <div className="flex items-center gap-2 text-surface-750">
                   <span>Text Generation</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-surface-500">
-                    {/* TO DO: Replace with actual results count */}
-                    <span>30 Results</span>
+
+                <div className={`flex items-center gap-4`}>
+                  <div className={` flex items-center gap-2 text-surface-500 transition transition-200 opacity-${searchModels?.length ? '100' : '0'}`}>
+                    <span>
+                      {searchModels?.length} results
+                    </span>
                   </div>
                   
                   <svg

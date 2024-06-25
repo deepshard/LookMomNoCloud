@@ -42,7 +42,7 @@ const Search = ({ recentlyUsedModels }: SearchProps) => {
 
   return (
     <div className="w-full mt-[131px] px-[145px]">
-      <Input autoFocus onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-[38px] bg-transparent text-[32px] border-none" />
+      <Input autoFocus onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-[38px] bg-transparent text-[32px] border-none -ml-[10px]" />
       {search.length < 1 ? (
         <>
           <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>

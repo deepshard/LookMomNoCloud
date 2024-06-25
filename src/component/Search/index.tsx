@@ -94,7 +94,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
       </div>;
     return (
       <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
-        {searchModels.slice(0, 12).map((model) => (
+        {searchModels.slice(0, searchModels.length).map((model) => (
           <ModelWidget
             onClick={() => handleModelClick(model)}
             model={model}

@@ -13,9 +13,9 @@ import { useHomePageContext } from "../../context/HomePageProvider";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
+  onModelClick?: (model: TModel) => void;
 }
-
-const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
+const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const [search, setSearch] = useState("");
   const [debouncedInput, setDebouncedInput] = useState("");
   const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] =
@@ -36,6 +36,10 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   useLayoutEffect(() => {
     inputRef.current?.focus();
   }, []);
+  const handleModelClick = (model: TModel) => {
+    setSearchQuery(search);
+    onModelClick && onModelClick(model);
+  };
 
   useEffect(() => {
     setIsTyping(search.length > 0);
@@ -148,6 +152,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
               <div className="w-full grid grid-cols-4 justify-between gap-x-[54px] gap-y-11">
                 {recentlyUsedModels?.slice(0, 8).map((model) => (
                   <ModelWidget
+                  onClick={() => handleModelClick(model)} 
                     model={model}
                     key={model.id}
                     className="w-[124px] h-[78px]"

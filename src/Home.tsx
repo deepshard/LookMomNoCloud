@@ -86,7 +86,7 @@ export default function Home() {
 
             <ModelCarousel 
               models={models()}
-              isLoading={false} 
+              isLoading={storeHighlights.length === 0}
             />
 
             <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">

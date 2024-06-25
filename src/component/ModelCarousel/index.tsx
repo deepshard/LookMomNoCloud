@@ -1,11 +1,10 @@
 // ModelCarousel.tsx
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { TModel } from '../../types/schemas'
 import ModelWidget from '../ModelWidget'
 import SkeletonModelWidget from './ModelWidgetSkeleton'
 import { motion, AnimatePresence } from 'framer-motion'
 import './index.css'
-
 
 interface ModelCarouselProps {
   models: TModel[]
@@ -16,8 +15,8 @@ const getSortValue = (status: string) => {
   switch (status) {
     case 'RUNNING':
       return 0
-    case "ACKNOWLEDGED":
-        return 1
+    case 'ACKNOWLEDGED':
+      return 1
     case 'DOWNLOADING':
       return 2
     case 'INSTALLING':
@@ -34,13 +33,24 @@ const getSortValue = (status: string) => {
 const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
   const skeletonCount = 5
   const [showModels, setShowModels] = useState(false)
+  const carouselInnerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!isLoading) {
-      const timer = setTimeout(() => setShowModels(true), 300)
+      const timer = setTimeout(() => {
+        setShowModels(true)
+        // Adjust the inner container's height after transition
+        if (carouselInnerRef.current) {
+          carouselInnerRef.current.style.minHeight = `${carouselInnerRef.current.scrollHeight}px`
+        }
+      }, 300)
       return () => clearTimeout(timer)
     } else {
       setShowModels(false)
+      // Reset the inner container's height
+      if (carouselInnerRef.current) {
+        carouselInnerRef.current.style.minHeight = '110px'
+      }
     }
   }, [isLoading])
 

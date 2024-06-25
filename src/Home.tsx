@@ -1,6 +1,7 @@
 import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
+import { TModel } from "./types/schemas";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
@@ -8,8 +9,6 @@ import Search from "./component/Search";
 import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import ModelCarousel from "./component/ModelCarousel";
-import { TModel } from "./types/schemas";
-import { AnimatePresence } from "framer-motion";
 import AnimateModal from "./component/AnimateModal";
 
 export default function Home() {

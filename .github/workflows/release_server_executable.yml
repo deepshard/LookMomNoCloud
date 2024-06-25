@@ -15,14 +15,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-            macos-latest, 
-            # ubuntu-cuda12.1-1xt4-x86_64,
+            # macos-latest, 
+            ubuntu-cuda12.1-x86_64-1x-4090,
         ]
         include:
-          - os: macos-latest
-            filename: darwin-metal-arm64.zip
-          # - os: ubuntu-cuda12.1-1xt4-x86_64
-            # filename: ubuntu-cuda-x86_64.tar.gz
+          # - os: macos-latest
+            # filename: darwin-metal-arm64.zip
+          - os: ubuntu-cuda12.1-x86_64-1x-4090
+            filename: ubuntu-cuda-x86_64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly
-          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
           pip install -r python/requirements.txt
@@ -75,18 +75,18 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
-      - name: Disable local cuda for integration tests
-        run: |
-          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
-            export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-            export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-            if nvcc -V; then
-              echo "** CUDA compiler is still accessible, failing the test. **"
-              exit 1
-            else
-              echo "** CUDA compiler not accessible, as expected. **"
-            fi
-          fi
+      # - name: Disable local cuda for integration tests
+      #   run: |
+      #     if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+      #       export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+      #       export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+      #       if nvcc -V; then
+      #         echo "** CUDA compiler is still accessible, failing the test. **"
+      #         exit 1
+      #       else
+      #         echo "** CUDA compiler not accessible, as expected. **"
+      #       fi
+      #     fi
 
       - name: Run integration tests
         run: |

@@ -12,7 +12,7 @@ import { TModel } from "./types/schemas";
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
-  const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
+  const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
   const navigate = useNavigate();
 

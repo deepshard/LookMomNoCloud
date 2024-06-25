@@ -123,3 +123,11 @@ export const getModel = async (id: string): Promise<TModel> => {
   const response = await client.get(`/${id}`);
   return response.data;
 }
+
+export const getPrediction = async (input: string) => {
+  if (input.trim() === "") {
+    return null;
+  }
+  const response = await client.get(`/autocomplete/?query=${input}`);
+  return response.data;
+}

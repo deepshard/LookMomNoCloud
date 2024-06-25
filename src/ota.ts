@@ -171,7 +171,7 @@ export class OTAUpdater {
 
     let sizeOfDownload = 0;
     for (let i = 0; i < files.length; i++) {
-      if (files[i].size) {
+      if (files[i].url.endsWith(".zip") && files[i].size) {
         sizeOfDownload += files[i].size;
       }
     }

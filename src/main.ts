@@ -21,7 +21,7 @@ const createWindow = () => {
     height: 690 ,
     titleBarStyle: "hidden",
     webPreferences: {
-      devTools: false,
+      devTools: true,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
@@ -48,21 +48,27 @@ const createWindow = () => {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
   
-    // Disable zoom shortcuts
-    mainWindow.webContents.on("before-input-event", (event, input) => {
-      if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
-        event.preventDefault();
-      }
-    });
+  // Disable zoom shortcuts
+  mainWindow.webContents.on("before-input-event", (event, input) => {
+    if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
+      event.preventDefault();
+    }
+  });
 
-  // and load the index.html of the app.
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-  } else {
-    mainWindow.loadFile(
-      path.join(__dirname, `../dist/index.html`)
-    );
-  }
+  mainWindow.loadFile(
+    `.vite/renderer/main_window/index.html`
+    // path.join(__dirname, `../renderer/index.html`)
+  );
+
+  // // and load the index.html of the app.
+  // if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+  //   mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  // } else {
+  //   mainWindow.loadFile(
+  //     `.vite/renderer/main_window/index.html`
+  //     // path.join(__dirname, `../renderer/index.html`)
+  //   );
+  // }
   
   // Open the DevTools.
 <<<<<<< HEAD
@@ -105,6 +111,8 @@ app.on("ready", async function () {
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
+  autoUpdater.on("error", (err) => window.webContents.send("error", err));
+  autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
   await otaUpdater.checkForUpdates();
 });
 
@@ -119,11 +127,16 @@ app.on("window-all-closed", () => {
 
 
 
-app.on("activate", () => {
+app.on("activate", async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    const window = createWindow();
+    const otaUpdater = new OTAUpdater(window, autoUpdater);
+    ipcMain.on("download-update", otaUpdater.downloadUpdate);
+    ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
+    autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
+    await otaUpdater.checkForUpdates();
   }
 });
 

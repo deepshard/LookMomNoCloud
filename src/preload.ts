@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld("ipc", {
   restartAndUpdate: () => ipcRenderer.send("restart-and-update"),
   onDownloadUpdateProgress: (callback) => ipcRenderer.on("update-download-progress", (_event, value) => callback(value)),
   onUpdateAvailable: (callback) => ipcRenderer.on("update-available", (_event, value) => callback(value)),
+  onError: (callback) => ipcRenderer.on("error", (_event, value) => callback(value)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on("update-downloaded", callback),
 });

@@ -1,5 +1,4 @@
 import { Input } from "antd";
-import Featured from "../Featured";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
@@ -18,6 +17,8 @@ const Search = ({ recentlyUsedModels }: SearchProps) => {
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
   const { setSearchQuery } = useHomePageContext();
+  // const gridViewIcon = "/src/assets/icons/grid-view.svg";
+  // const listViewIcon = "/src/assets/icons/list-view.svg";
 
   const handleModelClick = (model: TModel) => {
     setSearchQuery(search);
@@ -42,10 +43,25 @@ const Search = ({ recentlyUsedModels }: SearchProps) => {
 
   return (
     <div className="w-full mt-[131px] px-[145px]">
-      <Input autoFocus onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="h-[38px] bg-transparent text-[32px] border-none -ml-[10px]" />
+      <Input
+        autoFocus
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search..."
+        className="h-[38px] bg-transparent text-[32px] border-none -ml-[10px]"
+      />
+
+
       {search.length < 1 ? (
         <>
-          <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
+          <div className="flex justify-between mt-[30px]">
+            {recentlyUsedModels?.slice(0, 4).map((model) => (
+              <ModelWidget
+                model={model}
+                key={model.id}
+                className="w-[124px] h-[78px]"
+              />
+            ))}
+          </div>
         </>
       ) : (
         <>
@@ -53,10 +69,60 @@ const Search = ({ recentlyUsedModels }: SearchProps) => {
             <>loading...</>
           ) : (
             <>
+
+      <div className="mt-[40px] flex justify-between gap-8">
+        <div className="flex items-center gap-2 text-surface-750">
+          <span>Text Generation</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 13 13"
+            className="fill-surface-750 cursor-pointer"
+          >
+            <g clip-path="url(#clip0_1383_14238)">
+              <path
+                d="M1.30566 5.74219H4.42285C5.29102 5.74219 5.72852 5.30469 5.72852 4.40234V1.34668C5.72852 0.444336 5.29102 0.0136719 4.42285 0.0136719H1.30566C0.4375 0.0136719 0 0.444336 0 1.34668V4.40234C0 5.30469 0.4375 5.74219 1.30566 5.74219ZM1.31934 4.77832C1.08008 4.77832 0.963867 4.65527 0.963867 4.40234V1.34668C0.963867 1.10059 1.08008 0.977539 1.31934 0.977539H4.40234C4.6416 0.977539 4.76465 1.10059 4.76465 1.34668V4.40234C4.76465 4.65527 4.6416 4.77832 4.40234 4.77832H1.31934ZM8.16895 5.74219H11.2793C12.1475 5.74219 12.585 5.30469 12.585 4.40234V1.34668C12.585 0.444336 12.1475 0.0136719 11.2793 0.0136719H8.16895C7.29395 0.0136719 6.85645 0.444336 6.85645 1.34668V4.40234C6.85645 5.30469 7.29395 5.74219 8.16895 5.74219ZM8.18262 4.77832C7.93652 4.77832 7.82031 4.65527 7.82031 4.40234V1.34668C7.82031 1.10059 7.93652 0.977539 8.18262 0.977539H11.2656C11.5049 0.977539 11.6211 1.10059 11.6211 1.34668V4.40234C11.6211 4.65527 11.5049 4.77832 11.2656 4.77832H8.18262ZM1.30566 12.5986H4.42285C5.29102 12.5986 5.72852 12.168 5.72852 11.2656V8.20312C5.72852 7.30762 5.29102 6.87012 4.42285 6.87012H1.30566C0.4375 6.87012 0 7.30762 0 8.20312V11.2656C0 12.168 0.4375 12.5986 1.30566 12.5986ZM1.31934 11.6348C1.08008 11.6348 0.963867 11.5117 0.963867 11.2656V8.20996C0.963867 7.95703 1.08008 7.83398 1.31934 7.83398H4.40234C4.6416 7.83398 4.76465 7.95703 4.76465 8.20996V11.2656C4.76465 11.5117 4.6416 11.6348 4.40234 11.6348H1.31934ZM8.16895 12.5986H11.2793C12.1475 12.5986 12.585 12.168 12.585 11.2656V8.20312C12.585 7.30762 12.1475 6.87012 11.2793 6.87012H8.16895C7.29395 6.87012 6.85645 7.30762 6.85645 8.20312V11.2656C6.85645 12.168 7.29395 12.5986 8.16895 12.5986ZM8.18262 11.6348C7.93652 11.6348 7.82031 11.5117 7.82031 11.2656V8.20996C7.82031 7.95703 7.93652 7.83398 8.18262 7.83398H11.2656C11.5049 7.83398 11.6211 7.95703 11.6211 8.20996V11.2656C11.6211 11.5117 11.5049 11.6348 11.2656 11.6348H8.18262Z"
+                fill="fill-surface-750"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_1383_14238">
+                <rect width="12.585" height="12.5986" />
+              </clipPath>
+            </defs>
+          </svg>{" "}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="10"
+            viewBox="0 0 14 10"
+            className="fill-surface-750 cursor-pointer"
+            >
+            <g clipPath="url(#clip0_1383_14246)">
+              <path fill="fill-surface-750" d="M3.88281 1.42188H13.2207C13.5283 1.42188 13.7744 1.18262 13.7744 0.875C13.7744 0.560547 13.5283 0.321289 13.2207 0.321289H3.88281C3.56836 0.321289 3.3291 0.560547 3.3291 0.875C3.3291 1.18262 3.56836 1.42188 3.88281 1.42188ZM3.88281 5.55762H13.2207C13.5283 5.55762 13.7744 5.31152 13.7744 5.00391C13.7744 4.69629 13.5283 4.45703 13.2207 4.45703H3.88281C3.56836 4.45703 3.3291 4.69629 3.3291 5.00391C3.3291 5.31152 3.56836 5.55762 3.88281 5.55762ZM3.88281 9.68652H13.2207C13.5283 9.68652 13.7744 9.44727 13.7744 9.13965C13.7744 8.8252 13.5283 8.58594 13.2207 8.58594H3.88281C3.56836 8.58594 3.3291 8.8252 3.3291 9.13965C3.3291 9.44727 3.56836 9.68652 3.88281 9.68652ZM0.861328 1.72949C1.33984 1.72949 1.72266 1.34668 1.72266 0.875C1.72266 0.396484 1.33984 0.0136719 0.861328 0.0136719C0.382812 0.0136719 0 0.396484 0 0.875C0 1.34668 0.382812 1.72949 0.861328 1.72949ZM0.861328 5.86523C1.33984 5.86523 1.72266 5.48242 1.72266 5.00391C1.72266 4.52539 1.33984 4.14258 0.861328 4.14258C0.382812 4.14258 0 4.52539 0 5.00391C0 5.48242 0.382812 5.86523 0.861328 5.86523ZM0.861328 10.001C1.33984 10.001 1.72266 9.61133 1.72266 9.13965C1.72266 8.66113 1.33984 8.27832 0.861328 8.27832C0.382812 8.27832 0 8.66113 0 9.13965C0 9.61133 0.382812 10.001 0.861328 10.001Z" />
+            </g>
+            <defs>
+              <clipPath id="clip0_1383_14246">
+                <rect width="13.7744" height="10.001" />
+              </clipPath>
+            </defs>
+          </svg>{" "}
+        </div>
+      </div>
               {searchModels ? (
                 <>
                   <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">
-                    {searchModels?.slice(0, 12).map((model) => <ModelWidget onClick={() => handleModelClick(model)} model={model} key={model.id} className="w-[124px] h-[78px]" />)}
+                    {searchModels?.slice(0, 12).map((model) => (
+                      <ModelWidget
+                        onClick={() => handleModelClick(model)}
+                        model={model}
+                        key={model.id}
+                        className="w-[124px] h-[78px]"
+                      />
+                    ))}
                   </div>
                 </>
               ) : (

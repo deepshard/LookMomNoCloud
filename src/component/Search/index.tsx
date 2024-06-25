@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input , Skeleton, Title } from "antd";
+import { Input, Skeleton, Title } from "antd";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useNavigate } from "react-router-dom";
+import ModelWidgetSkeleton from "../ModelWidgetSkeleton/ModelWidgetSkeleton";
 import {
   useSearchModels,
   useGetPrediction,
@@ -87,11 +88,10 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   };
 
   const renderSearchResults = () => {
-    if (isTyping || isSearchLoading) return <div>loading...</div>;
-    if (!searchModels) return 
-      <div className="w-full h-80 rounded-sm bg-surface-main/5 text-surface-main flex justify-center items-center">
-        No results
-      </div>;
+    if (!searchModels) return;
+    <div className="w-full h-80 rounded-sm bg-surface-main/5 text-surface-main flex justify-center items-center">
+      No results
+    </div>;
     return (
       <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
         {searchModels.slice(0, searchModels.length).map((model) => (
@@ -158,15 +158,6 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
           </>
         ) : (
           <>
-            {loadingState ? (
-              <>
-                <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">
-                  {[...Array(12)].map((_, index) => (
-                    <Skeleton className="model-widget p-3 bg-gray-400 opacity-25 rounded-md" key={index} active round title={false} paragraph={{ rows: 2, width: [72, 51] }} />
-                  ))}
-                </div>
-              </>
-            ) : (
               <>
                 <div className="w-full py-3 mt-11 mb-5 flex justify-between gap-8">
                   <div className="flex items-center gap-2 text-surface-750">
@@ -174,12 +165,13 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                   </div>
 
                   <div className="flex items-center gap-4">
-                  <div className={` flex items-center gap-2 text-surface-500 transition transition-200 opacity-${searchModels?.length ? '100' : '0'}`}>
-                    <span>
-                      {searchModels?.length} results
-                    </span>
-                  </div>
-                    
+                    <div
+                      className={` flex items-center gap-2 text-surface-500 transition transition-200 opacity-${
+                        searchModels?.length ? "100" : "0"
+                      }`}
+                    >
+                      <span>{searchModels?.length} results</span>
+                    </div>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="13"
@@ -221,36 +213,43 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                   </div>
                 </div>
                 {renderSearchResults()}
-                </>
-              )}
-            </>
-          )}
+              </>
+          </>
+        )}
 
         <div className="flex flex-col gap-1">
           {/* RESULTS LIST ITEM */}
           {/* TO DO: REMOVE FROM HERE – PUT ON RESULTS LIST */}
           {[...Array(8)].map((_, index) => (
-            <div key={index} className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer">
+            <div
+              key={index}
+              className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer"
+            >
               <div className="flex items-center gap-2">
                 {/* TO DO: Replace for model's actual image */}
                 <div className="w-8 h-8 rounded-[8px] bg-surface-100" />
 
                 <div className="flex flex-col gap-1 -mt-1">
                   {/* TO DO: Replace for Model's Name */}
-                  <p className="text-surface-750 title-sm h-3.5 leading-tight">LlaMa–3</p>
+                  <p className="text-surface-750 title-sm h-3.5 leading-tight">
+                    LlaMa–3
+                  </p>
                   {/* TO DO: R eplace for Model's Author • Size */}
-                  <p className="text-surface-500 text-xs h-3.5 leading-normal">"Meta • 7B"</p>
+                  <p className="text-surface-500 text-xs h-3.5 leading-normal">
+                    "Meta • 7B"
+                  </p>
                 </div>
               </div>
 
               {/* TO DO: Add action to the button */}
-              <button className="text-surface-500 title-sm">View Details</button>
+              <button className="text-surface-500 title-sm">
+                View Details
+              </button>
             </div>
           ))}
         </div>
       </div>
     </div>
-    
   );
 };
 

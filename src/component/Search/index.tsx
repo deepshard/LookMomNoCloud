@@ -112,14 +112,22 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
       </div>
       {search.length < 1 ? (
         <>
-          <div className="flex justify-between mt-[30px]">
-            {recentlyUsedModels?.slice(0, 4).map((model) => (
-              <ModelWidget
-                model={model}
-                key={model.id}
-                className="w-[124px] h-[78px]"
-              />
-            ))}
+          <div className="w-full flex flex-col justify-between my-14 gap-y-11">
+            <div className="flex w-full justify-between items-center gap-x-[54px]">
+                {/* TO DO: Replace for actual Suggestions Component */}
+                <div className="flex-grow flex p-2 gap-2 h-[60px] bg-bg-wdget glass-3d rounded-md justify-center items-center">Search Suggestions</div>
+                <div className="flex-grow flex p-2 gap-2 h-[60px] bg-bg-wdget glass-3d rounded-md justify-center items-center">Search Suggestions</div>
+            </div>
+
+            <div className="w-full grid grid-cols-4 justify-between gap-x-[54px] gap-y-11">
+              {recentlyUsedModels?.slice(0, 8).map((model) => (
+                <ModelWidget
+                  model={model}
+                  key={model.id}
+                  className="w-[124px] h-[78px]"
+                />
+              ))}
+            </div>
           </div>
         </>
       ) : (

@@ -47,7 +47,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   const updateCaseSensitivePredictiveText = () => {
     const predictiveText = predictionData?.[0]?.title || "";
     if (predictiveText && search) {
-      let casedPrediction = predictiveText.split('').map((char, i) => {
+      const casedPrediction = predictiveText.split('').map((char, i) => {
         if (i < search.length) return search[i];
         const prevChar = search[i - 1] || predictiveText[i - 1];
         return prevChar === prevChar.toUpperCase() ? char.toUpperCase() : char.toLowerCase();

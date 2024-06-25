@@ -26,7 +26,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["readline"]
+    excludes=["readline"],
     noarchive=False,
     optimize=0,
 )

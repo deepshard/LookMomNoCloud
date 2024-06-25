@@ -24,9 +24,12 @@ const AnimateModal = ({children, show, onClose}: AnimateModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className='animate-modal'
+          className='animate-modal '
         >
-            <img src="/src/assets/icons/close.svg" alt="" className="absolute cursor-pointer p-[10px] top-[20px] right-[20px] z-[9999]" onClick={onClose} />
+          <div className='flex absolute cursor-pointer p-[10px] top-[20px] right-[20px] z-[9999] gap-2 text-surface-750'>
+          <h1>Esc</h1>
+            <img src="/src/assets/icons/close.svg" alt="" className="fill-surface-750" onClick={onClose} />
+          </div>
             {children}
         </motion.div>
       )}

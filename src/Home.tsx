@@ -21,6 +21,11 @@ export default function Home() {
     navigate(`/model/${model.id}`, { state: { model } });
   };
 
+  const handleMyModelClick = (model: TModel) => {
+    handleNavigate(model);
+    setShowMyModels(false);
+  };
+
   const installModelHandler = (model: TModel) => {
     installModel(model, undefined, (progress) => {
       updateModels({
@@ -57,8 +62,6 @@ export default function Home() {
 
   return (
     <>
-      {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
-      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
@@ -96,10 +99,10 @@ export default function Home() {
         </div>
       </div>
       <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
-        <Search recentlyUsedModels={storeHighlights} />
+        <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate}/>
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
-        <MyModels myModels={Object.values(downloads)} />
+        <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick}/>
       </AnimateModal>
     </>
   );

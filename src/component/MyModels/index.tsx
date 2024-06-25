@@ -5,9 +5,10 @@ import Carousel from "../Carousel/Carousel";
 
 interface SearchProps {
   myModels?: TModel[];
+  onModelClick?: (model: TModel) => void;
 }
 
-const MyModels = ({ myModels = [] }: SearchProps) => {
+const MyModels = ({ myModels = [], onModelClick }: SearchProps) => {
   const carouselRef = useRef<any>();
 
   const next = () => {
@@ -50,7 +51,7 @@ const MyModels = ({ myModels = [] }: SearchProps) => {
       {gridModels.length > 0 && (
         <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
           {gridModels.map((page, index) => (
-            <Page models={page} key={index} />
+            <Page models={page} key={index} onModelClick={onModelClick}/>
           ))}
         </Carousel>
       )}
@@ -60,13 +61,14 @@ const MyModels = ({ myModels = [] }: SearchProps) => {
 
 interface PageProps {
   models: TModel[];
+  onModelClick?: (model: TModel) => void;
 }
-const Page = ({ models }: PageProps) => {
+const Page = ({ models, onModelClick }: PageProps) => {
   return (
     <div className="w-full h-full flex justify-center items-center mx-[145px] pt-[148px]">
       <div className="w-full h-full grid grid-cols-3 gap-x-[140px] gap-y-[52px] justify-items-center content-start">
         {models.map((model) => (
-          <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />
+          <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" onClick={() => {onModelClick?.(model)}}/>
         ))}
       </div>
     </div>

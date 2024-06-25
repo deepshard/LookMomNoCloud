@@ -14,7 +14,7 @@
     /* Adjust for desired border thickness */
     border-radius: inherit;
     overflow: hidden;
-    z-index: 1;
+    z-index: -1;
     border-radius: 13px;
 }
 
@@ -25,8 +25,8 @@
             transparent,
             rgb(255, 255, 255),
             transparent 50%);
-    animation: border-glow 2.5s linear infinite;
-    z-index: 1;
+    animation: border-glow 2s linear infinite;
+    z-index: -1;
 }
 
 .blur-overlay {

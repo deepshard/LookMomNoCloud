@@ -23,7 +23,7 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
         width="200%"
         height="200%"
         filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
+        colorInterpolationFilters="sRGB"
       >
         <feGaussianBlur stdDeviation="25" />
       </filter>
@@ -35,9 +35,9 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
         y2="2.96496e-06"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-opacity="0" />
-        <stop offset="0.268371" stop-opacity="0.3" />
-        <stop offset="1" stop-opacity="0.5" />
+        <stop stopOpacity="0" />
+        <stop offset="0.268371" stopOpacity="0.3" />
+        <stop offset="1" stopOpacity="0.5" />
       </linearGradient>
     </defs>
 
@@ -46,7 +46,7 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
       height="100%"
       rx="13"
       fill="black"
-      fill-opacity="0.2"
+      fillOpacity="0.2"
       filter="url(#blur_filter)"
     />
 
@@ -55,7 +55,7 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
       height="100%"
       rx="13"
       fill="url(#overlay_gradient)"
-      fill-opacity="0.8"
+      fillOpacity="0.8"
     />
   </svg>
 )

@@ -1,5 +1,6 @@
 import React from "react";
-import llamaImage from "../../../assets/images/llama1.png";
+// @ts-ignore
+import llamaImage from "../../assets/images/llama1.png";
 
 interface FeaturedProps extends React.HTMLAttributes<HTMLDivElement> {
   link?: string;

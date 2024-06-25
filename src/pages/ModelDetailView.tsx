@@ -11,15 +11,24 @@ import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
-import installIcon from "../../assets/icons/install.svg";
-import stopIcon from "../../assets/icons/stop.svg";
-import playIcon from "../../assets/icons/play.svg";
-import shareIcon from "../../assets/icons/share.svg";
-import trashIcon from "../../assets/icons/trash.svg";
-import downloadIcon from "../../assets/icons/download.svg";
-import closeIcon from "../../assets/icons/close.svg";
-import downloadCircleIcon from "../../assets/icons/download-circle-fill.svg";
-import likeCircleIcon from "../../assets/icons/like-circle-fill.svg";
+// @ts-ignore
+import installIcon from "../assets/icons/install.svg";
+// @ts-ignore
+import stopIcon from "../assets/icons/stop.svg";
+// @ts-ignore
+import playIcon from "../assets/icons/play.svg";
+// @ts-ignore
+import shareIcon from "../assets/icons/share.svg";
+// @ts-ignore
+import trashIcon from "../assets/icons/trash.svg";
+// @ts-ignore
+import downloadIcon from "../assets/icons/download.svg";
+// @ts-ignore
+import closeIcon from "../assets/icons/close.svg";
+// @ts-ignore
+import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
+// @ts-ignore
+import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];

@@ -2,7 +2,8 @@ import { Progress } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import truffleHardwareLandscapeIcon from "../../../assets/icons/truffle-hardware-landscape.svg";
+// @ts-ignore
+import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
 
 const InitializationProgress = () => {
   const [percent, setPercent] = useState(0);

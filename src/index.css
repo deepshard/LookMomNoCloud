@@ -4,43 +4,43 @@
 
 @font-face {
   font-family: 'TruffleRegular'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Regular.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Regular.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Italic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Italic.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleBoldItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-BoldItalic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-BoldItalic.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleBold'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Bold.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Bold.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleLight'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Light.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Light.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleLightItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-LightItalic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-LightItalic.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleMedium'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Medium.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Medium.otf'); /*URL to font*/
 }
 
 
 @font-face {
   font-family: 'TruffleMediumItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-MediumItalic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-MediumItalic.otf'); /*URL to font*/
 }
 
 
@@ -82,7 +82,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  background: url("/assets/images/truffle-background.png");
+  background: url("../src/assets/images/truffle-background.png");
   box-shadow:
     0px 20px 50px 0px rgba(0, 0, 0, 0.25),
     0px 0px 100px 0px rgba(255, 255, 255, 0.1) inset,

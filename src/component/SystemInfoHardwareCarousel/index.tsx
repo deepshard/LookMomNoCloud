@@ -6,7 +6,8 @@ import { upperFirst } from "lodash";
 import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
 import { useCallback, useRef, useState } from "react";
 import {motion} from 'framer-motion'
-import monitorIcon from "../../../assets/icons/monitor.svg";
+// @ts-ignore
+import monitorIcon from "../../assets/icons/monitor.svg";
 
 interface SystemInfoHardwareCarouselProps {
   sysInfo: TSysInfo | null;

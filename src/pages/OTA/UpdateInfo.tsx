@@ -1,6 +1,7 @@
 import Button from "../../component/common/Button";
 import { motion } from "framer-motion";
-import truffleHardwareLandscapeIcon from "../../../assets/icons/truffle-hardware-landscape.svg";
+// @ts-ignore
+import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
 
 interface UpdateInfoProps {
   onConfirm: () => void;

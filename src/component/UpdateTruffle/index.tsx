@@ -1,8 +1,8 @@
 import React from 'react'
-import truffleHardwareLandscapeIcon from "../../../assets/icons/truffle-hardware-landscape.svg";
-import downloadFillIcon from "../../../assets/icons/download-fill.svg";
-
-//@ts-ignore
+// @ts-ignore
+import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
+// @ts-ignore
+import downloadFillIcon from "../../assets/icons/download-fill.svg";
 
 const UpdateTruffle = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => {
   return (

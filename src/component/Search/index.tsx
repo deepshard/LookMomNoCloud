@@ -7,7 +7,6 @@ import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../../context/HomePageProvider";
-import closeIcon from "../../../assets/icons/close.svg";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];

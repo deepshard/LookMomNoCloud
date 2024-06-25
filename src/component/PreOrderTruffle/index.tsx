@@ -1,5 +1,6 @@
 import Button from "../common/Button"
-import truffleImage from "../../../assets/images/preorder-hardware.png";
+// @ts-ignore
+import truffleImage from "../../assets/images/preorder-hardware.png";
 
 
 const PreOrderTruffle = () => {

@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../context/HomePageProvider";
-import { useEffect } from "react";
-import dayIcon from "../../assets/icons/day.svg";
-import nightIcon from "../../assets/icons/night.svg";
-import searchIcon from "../../assets/icons/search-icon.svg";
+//@ts-ignore
+import dayIcon from "../assets/icons/day.svg";
+//@ts-ignore
+import nightIcon from "../assets/icons/night.svg";
+//@ts-ignore
+import searchIcon from "../assets/icons/search-icon.svg";
 
 interface WelcomeInfo {
   icon: string;

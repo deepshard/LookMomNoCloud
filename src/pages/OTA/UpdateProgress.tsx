@@ -1,8 +1,9 @@
 import { Progress } from "antd";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import truffleHardwareLandscapeIcon from "../../../assets/icons/truffle-hardware-landscape.svg";
+
+// @ts-ignore
+import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
 
 const UpdateProgress = () => {
   const [percent, setPercent] = useState(0);
@@ -35,7 +36,15 @@ const UpdateProgress = () => {
       <img src={truffleHardwareLandscapeIcon} alt="" className="w-[327px] h-[187px] blur-[0.4px]" />
       <p className="text-white text-center text-sm mt-[81px]">Updating Truffle...</p>
       <Progress className="mt-[30px]" type="line" percent={percent} showInfo={false} />
-      {percent === 100 && <button onClick={() => window.ipc.restartAndUpdate()}>Restart</button>}
+      {percent === 100 && (
+        <button
+          onClick={() => {
+            //@ts-ignore
+            window.ipc.restartAndUpdate();
+          }}>
+          Restart
+        </button>
+      )}
     </motion.div>
   );
 };

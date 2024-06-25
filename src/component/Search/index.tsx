@@ -9,6 +9,7 @@ import {
 } from "../../lib/react-query/queriesAndMutations";
 import { useHomePageContext } from "../../context/HomePageProvider";
 import { TModel } from "../../types/schemas";
+import Title from "antd/es/skeleton/Title";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
@@ -109,18 +110,18 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   return (
     <div className="w-full flex flex-col items-center">
       <div className="w-full mt-32 max-w-[660px] flex flex-col justify-start items-center ">
-        <div className="w-full relative -ml-[10px]">
+        <div className="w-full relative">
           <Input
             ref={inputRef}
             value={search}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Search..."
-            className="h-[38px] bg-transparent text-[32px] border-none relative z-10 text-white capitalize"
+            className="-mx-[11px] h-[38px] bg-transparent text-[32px] border-none relative z-10 text-white capitalize"
           />
           <Input
             value={caseSensitivePredictiveText}
-            className="h-[38px] bg-transparent text-[32px] border-none text-gray-500 absolute top-0 left-0 z-0 capitalize"
+            className="-mx-[11px] h-[38px] bg-transparent text-[32px] border-none text-gray-500 absolute top-0 left-0 z-0 capitalize"
             readOnly
           />
         </div>
@@ -130,15 +131,17 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
               <div className="flex w-full justify-between items-center gap-x-[54px]">
                 <SearchSuggestions
                   title="Best math models"
-                  count={34}
+                  count={65}
                   icon={searchIcon}
-                  className="rounded-lg p-3 flex items-center space-x-3 glass-3d w-full transition-transform cursor-pointer"
+                  onClick={() => setSearch("Best math models")}
+                  className="rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
                 />
                 <SearchSuggestions
                   title="Best models for code"
-                  count={54}
+                  count={279}
                   icon={searchIcon}
-                  className="rounded-lg p-3 flex items-center space-x-3 glass-3d w-full transition-transform cursor-pointer"
+                  onClick={() => setSearch("Best models for code")}
+                  className="rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
                 />
               </div>
 
@@ -159,7 +162,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
               <>loading...</>
             ) : (
               <>
-                <div className="w-full py-3 mt-11 mb-8 flex justify-between gap-8">
+                <div className="w-full py-3 mt-11 mb-5 flex justify-between gap-8">
                   <div className="flex items-center gap-2 text-surface-750">
                     <span>Text Generation</span>
                   </div>
@@ -225,7 +228,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
 const SearchSuggestions = ({ title, count, icon, ...rest }) => {
   return (
     <div {...rest}>
-      <div className="rounded-sm p-2 w-[43px] h-[43px] glass-3d flex justify-center">
+      <div className="rounded-xs p-2 w-10 h-10 bg-surface-main/5 flex justify-center">
         <img src={icon} className="w-4" />
       </div>
       <div className="flex flex-col justify-center">

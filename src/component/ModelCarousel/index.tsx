@@ -101,7 +101,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
                 }}
               >
                 <ModelWidget
-                  key={`${model.id}-${model.status}`}
+                  key={`${model.id}`}
                   model={model}
                   className="flex-shrink-0"
                 />

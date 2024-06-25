@@ -6,51 +6,27 @@ from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
 from models import RunningModel
-from endpoints.model.downloaded.downloaded import is_model_downloaded
+from endpoints.model.downloaded.downloaded import get_all_local_models, get_model_details
 from utils import get_app_data_path
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 async def get_highlights() -> list[Model]:
-    base_dir = get_app_data_path() / "models"
-    running_models = [
-        {"id": model.id, "instance": model.instance} for model in (await RunningModel.get_all())
-    ]
-    downloaded_models = [{"id": model_id, "instance": None} for model_id in os.listdir(base_dir)]
+    all_models = await get_all_local_models()
 
-    uuid_pattern = re.compile(
-        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-    )
-    downloaded_models = [
-        model_id
-        for model_id in downloaded_models
-        if uuid_pattern.match(model_id["id"]) and await is_model_downloaded(model_id["id"])
-    ]
+    # Fetch data for all running/downloaded models
+    tasks = [get_model_details(model) for model in all_models.values()]
 
-    # Dedupe model IDs
-    for model in downloaded_models:
-        if model["id"] in [running_model["id"] for running_model in running_models]:
-            continue
+    # If we have less than 5 models, fetch trending models to pad the list
+    if len(all_models) < 5:
+        tasks.append(get_trending_models(5))
 
-        running_models.append(model)
-
-    tasks = []
-    for model in running_models:
-        task = fetch_model_data(model)
-        tasks.append(task)
-
-    tasks.append(get_trending_models(5))
     results = await asyncio.gather(*tasks)
-    trending = results.pop()
 
-    # If trending model is already downloaded or running, do not append to results
-    for model in trending:
-        if model.id in [result.id for result in results]:
-            continue
-
-        results.append(model)
+    # If we have less than 5 models, pad the list with trending models up to 5
+    if len(all_models) < 5:
+        trending_models = results.pop()
+        results.extend(model for model in trending_models if model.id not in all_models)
+        results = results[:5]
 
     return results
 
@@ -58,7 +34,6 @@ async def get_highlights() -> list[Model]:
 async def get_trending_models(num: int) -> list[Model]:
     async with global_state_manager.session.get(
         f"{TRUFFLE_API_URL}/models/trending?k={num}",
-        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch trending models"
         data = await response.json()
@@ -79,34 +54,8 @@ async def get_trending_models(num: int) -> list[Model]:
                 status=ModelStatus.NOT_DOWNLOADED,
                 backgroundImage=model["backgroundImage"],
                 instance=0,
+                port=None,
                 progress=0,
             )
             for model in data
         ]
-
-
-async def fetch_model_data(model):
-    async with global_state_manager.session.get(
-        f"{TRUFFLE_API_URL}/models/{model['id']}",
-        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
-    ) as response:
-        assert response.status == 200, f"Failed to fetch model data for {model['id']}"
-        model_data = await response.json()
-        return Model(
-            id=model_data["id"],
-            name=model_data["name"],
-            title=model_data["title"],
-            size=model_data["size"],
-            author=model_data["author"],
-            downloads=model_data["downloads"],
-            likes=model_data["likes"],
-            intro=model_data["intro"],
-            capabilities=model_data["capabilities"],
-            risks=model_data["risks"],
-            evalId=model_data["evalId"],
-            hfLink=model_data["hfLink"],
-            status=ModelStatus.RUNNING if model["instance"] is not None else ModelStatus.STOPPED,
-            backgroundImage=model_data["backgroundImage"],
-            instance=model["instance"] if model["instance"] is not None else 0,
-            progress=0,
-        )

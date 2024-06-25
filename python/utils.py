@@ -43,14 +43,14 @@ def find_port(port: int = 8899) -> int:
 
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
-    mlc_chat_config_path = quant_path / "mlc-chat-config.json"
+    chat_config_path = quant_path / "mlc-chat-config.json"
     ndarray_cache_path = quant_path / "ndarray-cache.json"
     tokenizer_config_path = quant_path / "tokenizer_config.json"
     tokenizer_path = quant_path / "tokenizer.json"
     shards = sum(1 for _ in quant_path.glob("params_shard_*.bin"))
     return (
         quant_path.exists()
-        and mlc_chat_config_path.exists()
+        and chat_config_path.exists()
         and ndarray_cache_path.exists()
         and shards > 0
         and tokenizer_config_path.exists()
@@ -122,7 +122,7 @@ def get_devices_memory(device_type: str, devices: list[any]) -> int:
     return total_available
 
 
-def is_mlc_compatible(files: list[FileInfo]) -> bool:
+def is_truffle_compatible(files: list[FileInfo]) -> bool:
     # files must contain one of the following:
     # - pytorch_model.bin.index.json
     # - pytorch_model.bin

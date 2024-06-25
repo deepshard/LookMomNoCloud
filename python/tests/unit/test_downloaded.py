@@ -1,8 +1,11 @@
 import os
 import pytest
 from pathlib import Path
+from models import RunningModel
+from db import get_db_session
 from endpoints.model.downloaded.downloaded import get_downloaded_models
-from tests.data import ID, ID_2
+from tests.unit.data import ID, ID_2
+from truffle_types import ModelStatus
 
 
 # Helpers
@@ -109,3 +112,35 @@ async def test_one_model_downloaded_fully_another_not_fully(session_fixture):
     models = await get_downloaded_models()
     assert len(models) == 1
     assert models[0].id == ID
+
+
+@pytest.mark.asyncio
+async def test_downloaded_and_running(session_fixture):
+    # Mocks
+    session_fixture("endpoints.model.downloaded.downloaded")
+    mock_model = {
+        "id": ID,
+        "instance": 1,
+        "name": "Test Model 1",
+        "size": 8000000000,
+        "pid": 1234,
+        "port": 32423,
+        "quantization": "INT4",
+    }
+    async with get_db_session() as session:
+        session.add(RunningModel(**mock_model))
+        await session.commit()
+
+    create_model_dir(ID_2)
+
+    # Test
+    models = await get_downloaded_models()
+    assert len(models) == 2
+    assert models[0].id == ID
+    assert models[0].status == ModelStatus.RUNNING
+    assert models[0].instance == 1
+    assert models[0].port == 32423
+    assert models[1].id == ID_2
+    assert models[1].status == ModelStatus.STOPPED
+    assert models[1].instance == 0
+    assert models[1].port is None

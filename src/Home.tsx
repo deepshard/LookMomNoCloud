@@ -9,6 +9,8 @@ import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import ModelCarousel from "./component/ModelCarousel";
 import { TModel } from "./types/schemas";
+import { AnimatePresence } from "framer-motion";
+import AnimateModal from "./component/AnimateModal";
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
@@ -61,11 +63,6 @@ export default function Home() {
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
-            <div className="flex w-full -mb-[3px] gap-1.5 justify-start items-center">
-              <div className="h-4 w-4 rounded-full bg-surface-750" />
-
-              <h1 className="text-surface-750 w-full">Welcome, Peter</h1>
-            </div>
 
             <ModelCarousel
               models={storeHighlights}
@@ -99,6 +96,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
+        <Search recentlyUsedModels={storeHighlights} />
+      </AnimateModal>
+      <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
+        <MyModels myModels={Object.values(downloads)} />
+      </AnimateModal>
     </>
   );
 }

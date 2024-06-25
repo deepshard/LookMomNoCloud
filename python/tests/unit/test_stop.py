@@ -1,6 +1,5 @@
 import pytest
 import asyncio
-from multiprocessing import Process, set_start_method
 
 from sqlalchemy import select
 from endpoints.model.stop import stop_model_handler
@@ -12,19 +11,6 @@ from models import RunningModel
 # Cases:
 # - Model instance exists
 # - Model instance does not exist
-
-
-async def fake_process():
-    while True:
-        await asyncio.sleep(10)
-
-
-@pytest.fixture
-def mock_process():
-    set_start_method("spawn", force=True)
-    proc = Process(target=fake_process)
-    proc.start()
-    yield proc
 
 
 # Tests

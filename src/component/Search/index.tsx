@@ -88,9 +88,12 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
 
   const renderSearchResults = () => {
     if (isTyping || isSearchLoading) return <div>loading...</div>;
-    if (!searchModels) return <p>No results</p>;
+    if (!searchModels) return 
+      <div className="w-full h-80 rounded-sm bg-surface-main/5 text-surface-main flex justify-center items-center">
+        No results
+      </div>;
     return (
-      <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">
+      <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
         {searchModels.slice(0, 12).map((model) => (
           <ModelWidget
             onClick={() => handleModelClick(model)}
@@ -160,6 +163,11 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                   <span>Text Generation</span>
                 </div>
                 <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-surface-500">
+                    {/* TO DO: Replace with actual results count */}
+                    <span>30 Results</span>
+                  </div>
+                  
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="13"
@@ -184,7 +192,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                     width="14"
                     height="10"
                     viewBox="0 0 14 10"
-                    className="fill-surface-750 cursor-pointer"
+                    className="fill-surface-500 cursor-pointer"
                   >
                     <g clipPath="url(#clip0_1383_14246)">
                       <path
@@ -201,11 +209,11 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
                 </div>
               </div>
               {renderSearchResults()}
-            </>
-          )}
-        </>
-      )}
-    </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
   );
 };
 

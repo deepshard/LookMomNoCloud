@@ -124,6 +124,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
             readOnly
           />
         </div>
+
         {search.length < 1 ? (
           <>
             <div className="w-full flex flex-col justify-between my-14 gap-y-11">
@@ -216,6 +217,25 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
               )}
             </>
           )}
+
+          {/* RESULTS LIST ITEM */}
+          {/* TO DO: REMOVE FROM HERE – PUT ON RESULTS LIST */}
+          <div className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer">
+            <div className="flex items-center gap-2">
+              {/* TO DO: Replace for model's actual image */}
+              <div className="w-8 h-8 rounded-[8px] bg-surface-100" />
+
+              <div className="flex flex-col gap-1 -mt-1">
+                {/* TO DO: Replace for Model's Name */}
+                <p className="text-surface-750 title-sm h-3.5 leading-tight">LlaMa–3</p>
+                {/* TO DO: R eplace for Model's Author • Size */}
+                <p className="text-surface-500 text-xs h-3.5 leading-normal">"Meta • 7B"</p>
+              </div>
+            </div>
+
+            {/* TO DO: Add action to the button */}
+            <button className="text-surface-500 title-sm">View Details</button>
+          </div>
       </div>
     </div>
     

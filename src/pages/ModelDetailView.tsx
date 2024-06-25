@@ -64,6 +64,30 @@ function ModelDetailView() {
     }
   };
 
+  const getModelInfoHeader = () => {
+    switch (modelData?.status) {
+      case "RUNNING":
+        return (
+          <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-between">
+            <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[173px] h-[32px]">
+              <img src={"/src/assets/icons/running-man.svg"} className="mr-2 w-[16px] h-[16px]" />
+              <p className="text-surface-500 text-xs">
+                https://localhost:{modelData.port}
+              </p>
+            </div>
+            <div onClick={() => window.open(`https://google.com/search?q=${modelData.name}`)} className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px] cursor-pointer">
+              <img src={"/src/assets/icons/docs.svg"} className="mr-2 w-[16px] h-[16px]" />
+              <p className="text-surface-500 text-xs">
+                Docs
+              </p>
+            </div>
+          </div>
+        );
+      default:
+        break;
+    }
+  }
+
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
@@ -132,7 +156,7 @@ function ModelDetailView() {
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
       {/* Nav Bar */}
       <div className="sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/75 to-transparent z-[1] "></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black via-black/60 to-black/0 from-75% via-90% z-[1] "></div>
         {/* Left Side – Model Info*/}
         <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
           <img loading="lazy" srcSet={modelData?.backgroundImage} className="shrink-0 aspect-square rounded-full w-[30px] " />
@@ -206,6 +230,7 @@ function ModelDetailView() {
           <div className="relative flex flex-col justify-start items-center">
             {/* Model's Image */}
             <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
+              {getModelInfoHeader()}
               <img src={modelData?.backgroundImage} className=" w-full h-full " />
             </div>
 

@@ -18,8 +18,8 @@ export const useStore = create<State>((set) => ({
   addSysInfo: (info) => set((store) => {
     const models = info.resources.models.map((model) => {
       const m = store.downloads[model.id];
-      if(m) {
-        return {...m, ...model};
+      if (m) {
+        return { ...m, ...model };
       }
       return model
     })
@@ -34,9 +34,9 @@ export const useStore = create<State>((set) => ({
     downloadedModels.forEach((model) => {
       stateCp.downloads = { ...stateCp.downloads, [model.id]: model }
       const hModelIndex = stateCp.highlights.findIndex((highlight) => highlight.id === model.id)
-      if(hModelIndex > -1) {
+      if (hModelIndex > -1) {
         stateCp.highlights[hModelIndex] = { ...stateCp.highlights[hModelIndex], ...model }
-      } 
+      }
     })
     return { ...stateCp, downloads: stateCp.downloads, highlights: stateCp.highlights }
   }),
@@ -48,18 +48,18 @@ export const useStore = create<State>((set) => ({
       return highlight
     })
 
-    return { 
+    return {
       ...state,
-      downloads: { ...state.downloads, [model.id]: { ...state.downloads[model.id], ...model} }, 
+      downloads: { ...state.downloads, [model.id]: { ...state.downloads[model.id], ...model } },
       highlights
     }
   }),
   onDeleteModel: (model) => set((state) => {
     const stateCp = { ...state }
     delete stateCp.downloads[model.id]
-    return { 
+    return {
       ...stateCp,
-      downloads: { ...stateCp.downloads},
+      downloads: { ...stateCp.downloads },
     }
   }),
   clearData: () => set((state) => ({ ...state, sysInfo: null, highlights: [], downloads: {} })), // Method to clear all data

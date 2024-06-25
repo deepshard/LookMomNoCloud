@@ -5,14 +5,19 @@ import os
 import shutil
 import asyncio
 from pathlib import Path
-import tests.data as data
+from multiprocessing import Process, set_start_method
+import tests.unit.data as data
 from unittest.mock import MagicMock
 from aioresponses import aioresponses
 from server import init_state
 from constants import TRUFFLE_API_URL
 from models import RunningModel
 
+
 # Helpers
+async def fake_process():
+    while True:
+        await asyncio.sleep(10)
 
 
 def clear_path():
@@ -90,13 +95,13 @@ def request_mocks(request, mocker):
         mocked.get(
             f"{TRUFFLE_API_URL}/models/trending?k=5",
             status=200,
-            payload=data.MODELS,
+            payload=data.MODELS[:5],
             repeat=True,
         )
         mocked.get(
             f"{TRUFFLE_API_URL}/models/trending?k=4",
             status=200,
-            payload=data.MODELS[1:],
+            payload=data.MODELS[:4],
             repeat=True,
         )
         mocked.get(
@@ -111,8 +116,40 @@ def request_mocks(request, mocker):
             payload=data.MODELS[1],
             repeat=True,
         )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/e1b7a151-ad5a-4929-b9a2-20e42f629c4c",
+            status=200,
+            payload=data.MODELS[2],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/c081e038-a74c-4a7d-87d6-f36bbf7ff373",
+            status=200,
+            payload=data.MODELS[3],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/da05e829-9e9b-43d8-8c26-6141318700cb",
+            status=200,
+            payload=data.MODELS[4],
+            repeat=True,
+        )
+        mocked.get(
+            f"{TRUFFLE_API_URL}/models/ead12fba-9e9b-43d8-8c26-6141318700cb",
+            status=200,
+            payload=data.MODELS[5],
+            repeat=True,
+        )
 
         mock_head = mocker.patch("aiohttp.ClientSession.head")
         mock_head.return_value.__aenter__.return_value = MagicMock(headers={"Content-Length": 1024})
 
         yield mocked
+
+
+@pytest.fixture
+def mock_process():
+    set_start_method("spawn", force=True)
+    proc = Process(target=fake_process)
+    proc.start()
+    yield proc

@@ -8,14 +8,14 @@ from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from enum import Enum
-from mlc_llm.interface.convert_weight import convert_weight as convert_weight_mlc
-from mlc_llm.interface.compile import compile as compile_mlc
+from mlc_llm.interface.convert_weight import convert_weight
+from mlc_llm.interface.compile import compile
 from mlc_llm.support.auto_config import detect_config, detect_model_type
 from mlc_llm.support.auto_weight import detect_weight
 from mlc_llm.interface.compiler_flags import OptimizationFlags, ModelConfigOverride
 from mlc_llm.support.auto_device import detect_device
 from mlc_llm.quantization import QUANTIZATION
-from mlc_llm.interface.gen_config import gen_config as gen_config_mlc
+from mlc_llm.interface.gen_config import gen_config
 from mlc_llm.support.auto_target import detect_target_and_host
 from state import global_state_manager
 from truffle_types import RepoType, FileInfo, Quantization
@@ -25,7 +25,7 @@ from utils import (
     get_model_size_info,
     get_usable_memory,
     get_tensor_parallelism,
-    is_mlc_compatible,
+    is_truffle_compatible,
 )
 
 
@@ -329,7 +329,7 @@ def convert_quantize_compile(
 
     # Convert and quantize
     logger.info(f"Converting weights for {base_weights_path}")
-    convert_weight_mlc(
+    convert_weight(
         config=config,
         quantization=quantization_obj,
         model=model,
@@ -341,7 +341,7 @@ def convert_quantize_compile(
 
     # Generate config
     logger.info(f"Generating config for {base_weights_path}")
-    gen_config_mlc(
+    gen_config(
         config=config,
         model=model,
         quantization=quantization_obj,
@@ -362,7 +362,7 @@ def convert_quantize_compile(
         config_file_compile = json.load(config_file)
     if not compile_path.exists():
         logger.info(f"Compiling model at {quant_weights_path}")
-        compile_mlc(
+        compile(
             config=config_file_compile,
             quantization=quantization_obj,
             model_type=model,
@@ -426,9 +426,9 @@ async def install_generator(model_id: str, model_url: str):
         yield str(progress_event)
         return
 
-    # Check if the model is MLC compatible
+    # Check if the model is Truffle compatible
     try:
-        is_mlc_compatible(files_to_download)
+        is_truffle_compatible(files_to_download)
     except Exception as e:
         progress_event.update(status=Status.DOWNLOADING, error=str(e))
         yield str(progress_event)

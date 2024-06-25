@@ -107,12 +107,19 @@ async def stop_model(request: StopRequest):
 
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
-    delete_model_handler(model_id)
+    await delete_model_handler(model_id)
     return {}
 
 
 if __name__ == "__main__":
     import uvicorn
+    import warnings
+    import multiprocessing
+
+    warnings.simplefilter("always")
+    # multiprocessing and pyinstaller dont play nicely together
+    multiprocessing.freeze_support()
+    multiprocessing.set_start_method("spawn", force=True)
 
     # Setup: create models dir if it doesn't exist, and run migrations
     os.makedirs(get_app_data_path() / "models", exist_ok=True)

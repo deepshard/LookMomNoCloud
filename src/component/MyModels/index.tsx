@@ -4,11 +4,10 @@ import { TModel } from "../../types/schemas";
 import Carousel from "../Carousel/Carousel";
 
 interface SearchProps {
-  onClose?: () => void;
   myModels?: TModel[];
 }
 
-const MyModels = ({ onClose, myModels=[] }: SearchProps) => {
+const MyModels = ({ myModels = [] }: SearchProps) => {
   const carouselRef = useRef<any>();
 
   const next = () => {
@@ -36,16 +35,6 @@ const MyModels = ({ onClose, myModels=[] }: SearchProps) => {
   }, [myModels]);
   const gridModels = gridModelsFunc();
 
-  useEffect(() => {
-    const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose && onClose();
-      }
-    };
-    window.addEventListener("keyup", handleKeyUp);
-    return () => window.removeEventListener("keyup", handleKeyUp);
-  }, []);
-
   const handleWheel = useCallback((event) => {
     const threshold = 50;
     // Check if the horizontal scroll delta exceeds the threshold
@@ -57,17 +46,14 @@ const MyModels = ({ onClose, myModels=[] }: SearchProps) => {
   }, []);
 
   return (
-    <div onWheel={handleWheel} className="search">
-      <img src="/src/assets/icons/close.svg" alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
-      <div className="w-full h-full my-models-container">
-        {gridModels.length > 0 && (
-          <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
-            {gridModels.map((page, index) => (
-              <Page models={page} key={index} />
-            ))}
-          </Carousel>
-        )}
-      </div>
+    <div onWheel={handleWheel} className="w-full h-full my-models-container">
+      {gridModels.length > 0 && (
+        <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
+          {gridModels.map((page, index) => (
+            <Page models={page} key={index} />
+          ))}
+        </Carousel>
+      )}
     </div>
   );
 };

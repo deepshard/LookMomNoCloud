@@ -5,10 +5,17 @@ import ModelWidget from '../ModelWidget'
 import SkeletonModelWidget from './ModelWidgetSkeleton'
 import { motion, AnimatePresence } from 'framer-motion'
 import './index.css'
+import { useNavigate } from 'react-router-dom'
 
 interface ModelCarouselProps {
   models: TModel[]
   isLoading: boolean
+  installModel: (...args) => void
+  runModels: (...args) => void
+  stopModel: (...args) => void
+  deleteModel: (...args) => void
+  cleanupInstall: (...args) => void
+  onModelClick: (...args) => void
 }
 
 const getSortValue = (status: string) => {
@@ -30,7 +37,7 @@ const getSortValue = (status: string) => {
   }
 }
 
-const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
+const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, deleteModel, cleanupInstall, onModelClick  }) => {
   const skeletonCount = 5
   const [showModels, setShowModels] = useState(false)
   const carouselInnerRef = useRef<HTMLDivElement>(null)
@@ -53,6 +60,8 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
       }
     }
   }, [isLoading])
+
+  const navigate = useNavigate();
 
   const sortedModels = useMemo(() => {
     return [...models].sort((a, b) => {
@@ -104,6 +113,12 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading }) => {
                   key={`${model.id}`}
                   model={model}
                   className="flex-shrink-0"
+                  onClick={() => onModelClick(model)}
+                  onInstall={installModel}
+                  onRun={runModels}
+                  onStop={stopModel}
+                  onCleanup={cleanupInstall}
+                  onDelete={deleteModel}
                 />
               </motion.div>
             ))}

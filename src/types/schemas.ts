@@ -37,13 +37,7 @@ export const ModelSchema = z.object({
     progress: z.number().optional(),
     description: z.string(),
     params: z.number(),
-    error: z.string().optional(),
-    onInstall: z.function().optional(),
-    onRun: z.function().optional(),
-    onStop: z.function().optional(),
-    onDelete: z.function().optional(),
-    onDisconnect: z.function().optional(),
-    onClick: z.function().optional(),
+    error: z.string().optional()
 })
 
 export type TModel = Infer<typeof ModelSchema>;

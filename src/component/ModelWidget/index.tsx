@@ -62,11 +62,21 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel
+  onInstall?: () => void
+  onRun?: () => void
+  onStop?: () => void
+  onCleanup?: () => void
+  onDelete?: () => void
 }
 
 const ModelWidget = ({
   model,
   className = '',
+  onInstall,
+  onRun,
+  onStop,
+  onCleanup,
+  onDelete,
   ...props
 }: ModelWidgetProps) => {
   const downloadIcon = '/src/assets/icons/download.svg'
@@ -76,11 +86,9 @@ const ModelWidget = ({
   const errorIcon = '/src/assets/icons/error.svg'
   const retryIcon = '/src/assets/icons/retry.svg'
 
-  const [isHovered, setIsHovered] = useState(false)
-
   useEffect(() => {
     return () => {
-      model.onDisconnect && model.onDisconnect()
+      onCleanup && onCleanup(model)
     }
   }, [])
 
@@ -202,7 +210,7 @@ const ModelWidget = ({
   }
 
   return (
-    <div className="relative">
+    <div className="relative" {...props}>
       {model.status === 'RUNNING' && (
         <div className="glow-container">
           <div className="glow-effect"></div>
@@ -210,9 +218,6 @@ const ModelWidget = ({
       )}
       <div
         className={`model-widget base-regular ${className} relative`}
-        {...props}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
         <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
   

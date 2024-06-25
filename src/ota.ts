@@ -76,6 +76,19 @@ export class OTAUpdater {
         throw new Error("Server directory not found in .zip");
       }
 
+      // Find the binary file (assuming it's directly in the server directory)
+      const serverPath = path.join(tmpPath, serverDir);
+      const binaryFile = fs.readdirSync(serverPath).find(file => {
+        const filePath = path.join(serverPath, file);
+        return fs.statSync(filePath).isFile() && !path.extname(file);
+      });
+
+      if (binaryFile) {
+        const binaryPath = path.join(serverPath, binaryFile);
+        // Set executable permissions (read and execute for owner, group, and others)
+        fs.chmodSync(binaryPath, '0755');
+      }
+
       // Move server folder to output path
       fs.renameSync(path.join(tmpPath, serverDir), outputPath);
       fs.rmSync(tmpPath, { recursive: true, force: true });
@@ -228,7 +241,7 @@ export class OTAUpdater {
     }
   }
 
-  downloadServer = async (url: string, output: string) => {
+  downloadServer = async (url: string, output: string, unzip_output: string) => {
     const response = await axios({
       method: "get",
       url: url,
@@ -250,7 +263,7 @@ export class OTAUpdater {
     });
 
     // Unzip tar.gz
-    await this.unzipFile(filePath, path.join(app.getPath("userData"), "bin", "server_new").toString());
+    await this.unzipFile(filePath, path.join(app.getPath("userData"), "bin", unzip_output).toString());
   }
 
   downloadUpdate = async () => {
@@ -261,7 +274,7 @@ export class OTAUpdater {
 
     // Download server updates if available
     if (this.updateServer.available) {
-      await this.downloadServer(this.updateServer.url, "server_new.tar.gz");
+      await this.downloadServer(this.updateServer.url, "server_new.tar.gz", "server_new");
     }
 
     // Download app updates if available
@@ -295,5 +308,44 @@ export class OTAUpdater {
       app.relaunch();
       app.quit();
     }
+  }
+
+  checkForInitialServer = (): boolean => {
+    // Check if server folder exists
+    const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+    const versionPath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
+    if (!fs.existsSync(serverPath) || !fs.existsSync(versionPath)) {
+      this.mainWindow.webContents.send("initialization-required");
+      return true;
+    }
+
+    return false;
+  }
+
+  downloadInitialServer = async () => {
+    // Get platform information
+    const osInfo = await si.osInfo();
+    const graphicsInfo = await si.graphics();
+    const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
+    const url = `https://truffle-binaries.s3.amazonaws.com/latest.txt`;
+
+    // Get latest hash from S3
+    let response: any = null;
+    try {
+      response = await axios.get(url);
+    } catch (error) {
+      return null;
+    }
+
+    // Create bin folder if it does not exist
+    const binPath = path.join(app.getPath("userData"), "bin");
+    if (!fs.existsSync(binPath)) {
+      fs.mkdirSync(binPath, { recursive: true });
+    }
+
+    // Download server
+    const serverUrl = `https://truffle-binaries.s3.amazonaws.com/${response.data.trim()}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
+    this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
+    await this.downloadServer(serverUrl, "server.tar.gz", "server");
   }
 }

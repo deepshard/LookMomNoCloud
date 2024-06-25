@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../context/HomePageProvider";
 import { useEffect } from "react";
+import dayIcon from "../../assets/icons/day.svg";
+import nightIcon from "../../assets/icons/night.svg";
+import searchIcon from "../../assets/icons/search-icon.svg";
 
 interface WelcomeInfo {
   icon: string;
@@ -8,7 +11,6 @@ interface WelcomeInfo {
 }
 
 const NavBar = () => {
-  const searchIcon = "/src/assets/icons/search-icon.svg";
   const { setShowSearch } = useHomePageContext();
   const navigate = useNavigate();
 
@@ -20,17 +22,17 @@ const NavBar = () => {
     const hours = date.getHours();
     if (hours >= 5 && hours < 12) {
       return {
-        icon: "/src/assets/icons/day.svg",
+        icon: dayIcon,
         message: "Good morning!"
       }
     } else if (hours >= 12 && hours < 20) {
       return {
-        icon: "/src/assets/icons/day.svg",
+        icon: dayIcon,
         message: "Good afternoon!"
       }
     } else {
       return {
-        icon: "/src/assets/icons/night.svg",
+        icon: nightIcon,
         message: "Good evening!"
       }
     }

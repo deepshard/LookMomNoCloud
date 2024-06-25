@@ -30,11 +30,24 @@ export default function Home() {
     const handleUpdateAvailable = (newUpdateInfo: TruffleUpdateInfo) => {
       setUpdateInfo(newUpdateInfo);
     };
+
+    const handleInitializationRequired = () => {
+      console.log("Initialization required");
+      navigate("/initialization");
+    }
+
     //@ts-ignore
     window.ipc.onUpdateAvailable(handleUpdateAvailable);
+
+    //@ts-ignore
+    window.ipc.onInitializationRequired(handleInitializationRequired);
+
     return () => {
       //@ts-ignore
       window.ipc.onUpdateAvailable(() => {});
+
+      //@ts-ignore
+      window.ipc.onInitializationRequired(() => {});
     };
   }, []);
   const handleMyModelClick = (model: TModel) => {

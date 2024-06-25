@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import Carousel from "../Carousel/Carousel";
+import closeIcon from "../../../assets/icons/close.svg";
 
 interface SearchProps {
   myModels?: TModel[];
@@ -47,6 +48,7 @@ const MyModels = ({ myModels = [], onModelClick }: SearchProps) => {
   }, []);
 
   return (
+<<<<<<< HEAD
     <div onWheel={handleWheel} className="w-full h-full my-models-container">
       {gridModels.length > 0 && (
         <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
@@ -55,6 +57,19 @@ const MyModels = ({ myModels = [], onModelClick }: SearchProps) => {
           ))}
         </Carousel>
       )}
+=======
+    <div onWheel={handleWheel} className="search">
+      <img src={closeIcon} alt="" className="absolute z-[9999] cursor-pointer p-[10px] top-[20px] right-[20px]" onClick={onClose} />
+      <div className="w-full h-full my-models-container">
+        {gridModels.length > 0 && (
+          <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
+            {gridModels.map((page, index) => (
+              <Page models={page} key={index} />
+            ))}
+          </Carousel>
+        )}
+      </div>
+>>>>>>> 9c61d74 (packaging)
     </div>
   );
 };

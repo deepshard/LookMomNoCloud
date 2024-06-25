@@ -22,7 +22,8 @@ function App() {
                 <Route element={<Layout />}>
                   <Route index element={<Home />} />
                   <Route path="/model/:id" element={<ModelDetailView />} />
-                  <Route path="/update" element={<OTA />} />
+                  <Route path="/initialization" element={<OTA initialization={true} />} />
+                  <Route path="/update" element={<OTA initialization={false} />} />
                 </Route>
               </Routes>
             </AppWrapperProvider>

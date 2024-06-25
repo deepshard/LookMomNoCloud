@@ -1,12 +1,21 @@
-import { app, BrowserWindow, session, screen, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, session, screen, Menu, ipcMain, protocol, net } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import os from "os";
 import { OTAUpdater } from "./ota";
+import { spawn } from "child_process";
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
+const spawnServer = () => {
+  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  const serverProcess = spawn(serverPath, [], {
+    detached: true,
+    cwd: path.join(app.getPath("userData"), "bin", "server"),
+  });
+  serverProcess.unref();
+}
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -55,20 +64,15 @@ const createWindow = () => {
     }
   });
 
-  mainWindow.loadFile(
-    `.vite/renderer/main_window/index.html`
-    // path.join(__dirname, `../renderer/index.html`)
-  );
-
-  // // and load the index.html of the app.
-  // if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-  //   mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-  // } else {
-  //   mainWindow.loadFile(
-  //     `.vite/renderer/main_window/index.html`
-  //     // path.join(__dirname, `../renderer/index.html`)
-  //   );
-  // }
+  // and load the index.html of the app.
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  } else {
+    mainWindow.loadFile(
+      `.vite/renderer/main_window/index.html`
+      // path.join(__dirname, `../renderer/index.html`)
+    );
+  }
   
   // Open the DevTools.
 <<<<<<< HEAD
@@ -113,7 +117,16 @@ app.on("ready", async function () {
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => window.webContents.send("error", err));
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
-  await otaUpdater.checkForUpdates();
+
+  window.on("ready-to-show", async () => {
+    const needInitialServer = otaUpdater.checkForInitialServer();
+    if (needInitialServer) {
+      await otaUpdater.downloadInitialServer();
+    }
+    
+    spawnServer();
+    await otaUpdater.checkForUpdates();
+  });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -132,11 +145,11 @@ app.on("activate", async () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     const window = createWindow();
-    const otaUpdater = new OTAUpdater(window, autoUpdater);
-    ipcMain.on("download-update", otaUpdater.downloadUpdate);
-    ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
-    autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
-    await otaUpdater.checkForUpdates();
+    // const otaUpdater = new OTAUpdater(window, autoUpdater);
+    // ipcMain.on("download-update", otaUpdater.downloadUpdate);
+    // ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
+    // autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
+    // await otaUpdater.checkForUpdates();
   }
 });
 

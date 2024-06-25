@@ -10,4 +10,7 @@ contextBridge.exposeInMainWorld("ipc", {
   onUpdateAvailable: (callback) => ipcRenderer.on("update-available", (_event, value) => callback(value)),
   onError: (callback) => ipcRenderer.on("error", (_event, value) => callback(value)),
   onUpdateDownloaded: (callback) => ipcRenderer.on("update-downloaded", callback),
+  onInitializationRequired: (callback) => ipcRenderer.on("initialization-required", callback),
 });
+
+ipcRenderer.on("initialization-required", () => console.log("hello"));

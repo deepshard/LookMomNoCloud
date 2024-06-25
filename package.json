@@ -1,7 +1,7 @@
 {
   "name": "truffle-app",
   "productName": "truffle-app",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "format:py": "black python",
     "format:ts": "eslint . --ext .ts,.tsx --fix",
     "test": "bun test --watch",
-    "build:fe": "electron-builder build",
+    "build:fe": "electron-builder build  --publish always",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -23,9 +23,11 @@
     "appId": "com.truffle.app",
     "productName": "Truffle",
     "files": [
-      "./dist/**/*",
       ".vite/**/*",
       "node_modules/**/*"
+    ],
+    "extraResources": [
+      "assets/**/*"
     ],
     "mac": {
       "target": ["dmg", "zip"]

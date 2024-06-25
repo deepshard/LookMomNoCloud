@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input, Skeleton, Title } from "antd";
+import { Input } from "antd";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useNavigate } from "react-router-dom";
-import ModelWidgetSkeleton from "../ModelWidgetSkeleton/ModelWidgetSkeleton";
 import {
   useSearchModels,
   useGetPrediction,
@@ -84,13 +83,7 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
       e.preventDefault();
       setSearch(predictionData[0].title);
     }
-  };
-
-  const handleModelClick = (model: TModel) => {
-    setSearchQuery(search);
-    navigate(`/model/${model.id}`, { state: { model } });
-  };
-
+  }
   const renderSearchResults = () => {
     if (!searchModels) return;
     <div className="w-full h-80 rounded-sm bg-surface-main/5 text-surface-main flex justify-center items-center">
@@ -152,7 +145,6 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
               <div className="w-full grid grid-cols-4 justify-between gap-x-[54px] gap-y-11">
                 {recentlyUsedModels?.slice(0, 8).map((model) => (
                   <ModelWidget
-                  onClick={() => handleModelClick(model)} 
                     model={model}
                     key={model.id}
                     className="w-[124px] h-[78px]"

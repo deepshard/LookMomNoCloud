@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, } from 'react'
 import { CircularProgressbar } from 'react-circular-progressbar'
 import { TModel } from '../../types/schemas'
 import { motion } from 'framer-motion'
@@ -66,7 +66,6 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   onRun?: () => void
   onStop?: () => void
   onCleanup?: () => void
-  onDelete?: () => void
 }
 
 const ModelWidget = ({
@@ -76,7 +75,6 @@ const ModelWidget = ({
   onRun,
   onStop,
   onCleanup,
-  onDelete,
   ...props
 }: ModelWidgetProps) => {
   const downloadIcon = '/src/assets/icons/download.svg'
@@ -88,20 +86,20 @@ const ModelWidget = ({
 
   useEffect(() => {
     return () => {
-      onCleanup && onCleanup(model)
+      onCleanup && onCleanup()
     }
   }, [])
 
   const handleAction = () => {
     switch (model.status) {
       case 'NOT_DOWNLOADED':
-        model.onInstall && model.onInstall()
+        onInstall && onInstall()
         break
       case 'RUNNING':
-        model.onStop && model.onStop()
+        onStop && onStop()
         break
       case 'STOPPED':
-        model.onRun && model.onRun()
+        onRun && onRun()
         break
       default:
         break

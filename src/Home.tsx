@@ -1,102 +1,63 @@
-import { useHomePageContext } from './context/HomePageProvider'
-import { useAppStore } from './store/store'
-import { useNavigate } from 'react-router-dom'
-import SystemInfoHardwareCarousel from './component/SystemInfoHardwareCarousel'
-import SystemInfoHardwareCarouselProvider from './context/SystemInfoHardwareCarouselProvider'
-import useModelActions from './hooks/modelActions/useModelActions'
-import Search from './component/Search'
-import MyModels from './component/MyModels'
-import FeaturedCarousel from './component/FeaturedCarousel'
-import ModelCarousel from './component/ModelCarousel'
+import { useHomePageContext } from "./context/HomePageProvider";
+import { useAppStore } from "./store/store";
+import { useNavigate } from "react-router-dom";
+import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
+import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
+import useModelActions from "./hooks/modelActions/useModelActions";
+import Search from "./component/Search";
+import MyModels from "./component/MyModels";
+import FeaturedCarousel from "./component/FeaturedCarousel";
+import ModelCarousel from "./component/ModelCarousel";
+import { TModel } from "./types/schemas";
 
 export default function Home() {
-  const {
-    highlights: storeHighlights,
-    sysInfo,
-    downloads,
-    updateModels,
-  } = useAppStore()
-  const {
-    installModel,
-    runModels,
-    stopModel,
-    deleteModel,
-    cleanupInstall,
-  } = useModelActions()
-  const {
-    showSearch,
-    setShowSearch,
-    showMyModels,
-    setShowMyModels,
-  } = useHomePageContext()
+  const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
+  const { installModel, runModels, stopModel, deleteModel, cleanupInstall } = useModelActions();
+  const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
   const navigate = useNavigate();
 
-  const clickHandler = (model) => {
-    navigate(`/model/${model.id}`, { state: { model } })
-  }
+  const handleNavigate = (model: TModel) => {
+    navigate(`/model/${model.id}`, { state: { model } });
+  };
 
-  const installModelHandler = (model) => {
-    model.onInstall = () => {
-      installModel(model, undefined, (progress) => {
-        updateModels({
-          ...model,
-          ...progress,
-        })
-      })
-    }
-  }
+  const installModelHandler = (model: TModel) => {
+    installModel(model, undefined, (progress) => {
+      updateModels({
+        ...model,
+        ...progress,
+      });
+    });
+  };
 
-  const runModelsHandler = (model) => {
-    model.onRun = () => {
-      runModels([model], undefined, (updatedModel, controller) => {
-        updateModels({
-          ...model,
-          ...updatedModel,
-        })
-        if (updatedModel.status === 'RUNNING') {
-          controller.abort()
-        }
-      })
-    }
-  }
+  const runModelsHandler = (model: TModel) => {
+    runModels([model], undefined, (updatedModel, controller) => {
+      updateModels({
+        ...model,
+        ...updatedModel,
+      });
+      if (updatedModel.status === "RUNNING") {
+        controller.abort();
+      }
+    });
+  };
 
-  const stopModelHandler = (model) => {
-    model.onStop = () => {
-      stopModel(model).then((_) => {
-        updateModels({
-          ...model,
-          status: 'STOPPED',
-        })
-      })
-    }
-  }
+  const stopModelHandler = (model: TModel) => {
+    stopModel(model).then((_) => {
+      updateModels({
+        ...model,
+        status: "STOPPED",
+      });
+    });
+  };
 
-  const deleteModelHandler = (model) => {
-    model.onDelete = () => {
-      deleteModel(model)
-    }
-  }
-
-  const cleanupInstallHandler = (model) => {
-    model.onDisconnect = () => {
-      cleanupInstall(model)
-    }
-  }
+  const cleanupInstallHandler = (model: TModel) => {
+    cleanupInstall(model);
+  };
 
   return (
     <>
-      {showSearch && (
-        <Search
-          onClose={() => setShowSearch(false)}
-          recentlyUsedModels={storeHighlights}
-        />
-      )}
-      {showMyModels && (
-        <MyModels
-          myModels={Object.values(downloads)}
-          onClose={() => setShowMyModels(false)}
-        />
-      )}
+      {showSearch && <Search onClose={() => setShowSearch(false)} recentlyUsedModels={storeHighlights} />}
+      {showMyModels && <MyModels myModels={Object.values(downloads)} onClose={() => setShowMyModels(false)} />}
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
@@ -112,9 +73,8 @@ export default function Home() {
               installModel={installModelHandler}
               runModels={runModelsHandler}
               stopModel={stopModelHandler}
-              deleteModel={deleteModelHandler}
               cleanupInstall={cleanupInstallHandler}
-              onModelClick={clickHandler}
+              onModelClick={handleNavigate}
             />
 
             <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
@@ -122,21 +82,13 @@ export default function Home() {
                 <FeaturedCarousel />
 
                 <div className="w-full flex justify-between gap-5">
-                  <div
-                    onClick={() => setShowMyModels(true)}
-                    className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative"
-                  >
+                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
                     <div className="grid grid-cols-4 gap-6 p-5">
                       {[...Array(8)].map((_, index) => (
-                        <div
-                          key={index}
-                          className="bg-surface-100 h-[38px] w-[38px] rounded-xs"
-                        ></div>
+                        <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
                       ))}
                     </div>
-                    <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">
-                      Models
-                    </p>
+                    <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
                   </div>
                 </div>
               </div>
@@ -148,5 +100,5 @@ export default function Home() {
         </div>
       </div>
     </>
-  )
+  );
 }

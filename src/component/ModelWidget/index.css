@@ -1,0 +1,149 @@
+@keyframes border-glow {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.glow-container {
+    position: absolute;
+    inset: -2px;
+    /* Adjust for desired border thickness */
+    border-radius: inherit;
+    overflow: hidden;
+    z-index: -1;
+    border-radius: 13px;
+}
+
+.glow-effect {
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(from 0deg,
+            transparent,
+            rgb(255, 255, 255),
+            transparent 50%);
+    animation: border-glow 2s linear infinite;
+    z-index: -1;
+}
+
+.blur-overlay {
+    background: rgba(0, 0, 0, 0.5); /* Increased opacity */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
+}
+
+.linear-overlay {
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.7) 73.16%,
+            rgba(0, 0, 0, 0) 100%);
+}
+
+.install-button {
+    position: absolute;
+    width: 66px;
+    height: 20px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.10);
+
+    /* Glass-Texture/3D */
+    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset, 0px -4px 20px 0px rgba(85, 85, 85, 0.10) inset, 0px 0px 8.976px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+    backdrop-filter: blur(50px);
+
+    display: flex;
+    padding: 3px 12px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+
+    bottom: -10px;
+    left: 25%;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Smoothen transition */
+}
+
+.install-button:hover {
+    transform: scale(1.05);
+}
+
+.error-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    width: 20px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 8px;
+}
+
+.stop-button {
+    height: 30px;
+    width: 30px;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateY(50%) translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        inset 0px 4px 30px 0px rgba(255, 255, 255, 0.15),
+        inset 0px -4px 20px 0px rgba(85, 85, 85, 0.10),
+        inset 0px 0px 8.976px 0px rgba(255, 255, 255, 0.10),
+        0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+    backdrop-filter: blur(50px);
+    transition: transform 0.1s ease-out, box-shadow 0.3s ease-out;
+    cursor: pointer;
+}
+
+.stop-button:hover {
+    transform: translateY(50%) translateX(-50%) scale(1.09);
+    box-shadow:
+        inset 0px 4px 30px 0px rgba(255, 255, 255, 0.2),
+        inset 0px -4px 20px 0px rgba(85, 85, 85, 0.15),
+        inset 0px 0px 8.976px 0px rgba(255, 255, 255, 0.15),
+        0px 0px 20px 0px rgba(85, 85, 85, 0.15);
+}
+
+.play-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    width: 30px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 8px;
+    background-color: rgba(217, 217, 217, 0.3);
+    border-radius: 9999px;
+    transition: transform 0.1s ease-out, box-shadow 0.3s ease-out;
+    cursor: pointer;
+    box-shadow:
+        0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+        0px -4px 20px 0px rgba(85, 85, 85, 0.10) inset,
+        0px 0px 8.976px 0px rgba(255, 255, 255, 0.10) inset,
+        0px 0px 15px 0px rgba(85, 85, 85, 0.10);
+}
+
+.play-button:hover {
+    transform: scale(1.09);
+    box-shadow:
+        inset 0px 4px 30px 0px rgba(255, 255, 255, 0.2),
+        inset 0px -4px 20px 0px rgba(85, 85, 85, 0.15),
+        inset 0px 0px 8.976px 0px rgba(255, 255, 255, 0.15),
+        0px 0px 20px 0px rgba(85, 85, 85, 0.15);
+}
+
+.icon-small {
+    width: 8px;
+    height: 8px;
+}

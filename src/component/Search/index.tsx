@@ -10,8 +10,9 @@ import { useHomePageContext } from "../../context/HomePageProvider";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
+  onModelClick?: (model: TModel) => void;
 }
-const Search = ({ recentlyUsedModels }: SearchProps) => {
+const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const [search, setSearch] = useState("");
   const [debouncedInput, setDebouncedInput] = useState(search);
   const { data: searchModels, isLoading } = useSearchModels(debouncedInput);
@@ -21,7 +22,7 @@ const Search = ({ recentlyUsedModels }: SearchProps) => {
 
   const handleModelClick = (model: TModel) => {
     setSearchQuery(search);
-    navigate(`/model/${model.id}`, { state: { model } });
+    onModelClick && onModelClick(model);
   };
 
   useEffect(() => {
@@ -49,7 +50,7 @@ const Search = ({ recentlyUsedModels }: SearchProps) => {
             <Featured className="w-[303px] h-[150px] widget-3d" />
             <Featured className="w-[303px] h-[150px] widget-3d" />
           </div>
-          <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
+          <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget onClick={() => handleModelClick(model)} model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
         </>
       ) : (
         <>

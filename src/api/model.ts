@@ -115,7 +115,7 @@ export const getMyModels = async (): Promise<TModel[]> => {
 /** Remote API Calls */
 
 export const searchModels = async (query: string) => {
-  const response = await client.get(`/search/?query=${query}`)
+  const response = await client.get(`/search/?query=${query}&k=500`)
   return response.data;
 }
 

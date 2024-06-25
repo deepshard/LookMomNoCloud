@@ -9,6 +9,7 @@ import {
 } from "../../lib/react-query/queriesAndMutations";
 import { useHomePageContext } from "../../context/HomePageProvider";
 import { TModel } from "../../types/schemas";
+import Title from "antd/es/skeleton/Title";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
@@ -93,8 +94,8 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
         No results
       </div>;
     return (
-      <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-8">
-        {searchModels.slice(0, 12).map((model) => (
+      <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
+        {searchModels.slice(0, searchModels.length).map((model) => (
           <ModelWidget
             onClick={() => handleModelClick(model)}
             model={model}
@@ -131,14 +132,16 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
               <div className="flex w-full justify-between items-center gap-x-[54px]">
                 <SearchSuggestions
                   title="Best math models"
-                  count={34}
+                  count={65}
                   icon={searchIcon}
+                  onClick={() => setSearch("Best math models")}
                   className="rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
                 />
                 <SearchSuggestions
                   title="Best models for code"
-                  count={54}
+                  count={279}
                   icon={searchIcon}
+                  onClick={() => setSearch("Best models for code")}
                   className="rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
                 />
               </div>

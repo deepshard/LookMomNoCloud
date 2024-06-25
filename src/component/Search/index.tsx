@@ -1,15 +1,14 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input } from "antd";
+import { Input , Skeleton, Title } from "antd";
+import ModelWidget from "../ModelWidget";
+import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useNavigate } from "react-router-dom";
-import ModelWidget from "../ModelWidget";
 import {
   useSearchModels,
   useGetPrediction,
 } from "../../lib/react-query/queriesAndMutations";
 import { useHomePageContext } from "../../context/HomePageProvider";
-import { TModel } from "../../types/schemas";
-import Title from "antd/es/skeleton/Title";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
@@ -160,7 +159,13 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
         ) : (
           <>
             {loadingState ? (
-              <>loading...</>
+              <>
+                <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">
+                  {[...Array(12)].map((_, index) => (
+                    <Skeleton className="model-widget p-3 bg-gray-400 opacity-25 rounded-md" key={index} active round title={false} paragraph={{ rows: 2, width: [72, 51] }} />
+                  ))}
+                </div>
+              </>
             ) : (
               <>
                 <div className="w-full py-3 mt-11 mb-5 flex justify-between gap-8">

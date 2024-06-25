@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input, Skeleton, Title } from "antd";
+import { Input } from "antd";
 import ModelWidget from "../ModelWidget";
 import { debounce } from "lodash";
 import { useNavigate } from "react-router-dom";
-import ModelWidgetSkeleton from "../ModelWidgetSkeleton/ModelWidgetSkeleton";
 import {
   useSearchModels,
   useGetPrediction,
@@ -15,9 +14,9 @@ import DiscoverItem from "./DiscoverItem";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
+  onModelClick?: (model: TModel) => void;
 }
-
-const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
+const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const [search, setSearch] = useState("");
   const [debouncedInput, setDebouncedInput] = useState("");
   const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] =
@@ -38,6 +37,10 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   useLayoutEffect(() => {
     inputRef.current?.focus();
   }, []);
+  const handleModelClick = (model: TModel) => {
+    setSearchQuery(search);
+    onModelClick && onModelClick(model);
+  };
 
   useEffect(() => {
     setIsTyping(search.length > 0);
@@ -82,13 +85,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
       e.preventDefault();
       setSearch(predictionData[0].title);
     }
-  };
-
-  const handleModelClick = (model: TModel) => {
-    setSearchQuery(search);
-    navigate(`/model/${model.id}`, { state: { model } });
-  };
-
+  }
   const renderSearchResults = () => {
     if (!searchModels) return;
     <div className="w-full h-80 rounded-sm bg-surface-main/5 text-surface-main flex justify-center items-center">

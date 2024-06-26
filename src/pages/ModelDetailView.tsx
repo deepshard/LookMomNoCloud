@@ -156,19 +156,11 @@ function ModelDetailView() {
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
       {/* Nav Bar */}
       <div className="sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black via-black/60 to-black/0 from-75% via-90% z-[1] "></div>
-        {/* Left Side – Model Info*/}
-        <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
-          <img loading="lazy" srcSet={modelData?.backgroundImage} className="shrink-0 aspect-square rounded-full w-[30px] " />
-
-          <div className="flex flex-col justify-center items-start gap-0.5">
-            <p className="text-surface-main">{modelData && modelData?.name ? modelData.name.split("/")[1] : ""}</p>
-            <p className="text-surface-500 callout-base">{modelData && modelData?.author ? modelData.author : ""}</p>
-          </div>
-        </div>
+        { /* Left Side – Back Icon */}
+        <div className="w-1/4"></div>
 
         {/* Center – Model Info Options*/}
-        <div className="flex items-center gap-3 text-surface-500 z-[1200] transition-colors duration-200">
+        <div className="flex items-center gap-3 text-surface-500 z-[1200] transition-colors duration-200 cursor-pointer">
           {navBarOptions.map((item, index) => {
             const displayTitle = item === "intro" ? "Introduction" : upperFirst(item);
             return modelData && modelData[item] ? (
@@ -180,7 +172,7 @@ function ModelDetailView() {
         </div>
 
         {/* Right Side – Icons */}
-        <div className="w-1/4 flex gap-2 justify-end items-center z-[999]">
+        <div className="w-1/4 flex gap-2 justify-end items-center z-[999] cursor-pointer">
           {modelData?.status && modelData?.status !== "NOT_DOWNLOADED" ? (
             <>
               {getModelStatusIcon()}
@@ -249,9 +241,9 @@ function ModelDetailView() {
             )}
             <div className="flex gap-2.5 text-sm text-white text-opacity-80">
               {/* Author Tag */}
-              <Tag text={modelData?.author || ""} />
+              <Tag imgSrc="/src/assets/icons/author.svg" text={modelData?.author || ""} />
               {/* Size Tag */}
-              <Tag text={formatParams(modelData?.size)} />
+              <Tag imgSrc="/src/assets/icons/modelsize.svg" text={formatParams(modelData?.size)} />
 
               {/* Downloads Tag */}
               <Tag imgSrc="/src/assets/icons/download-circle-fill.svg" text={formatParams(modelData?.downloads)} />

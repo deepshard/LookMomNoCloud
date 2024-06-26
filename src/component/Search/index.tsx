@@ -1,106 +1,111 @@
-import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input } from "antd";
-import ModelWidget from "../ModelWidget";
-import { debounce } from "lodash";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react'
+import { Input } from 'antd'
+import ModelWidget from '../ModelWidget'
+import { debounce } from 'lodash'
+import { useNavigate } from 'react-router-dom'
 import {
-useSearchModels,
+  useSearchModels,
   useGetPrediction,
   useGetFeatured,
-} from "../../lib/react-query/queriesAndMutations";
-import { useHomePageContext } from "../../context/HomePageProvider";
-import { TModel } from "../../types/schemas";
+} from '../../lib/react-query/queriesAndMutations'
+import { useHomePageContext } from '../../context/HomePageProvider'
+import { TModel } from '../../types/schemas'
 // import Title from "antd/es/skeleton/Title";
-import ModelWidgetSkeleton from "../ModelWidgetSkeleton/ModelWidgetSkeleton";
-import { formatParams } from "../../utils/sysUtils";
+import ModelWidgetSkeleton from '../ModelWidgetSkeleton/ModelWidgetSkeleton'
+import { formatParams } from '../../utils/sysUtils'
 
-import DiscoverItem from "./DiscoverItem";
+import DiscoverItem from './DiscoverItem'
 
 interface SearchProps {
-  onModelClick?: (model: TModel) => void;
+  onModelClick?: (model: TModel) => void
 }
 const Search = ({ onModelClick }: SearchProps) => {
-  const [search, setSearch] = useState("");
-  const [debouncedInput, setDebouncedInput] = useState("");
-  const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] =
-    useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [loadingState, setLoadingState] = useState(false);
-  const [isListView, setIsListView] = useState(true);
+  const [search, setSearch] = useState('')
+  const [debouncedInput, setDebouncedInput] = useState('')
+  const [
+    caseSensitivePredictiveText,
+    setCaseSensitivePredictiveText,
+  ] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [loadingState, setLoadingState] = useState(false)
+  const [isListView, setIsListView] = useState(true)
 
-  const [featuredModels, setFeaturedModels] = useState<TModel[]>([]);
+  const [featuredModels, setFeaturedModels] = useState<TModel[]>([])
 
-  const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);
-  const { data: predictionData } = useGetPrediction(search);
-  const { data: featuredData } = useGetFeatured();
+  const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(
+    debouncedInput,
+  )
+  const { data: predictionData } = useGetPrediction(search)
+  const { data: featuredData } = useGetFeatured()
 
-  const navigate = useNavigate();
-  const { setSearchQuery } = useHomePageContext();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate()
+  const { setSearchQuery } = useHomePageContext()
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const searchIcon = "/src/assets/icons/search-suggestions.svg";
+  const searchIcon = '/src/assets/icons/search-suggestions.svg'
 
   useLayoutEffect(() => {
-    inputRef.current?.focus();
-    setFeaturedModels(featuredData ?? []);
-  }, [featuredData]);
+    inputRef.current?.focus()
+    setFeaturedModels(featuredData ?? [])
+  }, [featuredData])
   const handleModelClick = (model: TModel) => {
-    setSearchQuery(search);
-    onModelClick && onModelClick(model);
-  };
+    setSearchQuery(search)
+    onModelClick && onModelClick(model)
+  }
 
   useEffect(() => {
-    setIsTyping(search.length > 0);
+    setIsTyping(search.length > 0)
     const debouncer = debounce((value) => {
-      setDebouncedInput(value);
-      setIsTyping(false);
-    }, 500);
-    debouncer(search);
+      setDebouncedInput(value)
+      setIsTyping(false)
+    }, 500)
+    debouncer(search)
 
-    return () => debouncer.cancel();
-  }, [search]);
+    return () => debouncer.cancel()
+  }, [search])
 
   useEffect(() => {
-    updateCaseSensitivePredictiveText();
-  }, [search, predictionData]);
+    updateCaseSensitivePredictiveText()
+  }, [search, predictionData])
 
   const updateCaseSensitivePredictiveText = () => {
-    const predictiveText = predictionData?.[0]?.title || "";
+    const predictiveText = predictionData?.[0]?.title || ''
     if (predictiveText && search) {
       const casedPrediction = predictiveText
-        .split("")
+        .split('')
         .map((char, i) => {
-          if (i < search.length) return search[i];
-          const prevChar = search[i - 1] || predictiveText[i - 1];
+          if (i < search.length) return search[i]
+          const prevChar = search[i - 1] || predictiveText[i - 1]
           return prevChar === prevChar.toUpperCase()
             ? char.toUpperCase()
-            : char.toLowerCase();
+            : char.toLowerCase()
         })
-        .join("");
-      setCaseSensitivePredictiveText(casedPrediction);
+        .join('')
+      setCaseSensitivePredictiveText(casedPrediction)
     } else {
-      setCaseSensitivePredictiveText(predictiveText);
+      setCaseSensitivePredictiveText(predictiveText)
     }
-  };
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-  };
+    setSearch(e.target.value)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Tab" && predictionData?.[0]?.title) {
-      e.preventDefault();
-      setSearch(predictionData[0].title);
+    if (e.key === 'Tab' && predictionData?.[0]?.title) {
+      e.preventDefault()
+      setSearch(predictionData[0].title)
     }
-  };
+  }
   const renderSearchResults = () => {
-    if (!searchModels) return (
-      <div className="w-full flex flex-col gap-1">
-        {[...Array(8)].map((_, index) => (
-          <ModelWidgetSkeleton key={index}  />
-        ))}
-      </div>
-    );
+    if (!searchModels)
+      return (
+        <div className="w-full flex flex-col gap-1">
+          {[...Array(8)].map((_, index) => (
+            <ModelWidgetSkeleton key={index} />
+          ))}
+        </div>
+      )
 
     return !isListView ? (
       <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
@@ -138,14 +143,12 @@ const Search = ({ onModelClick }: SearchProps) => {
               </div>
             </div>
 
-            <button className="text-surface-500 title-sm">
-              View Details
-            </button>
+            <button className="text-surface-500 title-sm">View Details</button>
           </div>
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -165,10 +168,8 @@ const Search = ({ onModelClick }: SearchProps) => {
             readOnly
           />
         </div>
-        
-        {(isTyping || isSearchLoading) && (
-          <h1>loading..</h1>
-        )}
+
+        {(isTyping || isSearchLoading) && <h1>loading..</h1>}
 
         {search.length < 1 ? (
           <>
@@ -178,14 +179,14 @@ const Search = ({ onModelClick }: SearchProps) => {
                   title="Best math models"
                   count={65}
                   icon={searchIcon}
-                  onClick={() => setSearch("Best math models")}
+                  onClick={() => setSearch('Best math models')}
                   className="bg-bg-wdget rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
                 />
                 <SearchSuggestions
                   title="Best models for code"
                   count={279}
                   icon={searchIcon}
-                  onClick={() => setSearch("Best models for code")}
+                  onClick={() => setSearch('Best models for code')}
                   className="bg-bg-wdget rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
                 />
               </div>
@@ -212,42 +213,43 @@ const Search = ({ onModelClick }: SearchProps) => {
                 <div className="flex items-center gap-4">
                   <div
                     className={` flex items-center gap-2 text-surface-500 transition transition-200 opacity-${
-                      searchModels?.length ? "100" : "0"
+                      searchModels?.length ? '100' : '0'
                     }`}
                   >
                     <span>{searchModels?.length} results</span>
                   </div>
-
                   {/* Grid view icon */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="13"
                     height="13"
                     viewBox="0 0 13 13"
-                    className={`cursor-pointer transition transition-200 ` + (isListView ? "fill-surface-500" : "fill-surface-750")}
+                    className={
+                      `cursor-pointer transition transition-200 ` +
+                      (isListView ? 'fill-surface-500' : 'fill-surface-750')
+                    }
                     onClick={() => setIsListView(false)}
                   >
                     <g clip-path="url(#clip0_1383_14238)">
-                      <path
-                        d="M1.30566 5.74219H4.42285C5.29102 5.74219 5.72852 5.30469 5.72852 4.40234V1.34668C5.72852 0.444336 5.29102 0.0136719 4.42285 0.0136719H1.30566C0.4375 0.0136719 0 0.444336 0 1.34668V4.40234C0 5.30469 0.4375 5.74219 1.30566 5.74219ZM1.31934 4.77832C1.08008 4.77832 0.963867 4.65527 0.963867 4.40234V1.34668C0.963867 1.10059 1.08008 0.977539 1.31934 0.977539H4.40234C4.6416 0.977539 4.76465 1.10059 4.76465 1.34668V4.40234C4.76465 4.65527 4.6416 4.77832 4.40234 4.77832H1.31934ZM8.16895 5.74219H11.2793C12.1475 5.74219 12.585 5.30469 12.585 4.40234V1.34668C12.585 0.444336 12.1475 0.0136719 11.2793 0.0136719H8.16895C7.29395 0.0136719 6.85645 0.444336 6.85645 1.34668V4.40234C6.85645 5.30469 7.29395 5.74219 8.16895 5.74219ZM8.18262 4.77832C7.93652 4.77832 7.82031 4.65527 7.82031 4.40234V1.34668C7.82031 1.10059 7.93652 0.977539 8.18262 0.977539H11.2656C11.5049 0.977539 11.6211 1.10059 11.6211 1.34668V4.40234C11.6211 4.65527 11.5049 4.77832 11.2656 4.77832H8.18262ZM1.30566 12.5986H4.42285C5.29102 12.5986 5.72852 12.168 5.72852 11.2656V8.20312C5.72852 7.30762 5.29102 6.87012 4.42285 6.87012H1.30566C0.4375 6.87012 0 7.30762 0 8.20312V11.2656C0 12.168 0.4375 12.5986 1.30566 12.5986ZM1.31934 11.6348C1.08008 11.6348 0.963867 11.5117 0.963867 11.2656V8.20996C0.963867 7.95703 1.08008 7.83398 1.31934 7.83398H4.40234C4.6416 7.83398 4.76465 7.95703 4.76465 8.20996V11.2656C4.76465 11.5117 4.6416 11.6348 4.40234 11.6348H1.31934ZM8.16895 12.5986H11.2793C12.1475 12.5986 12.585 12.168 12.585 11.2656V8.20312C12.585 7.30762 12.1475 6.87012 11.2793 6.87012H8.16895C7.29395 6.87012 6.85645 7.30762 6.85645 8.20312V11.2656C6.85645 12.168 7.29395 12.5986 8.16895 12.5986ZM8.18262 11.6348C7.93652 11.6348 7.82031 11.5117 7.82031 11.2656V8.20996C7.82031 7.95703 7.93652 7.83398 8.18262 7.83398H11.2656C11.5049 7.83398 11.6211 7.95703 11.6211 8.20996V11.2656C11.6211 11.5117 11.5049 11.6348 11.2656 11.6348H8.18262Z"
-                      />
+                      <path d="M1.30566 5.74219H4.42285C5.29102 5.74219 5.72852 5.30469 5.72852 4.40234V1.34668C5.72852 0.444336 5.29102 0.0136719 4.42285 0.0136719H1.30566C0.4375 0.0136719 0 0.444336 0 1.34668V4.40234C0 5.30469 0.4375 5.74219 1.30566 5.74219ZM1.31934 4.77832C1.08008 4.77832 0.963867 4.65527 0.963867 4.40234V1.34668C0.963867 1.10059 1.08008 0.977539 1.31934 0.977539H4.40234C4.6416 0.977539 4.76465 1.10059 4.76465 1.34668V4.40234C4.76465 4.65527 4.6416 4.77832 4.40234 4.77832H1.31934ZM8.16895 5.74219H11.2793C12.1475 5.74219 12.585 5.30469 12.585 4.40234V1.34668C12.585 0.444336 12.1475 0.0136719 11.2793 0.0136719H8.16895C7.29395 0.0136719 6.85645 0.444336 6.85645 1.34668V4.40234C6.85645 5.30469 7.29395 5.74219 8.16895 5.74219ZM8.18262 4.77832C7.93652 4.77832 7.82031 4.65527 7.82031 4.40234V1.34668C7.82031 1.10059 7.93652 0.977539 8.18262 0.977539H11.2656C11.5049 0.977539 11.6211 1.10059 11.6211 1.34668V4.40234C11.6211 4.65527 11.5049 4.77832 11.2656 4.77832H8.18262ZM1.30566 12.5986H4.42285C5.29102 12.5986 5.72852 12.168 5.72852 11.2656V8.20312C5.72852 7.30762 5.29102 6.87012 4.42285 6.87012H1.30566C0.4375 6.87012 0 7.30762 0 8.20312V11.2656C0 12.168 0.4375 12.5986 1.30566 12.5986ZM1.31934 11.6348C1.08008 11.6348 0.963867 11.5117 0.963867 11.2656V8.20996C0.963867 7.95703 1.08008 7.83398 1.31934 7.83398H4.40234C4.6416 7.83398 4.76465 7.95703 4.76465 8.20996V11.2656C4.76465 11.5117 4.6416 11.6348 4.40234 11.6348H1.31934ZM8.16895 12.5986H11.2793C12.1475 12.5986 12.585 12.168 12.585 11.2656V8.20312C12.585 7.30762 12.1475 6.87012 11.2793 6.87012H8.16895C7.29395 6.87012 6.85645 7.30762 6.85645 8.20312V11.2656C6.85645 12.168 7.29395 12.5986 8.16895 12.5986ZM8.18262 11.6348C7.93652 11.6348 7.82031 11.5117 7.82031 11.2656V8.20996C7.82031 7.95703 7.93652 7.83398 8.18262 7.83398H11.2656C11.5049 7.83398 11.6211 7.95703 11.6211 8.20996V11.2656C11.6211 11.5117 11.5049 11.6348 11.2656 11.6348H8.18262Z" />
                     </g>
                     <defs>
                       <clipPath id="clip0_1383_14238">
                         <rect width="12.585" height="12.5986" />
                       </clipPath>
                     </defs>
-                  </svg>{" "}
-
+                  </svg>{' '}
                   {/* List view icon */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="14"
                     height="10"
                     viewBox="0 0 14 10"
-                    className={`cursor-pointer transition transition-200 ` + (!isListView ? "fill-surface-500" : "fill-surface-750")}
+                    className={
+                      `cursor-pointer transition transition-200 ` +
+                      (!isListView ? 'fill-surface-500' : 'fill-surface-750')
+                    }
                     onClick={() => setIsListView(true)}
-
                   >
                     <g clipPath="url(#clip0_1383_14246)">
                       <path
@@ -260,7 +262,7 @@ const Search = ({ onModelClick }: SearchProps) => {
                         <rect width="13.7744" height="10.001" />
                       </clipPath>
                     </defs>
-                  </svg>{" "}
+                  </svg>{' '}
                 </div>
               </div>
               {renderSearchResults()}
@@ -299,8 +301,8 @@ const Search = ({ onModelClick }: SearchProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const SearchSuggestions = ({ title, count, icon, ...rest }) => {
   return (
@@ -315,7 +317,7 @@ const SearchSuggestions = ({ title, count, icon, ...rest }) => {
         </span>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Search;
+export default Search

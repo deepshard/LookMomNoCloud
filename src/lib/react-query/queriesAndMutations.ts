@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getFeatured, getHighlights, getNewModels, getTrendingModels } from "../../api/general";
+import { getFeatured, getHighlights, getNewModels, getNews, getTrendingModels } from "../../api/general";
 import { deleteModel, getMyModels, getModel, searchModels, stopModel, getPrediction } from "../../api/model";
 import { TModel } from "../../types/schemas";
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "antd";
 
-const SearchInput = ({ inputRef, search, setSearch, predictionData }) => {
+const SearchInput = ({ search, setSearch, predictionData }) => {
   const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] = useState("");
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const SearchInput = ({ inputRef, search, setSearch, predictionData }) => {
   return (
     <div className="w-full relative">
       <Input
-        ref={inputRef}
+        autoFocus
         value={search}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}

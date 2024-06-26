@@ -124,7 +124,7 @@ if __name__ == "__main__":
     multiprocessing.set_start_method("spawn", force=True)
 
     # TODO: replace with proper certificates (ok for v1)
-    os.environ['SSL_CERT_FILE'] = certifi.where()
+    os.environ["SSL_CERT_FILE"] = certifi.where()
     ssl._create_default_https_context = ssl._create_unverified_context
 
     # Setup: create models dir if it doesn't exist, and run migrations

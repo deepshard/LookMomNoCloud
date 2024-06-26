@@ -6,6 +6,9 @@ from loguru import logger
 import psutil
 import time
 import os
+import subprocess
+import re
+import platform
 
 from sqlalchemy import select
 from models import RunningModel
@@ -16,7 +19,13 @@ from truffle_types import (
     SystemResources,
 )
 
-from utils import get_app_data_path, get_disk_usage
+from utils import (
+    get_app_data_path,
+    get_disk_usage,
+    get_devices,
+    get_usable_memory,
+    get_total_memory,
+)
 from db import get_db_session
 
 
@@ -27,12 +36,12 @@ async def get_sysinfo() -> SystemInfo:
     models_data = await get_models_data()
     resources = SystemResources(
         available=SystemResourceDetails(
-            ram=psutil.virtual_memory().available,
+            ram=get_usable_memory(False),
             disk=psutil.disk_usage("/").free,
         ),
         models=models_data,
         total=SystemResourceDetails(
-            ram=psutil.virtual_memory().total,
+            ram=get_total_memory(),
             disk=psutil.disk_usage("/").total,
         ),
     )
@@ -43,22 +52,94 @@ async def get_sysinfo() -> SystemInfo:
     )
 
 
+def mem_string_to_bytes(value: float, unit: str) -> int:
+    if unit == "G":
+        return int(value * 1024**3)
+    elif unit == "M":
+        return int(value * 1024**2)
+    elif unit == "K":
+        return int(value * 1024)
+    else:
+        return 0
+
+
+def get_model_memory_usage(pid: int) -> int:
+    system = platform.system()
+
+    if system == "Darwin":
+        result = subprocess.run(["vmmap", str(pid)], capture_output=True, text=True)
+        output = result.stdout
+        match = re.search(
+            r"TOTAL\s+([\d\.]+)([MG])\s+([\d\.]+)([MG])\s+([\d\.]+)([MG])\s+([\d\.]+)([MG])", output
+        )
+        if match:
+            # Get resident memory size
+            res_memory_value = float(match.group(3))
+            res_memory_unit = match.group(4)
+            swap_memory_value = float(match.group(7))
+            swap_memory_unit = match.group(8)
+
+            # Convert to bytes
+            res_mem = mem_string_to_bytes(res_memory_value, res_memory_unit)
+            swap_mem = mem_string_to_bytes(swap_memory_value, swap_memory_unit)
+            return res_mem + swap_mem
+    elif system == "Linux":
+        devices = get_devices()
+
+        # Hierarchy is as follows:
+        # - CUDA
+        # - ROCM
+        # - Vulkan
+        # - OpenCL
+        if any(device["type"] == "cuda" for device in devices):
+            try:
+                output = subprocess.check_output(
+                    [
+                        "nvidia-smi",
+                        "--query-compute-apps=pid,used_memory",
+                        "--format=csv,noheader,nounits",
+                    ],
+                    universal_newlines=True,
+                )
+                for line in output.split("\n"):
+                    if line.strip():
+                        gpu_pid, gpu_memory = map(int, line.split(","))
+                        if gpu_pid == pid:
+                            return gpu_memory * 1024 * 1024  # Convert MB to bytes
+            except subprocess.CalledProcessError:
+                return 0
+        elif any(device["type"] == "rocm" for device in devices):
+            try:
+                output = subprocess.check_output(
+                    ["rocm-smi", "--showpidmeminfo"], universal_newlines=True
+                )
+                for line in output.split("\n"):
+                    if str(pid) in line:
+                        gpu_memory = int(line.split()[-2])
+                        return gpu_memory * 1024 * 1024  # Convert MB to bytes
+            except subprocess.CalledProcessError:
+                return 0
+        elif any(device["type"] == "vulkan" for device in devices):
+            pass  # Unsupported for now, we don't build wheels for it
+        elif any(device["type"] == "opencl" for device in devices):
+            pass  # Unsupported for now, we don't build wheels for it
+        else:
+            return 0
+    else:
+        return 0  # Unsupported operating system
+
+
 async def get_models_data() -> List[ModelResourceDetails]:
     models = await RunningModel.get_all()
     final = []
     for model in models:
-        try:
-            memory_info = psutil.Process(model.pid).memory_info()
-            final.append(
-                ModelResourceDetails(
-                    id=model.id,
-                    ram=memory_info.rss,
-                    disk=get_disk_usage(get_app_data_path() / "models" / model.id),
-                )
+        final.append(
+            ModelResourceDetails(
+                id=model.id,
+                ram=get_model_memory_usage(model.pid),
+                disk=get_disk_usage(get_app_data_path() / "models" / model.id),
             )
-        except psutil.NoSuchProcess:
-            logger.warning("No process found with PID: {}".format(model.pid))
-            continue
+        )
     return final
 
 

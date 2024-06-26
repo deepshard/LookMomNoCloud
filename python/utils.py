@@ -33,14 +33,6 @@ def get_app_data_path() -> Path:
         raise ValueError(f"Unsupported system: {system}")
 
 
-def find_port(port: int = 8899) -> int:
-    """Find an open port."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        if s.connect_ex(("localhost", port)) == 0:
-            return find_port(port + 1)
-        return port
-
-
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
     chat_config_path = quant_path / "mlc-chat-config.json"
@@ -112,7 +104,7 @@ def get_devices() -> list[str]:
     return devices
 
 
-def get_devices_memory(device_type: str, devices: list[any]) -> int:
+def get_devices_available_memory(device_type: str, devices: list[any]) -> int:
     total_available = 0
     for device in [device for device in devices if device["type"] == device_type]:
         total_available += tvm.runtime.device(
@@ -120,6 +112,16 @@ def get_devices_memory(device_type: str, devices: list[any]) -> int:
         ).available_global_memory
 
     return total_available
+
+
+def get_devices_total_memory(device_type: str, devices: list[any]) -> int:
+    total_memory = 0
+    for device in [device for device in devices if device["type"] == device_type]:
+        total_memory += tvm.runtime.device(
+            device_type=device["type"], dev_id=device["id"]
+        ).total_global_memory
+
+    return total_memory
 
 
 def is_truffle_compatible(files: list[FileInfo]) -> bool:
@@ -145,6 +147,7 @@ def get_usable_memory(run: bool = False) -> int:
     This is the memory that is currently available or could be quickly made available.
     That is, the maximum memory a new process could use without trigger an OOM error.
     """
+
     system = platform.system()
     mem = psutil.virtual_memory()
     if system == "Darwin":
@@ -163,13 +166,43 @@ def get_usable_memory(run: bool = False) -> int:
         # - Vulkan
         # - OpenCL
         if any(device["type"] == "cuda" for device in devices):
-            return get_devices_memory("cuda", devices)
+            return get_devices_available_memory("cuda", devices)
         elif any(device["type"] == "rocm" for device in devices):
-            return get_devices_memory("rocm", devices)
+            return get_devices_available_memory("rocm", devices)
         elif any(device["type"] == "vulkan" for device in devices):
-            return get_devices_memory("vulkan", devices)
+            return get_devices_available_memory("vulkan", devices)
         elif any(device["type"] == "opencl" for device in devices):
-            return get_devices_memory("opencl", devices)
+            return get_devices_available_memory("opencl", devices)
+        else:
+            return 0
+    else:
+        raise ValueError(f"Unsupported system: {system}")
+
+
+def get_total_memory() -> int:
+    """This is the total amount of memory in the system."""
+
+    system = platform.system()
+    mem = psutil.virtual_memory()
+    if system == "Darwin":
+        return mem.total
+    elif system == "Linux":
+        # Get devices
+        devices = get_devices()
+
+        # Heirarchy is as follows:
+        # - CUDA
+        # - ROCM
+        # - Vulkan
+        # - OpenCL
+        if any(device["type"] == "cuda" for device in devices):
+            return get_devices_total_memory("cuda", devices)
+        elif any(device["type"] == "rocm" for device in devices):
+            return get_devices_total_memory("rocm", devices)
+        elif any(device["type"] == "vulkan" for device in devices):
+            return get_devices_total_memory("vulkan", devices)
+        elif any(device["type"] == "opencl" for device in devices):
+            return get_devices_total_memory("opencl", devices)
         else:
             return 0
     else:

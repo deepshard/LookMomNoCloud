@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Input, InputRef } from "antd";
 import { debounce } from "lodash";
-import { useNavigate } from "react-router-dom";
 import Featured from "../Featured";
 import ModelWidget from "../ModelWidget";
 import { useSearchModels, useGetPrediction } from "../../lib/react-query/queriesAndMutations";
@@ -10,9 +9,9 @@ import { TModel } from "../../types/schemas";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
+  onModelClick?: (model: TModel) => void;
 }
-
-const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
+const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const [search, setSearch] = useState("");
   const [debouncedInput, setDebouncedInput] = useState("");
   const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] = useState("");
@@ -21,13 +20,16 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
   const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);
   const { data: predictionData } = useGetPrediction(search);
 
-  const navigate = useNavigate();
   const { setSearchQuery } = useHomePageContext();
   const inputRef = useRef<InputRef>(null);
 
   useLayoutEffect(() => {
     inputRef.current?.focus();
   }, []);
+  const handleModelClick = (model: TModel) => {
+    setSearchQuery(search);
+    onModelClick && onModelClick(model);
+  };
 
   useEffect(() => {
     setIsTyping(search.length > 0);
@@ -69,10 +71,6 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
     }
   };
 
-  const handleModelClick = (model: TModel) => {
-    setSearchQuery(search);
-    navigate(`/model/${model.id}`, { state: { model } });
-  };
 
   const renderSearchResults = () => {
     if (isTyping || isSearchLoading) return <div>loading...</div>;
@@ -114,11 +112,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
             <Featured className="w-[303px] h-[150px] widget-3d" />
             <Featured className="w-[303px] h-[150px] widget-3d" />
           </div>
-          <div className="flex justify-between mt-[42px]">
-            {recentlyUsedModels?.slice(0, 4).map((model) => (
-              <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" />
-            ))}
-          </div>
+          <div className="flex justify-between mt-[42px]">{recentlyUsedModels?.slice(0, 4).map((model) => <ModelWidget onClick={() => handleModelClick(model)} model={model} key={model.id} className="w-[124px] h-[78px]" />)}</div>
         </>
       ) : (
         renderSearchResults()

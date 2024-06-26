@@ -41,7 +41,8 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
                   controller.enqueue(value);
                   push();
                 });
-              } catch (error) {
+              } catch (error: any) {
+                callback({ ...model, error: `${error.message ? error.message : error}` })
                 controller.error(error);
               }
             }
@@ -73,19 +74,24 @@ export const startRunModels = async (models: TModel[], signalController: AbortCo
     return new ReadableStream({
       start(controller) {
         function push() {
-          // Read from the stream
-          reader?.read().then(({ done, value }) => {
-            if (done) {
-              controller.close();
-              return;
-            }
-            // Decode and process the chunk
-            const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
-            const runResponse: Partial<TModel> = JSON.parse(text);
-            callback(runResponse, signalController)
-            controller.enqueue(value);
-            push();
-          });
+          try {
+            // Read from the stream
+            reader?.read().then(({ done, value }) => {
+              if (done) {
+                controller.close();
+                return;
+              }
+              // Decode and process the chunk
+              const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
+              const runResponse: Partial<TModel> = JSON.parse(text);
+              callback(runResponse, signalController)
+              controller.enqueue(value);
+              push();
+            });
+          } catch (error: any) {
+            models.length && callback({ ...models[0], error: `${error.message ? error.message : error}` }, signalController)
+            controller.error(error);
+          }
         }
         push();
       }

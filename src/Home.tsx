@@ -32,7 +32,6 @@ export default function Home() {
     };
 
     const handleInitializationRequired = () => {
-      console.log("Initialization required");
       navigate("/initialization");
     }
 

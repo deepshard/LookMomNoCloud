@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 // @ts-ignore
 import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
+import Button from "../../component/common/Button";
 
 const UpdateProgress = () => {
   const [percent, setPercent] = useState(0);
@@ -37,13 +38,17 @@ const UpdateProgress = () => {
       <p className="text-white text-center text-sm mt-[81px]">Updating Truffle...</p>
       <Progress className="mt-[30px]" type="line" percent={percent} showInfo={false} />
       {percent === 100 && (
-        <button
-          onClick={() => {
-            //@ts-ignore
-            window.ipc.restartAndUpdate();
-          }}>
-          Restart
-        </button>
+        <div className="flex-center flex-col mt-[30px] gap-2">
+          <p>Restart is required to complete the update</p>
+          <Button
+          className="!rounded-sm"
+            onClick={() => {
+              //@ts-ignore
+              window.ipc.restartAndUpdate();
+            }}>
+            Restart
+          </Button>
+        </div>
       )}
     </motion.div>
   );

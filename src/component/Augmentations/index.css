@@ -98,10 +98,10 @@
 
 .card.next {
     z-index: 2;
-    transform: translateX(40%) translateZ(-60px) rotateY(-45deg) scale(0.85);
+    transform: translateX(40%) translateZ(-60px) rotateY(-45deg) scale(0.75);
 }
 
 .card.prev {
     z-index: 1;
-    transform: translateX(-40%) translateZ(-60px) rotateY(45deg) scale(0.85);
+    transform: translateX(-40%) translateZ(-60px) rotateY(45deg) scale(0.75);
 }

@@ -82,13 +82,32 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  background: url("../src/assets/images/truffle-background.png");
+  background: url("../src/assets/images/truffle-background-1.png");
+  background-size: cover;
   box-shadow:
     0px 20px 50px 0px rgba(0, 0, 0, 0.25),
     0px 0px 100px 0px rgba(255, 255, 255, 0.1) inset,
     0px 3.59px 89.756px 0px rgba(0, 0, 0, 0.1),
     0px 0px 44.878px 0px rgba(255, 255, 255, 0.1) inset;
+  backdrop-filter: blur(0.5px);
+  position: sticky;
+}
+
+.app-body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   backdrop-filter: blur(75px);
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: -1
+}
+.clear-dotted-bg {
+  @apply absolute w-full h-full opacity-15;
+  background: url("../src/assets/images/clear-dotted-bg.png");
+  background-size: cover;
 }
 
 :root {
@@ -248,7 +267,7 @@ div.slick-slide>div {
 
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply flex justify-between items-center z-10 w-full top-0 px-5 py-3;
+    @apply relative flex justify-between items-center z-10 w-full top-0 px-5 py-3;
   }
 
   /* --------  TYPOGRAPHY  -------- */
@@ -414,8 +433,18 @@ div.slick-slide>div {
   .animate-modal {
     @apply fixed top-0 w-full h-full;
     backdrop-filter: blur(75px);
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.30);
   }
+
+  .model-detail-view { 
+    @apply absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center pt-[99px] overflow-auto;
+    backdrop-filter: blur(75px);
+  }
+  .model-detail-navbar {
+    @apply sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6 ;
+    backdrop-filter: blur(25px);
+  }
+  .model-detail-navbar::before {}
 
   .update {
     @apply fixed top-0 w-full h-full flex-center-x;

@@ -1,26 +1,15 @@
-import { app, BrowserWindow, session, screen, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, screen, Menu, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
-import os from "os";
 import { OTAUpdater } from "./ota";
 import { spawn, ChildProcess } from "child_process";
+import { log, initializeLogger, endLogger } from "./log";
 import fs from "fs";
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
-let logStream: fs.WriteStream;
 let serverProcess: ChildProcess;
-
-const initializeLogger = () => {
-  const logsPath = path.join(app.getPath("userData"), "client.log");
-  logStream = fs.createWriteStream(logsPath, { flags: 'a+' });
-}
-
-const log = (message: string) => {
-  const timestamp = new Date().toISOString();
-  logStream.write(`[${timestamp}] ${message}\n`);
-}
 
 const spawnServer = () => {
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
@@ -147,9 +136,7 @@ app.on("window-all-closed", () => {
     log("Server process killed");
   }
   log("Quitting");
-  if (logStream) {
-    logStream.end();
-  }
+  endLogger();
   app.quit();
 });
 

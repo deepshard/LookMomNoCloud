@@ -33,13 +33,13 @@ const InitializationProgress = () => {
 
     return () => {
       //@ts-ignore
-      window.ipc.onDownloadUpdateProgress(() => {});
+      window.ipc.onDownloadUpdateProgress(() => { });
 
       //@ts-ignore
-      window.ipc.onError(() => {});
+      window.ipc.onError(() => { });
 
       //@ts-ignore
-      window.ipc.onUpdateDownloaded(() => {});
+      window.ipc.onUpdateDownloaded(() => { });
     };
   }, []);
 
@@ -64,6 +64,7 @@ const InitializationProgress = () => {
               ) : (
                 <>
                   <Progress className="mb-[73px]" type="line" percent={percent} showInfo={false} />
+                  <p>{percent.toFixed(2)}%</p>
                   <p className="text-surface-500 text-center text-sm">Checking computer's firmware...</p>
                 </>
               )

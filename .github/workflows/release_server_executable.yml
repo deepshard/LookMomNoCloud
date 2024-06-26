@@ -131,22 +131,13 @@ jobs:
       - name: Cleanup
         run: killall server || true
 
-      - name: Notify Slack on success
-        if: success()
+      - name: Notify Slack
+        if: always()
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          text: 'Server executable release succeeded! :rocket:'
-          fields: repo,message,commit,author,action,eventName,ref,workflow
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}
-
-      - name: Notify Slack on failure
-        if: failure()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: 'Server executable release failed! :x:'
+          text: |
+            Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

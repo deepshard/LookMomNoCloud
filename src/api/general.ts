@@ -1,20 +1,20 @@
-import { TModel, TSysInfo } from "../types/schemas";
+import { TModel, TNews, TSysInfo } from "../types/schemas";
 import ApiClient from "./client";
 
-const client = new ApiClient("").localClient;
-const cloudClient = new ApiClient("").client;
+const localClient = new ApiClient("").localClient;
+const client = new ApiClient("").client;
 
 export const getSysInfo = async (): Promise<TSysInfo> => {
-  const response = await client.get("/sysinfo");
+  const response = await localClient.get("/sysinfo");
   return response.data;
 };
 
 export const getHighlights = async (): Promise<TModel[]> => {
-  const response = await client.get("/highlights");
+  const response = await localClient.get("/highlights");
   return response.data;
 };
 
-export const getModel = async (id: string): Promise<TModel> => {
-  const response = await cloudClient.get(`/models/${id}`);
+export const getNews = async (): Promise<TNews[]> => {
+  const response = await client.get("/news");
   return response.data;
-}
+};

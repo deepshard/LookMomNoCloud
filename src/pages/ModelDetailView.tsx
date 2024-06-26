@@ -11,6 +11,24 @@ import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
+// @ts-ignore
+import installIcon from "../assets/icons/install.svg";
+// @ts-ignore
+import stopIcon from "../assets/icons/stop.svg";
+// @ts-ignore
+import playIcon from "../assets/icons/play.svg";
+// @ts-ignore
+import shareIcon from "../assets/icons/share.svg";
+// @ts-ignore
+import trashIcon from "../assets/icons/trash.svg";
+// @ts-ignore
+import downloadIcon from "../assets/icons/download.svg";
+// @ts-ignore
+import closeIcon from "../assets/icons/close.svg";
+// @ts-ignore
+import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
+// @ts-ignore
+import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -91,7 +109,7 @@ function ModelDetailView() {
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
-        return <Icon src="/src/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
+        return <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />;
 
       case "DOWNLOADING":
         return (
@@ -111,12 +129,12 @@ function ModelDetailView() {
         );
 
       case "INSTALLING":
-        return <Icon src="/src/assets/icons/install.svg" imgClassName="h-full w-full animate-spin" />;
+        return <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />;
 
       case "RUNNING":
         return (
           <Icon
-            src="/src/assets/icons/stop.svg"
+            src={stopIcon}
             imgClassName="h-[11px] w-[11px]"
             onClick={() => {
               stopModel(modelData).then((_) => {
@@ -132,7 +150,7 @@ function ModelDetailView() {
       case "STOPPED":
         return (
           <Icon
-            src="/src/assets/icons/play.svg"
+            src={playIcon}
             imgClassName="h-[11px] w-[11px]"
             onClick={() =>
               runModels([modelData], undefined, (updatedModel, controller) => {
@@ -186,11 +204,11 @@ function ModelDetailView() {
               {getModelStatusIcon()}
 
               {/* Share Icon */}
-              <Icon src="/src/assets/icons/share.svg" imgClassName="h-[11px] w-[11px]" />
+              <Icon src={shareIcon} imgClassName="h-[11px] w-[11px]" />
 
               {/* Remove Icon */}
               <Icon
-                src="/src/assets/icons/trash.svg"
+                src={trashIcon}
                 imgClassName="h-[11px] w-[11px]"
                 onClick={() => {
                   deleteModel(modelData).then((_) => {
@@ -203,7 +221,7 @@ function ModelDetailView() {
             </>
           ) : (
             <Icon
-              src="/src/assets/icons/download.svg"
+              src={downloadIcon}
               imgClassName="h-[11px] w-[11px]"
               className="w-auto flex-center gap-2 px-[24px] text-white"
               onClick={() => {
@@ -220,7 +238,7 @@ function ModelDetailView() {
           )}
 
           {/* Close Icon */}
-          <Icon src="/src/assets/icons/close.svg" imgClassName="h-[11px] w-[11px]" onClick={() => window.history.back()} />
+          <Icon src={closeIcon} imgClassName="h-[11px] w-[11px]" onClick={() => window.history.back()} />
         </div>
       </div>
 
@@ -254,10 +272,10 @@ function ModelDetailView() {
               <Tag text={formatParams(modelData?.size)} />
 
               {/* Downloads Tag */}
-              <Tag imgSrc="/src/assets/icons/download-circle-fill.svg" text={formatParams(modelData?.downloads)} />
+              <Tag imgSrc={downloadCircleIcon} text={formatParams(modelData?.downloads)} />
 
               {/* Likes/Bookmarks Tag */}
-              <Tag imgSrc="/src/assets/icons/like-circle-fill.svg" text={formatParams(modelData?.likes)} />
+              <Tag imgSrc={likeCircleIcon} text={formatParams(modelData?.likes)} />
             </div>
           </div>
         </div>

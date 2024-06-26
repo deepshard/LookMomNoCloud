@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 from truffle_types import Quantization
-from utils import get_usable_memory, get_tensor_parallelism
+from utils import get_usable_memory, get_total_memory, get_tensor_parallelism
 
 # Test the utils logic
 # Cases:
@@ -16,6 +16,11 @@ from utils import get_usable_memory, get_tensor_parallelism
 #   - multiple Vulkan
 #   - single OpenCL
 #   - multiple OpenCL
+# - get_total_memory
+#   - Windows
+#   - Mac
+#   - single CUDA
+#   - multiple CUDA
 # - get_tensor_parallelism
 #   - Mac
 #   - no GPUs
@@ -37,7 +42,12 @@ device_options = [
 
 @pytest.fixture(autouse=True)
 def mock_tvm_device(mocker):
-    mocker.patch("tvm.runtime.device", return_value=MagicMock(available_global_memory=25387073536))
+    mocker.patch(
+        "tvm.runtime.device",
+        return_value=MagicMock(
+            available_global_memory=25387073536, total_global_memory=50774147072
+        ),
+    )
 
 
 def test_get_usable_memory(set_os, mocker):
@@ -55,6 +65,21 @@ def test_get_usable_memory(set_os, mocker):
         for device_set in device_options:
             mocker.patch("utils.get_devices", return_value=device_set)
             assert get_usable_memory() == len(device_set) * 25387073536
+
+
+def test_get_total_memory(set_os, mocker):
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            get_total_memory()
+
+    if set_os == "Darwin":
+        mocker.patch("utils.psutil.virtual_memory", return_value=MagicMock(total=1000000000))
+        assert get_total_memory() == 1000000000
+
+    if set_os == "Linux":
+        for device_set in device_options:
+            mocker.patch("utils.get_devices", return_value=device_set)
+            assert get_total_memory() == len(device_set) * 50774147072
 
 
 def test_get_tensor_parallelism_mac(set_os, mocker):

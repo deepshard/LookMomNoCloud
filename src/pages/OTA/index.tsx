@@ -1,7 +1,7 @@
 import React from "react";
 import UpdateInfo from "./UpdateInfo";
 import UpdateProgress from "./UpdateProgress";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import InitializationProgress from "./InitializationProgress";
 import { useAppStore } from "../../store/store";
@@ -25,7 +25,9 @@ const OTA = ({ initialization }: OTAProps) => {
 
   return (
     <div className="update">
-      <AnimatePresence>{startUpdate ? <UpdateProgress sysInfo={sysInfo} updateModels={updateModels} /> : <UpdateInfo onConfirm={() => setStartUpdate(true)} onCancel={() => navigate(-1)} />}</AnimatePresence>
+      <AnimatePresence>
+        {startUpdate ? <UpdateProgress sysInfo={sysInfo} updateModels={updateModels} /> : <UpdateInfo onConfirm={() => setStartUpdate(true)} onCancel={() => navigate(-1)} />}
+      </AnimatePresence>
     </div>
   );
 };

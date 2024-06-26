@@ -8,7 +8,7 @@ import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-la
 import errorIcon from "../../assets/icons/error.svg";
 import Button from "../../component/common/Button";
 import { TModel, TSysInfo } from "../../types/schemas";
-import { stopModel } from "../../api/model";
+import useModelActions from "../../hooks/modelActions/useModelActions";
 
 interface UpdateProgressProps {
   sysInfo: TSysInfo | null;
@@ -18,6 +18,7 @@ interface UpdateProgressProps {
 const UpdateProgress = ({ sysInfo, updateModels }: UpdateProgressProps) => {
   const [percent, setPercent] = useState(0);
   const [error, setError] = useState("");
+  const {stopModel} = useModelActions();
 
   useEffect(() => {
     const handleProgress = (value: { progress: number; bytes: number; totalBytes: number }) => {

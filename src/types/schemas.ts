@@ -41,5 +41,16 @@ export const ModelSchema = z.object({
     error: z.string().optional()
 })
 
+const NewsSchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    content: z.string(),
+    imageUrl: z.string().optional(),
+    userProfilePicture: z.string(),
+    url: z.string(),
+    createdAt: z.string(),
+})
+
 export type TModel = Infer<typeof ModelSchema>;
 export type TSysInfo = Infer<typeof SysinfoSchema>;
+export type TNews = Infer<typeof NewsSchema>;

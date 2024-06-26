@@ -1,0 +1,160 @@
+diff --git a/interface/jit.py b/interface/jit.py
+index 662a1645..5680eff7 100644
+--- a/interface/jit.py
++++ b/interface/jit.py
+@@ -24,7 +24,12 @@ from mlc_llm.support.constants import (
+     MLC_TEMP_DIR,
+ )
+ from mlc_llm.support.style import blue, bold
+-
++from mlc_llm.interface.compile import (  
++    ModelConfigOverride,
++    OptimizationFlags,
++    compile,
++)
++from mlc_llm.cli.compile import main as compile_main
+ from .compiler_flags import ModelConfigOverride, OptimizationFlags
+ 
+ logger = logging.getLogger(__name__)
+@@ -98,28 +103,19 @@ def jit(  # pylint: disable=too-many-locals,too-many-statements
+     def _run_jit(opt: str, overrides: str, device: str, system_lib_prefix: Optional[str], dst: str):
+         with tempfile.TemporaryDirectory(dir=MLC_TEMP_DIR) as tmp_dir:
+             dso_path = os.path.join(tmp_dir, f"lib.{lib_suffix}")
+-            cmd = [
+-                sys.executable,
+-                "-m",
+-                "mlc_llm",
+-                "compile",
+-                str(model_path),
+-                "--opt",
+-                opt,
+-                "--overrides",
+-                overrides,
+-                "--device",
+-                device,
+-                "--output",
++            compile_main([
++                str(model_path), 
++                "--opt", 
++                opt, 
++                "--overrides", 
++                overrides, 
++                "--device", 
++                device, 
++                "--output", 
+                 dso_path,
+-            ]
+-            if system_lib_prefix:
+-                cmd += ["--system-lib-prefix", system_lib_prefix + "_"]
+-            logger.info("Compiling using commands below:")
+-            logger.info("%s", blue(shlex.join(cmd)))
+-            subprocess.run(cmd, check=False, env=os.environ)
+-            # note on windows: compilation can succeed but return code is still nonzero
+-            # check whether file exists instead
++                "--system-lib-prefix",
++                system_lib_prefix + "_" if system_lib_prefix else None,
++            ])
+             if not os.path.isfile(dso_path):
+                 raise RuntimeError("Cannot find compilation output, compilation failed")
+             shutil.move(dso_path, dst)
+diff --git a/interface/serve.py b/interface/serve.py
+index be437824..2e4f8d73 100644
+--- a/interface/serve.py
++++ b/interface/serve.py
+@@ -76,7 +76,7 @@ def serve(
+     with ServerContext() as server_context:
+         server_context.add_model(model, async_engine)
+ 
+-        app = fastapi.FastAPI()
++        app = fastapi.FastAPI(docs_url=None)
+         app.add_middleware(
+             CORSMiddleware,
+             allow_credentials=allow_credentials,
+diff --git a/support/argparse.py b/support/argparse.py
+index 6d36f43c..2116b4cd 100644
+--- a/support/argparse.py
++++ b/support/argparse.py
+@@ -13,4 +13,4 @@ class ArgumentParser(argparse.ArgumentParser):
+         self.print_help()
+         print("-" * 25 + " Error " + "-" * 25)
+         print(message, file=sys.stderr)
+-        sys.exit(2)
++        raise Exception(f"Argument parsing error: {message}")
+diff --git a/support/auto_device.py b/support/auto_device.py
+index bddb9954..897af0b8 100644
+--- a/support/auto_device.py
++++ b/support/auto_device.py
+@@ -39,7 +39,8 @@ def detect_device(device_hint: str) -> Optional[Device]:
+     except Exception as err:
+         raise ValueError(f"Invalid device name: {device_hint}") from err
+     if not _device_exists(device):
+-        raise ValueError(f"Device is not found on your local environment: {device_hint}")
++        raise ValueError(
++            f"Device is not found on your local environment: {device_hint}")
+     return device
+ 
+ 
+@@ -53,38 +54,32 @@ def _device_exists(device: Device) -> bool:
+     device_str = device2str(device)
+     if device_str in _RESULT_CACHE:
+         return _RESULT_CACHE[device_str]
+-    cmd = [
+-        sys.executable,
+-        "-m",
+-        "mlc_llm.cli.check_device",
+-        device_type,
+-    ]
+-    prefix = "check_device:"
+-    subproc_outputs = [
+-        line[len(prefix) :].strip()
+-        for line in subprocess.run(
+-            cmd,
+-            capture_output=True,
+-            text=True,
+-            check=False,
+-            env=os.environ,
+-        )
+-        .stdout.strip()
+-        .splitlines()
+-        if line.startswith(prefix)
+-    ]
+-    if subproc_outputs:
+-        if subproc_outputs[0]:
+-            for i in subproc_outputs[0].split(","):
+-                logger.info("%s device: %s:%s", FOUND, device_type, i)
+-                _RESULT_CACHE[f"{device_type}:{i}"] = True
+-    else:
+-        logger.error(
+-            "GPU device detection failed. Please report this issue with the output of command: %s",
+-            " ".join(cmd),
+-        )
++
++    device_ids = _check_device_set(device_type)
++    for i in device_ids:
++        logger.info("%s device: %s:%s", FOUND, device_type, i)
++        _RESULT_CACHE[f"{device_type}:{i}"] = True
++
+     if device_str in _RESULT_CACHE:
+         return _RESULT_CACHE[device_str]
+     logger.info("%s device: %s", NOT_FOUND, device_str)
+     _RESULT_CACHE[device_str] = False
+     return False
++
++
++def _check_device_set(device_str: str):
++    device_ids = []
++    i = 0
++    while True:
++        try:
++            device = tvm.device(dev_type=device_str, dev_id=i)
++            if device.exist:
++                device_ids.append(i)
++                i += 1
++            else:
++                break
++        except Exception as e:
++            logger.warning(f"Failed to check device {device_str} with ID {i}: {str(e)}")
++            break
++
++    return device_ids
+\ No newline at end of file

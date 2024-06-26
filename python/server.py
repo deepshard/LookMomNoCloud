@@ -20,6 +20,8 @@ from endpoints import (
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
+import certifi
+import ssl
 
 
 @asynccontextmanager
@@ -120,6 +122,10 @@ if __name__ == "__main__":
     # multiprocessing and pyinstaller dont play nicely together
     multiprocessing.freeze_support()
     multiprocessing.set_start_method("spawn", force=True)
+
+    # TODO: replace with proper certificates (ok for v1)
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+    ssl._create_default_https_context = ssl._create_unverified_context
 
     # Setup: create models dir if it doesn't exist, and run migrations
     os.makedirs(get_app_data_path() / "models", exist_ok=True)

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session, screen, Menu, ipcMain, protocol, net } from "electron";
+import { app, BrowserWindow, session, screen, Menu, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import os from "os";
@@ -51,6 +51,12 @@ const createWindow = () => {
         { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
         { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
       ]
+    },
+    {
+      label: "Version",
+      submenu: [
+        { label: `${app.getVersion()}`, enabled: false },
+      ]
     }
   ];
 
@@ -89,7 +95,13 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  // todo: spawn the flask server here
+  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  const serverProcess = spawn(serverPath, [], {
+    detached: true,
+    cwd: path.join(app.getPath("userData"), "bin", "server"),
+  });
+  serverProcess.unref();
+
   // on macOS
   const reactDevToolsPath = path.join(
     os.homedir(),

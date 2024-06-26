@@ -4,15 +4,19 @@ import path from "path";
 import os from "os";
 import { OTAUpdater } from "./ota";
 import { spawn } from "child_process";
+import fs from "fs";
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 const spawnServer = () => {
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
+  const f = fs.openSync(logsPath, "a+");
   const serverProcess = spawn(serverPath, [], {
     detached: true,
     cwd: path.join(app.getPath("userData"), "bin", "server"),
+    stdio: ["ignore", f, f],
   });
   serverProcess.unref();
 }
@@ -26,8 +30,8 @@ const createWindow = () => {
   const factor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 950 ,
-    height: 690 ,
+    width: 950,
+    height: 690,
     titleBarStyle: "hidden",
     webPreferences: {
       devTools: true,
@@ -37,7 +41,7 @@ const createWindow = () => {
   });
 
   autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
-  
+
   const template = [
     {
       label: 'View',
@@ -53,10 +57,10 @@ const createWindow = () => {
   setTimeout(() => {
     mainWindow.webContents.setZoomLevel(0);
   }, 100);
-  
+
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
-  
+
   // Disable zoom shortcuts
   mainWindow.webContents.on("before-input-event", (event, input) => {
     if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
@@ -73,11 +77,11 @@ const createWindow = () => {
       // path.join(__dirname, `../renderer/index.html`)
     );
   }
-  
+
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
   // process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
-  
+
   return mainWindow;
 };
 
@@ -91,19 +95,19 @@ app.on("ready", async function () {
     os.homedir(),
     "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
   );
-  
+
   const reduxTools = path.join(
     os.homedir(),
     "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
   );
-  
+
   try {
     await session.defaultSession.loadExtension(reactDevToolsPath);
     await session.defaultSession.loadExtension(reduxTools);
   } catch (error) {
     console.error("Failed to install extension:", error);
   }
-  
+
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
@@ -117,7 +121,7 @@ app.on("ready", async function () {
     if (needInitialServer) {
       await otaUpdater.downloadInitialServer();
     }
-    
+
     spawnServer();
     await otaUpdater.checkForUpdates();
   });

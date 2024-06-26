@@ -118,7 +118,7 @@ def get_devices_total_memory(device_type: str, devices: list[any]) -> int:
     total_memory = 0
     for device in [device for device in devices if device["type"] == device_type]:
         total_memory += tvm.runtime.device(
-            dev=device["type"], dev_id=device["id"]
+            dev_type=device["type"], dev_id=device["id"]
         ).total_global_memory
 
     return total_memory

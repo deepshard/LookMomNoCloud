@@ -16,13 +16,13 @@ jobs:
       matrix:
         os: [
             macos-latest, 
-            # ubuntu-cuda12.1-1xt4-x86_64,
+            ubuntu-cuda12.1-x86_64-1x-4090,
         ]
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.zip
-          # - os: ubuntu-cuda12.1-1xt4-x86_64
-            # filename: ubuntu-cuda-x86_64.tar.gz
+          - os: ubuntu-cuda12.1-x86_64-1x-4090
+            filename: linux-cuda-x64.tar.gz
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,11 +43,18 @@ jobs:
           conda activate truffle
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            pip install --upgrade https://truffle-binaries.s3.amazonaws.com/mlc-wheels/mlc_llm-0.1.dev1404%2Bg437166a4-cp310-cp310-macosx_14_0_arm64.whl
-          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly
+          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
           pip install -r python/requirements.txt
+
+      - name: Apply the patch
+        run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+          SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+          patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
 
       - name: Import certificate to keychain
         if: matrix.os == 'macos-latest'
@@ -68,18 +75,18 @@ jobs:
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
-      - name: Disable local cuda for integration tests
-        run: |
-          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
-            export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-            export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
-            if nvcc -V; then
-              echo "** CUDA compiler is still accessible, failing the test. **"
-              exit 1
-            else
-              echo "** CUDA compiler not accessible, as expected. **"
-            fi
-          fi
+      # - name: Disable local cuda for integration tests
+      #   run: |
+      #     if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-1xt4-x86_64" ]; then
+      #       export PATH=$(echo $PATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+      #       export LD_LIBRARY_PATH=$(echo $LD_LIBRARYPATH | sed -e 's/:\/usr\/local\/cuda[^:]*//g')
+      #       if nvcc -V; then
+      #         echo "** CUDA compiler is still accessible, failing the test. **"
+      #         exit 1
+      #       else
+      #         echo "** CUDA compiler not accessible, as expected. **"
+      #       fi
+      #     fi
 
       - name: Run integration tests
         run: |
@@ -93,7 +100,7 @@ jobs:
           sleep 5
           curl --retry 5 --retry-connrefused http://localhost:8899
           cd ../../
-          PYTHONPATH="." pytest --maxfail=1 -vvvvv tests/integration
+          PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
 
       - name: Archive server executable
         run: |

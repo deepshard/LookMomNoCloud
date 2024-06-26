@@ -1,7 +1,6 @@
 name: Release frontend app
 
 on:
-  push:
   pull_request:
     branches:
       - release

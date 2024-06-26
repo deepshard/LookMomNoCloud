@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
@@ -33,7 +33,6 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = () => {
-  const factor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 950,
@@ -91,7 +90,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.setResizable(false);
+  // mainWindow.setResizable(false);
 
   if (process.env.NODE_ENV == "dev") {
     mainWindow.webContents.openDevTools();
@@ -150,7 +149,7 @@ app.on("activate", async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    const window = createWindow();
+    createWindow();
     // const otaUpdater = new OTAUpdater(window, autoUpdater);
     // ipcMain.on("download-update", otaUpdater.downloadUpdate);
     // ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);

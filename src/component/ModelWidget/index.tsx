@@ -6,6 +6,7 @@ import { toUnitOfCount } from '../../utils/sysUtils'
 import Tooltip from '../common/Tooltip'
 import './index.css'
 import 'react-circular-progressbar/dist/styles.css'
+import LazyImage from '../LazyImage'
 
 const OverlaySVG = ({ width = 128, height = 82 }) => (
   <svg
@@ -217,8 +218,8 @@ const ModelWidget = ({
       <div
         className={`model-widget base-regular ${className} relative`}
       >
-        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
-  
+        {/* This component loads an image only when it is IN VIEWPORT. Tremendously boosts image load performance. */}
+        <LazyImage src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
         <div
           className={`
             absolute inset-0

@@ -21,11 +21,7 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const { data: predictionData } = useGetPrediction(search);
 
   const { setSearchQuery } = useHomePageContext();
-  const inputRef = useRef<InputRef>(null);
 
-  useLayoutEffect(() => {
-    inputRef.current?.focus();
-  }, []);
   const handleModelClick = (model: TModel) => {
     setSearchQuery(search);
     onModelClick && onModelClick(model);
@@ -93,7 +89,7 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
     <div className="w-full mt-[131px] px-[145px]">
       <div className="relative">
         <Input
-          ref={inputRef}
+          autoFocus
           value={search}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}

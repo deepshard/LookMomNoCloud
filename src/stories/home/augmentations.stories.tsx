@@ -2,7 +2,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
-import { Placeholder } from '../../component/MyModels';
+import { Placeholder } from '../../component/Augmentations';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export

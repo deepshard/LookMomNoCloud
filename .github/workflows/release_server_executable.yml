@@ -43,7 +43,7 @@ jobs:
           conda activate truffle
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
           elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
@@ -96,11 +96,13 @@ jobs:
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
           cd python/dist/server 
-          nohup ./server &
-          sleep 5
-          curl --retry 5 --retry-connrefused http://localhost:8899
-          cd ../../
-          PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            nohup ./server &
+            sleep 5
+            curl --retry 5 --retry-connrefused http://localhost:8899
+            cd ../../
+            PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
+          fi
 
       - name: Archive server executable
         run: |

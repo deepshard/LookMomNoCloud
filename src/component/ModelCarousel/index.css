@@ -8,19 +8,6 @@
     position: relative;
 }
 
-/* .model-carousel::-webkit-scrollbar {
-    height: 4px;
-}
-
-.model-carousel::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.model-carousel::-webkit-scrollbar-thumb {
-    background-color: rgba(155, 155, 155, 0.5);
-    border-radius: 2px; */
-/* } */
-
 .model-carousel-inner {
     display: flex;
     gap: 10px;

@@ -1,0 +1,87 @@
+.carousel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    perspective: 1000px;
+}
+
+.card {
+    width: 135px;
+    height: 83px;
+    position: absolute;
+    transition: all 0.5s ease;
+    border-radius: 13px;
+    color: white;
+    overflow: hidden;
+    transform-style: preserve-3d;
+}
+
+.card-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 2.573px;
+    color: var(--Surface-Main, #FFF);
+}
+
+.card-title {
+    font-family: "TruffleRegular";
+    font-size: 12.25px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.icon {
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    margin-right: 1px;
+}
+
+.card-divider {
+    height: 1px;
+    margin-top: 5px;
+    background: rgba(255, 255, 255, 0.10);
+    width: 100%;
+}
+
+.card-description {
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    font-family: "TruffleRegular";
+    font-size: 10px;
+    line-height: normal;
+    margin-top: 5px;
+}
+
+.card.active {
+    z-index: 3;
+    transform: translateZ(50px);
+}
+
+.card.next {
+    z-index: 2;
+    transform: translateX(50%) translateZ(-50px) rotateY(-35deg) scale(0.85);
+}
+
+.card.prev {
+    z-index: 1;
+    transform: translateX(-50%) translateZ(-50px) rotateY(35deg) scale(0.85);
+}

@@ -2,14 +2,15 @@ import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import MyModels, { Placeholder } from "./component/MyModels";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
-import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
+
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
@@ -20,7 +21,6 @@ export default function Home() {
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
-
   const handleMyModelClick = (model: TModel) => {
     handleNavigate(model);
     setShowMyModels(false);
@@ -82,10 +82,8 @@ export default function Home() {
 
                 <div className="w-full flex justify-between gap-5">
                   <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
-                    <div className="grid grid-cols-4 gap-6 p-5">
-                      {[...Array(8)].map((_, index) => (
-                        <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
-                      ))}
+                    <div className="">
+                      <Placeholder />
                     </div>
                     <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
                   </div>

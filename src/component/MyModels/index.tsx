@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
-import ModelWidget from "../ModelWidget";
+import { CarouselProps } from "antd";
 import { TModel } from "../../types/schemas";
-import Carousel from "../Carousel/Carousel";
+import Carousel from './Carousel'
+
 
 interface SearchProps {
   myModels?: TModel[];
@@ -46,15 +47,15 @@ const MyModels = ({ myModels = [], onModelClick }: SearchProps) => {
     }
   }, []);
 
+  const cards: CarouselProps['cards'] = [
+    <div>something</div>
+  ]
+
   return (
     <div onWheel={handleWheel} className="w-full h-full my-models-container">
-      {gridModels.length > 0 && (
-        <Carousel ref={carouselRef} draggable infinite={false} easing="linear" waitForAnimate className="w-full h-full">
-          {gridModels.map((page, index) => (
-            <Page models={page} key={index} onModelClick={onModelClick}/>
-          ))}
-        </Carousel>
-      )}
+      <Carousel cards={
+        cards as any
+      }/>
     </div>
   );
 };
@@ -66,13 +67,42 @@ interface PageProps {
 const Page = ({ models, onModelClick }: PageProps) => {
   return (
     <div className="w-full h-full flex justify-center items-center mx-[145px] pt-[148px]">
-      <div className="w-full h-full grid grid-cols-3 gap-x-[140px] gap-y-[52px] justify-items-center content-start">
-        {models.map((model) => (
-          <ModelWidget model={model} key={model.id} className="w-[124px] h-[78px]" onClick={() => {onModelClick?.(model)}}/>
-        ))}
-      </div>
+      
     </div>
   );
 };
+
+
+export const Placeholder: React.FC = () => {
+  const cards = [
+    {
+      id: 1,
+      title: "A* Search",
+      icon: "/src/assets/icons/astar.svg",
+      content: "A* Search is an inference time model enhahncement technique that uses a heuristic to efficiently find an optimal path to the best solution.",
+      color: "#FF6B6B"
+    },
+    {
+      id: 2,
+      title: "MCTS",
+      icon: "/src/assets/icons/mcts.svg",
+      content: "Monte carlo tree search uses the monte carlo property of random generations to find the best solution to a problem.",
+      color: "#4ECDC4"
+    },
+    {
+      id: 3,
+      title: "Jailbreak Model",
+      icon: "/src/assets/icons/unlock.svg",
+      content: "And this is what's in the third card",
+      color: "#45B7D1"
+    }
+  ]
+
+  return (
+    <div className="placeholder-container">
+      <Carousel cards={cards} />
+    </div>
+  )
+}
 
 export default MyModels;

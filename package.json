@@ -1,7 +1,7 @@
 {
   "name": "truffle-app",
   "productName": "truffle-app",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -32,10 +32,18 @@
       "assets/**/*"
     ],
     "mac": {
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage",
+        "deb",
+        "snap",
+        "flatpak",
+        "tar.gz"
+      ]
     },
     "publish": {
       "provider": "s3",

@@ -9,6 +9,13 @@ import fs from "fs";
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
+let logStream: fs.WriteStream;
+
+const initializeLogger = () => {
+  const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
+  logStream = fs.createWriteStream(logsPath, { flags: 'a+' });
+}
+
 const spawnServer = () => {
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
   const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
@@ -95,29 +102,35 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
+  initializeLogger()
+
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
-  const serverProcess = spawn(serverPath, [], {
-    detached: true,
-    cwd: path.join(app.getPath("userData"), "bin", "server"),
-  });
-  serverProcess.unref();
+  if (fs.existsSync(serverPath)) {
+    const serverProcess = spawn(serverPath, [], {
+      detached: true,
+      cwd: path.join(app.getPath("userData"), "bin", "server"),
+    });
+    serverProcess.unref();
+  } else {
+    logStream.write(`Server executable not found at ${serverPath}\n`);
+  }
 
-  // on macOS
-  const reactDevToolsPath = path.join(
-    os.homedir(),
-    "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
-  );
+  if (process.env.NODE_ENV === "development") {
+    const reactDevToolsPath = path.join(
+      os.homedir(),
+      "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
+    );
 
-  const reduxTools = path.join(
-    os.homedir(),
-    "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
-  );
-
-  try {
-    await session.defaultSession.loadExtension(reactDevToolsPath);
-    await session.defaultSession.loadExtension(reduxTools);
-  } catch (error) {
-    console.error("Failed to install extension:", error);
+    const reduxTools = path.join(
+      os.homedir(),
+      "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
+    );
+    try {
+      await session.defaultSession.loadExtension(reactDevToolsPath);
+      await session.defaultSession.loadExtension(reduxTools);
+    } catch (error) {
+      console.error("Failed to install extension:", error);
+    }
   }
 
   const window = createWindow();
@@ -129,12 +142,16 @@ app.on("ready", async function () {
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
   window.on("ready-to-show", async () => {
+    logStream.write("Checking for initial server\n");
     const needInitialServer = otaUpdater.checkForInitialServer();
     if (needInitialServer) {
+      logStream.write("Downloading initial server\n");
       await otaUpdater.downloadInitialServer();
     }
 
+    logStream.write("Spawning server\n");
     spawnServer();
+    logStream.write("Checking for updates\n");
     await otaUpdater.checkForUpdates();
   });
 });
@@ -165,3 +182,9 @@ app.on("activate", async () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.d
+
+app.on("quit", () => {
+  if (logStream) {
+    logStream.end();
+  }
+});

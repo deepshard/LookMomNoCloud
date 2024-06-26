@@ -25,5 +25,16 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Import certificate to keychain
+        run: |
+          echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
+          security create-keychain -p temporary build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p temporary build.keychain
+          security import certificate.p12 -k build.keychain -P runescape -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k temporary build.keychain
+          security list-keychains -d user -s build.keychain
+          security find-identity -v -p codesigning
+
       - run: NODE_ENV=production AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} ./publish.sh
 

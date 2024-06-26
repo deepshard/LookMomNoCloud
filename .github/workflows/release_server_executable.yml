@@ -22,7 +22,7 @@ jobs:
           - os: macos-latest
             filename: darwin-metal-arm64.zip
           - os: ubuntu-cuda12.1-x86_64-1x-4090
-            filename: linux-cuda-x64.tar.gz
+            filename: linux-cuda-x64.zip
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -138,6 +138,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
+            New Version: `${{ github.sha }}`
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

@@ -229,8 +229,6 @@ export class OTAUpdater {
       this.addBytesToDownload(await this.getAppUpdateSize(appUpdateInfo));
     }
 
-    console.log(this.downloadProgress.totalBytes);
-
     // Send update information to renderer
     if (this.updateServer.available || this.updateApp.available) {
       this.mainWindow.webContents.send("update-available", {
@@ -326,10 +324,30 @@ export class OTAUpdater {
     // Get platform information
     const osInfo = await si.osInfo();
     const graphicsInfo = await si.graphics();
-    const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
-    const url = `https://truffle-binaries.s3.amazonaws.com/latest.txt`;
+
+    // Get GPU info
+    let gpu;
+    if (osInfo.platform === "darwin") {
+      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2"));
+      if (!isMetal) {
+        this.mainWindow.webContents.send("error", "Only M1/M2 macs are supported for now");
+        return;
+      }
+      gpu = "metal";
+    } else if (osInfo.platform === "linux") {
+      const isCuda = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].vendor.toLowerCase().includes("nvidia"));
+      if (!isCuda) {
+        this.mainWindow.webContents.send("error", "Only Nvidia GPUs are supported for now");
+        return;
+      }
+      gpu = "cuda";
+    } else {
+      this.mainWindow.webContents.send("error", "Only MacOS and Linux are supported for now");
+      return;
+    }
 
     // Get latest hash from S3
+    const url = `https://truffle-binaries.s3.amazonaws.com/latest.txt`;
     let response: any = null;
     try {
       response = await axios.get(url);

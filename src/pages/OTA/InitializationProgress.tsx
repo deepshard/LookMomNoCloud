@@ -42,6 +42,7 @@ const InitializationProgress = () => {
       window.ipc.onUpdateDownloaded(() => {});
     };
   }, []);
+
   return (
     <AnimatePresence>
       {

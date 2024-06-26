@@ -6,6 +6,7 @@ import json
 import socket
 from pathlib import Path
 from loguru import logger
+import signal
 from enum import Enum
 from mlc_llm.interface.serve import serve
 from sqlalchemy import select
@@ -173,6 +174,11 @@ def cancel_models(conversions: list, i: int):
 def serve_model(model_path: Path, mem_share: float, port: int, shards: int):
     # This is a wrapper around the base serve function to make it cleaner to spawn from
     # multiprocess.Process
+
+    # Set session ID to make the model process a group leader
+    os.setsid()
+
+    # Start the model server
     serve(
         model=str(model_path),
         device="auto",

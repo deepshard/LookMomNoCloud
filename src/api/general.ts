@@ -18,3 +18,9 @@ export const getModel = async (id: string): Promise<TModel> => {
   const response = await cloudClient.get(`/models/${id}`);
   return response.data;
 }
+
+
+export const getFeatured = async (): Promise<TModel[]> => {
+  const response = await cloudClient.get(`/models/featured`);
+  return response.data;
+}

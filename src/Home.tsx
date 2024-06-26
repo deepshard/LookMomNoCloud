@@ -11,11 +11,14 @@ import FeaturedCarousel from "./component/FeaturedCarousel";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
 
+
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
   const navigate = useNavigate();
+
+
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -99,7 +102,7 @@ export default function Home() {
         </div>
       </div>
       <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
-        <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate}/>
+        <Search onModelClick={handleNavigate}/>
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
         <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick}/>

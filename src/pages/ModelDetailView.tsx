@@ -1,6 +1,6 @@
 import { TModel } from "../types/schemas";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatDate, formatParams } from "../utils/sysUtils";
+import { formatDate, formatParams , canFitOnMachine } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
@@ -11,7 +11,6 @@ import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
-import { canFitOnMachine } from "../utils/sysUtils";
 import Tooltip from "../component/common/Tooltip";
 // @ts-ignore
 import installIcon from "../assets/icons/install.svg";

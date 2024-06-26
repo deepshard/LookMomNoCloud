@@ -128,15 +128,15 @@ app.on("ready", async function () {
   autoUpdater.on("error", (err) => window.webContents.send("error", err));
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
-  // window.on("ready-to-show", async () => {
-  //   const needInitialServer = otaUpdater.checkForInitialServer();
-  //   if (needInitialServer) {
-  //     await otaUpdater.downloadInitialServer();
-  //   }
+  window.on("ready-to-show", async () => {
+    const needInitialServer = otaUpdater.checkForInitialServer();
+    if (needInitialServer) {
+      await otaUpdater.downloadInitialServer();
+    }
 
-  //   spawnServer();
-  //   await otaUpdater.checkForUpdates();
-  // });
+    spawnServer();
+    await otaUpdater.checkForUpdates();
+  });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

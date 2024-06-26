@@ -12,6 +12,7 @@ import { useHomePageContext } from "../../context/HomePageProvider";
 import { TModel } from "../../types/schemas";
 // import Title from "antd/es/skeleton/Title";
 import ModelWidgetSkeleton from "../ModelWidgetSkeleton/ModelWidgetSkeleton";
+import { formatParams } from "../../utils/sysUtils";
 
 import DiscoverItem from "./DiscoverItem";
 
@@ -132,7 +133,7 @@ const Search = ({ onModelClick }: SearchProps) => {
                   {model.name}
                 </p>
                 <p className="text-surface-500 text-xs h-3.5 leading-normal">
-                  {`${model.author} • ${model.size}`}
+                  {`${model.author} • ${formatParams(model.size)}`}
                 </p>
               </div>
             </div>

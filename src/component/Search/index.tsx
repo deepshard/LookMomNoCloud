@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input } from "antd";
+import { Input, InputRef } from "antd";
 import { debounce } from "lodash";
 import { useNavigate } from "react-router-dom";
 import Featured from "../Featured";
@@ -23,7 +23,7 @@ const Search: React.FC<SearchProps> = ({ recentlyUsedModels }) => {
 
   const navigate = useNavigate();
   const { setSearchQuery } = useHomePageContext();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<InputRef>(null);
 
   useLayoutEffect(() => {
     inputRef.current?.focus();

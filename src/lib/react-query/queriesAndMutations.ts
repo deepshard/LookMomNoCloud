@@ -66,6 +66,7 @@ export const useGetPrediction = (text: string) => {
     queryKey: ["search-prediction", text],
     queryFn: () => {
       return getPrediction(text)
-    }
+    },
+    enabled: !!text
   })
 };

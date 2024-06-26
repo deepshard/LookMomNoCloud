@@ -125,9 +125,6 @@ export const getModel = async (id: string): Promise<TModel> => {
 }
 
 export const getPrediction = async (input: string) => {
-  if (input.trim() === "") {
-    return null;
-  }
   const response = await client.get(`/autocomplete/?query=${input}`);
   return response.data;
 }

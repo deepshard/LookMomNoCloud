@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getHighlights, getNews } from "../../api/general";
-import { deleteModel, getMyModels, getModel, searchModels, stopModel } from "../../api/model";
+import { deleteModel, getMyModels, getModel, searchModels, stopModel, getPrediction } from "../../api/model";
 import { TModel } from "../../types/schemas";
 
 export const useGetHighlights = () => {
@@ -68,7 +68,7 @@ export const useGetNews = () => {
     content: `This is the content for news item ${index + 1}. Here's some more detailed information about the news event.`,
     imageUrl: index % 3 === 0 ? `https://example.com/image${index + 1}.jpg` : undefined,
     userProfilePicture: `/src/assets/images/llama1.png`,
-    URL: `https://example.com/news/${index + 1}`,
+    url: `https://example.com/news/${index + 1}`,
     createdAt: new Date().toISOString(),
   }));
   return useQuery({
@@ -80,3 +80,12 @@ export const useGetNews = () => {
     initialData: dummyNewsData
   })
 }
+export const useGetPrediction = (text: string) => {
+  return useQuery({
+    queryKey: ["search-prediction", text],
+    queryFn: () => {
+      return getPrediction(text)
+    },
+    enabled: !!text
+  })
+};

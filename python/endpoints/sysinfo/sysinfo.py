@@ -36,7 +36,7 @@ async def get_sysinfo() -> SystemInfo:
     models_data = await get_models_data()
     resources = SystemResources(
         available=SystemResourceDetails(
-            ram=get_usable_memory(False),
+            ram=get_usable_memory(True),
             disk=psutil.disk_usage("/").free,
         ),
         models=models_data,

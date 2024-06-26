@@ -8,6 +8,9 @@ import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
 import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
+import UpdateTruffle from "./component/UpdateTruffle";
+import { useEffect, useState } from "react";
+import { TruffleUpdateInfo } from "./ota";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
 
@@ -20,12 +23,37 @@ export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
   const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
+  const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
+
   const navigate = useNavigate();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
 
+  useEffect(() => {
+    const handleUpdateAvailable = (newUpdateInfo: TruffleUpdateInfo) => {
+      setUpdateInfo(newUpdateInfo);
+    };
+
+    const handleInitializationRequired = () => {
+      navigate("/initialization");
+    }
+
+    //@ts-ignore
+    window.ipc.onUpdateAvailable(handleUpdateAvailable);
+
+    //@ts-ignore
+    window.ipc.onInitializationRequired(handleInitializationRequired);
+
+    return () => {
+      //@ts-ignore
+      window.ipc.onUpdateAvailable(() => {});
+
+      //@ts-ignore
+      window.ipc.onInitializationRequired(() => {});
+    };
+  }, []);
   const handleMyModelClick = (model: TModel) => {
     handleNavigate(model);
     setShowMyModels(false);
@@ -130,12 +158,14 @@ export default function Home() {
           </div>
         </div>
       </div>
+
       <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
         <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
         <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick} />
       </AnimateModal>
+      {updateInfo && <UpdateTruffle className="fixed bottom-5 left-5" onClick={() => navigate(`/update`)} />}
     </>
   );
 }

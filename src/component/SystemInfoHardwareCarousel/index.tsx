@@ -6,6 +6,8 @@ import { upperFirst } from "lodash";
 import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
 import { useCallback, useRef, useState } from "react";
 import {motion} from 'framer-motion'
+// @ts-ignore
+import monitorIcon from "../../assets/icons/monitor.svg";
 
 interface SystemInfoHardwareCarouselProps {
   sysInfo: TSysInfo | null;
@@ -51,7 +53,7 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
         <PreOrderTruffle />
       </Carousel>
       <motion.span className="absolute flex gap-[8px] bottom-[-35px] translate-x-[-50%] left-[50%]" initial={false} animate={{ opacity: showUsage }}>
-        <img src="/src/assets/icons/monitor.svg" alt="" />
+        <img src={monitorIcon} alt="" />
         <p className="text-surface-400 text-xs">{upperFirst(selection)} Usage</p>
       </motion.span>
     </div>

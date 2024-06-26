@@ -19,7 +19,7 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
-  const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
+  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels } = useHomePageContext();
   const navigate = useNavigate();
 
 
@@ -132,7 +132,10 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
+      <AnimateModal show={showSearch} onClose={() => {
+        setShowSearch(false);
+        setShowDiscover(false);
+      }}>
         <Search onModelClick={handleNavigate}/>
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>

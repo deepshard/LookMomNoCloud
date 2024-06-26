@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { debounce } from "lodash";
 import {
   useSearchModels,
@@ -13,11 +13,15 @@ import SearchSuggestions from "./SearchSuggestions";
 import DiscoverSection from "./DiscoverSection";
 import { TModel } from "../../types/schemas";
 
-const Search = ({ onModelClick }) => {
-  const [search, setSearch] = useState("");
-  const [debouncedInput, setDebouncedInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [isListView, setIsListView] = useState(false);
+interface SearchProps {
+  onModelClick?: (model: TModel) => void;
+}
+
+const Search: React.FC<SearchProps> = ({ onModelClick }) => {
+  const [search, setSearch] = useState<string>("");
+  const [debouncedInput, setDebouncedInput] = useState<string>("");
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [isListView, setIsListView] = useState<boolean>(false);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
 
   const { data: searchModels, isLoading: isSearchLoading } =
@@ -25,7 +29,9 @@ const Search = ({ onModelClick }) => {
   const { data: predictionData } = useGetPrediction(search);
   const { data: featuredData } = useGetFeatured();
 
-  const { setSearchQuery } = useHomePageContext();
+  const { setSearchQuery, showDiscover } = useHomePageContext();
+
+  const discoverSectionRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     setFeaturedModels(featuredData ?? []);
@@ -33,7 +39,7 @@ const Search = ({ onModelClick }) => {
 
   useEffect(() => {
     setIsTyping(search.length > 0);
-    const debouncer = debounce((value) => {
+    const debouncer = debounce((value: string) => {
       setDebouncedInput(value);
       setIsTyping(false);
     }, 500);
@@ -42,7 +48,13 @@ const Search = ({ onModelClick }) => {
     return () => debouncer.cancel();
   }, [search]);
 
-  const handleModelClick = (model) => {
+  useEffect(() => {
+    if (showDiscover && discoverSectionRef.current) {
+      discoverSectionRef.current.scrollIntoView({ behavior: 'smooth', });
+    }
+  }, [showDiscover]);
+
+  const handleModelClick = (model: TModel) => {
     setSearchQuery(search);
     onModelClick && onModelClick(model);
   };
@@ -73,7 +85,11 @@ const Search = ({ onModelClick }) => {
         )}
       </div>
 
-      {search.length < 1 && <DiscoverSection />}
+      {search.length < 1 && (
+        <div ref={discoverSectionRef}>
+          <DiscoverSection />
+        </div>
+      )}
     </div>
   );
 };

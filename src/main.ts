@@ -3,24 +3,34 @@ import { autoUpdater } from "electron-updater";
 import path from "path";
 import os from "os";
 import { OTAUpdater } from "./ota";
-import { spawn } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import fs from "fs";
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 let logStream: fs.WriteStream;
+let serverProcess: ChildProcess;
 
 const initializeLogger = () => {
-  const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
+  const logsPath = path.join(app.getPath("userData"), "client.log");
   logStream = fs.createWriteStream(logsPath, { flags: 'a+' });
+}
+
+const log = (message: string) => {
+  const timestamp = new Date().toISOString();
+  logStream.write(`[${timestamp}] ${message}\n`);
 }
 
 const spawnServer = () => {
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  if (!fs.existsSync(serverPath)) {
+    log(`Server executable not found at ${serverPath}`);
+    return;
+  }
   const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
   const f = fs.openSync(logsPath, "a+");
-  const serverProcess = spawn(serverPath, [], {
+  serverProcess = spawn(serverPath, [], {
     detached: true,
     cwd: path.join(app.getPath("userData"), "bin", "server"),
     stdio: ["ignore", f, f],
@@ -103,35 +113,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
   initializeLogger()
-
-  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
-  if (fs.existsSync(serverPath)) {
-    const serverProcess = spawn(serverPath, [], {
-      detached: true,
-      cwd: path.join(app.getPath("userData"), "bin", "server"),
-    });
-    serverProcess.unref();
-  } else {
-    logStream.write(`Server executable not found at ${serverPath}\n`);
-  }
-
-  if (process.env.NODE_ENV === "development") {
-    const reactDevToolsPath = path.join(
-      os.homedir(),
-      "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
-    );
-
-    const reduxTools = path.join(
-      os.homedir(),
-      "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
-    );
-    try {
-      await session.defaultSession.loadExtension(reactDevToolsPath);
-      await session.defaultSession.loadExtension(reduxTools);
-    } catch (error) {
-      console.error("Failed to install extension:", error);
-    }
-  }
+  spawnServer();
 
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
@@ -142,16 +124,16 @@ app.on("ready", async function () {
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
   window.on("ready-to-show", async () => {
-    logStream.write("Checking for initial server\n");
+    log("Checking for initial server");
     const needInitialServer = otaUpdater.checkForInitialServer();
     if (needInitialServer) {
-      logStream.write("Downloading initial server\n");
+      log("Downloading initial server");
       await otaUpdater.downloadInitialServer();
     }
 
-    logStream.write("Spawning server\n");
+    log("Spawning server");
     spawnServer();
-    logStream.write("Checking for updates\n");
+    log("Checking for updates");
     await otaUpdater.checkForUpdates();
   });
 });
@@ -160,9 +142,15 @@ app.on("ready", async function () {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
+  if (serverProcess) {
+    serverProcess.kill();
+    log("Server process killed");
   }
+  log("Quitting");
+  if (logStream) {
+    logStream.end();
+  }
+  app.quit();
 });
 
 
@@ -182,9 +170,3 @@ app.on("activate", async () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.d
-
-app.on("quit", () => {
-  if (logStream) {
-    logStream.end();
-  }
-});

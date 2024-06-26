@@ -33,14 +33,6 @@ def get_app_data_path() -> Path:
         raise ValueError(f"Unsupported system: {system}")
 
 
-def find_port(port: int = 8899) -> int:
-    """Find an open port."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        if s.connect_ex(("localhost", port)) == 0:
-            return find_port(port + 1)
-        return port
-
-
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:
     quant_path = get_app_data_path() / "models" / model_id / quantization.value
     chat_config_path = quant_path / "mlc-chat-config.json"

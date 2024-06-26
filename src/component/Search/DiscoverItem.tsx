@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "../../types/schemas"; // Adjust this import path as needed
 import { toUnitOfCount } from "../../utils/sysUtils";
+import {LazyLoadImage} from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 interface DiscoverItemProps {
   model: TModel;
@@ -9,13 +11,7 @@ interface DiscoverItemProps {
 
 const DiscoverItem: React.FC<DiscoverItemProps> = ({ model }) => {
   const navigate = useNavigate();
-  const [imageLoaded, setImageLoaded] = useState(false);
 
-  useEffect(() => {
-    const img = new Image();
-    img.src = model.backgroundImage;
-    img.onload = () => setImageLoaded(true);
-  }, []);
 
   const handleNavigate = (model: TModel ) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -26,25 +22,18 @@ const DiscoverItem: React.FC<DiscoverItemProps> = ({ model }) => {
       className="relative w-[200px] h-[228px] bg-bg-wdget glass-3d rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition transition-100"
       onClick={() => handleNavigate(model)}
     >
-      {!imageLoaded ? (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: '#e5e7eb37',
-          borderRadius: '13px',
-          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 0.5) infinite',
-        }} />
-      ) : (
-        <img
-          src={model.backgroundImage}
+      <div
+          className="absolute top-0 left-0 w-full h-full object-cover"
+      
+      >
+        <LazyLoadImage
+          effect="blur"
+          src={model.lowresBackgroundImage}
           // src="https://picsum.photos/200/300"
           alt={model.title}
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          className="w-full h-full object-cover scale-[350%]"
         />
-      )}
+      </div>
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 to-transparent z-2" />
 
       <div className="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-1 justify-end items-start z-3">

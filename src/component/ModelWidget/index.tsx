@@ -220,7 +220,7 @@ const ModelWidget = ({
         className={`model-widget base-regular ${className} relative`}
       >
         {/* This component loads an image only when it is IN VIEWPORT. Tremendously boosts image load performance. */}
-        <LazyLoadImage effect="blur" src={model.backgroundImage} alt="" className="w-full h-full object-cover scale-110" />
+        <LazyLoadImage effect="blur" src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage} alt="" className="w-full h-full object-cover scale-110" />
         <div
           className={`
             absolute inset-0

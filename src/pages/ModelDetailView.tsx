@@ -11,6 +11,8 @@ import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
+import {LazyLoadImage} from "react-lazy-load-image-component"
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -223,7 +225,7 @@ function ModelDetailView() {
             {/* Model's Image */}
             <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
               {getModelInfoHeader()}
-              <img src={modelData?.backgroundImage} className=" w-full h-full " />
+              <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full object-cover scale-110" />
             </div>
 
             {/* Model's Name */}

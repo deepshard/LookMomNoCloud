@@ -21,9 +21,12 @@ class ModelManager:
     def __init__(self, session):
         self.session = session
         self.downloads = {}
+
         self.conversion_queue = []
         self.current_conversion = None
         self.conversion_in_progress = False
+
+        self.run_queue = []
 
         self.quantization_scores = {
             Quantization.Q0F16: 1,
@@ -112,6 +115,18 @@ class ModelManager:
             for queued_model in self.conversion_queue
             if (queued_model["model_path"], queued_model["quantization"]) not in cancel_set
         ]
+
+    def reserve_ports(self, ports: list[int]):
+        """Add a series of ports to the queue so `find_port` skips them."""
+
+        for port in ports:
+            self.run_queue.append(port)
+
+    def clear_reserved_ports(self, ports: list[int]):
+        """Remove reserved ports from the queue because the relevant processes are running."""
+
+        for port in ports:
+            self.run_queue.remove(port)
 
     def get_space_check_info(self, run: bool = False) -> tuple[int, int, int]:
         """Return the available RAM, disk space, and total bytes remaining for processing."""

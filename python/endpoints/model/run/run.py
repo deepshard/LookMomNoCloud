@@ -3,6 +3,7 @@ import multiprocessing
 import asyncio
 import aiohttp
 import json
+import socket
 from pathlib import Path
 from loguru import logger
 from enum import Enum
@@ -15,7 +16,6 @@ from endpoints.model.stop import stop_model_handler
 from endpoints.model.install.install import convert_quantize_compile
 from utils import (
     get_app_data_path,
-    find_port,
     does_quantization_exist,
     is_convertable_format,
     get_model_size_info,
@@ -71,6 +71,17 @@ class ProgressEvent:
 
     def __str__(self):
         return f"data: {self.to_json()}\n\n"
+
+
+def find_port(port: int = 8899) -> int:
+    """Find an open port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if (
+            s.connect_ex(("localhost", port)) == 0
+            or port in global_state_manager.model_manager.run_queue
+        ):
+            return find_port(port + 1)
+        return port
 
 
 async def get_instances(model_ids: list[str]) -> list[int]:
@@ -214,12 +225,11 @@ async def is_server_running(port: int, timeout: int = 120) -> bool:
 
 
 async def run_model(
-    model_id: str, quantization: Quantization, mem_share: float, instance: int
+    model_id: str, quantization: Quantization, mem_share: float, instance: int, port: int
 ) -> ProgressEvent:
     # Identify the necessary info to launch the model
     model_path = get_app_data_path() / "models" / model_id / quantization.value
     model_info = await get_model_info(model_id)
-    port = find_port()
     shards = get_tensor_parallelism(
         get_app_data_path() / "models" / model_id / "base",
         quantization,
@@ -279,6 +289,10 @@ async def run_models_generator(model_ids: list[str]):
         yield str(acknowledgement_event)
         await asyncio.sleep(2)
 
+    # Immediately reserve port numbers for the models
+    ports = [find_port() for _ in model_ids]
+    global_state_manager.model_manager.reserve_ports(ports)
+
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
     try:
@@ -297,6 +311,7 @@ async def run_models_generator(model_ids: list[str]):
     except Exception as e:
         error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
+        global_state_manager.model_manager.clear_reserved_ports(ports)
         return
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes
@@ -318,6 +333,7 @@ async def run_models_generator(model_ids: list[str]):
                 "Model is not in a convertable format",
             )
             yield str(error_event)
+            global_state_manager.model_manager.clear_reserved_ports(ports)
             return
 
         # Check if the quantization already exists
@@ -339,6 +355,7 @@ async def run_models_generator(model_ids: list[str]):
     except Exception as e:
         error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
+        global_state_manager.model_manager.clear_reserved_ports(ports)
         return
 
     # Add all of the conversions to the queue at once to avoid weird space calculations
@@ -373,6 +390,7 @@ async def run_models_generator(model_ids: list[str]):
             cancel_models(conversions, i)
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
+            global_state_manager.model_manager.clear_reserved_ports(ports)
             return
 
         # Send quantization event
@@ -386,13 +404,14 @@ async def run_models_generator(model_ids: list[str]):
         except Exception as e:
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
+            global_state_manager.model_manager.clear_reserved_ports(ports)
             return
         global_state_manager.model_manager.complete_conversion()
 
     # Now that all missing quantizations have been created, run the models
     models_started = []
-    for model_id, quant, mem_share, instance_obj in zip(
-        model_ids, quantizations, mem_shares, instance_numbers
+    for model_id, quant, mem_share, instance_obj, port in zip(
+        model_ids, quantizations, mem_shares, instance_numbers, ports
     ):
         logger.info(f"Running model {model_id}")
         instance = instance_obj["instance"]
@@ -407,13 +426,14 @@ async def run_models_generator(model_ids: list[str]):
             error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
+            global_state_manager.model_manager.clear_reserved_ports(ports)
             return
 
         # Start the model server
         try:
-            result = await run_model(model_id, quant, mem_share, instance)
+            result = await run_model(model_id, quant, mem_share, instance, port)
             models_started.append(result)
-            logger.info(f"Model {model_id} started on port {result.port}")
+            logger.info(f"Model {model_id} started on port {port}")
             yield str(result)
         except Exception as e:
             logger.error(f"Error running model {model_id}: {e}")
@@ -426,6 +446,9 @@ async def run_models_generator(model_ids: list[str]):
             error_event = ProgressEvent(model_id, Status.RUNNING, instance, None, str(e))
             yield str(error_event)
             await kill_models(models_started)
+            global_state_manager.model_manager.clear_reserved_ports(ports)
             return
 
+    logger.info("All models started successfully")
+    global_state_manager.model_manager.clear_reserved_ports(ports)
     return

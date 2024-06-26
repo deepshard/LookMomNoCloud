@@ -6,15 +6,7 @@ import LazyImage from "../LazyImage";
 import { formatParams } from "../../utils/sysUtils";
 
 const SearchResults = ({ searchModels, isListView, setIsListView, handleModelClick }) => {
-  if (!searchModels) {
-    return (
-      <div className="w-full flex flex-col gap-1">
-        {[...Array(8)].map((_, index) => (
-          <ModelWidgetSkeleton key={index} />
-        ))}
-      </div>
-    );
-  }
+
 
   return (
     <>
@@ -82,48 +74,72 @@ const ViewToggle = ({ isListView, setIsListView }) => (
     </svg>
   </>
 );
-
 const ListView = ({ searchModels, handleModelClick }) => (
   <div className="flex flex-col gap-1">
-    {searchModels.map((model) => (
-      <div
-        key={model.id}
-        className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer transition transition-100"
-        onClick={() => handleModelClick(model)}
-      >
-        <div className="flex items-center gap-2">
-          <LazyImage
-            src={model.backgroundImage}
-            alt={model.name}
-            className="w-8 h-8 rounded-[8px]"
-          />
-          <div className="flex flex-col gap-1 -mt-1">
-            <p className="text-surface-750 title-sm h-3.5 leading-tight">
-              {model.name}
-            </p>
-            <p className="text-surface-500 text-xs h-3.5 leading-normal">
-              {`${model.author} • ${formatParams(model.size)}`}
-            </p>
+    {!searchModels ? (
+      Array.from({ length: 16 }).map((_, index) => (
+        <div
+          key={index}
+          className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer transition transition-100"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] bg-surface-main/10 animate-pulse" />
+            <div className="flex flex-col gap-1 -mt-1">
+              <div className="h-3.5 w-32 bg-surface-main/10 animate-pulse rounded-md" />
+              <div className="h-3.5 w-24 bg-surface-main/10 animate-pulse rounded-md" />
+            </div>
           </div>
+          <div className="h-4 w-20 bg-surface-main/10 animate-pulse rounded-md" />
         </div>
-        <button className="text-surface-500 title-sm">View Details</button>
-      </div>
-    ))}
+      ))
+    ) : (
+      searchModels.map((model) => (
+        <div
+          key={model.id}
+          className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer transition transition-100"
+          onClick={() => handleModelClick(model)}
+        >
+          <div className="flex items-center gap-2">
+            <LazyImage
+              src={model.backgroundImage}
+              alt={model.name}
+              className="w-8 h-8 rounded-[8px]"
+            />
+            <div className="flex flex-col gap-1 -mt-1">
+              <p className="text-surface-750 title-sm h-3.5 leading-tight">
+                {model.name}
+              </p>
+              <p className="text-surface-500 text-xs h-3.5 leading-normal">
+                {`${model.author} • ${formatParams(model.size)}`}
+              </p>
+            </div>
+          </div>
+          <button className="text-surface-500 title-sm">View Details</button>
+        </div>
+      ))
+    )}
   </div>
 );
 
 const GridView = ({ searchModels, handleModelClick }) => (
   <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
-    {searchModels.slice(0, searchModels.length).map((model) => (
-      <ModelWidget
-        onClick={() => handleModelClick(model)}
-        model={model}
-        key={model.id}
-        className="w-[124px] h-[78px]"
-        LazyImage={LazyImage}
-      />
-    ))}
+    {!searchModels ? (
+      Array.from({ length: 16 }).map((_, index) => (
+        <div
+          key={index}
+          className="w-[124px] h-[78px] bg-surface-main/10 animate-pulse rounded-md"
+        />
+      ))
+    ) : (
+      searchModels.map((model) => (
+        <ModelWidget
+          onClick={() => handleModelClick(model)}
+          model={model}
+          key={model.id}
+          className="w-[124px] h-[78px]"
+        />
+      ))
+    )}
   </div>
 );
-
 export default SearchResults;

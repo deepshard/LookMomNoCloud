@@ -13,7 +13,7 @@ const Search = ({ onModelClick }) => {
   const [search, setSearch] = useState("");
   const [debouncedInput, setDebouncedInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isListView, setIsListView] = useState(true);
+  const [isListView, setIsListView] = useState(false);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
 
   const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);

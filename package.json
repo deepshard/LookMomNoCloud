@@ -38,10 +38,30 @@
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb",
-        "flatpak",
-        "tar.gz"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "flatpak",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "publish": {

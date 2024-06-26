@@ -116,11 +116,10 @@ class ModelManager:
             if (queued_model["model_path"], queued_model["quantization"]) not in cancel_set
         ]
 
-    def reserve_ports(self, ports: list[int]):
-        """Add a series of ports to the queue so `find_port` skips them."""
+    def reserve_port(self, port: int):
+        """Add a port to the queue so `find_port` skips them."""
 
-        for port in ports:
-            self.run_queue.append(port)
+        self.run_queue.append(port)
 
     def clear_reserved_ports(self, ports: list[int]):
         """Remove reserved ports from the queue because the relevant processes are running."""

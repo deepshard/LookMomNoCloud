@@ -18,7 +18,7 @@ const InitializationProgress = () => {
       if (value.progress === 1) {
         setTimeout(() => {
           navigate("/");
-        }, 2500)
+        }, 2500);
       }
     };
 
@@ -72,7 +72,6 @@ const InitializationProgress = () => {
         )
       }
     </AnimatePresence>
-
   );
 };
 

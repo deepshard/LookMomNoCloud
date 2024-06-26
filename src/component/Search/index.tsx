@@ -5,7 +5,6 @@ import { TModel } from "../../types/schemas";
 import { debounce } from "lodash";
 import { useSearchModels } from "../../lib/react-query/queriesAndMutations";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useHomePageContext } from "../../context/HomePageProvider";
 
 interface SearchProps {
@@ -17,7 +16,6 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const [debouncedInput, setDebouncedInput] = useState(search);
   const { data: searchModels, isLoading } = useSearchModels(debouncedInput);
   const [isTyping, setIsTyping] = useState(false);
-  const navigate = useNavigate();
   const { setSearchQuery } = useHomePageContext();
 
   const handleModelClick = (model: TModel) => {

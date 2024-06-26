@@ -1,4 +1,3 @@
-
 export function bytesToHumanReadable(bytes?: number, withUnit = true, decimals = 2): string {
   if (!bytes) return ' - ';
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
@@ -45,4 +44,3 @@ export const toUnitOfCount = (size: number) => {
 export function roundTo(n: number, decimals: number): number {
   return Number(n.toFixed(decimals));
 }
-

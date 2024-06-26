@@ -1,7 +1,31 @@
-import { app, BrowserWindow, session, screen, Menu } from "electron";
+import { app, BrowserWindow, screen, Menu, ipcMain } from "electron";
+import { autoUpdater } from "electron-updater";
 import path from "path";
-import os from "os";
-import { spawn } from "child_process";
+import { OTAUpdater } from "./ota";
+import { spawn, ChildProcess } from "child_process";
+import { log, initializeLogger, endLogger } from "./log";
+import fs from "fs";
+
+autoUpdater.autoDownload = false;
+autoUpdater.forceDevUpdateConfig = true;
+
+let serverProcess: ChildProcess;
+
+const spawnServer = () => {
+  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  if (!fs.existsSync(serverPath)) {
+    log(`Server executable not found at ${serverPath}`);
+    return;
+  }
+  const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
+  const f = fs.openSync(logsPath, "a+");
+  serverProcess = spawn(serverPath, [], {
+    detached: true,
+    cwd: path.join(app.getPath("userData"), "bin", "server"),
+    stdio: ["ignore", f, f],
+  });
+  serverProcess.unref();
+}
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -16,11 +40,13 @@ const createWindow = () => {
     height: 690,
     titleBarStyle: "hidden",
     webPreferences: {
-      // devTools: false,
+      devTools: true,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
   });
+
+  autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
 
   const template = [
     {
@@ -59,13 +85,18 @@ const createWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
+      `.vite/renderer/main_window/index.html`
+      // path.join(__dirname, `../renderer/index.html`)
     );
   }
 
   // Open the DevTools.
-  process.env.NODE_ENV === "development" && mainWindow.webContents.openDevTools();
-  process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
+  mainWindow.setResizable(false);
+
+  if (process.env.NODE_ENV == "dev") {
+    mainWindow.webContents.openDevTools();
+    mainWindow.setResizable(true);
+  }
 
   return mainWindow;
 };
@@ -74,52 +105,59 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
-  const serverProcess = spawn(serverPath, [], {
-    detached: true,
-    cwd: path.join(app.getPath("userData"), "bin", "server"),
+  initializeLogger()
+  spawnServer();
+
+  const window = createWindow();
+  const otaUpdater = new OTAUpdater(window, autoUpdater);
+  ipcMain.on("download-update", otaUpdater.downloadUpdate);
+  ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
+  autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
+  autoUpdater.on("error", (err) => window.webContents.send("error", err));
+  autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
+
+  window.on("ready-to-show", async () => {
+    log("Checking for initial server");
+    const needInitialServer = otaUpdater.checkForInitialServer();
+    if (needInitialServer) {
+      log("Downloading initial server");
+      await otaUpdater.downloadInitialServer();
+    }
+
+    log("Spawning server");
+    spawnServer();
+    log("Checking for updates");
+    await otaUpdater.checkForUpdates();
   });
-  serverProcess.unref();
-
-  // on macOS
-  const reactDevToolsPath = path.join(
-    os.homedir(),
-    "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
-  );
-
-  const reduxTools = path.join(
-    os.homedir(),
-    "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
-  );
-
-  try {
-    await session.defaultSession.loadExtension(reactDevToolsPath);
-    await session.defaultSession.loadExtension(reduxTools);
-  } catch (error) {
-    console.error("Failed to install extension:", error);
-  }
-
-  createWindow();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
+  if (serverProcess) {
+    serverProcess.kill();
+    log("Server process killed");
   }
+  log("Quitting");
+  endLogger();
+  app.quit();
 });
 
 
 
-app.on("activate", () => {
+app.on("activate", async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    const window = createWindow();
+    // const otaUpdater = new OTAUpdater(window, autoUpdater);
+    // ipcMain.on("download-update", otaUpdater.downloadUpdate);
+    // ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
+    // autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
+    // await otaUpdater.checkForUpdates();
   }
 });
 
 // In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+// code. You can also put them in separate files and import them here.d

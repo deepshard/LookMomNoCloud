@@ -8,6 +8,17 @@ import './index.css'
 import 'react-circular-progressbar/dist/styles.css'
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
+import downloadIcon from '../../assets/icons/download.svg'
+//@ts-ignore
+import playIcon from '../../assets/icons/play.svg'
+//@ts-ignore
+import stopIcon from '../../assets/icons/stop.svg'
+//@ts-ignore
+import installIcon from '../../assets/icons/install.svg'
+//@ts-ignore
+import errorIcon from '../../assets/icons/error.svg'
+//@ts-ignore
+import retryIcon from '../../assets/icons/retry.svg'
 
 const OverlaySVG = ({ width = 128, height = 82 }) => (
   <svg
@@ -79,13 +90,6 @@ const ModelWidget = ({
   onCleanup,
   ...props
 }: ModelWidgetProps) => {
-  const downloadIcon = '/src/assets/icons/download.svg'
-  const playIcon = '/src/assets/icons/play.svg'
-  const stopIcon = '/src/assets/icons/stop.svg'
-  const installIcon = '/src/assets/icons/install.svg'
-  const errorIcon = '/src/assets/icons/error.svg'
-  const retryIcon = '/src/assets/icons/retry.svg'
-
   useEffect(() => {
     return () => {
       onCleanup && onCleanup()

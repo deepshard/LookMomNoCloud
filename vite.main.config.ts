@@ -24,6 +24,7 @@ export default defineConfig((env) => {
       // Load the Node.js entry.
       mainFields: ['module', 'jsnext:main', 'jsnext'],
     },
+    base: "./",
   };
 
   return mergeConfig(getBuildConfig(forgeEnv), config);

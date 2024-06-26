@@ -1,13 +1,9 @@
 import { BrowserWindow, app, autoUpdater } from "electron";
 import { AppUpdater } from "electron-updater";
 import path from "path";
-import os from "os";
 import si from "systeminformation";
 import axios from "axios";
 import fs from "fs";
-import zlib from "zlib";
-import stream from "stream";
-import { promisify } from "util";
 import unzipper from 'unzipper';
 
 

@@ -1,4 +1,3 @@
-import { on } from 'events';
 import { infer as Infer, z } from 'zod';
 
 export const SysinfoSchema = z.object({

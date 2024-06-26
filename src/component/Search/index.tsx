@@ -61,8 +61,10 @@ const Search = ({ onModelClick }) => {
           predictionData={predictionData}
         />
         
-        {(isTyping || isSearchLoading) && <h1>loading..</h1>}
+        {(isTyping || isSearchLoading) && (
+      <div className="w-full skeleton-model-widget h-40 bg-gray-200 rounded-md animate-pulse"></div>
 
+)}
         {search.length < 1 ? (
           <div className="w-full flex flex-col justify-between my-14 gap-y-11">
             <SearchSuggestions setSearch={setSearch} />

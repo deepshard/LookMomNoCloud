@@ -1,35 +1,54 @@
-import React from 'react'
+import React from 'react';
+import LazyImage from '../LazyImage';
+import { toUnitOfCount } from '../../utils/sysUtils';
+import { TModel } from '../../types/schemas'; // Adjust this import path as needed
+import { useNavigate } from 'react-router-dom';
 
-function DiscoverItem() {
+interface DiscoverItemProps {
+  model: TModel;
+}
+
+const DiscoverItem: React.FC<DiscoverItemProps> = ({ model }) => {
+  const navigate = useNavigate();
+
+
+
+  const handleNavigate = (model: TModel) => {
+    navigate(`/model/${model.id}`, { state: { model } });
+  };
+
   return (
-    <div className="relative w-[200px] h-[228px] bg-bg-wdget glass-3d rounded-lg flex flex-col p-4 gap-1 justify-end items-start" >
+    <div className="relative w-[200px] h-[228px] bg-bg-wdget glass-3d rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition transition-100" 
+    onClick={() => handleNavigate(model)}
+    >
+      
+      <img
+        src={model.backgroundImage}
+        alt={model.title}
+        className="absolute top-0 left-0 w-full h-full object-cover glass-3d-no-blur"
+      />
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 to-transparent z-2" />
+      
+      <div className="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-1 justify-end items-start z-3">
+        <div className="title-base text-surface-750 -mb-1">{model.title}</div>
         
-        {/* TO DO: ADD IMAGE !! */}
-        <div className="absolute top-0 left-0 w-full h-full blur-md"></div>
-
-        {/* TO DO: ADD GRADUAL BLUR */}
-
-        <div className="title-base text-surface-750 -mb-1">LlaMa–3</div>
-        
-        <div className="flex gap-0 text-xs text-surface-500 leading-tight">
-            <p>Meta</p>
-            <p>•</p>
-            <div className="flex gap-0.5">
-                <p>100k</p>
-                <img
-                    loading="lazy"
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/d204f225717e7431a60f0b4bcf54100583d0c73225b201e1d244a6c6d64c2f74?"
-                    className="shrink-0 my-auto w-1.5 aspect-[0.75]"
-                />
-            </div>
+        <div className="flex gap-1 text-xs text-surface-500 leading-tight">
+          <p>{model.author}</p>
+          <p>•</p>
+          <div className="flex gap-0.5 items-center">
+            <p>{toUnitOfCount(model.downloads)}</p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="7" height="9" viewBox="0 0 7 9" fill="none">
+  <path d="M3.25585 0.5C3.05005 0.5 2.90361 0.652462 2.90361 0.872683V6.45023L2.94319 7.71227L3.16482 7.62758L1.74794 5.9632L0.845565 5.01455C0.786202 4.94679 0.691215 4.91291 0.596228 4.91291C0.398339 4.91291 0.255859 5.07384 0.255859 5.28136C0.255859 5.383 0.291479 5.47194 0.366677 5.55664L2.99068 8.37294C3.06588 8.45762 3.15691 8.5 3.25585 8.5C3.3548 8.5 3.44583 8.45762 3.52103 8.37294L6.14898 5.55664C6.22419 5.47194 6.25586 5.383 6.25586 5.28136C6.25586 5.07384 6.11338 4.91291 5.91548 4.91291C5.82049 4.91291 5.72946 4.94679 5.66614 5.01455L4.76376 5.9632L3.34292 7.62758L3.56852 7.71227L3.6081 6.45023V0.872683C3.6081 0.652462 3.46166 0.5 3.25585 0.5Z" fill="white" fill-opacity="0.5"/>
+</svg>
+          </div>
         </div>
         
         <div className="mt-1 text-xs text-surface-500 line-clamp-3">
-            Today, we’re introducing DeepSeek-V2, a strong Mixture-of-Experts (MoE)
-            language models, and im adding more text to see if it gets truncated
+          {model.intro}
         </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default DiscoverItem
+export default DiscoverItem;

@@ -62,12 +62,32 @@ export const useGetModel = (model?: Partial<TModel> | null) => {
   })
 }
 
+export const useGetNews = () => {
+  const dummyNewsData = Array.from({ length: 3 }, (_, index) => ({
+    id: `id-${index + 1}`,
+    title: `News Title ${index + 1}`,
+    content: `This is the content for news item ${index + 1}. Here's some more detailed information about the news event.`,
+    imageUrl: index % 3 === 0 ? `https://example.com/image${index + 1}.jpg` : undefined,
+    userProfilePicture: `/src/assets/images/llama1.png`,
+    url: `https://example.com/news/${index + 1}`,
+    createdAt: new Date().toISOString(),
+  }));
+  return useQuery({
+    queryKey: ["models-news"],
+    queryFn: () => {
+      return getNews()
+    },
+    refetchOnWindowFocus: false,
+    initialData: dummyNewsData
+  })
+}
 export const useGetPrediction = (text: string) => {
   return useQuery({
-    queryKey: ["prediction", text],
+    queryKey: ["search-prediction", text],
     queryFn: () => {
       return getPrediction(text)
-    }
+    },
+    enabled: !!text
   })
 };
 

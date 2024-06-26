@@ -19,7 +19,13 @@ from truffle_types import (
     SystemResources,
 )
 
-from utils import get_app_data_path, get_disk_usage, get_devices
+from utils import (
+    get_app_data_path,
+    get_disk_usage,
+    get_devices,
+    get_usable_memory,
+    get_total_memory,
+)
 from db import get_db_session
 
 
@@ -30,12 +36,12 @@ async def get_sysinfo() -> SystemInfo:
     models_data = await get_models_data()
     resources = SystemResources(
         available=SystemResourceDetails(
-            ram=psutil.virtual_memory().available,
+            ram=get_usable_memory(False),
             disk=psutil.disk_usage("/").free,
         ),
         models=models_data,
         total=SystemResourceDetails(
-            ram=psutil.virtual_memory().total,
+            ram=get_total_memory(),
             disk=psutil.disk_usage("/").total,
         ),
     )

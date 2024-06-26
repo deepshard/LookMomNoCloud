@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { debounce } from "lodash";
-import { useNavigate } from "react-router-dom";
 import {
   useSearchModels,
   useGetPrediction,
@@ -26,7 +25,6 @@ const Search = ({ onModelClick }) => {
   const { data: predictionData } = useGetPrediction(search)
   const { data: featuredData } = useGetFeatured()
 
-  const navigate = useNavigate();
   const { setSearchQuery } = useHomePageContext();
   const inputRef = useRef(null);
 

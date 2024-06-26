@@ -1,6 +1,7 @@
-import { app, BrowserWindow, session, screen, Menu} from "electron";
+import { app, BrowserWindow, session, screen, Menu } from "electron";
 import path from "path";
 import os from "os";
+import { spawn } from "child_process";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -11,8 +12,8 @@ const createWindow = () => {
   const factor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 950 ,
-    height: 690 ,
+    width: 950,
+    height: 690,
     titleBarStyle: "hidden",
     webPreferences: {
       // devTools: false,
@@ -30,22 +31,28 @@ const createWindow = () => {
         { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
         { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
       ]
+    },
+    {
+      label: "Version",
+      submenu: [
+        { label: `${app.getVersion()}`, enabled: false },
+      ]
     }
   ];
 
   setTimeout(() => {
     mainWindow.webContents.setZoomLevel(0);
   }, 100);
-  
+
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
-  
-    // Disable zoom shortcuts
-    mainWindow.webContents.on("before-input-event", (event, input) => {
-      if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
-        event.preventDefault();
-      }
-    });
+
+  // Disable zoom shortcuts
+  mainWindow.webContents.on("before-input-event", (event, input) => {
+    if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
+      event.preventDefault();
+    }
+  });
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -67,7 +74,13 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  // todo: spawn the flask server here
+  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  const serverProcess = spawn(serverPath, [], {
+    detached: true,
+    cwd: path.join(app.getPath("userData"), "bin", "server"),
+  });
+  serverProcess.unref();
+
   // on macOS
   const reactDevToolsPath = path.join(
     os.homedir(),

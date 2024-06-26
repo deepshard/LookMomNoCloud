@@ -108,6 +108,7 @@ input::placeholder,
 
 .ant-input {
   outline: none !important;
+  color: #fff !important;
 }
 
 .ant-input:hover,

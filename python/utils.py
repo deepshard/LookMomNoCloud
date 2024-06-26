@@ -247,8 +247,8 @@ def get_db_path():
     return os.getenv(
         "DATABASE_URL",
         (
-            f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.db')}"
-            if os.getenv("ENV") == "prod"
-            else f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.test.db')}"
+            f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.test.db')}"
+            if os.getenv("ENV") == "dev"
+            else f"sqlite+aiosqlite:///{str(get_app_data_path() / 'truffle.db')}"
         ),
     )

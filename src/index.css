@@ -4,43 +4,43 @@
 
 @font-face {
   font-family: 'TruffleRegular'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Regular.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Regular.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Italic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Italic.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleBoldItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-BoldItalic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-BoldItalic.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleBold'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Bold.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Bold.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleLight'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Light.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Light.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleLightItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-LightItalic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-LightItalic.otf'); /*URL to font*/
 }
 
 @font-face {
   font-family: 'TruffleMedium'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-Medium.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-Medium.otf'); /*URL to font*/
 }
 
 
 @font-face {
   font-family: 'TruffleMediumItalic'; /*a name to be used later*/
-  src: url('/src/assets/fonts/NeueMontreal-MediumItalic.otf'); /*URL to font*/
+  src: url('../src/assets/fonts/NeueMontreal-MediumItalic.otf'); /*URL to font*/
 }
 
 
@@ -82,8 +82,9 @@ body {
   display: flex;
   flex-direction: column;
   overflow: auto;
-  background: url("/src/assets/images/truffle-background.png");
-  box-shadow: 0px 20px 50px 0px rgba(0, 0, 0, 0.25),
+  background: url("../src/assets/images/truffle-background.png");
+  box-shadow:
+    0px 20px 50px 0px rgba(0, 0, 0, 0.25),
     0px 0px 100px 0px rgba(255, 255, 255, 0.1) inset,
     0px 3.59px 89.756px 0px rgba(0, 0, 0, 0.1),
     0px 0px 44.878px 0px rgba(255, 255, 255, 0.1) inset;
@@ -198,7 +199,6 @@ div.slick-slide>div {
 .sys-info-hardware>.ant-carousel {
   border-radius: 24px;
   overflow: hidden;
-
 }
 
 .my-models-container>.ant-carousel {
@@ -210,6 +210,34 @@ div.slick-slide>div {
   }
 }
 
+.ant-progress.ant-progress-status-success .ant-progress-bg {
+  /* background-color: red; */
+}
+.ant-progress .ant-progress-inner {
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.1);
+
+  /* Glass-Texture/3D */
+  box-shadow:
+    0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+    0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset,
+    0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+    0px 0px 15px 0px rgba(85, 85, 85, 0.1);
+  backdrop-filter: blur(50px);
+}
+.ant-progress .ant-progress-bg,
+.ant-progress.ant-progress-status-success .ant-progress-bg {
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.1);
+
+  /* Glass-Texture/3D */
+  box-shadow:
+    0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+    0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset,
+    0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
+    0px 0px 15px 0px rgba(85, 85, 85, 0.1);
+  backdrop-filter: blur(50px);
+}
 
 @layer base {}
 
@@ -324,9 +352,18 @@ div.slick-slide>div {
     @apply bg-[radial-gradient(ellipse_at_top, _var(--tw-gradient-stops))] !important;
   }
 
+  .truffle-btn {
+    @apply bg-surface-100 border-none glass-3d text-surface-main rounded hover:text-red-300;
+  }
+
+  .truffle-btn.ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
+    @apply text-black/70 bg-surface-main !important;
+  }
+
   .glass-3d {
     @apply !important;
-    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+    box-shadow:
+      0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
       0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset,
       0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
       0px 0px 15px 0px rgba(85, 85, 85, 0.1);
@@ -335,7 +372,8 @@ div.slick-slide>div {
 
   .glass-3d-no-blur {
     @apply !important;
-    box-shadow: 0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
+    box-shadow:
+      0px 4px 30px 0px rgba(255, 255, 255, 0.15) inset,
       0px -4px 20px 0px rgba(85, 85, 85, 0.1) inset,
       0px 0px 8.976px 0px rgba(255, 255, 255, 0.1) inset,
       0px 0px 15px 0px rgba(85, 85, 85, 0.1);
@@ -376,10 +414,13 @@ div.slick-slide>div {
   .animate-modal {
     @apply fixed top-0 w-full h-full;
     backdrop-filter: blur(75px);
-    background: linear-gradient(0deg,
-        rgba(0, 0, 0, 0.5) 0%,
-        rgba(0, 0, 0, 0.5) 100%),
-      rgba(255, 255, 255, 0.1);
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
+  }
+
+  .update {
+    @apply fixed top-0 w-full h-full flex-center-x;
+    backdrop-filter: blur(75px);
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
   }
 
   .clip-rectangle {
@@ -414,13 +455,12 @@ div.slick-slide>div {
     }
   }
 
-
   .sys-info-hardware-carousel {
     @apply w-80 h-80 relative !important;
   }
 
   .sys-info-hardware-carousel::before {
-    content: '';
+    content: "";
     @apply widget-3d absolute top-0 left-0 w-full h-full overflow-hidden;
   }
 
@@ -429,17 +469,15 @@ div.slick-slide>div {
   }
 
   .sysinfo-model-item::before {
-    content: '';
+    content: "";
     @apply absolute top-0 left-0 bottom-10 w-full h-full rounded-sm bg-surface-100;
     backdrop-filter: blur(30px);
   }
 
   .hide-scrollbar {
     /* Hide scrollbar for IE, Edge, and Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 
     /* Hide scrollbar for Chrome, Safari and Opera */
     &::-webkit-scrollbar {

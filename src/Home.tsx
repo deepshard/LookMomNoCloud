@@ -130,7 +130,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <AnimateModal show={true} onClose={() => setShowSearch(false)}>
+      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
         <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>

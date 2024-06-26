@@ -1,10 +1,8 @@
 
 // @ts-ignore
 import warningIcon from '../../assets/icons/warning.svg'
-interface NoResultsProps extends React.HTMLAttributes<HTMLDivElement> {
-    
-}
-const NoResults = ({className='', ...props}: NoResultsProps) => {
+
+const NoResults = ({className='', ...props}: React.HTMLAttributes<HTMLDivElement>) => {
   return (
     <div className={`text-surface-400 bg-surface-500 rounded-sm flex-center gap-2 ${className}`} {...props}>
         <img src={warningIcon} alt="no results" />

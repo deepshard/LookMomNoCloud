@@ -19,8 +19,17 @@ export const getModel = async (id: string): Promise<TModel> => {
   return response.data;
 }
 
-
 export const getFeatured = async (): Promise<TModel[]> => {
   const response = await cloudClient.get(`/models/featured`);
+  return response.data;
+}
+
+export const getTrendingModels = async (): Promise<TModel[]> => {
+  const response = await cloudClient.get(`/models/trending?k=100`);
+  return response.data;
+}
+
+export const getNewModels = async (): Promise<TModel[]> => {
+  const response = await cloudClient.get(`/models/new?k=100`);
   return response.data;
 }

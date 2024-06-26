@@ -38,7 +38,7 @@ const NavBar = () => {
     <div className="navbar">
       <div className="bg-transparent h-5 w-5 rounded-full" />
 
-      <div className="flex w-full max-w-[660px] gap-3 justify-start items-center">
+      <div className="flex w-full max-w-[660px] gap-3 justify-start items-center cursor-pointer">
         <div className="flex justify-start items-center gap-1.5">
           <img
             src={getWelcomeInfo().icon}
@@ -65,7 +65,12 @@ const NavBar = () => {
       
       
 
-      <div className="bg-surface-500 h-5 w-5 rounded-full" />
+      <div className="h-5 w-5 rounded-full cursor-pointer">
+        <img
+          src="/src/assets/icons/gear.svg"
+          className="w-5 h-5"
+        />
+      </div>
     </div>
   );
 };

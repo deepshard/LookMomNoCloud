@@ -209,6 +209,9 @@ div.slick-slide>div {
   }
 }
 
+.ant-progress.ant-progress-status-success .ant-progress-bg {
+  /* background-color: red; */
+}
 .ant-progress .ant-progress-inner {
   border-radius: 100px;
   background: rgba(0, 0, 0, 0.1);
@@ -221,7 +224,8 @@ div.slick-slide>div {
     0px 0px 15px 0px rgba(85, 85, 85, 0.1);
   backdrop-filter: blur(50px);
 }
-.ant-progress .ant-progress-bg {
+.ant-progress .ant-progress-bg,
+.ant-progress.ant-progress-status-success .ant-progress-bg {
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.1);
 

@@ -3,6 +3,7 @@ import multiprocessing
 import asyncio
 import aiohttp
 import json
+import socket
 from pathlib import Path
 from loguru import logger
 from enum import Enum
@@ -15,7 +16,6 @@ from endpoints.model.stop import stop_model_handler
 from endpoints.model.install.install import convert_quantize_compile
 from utils import (
     get_app_data_path,
-    find_port,
     does_quantization_exist,
     is_convertable_format,
     get_model_size_info,
@@ -71,6 +71,17 @@ class ProgressEvent:
 
     def __str__(self):
         return f"data: {self.to_json()}\n\n"
+
+
+def find_port(port: int = 8899) -> int:
+    """Find an open port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if (
+            s.connect_ex(("localhost", port)) == 0
+            or port in global_state_manager.model_manager.run_queue
+        ):
+            return find_port(port + 1)
+        return port
 
 
 async def get_instances(model_ids: list[str]) -> list[int]:
@@ -224,9 +235,6 @@ async def run_model(
         quantization,
     )
 
-    # Add port to model manager run queue
-    global_state_manager.model_manager.add_to_run_queue(model_path, quantization, port)
-
     # Start the model server as a separate process
     proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
     proc.start()
@@ -251,9 +259,6 @@ async def run_model(
             )
         )
         await session.commit()
-
-    # Remove the model from the run queue
-    global_state_manager.model_manager.remove_from_run_queue(model_path, quantization, port)
 
     return ProgressEvent(model_id, Status.RUNNING, instance, port)
 
@@ -287,7 +292,6 @@ async def run_models_generator(model_ids: list[str]):
     # Immediately reserve port numbers for the models
     ports = [find_port() for _ in model_ids]
     global_state_manager.model_manager.reserve_ports(ports)
-        
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")

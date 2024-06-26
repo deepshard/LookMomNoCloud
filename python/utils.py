@@ -6,7 +6,6 @@ import socket
 import subprocess
 import tvm
 from pathlib import Path
-from state import global_state_manager
 from truffle_types import FileInfo, Quantization
 
 
@@ -32,14 +31,6 @@ def get_app_data_path() -> Path:
         return Path(os.path.expanduser("~/.config")) / "truffle-app"
     else:
         raise ValueError(f"Unsupported system: {system}")
-
-
-def find_port(port: int = 8899) -> int:
-    """Find an open port."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        if s.connect_ex(("localhost", port)) == 0 or port in global_state_manager.model_manager.run_queue:
-            return find_port(port + 1)
-        return port
 
 
 def does_quantization_exist(model_id: str, quantization: Quantization) -> bool:

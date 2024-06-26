@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock
 from pathlib import Path
 from state import global_state_manager
-from endpoints.model.run.run import run_models_generator, get_instances
+from endpoints.model.run.run import run_models_generator, find_port, get_instances
 from models import RunningModel
 from db import get_db_session
 from tests.unit.data import ID, ID_2, MOCK_VALID_FILES
@@ -178,7 +178,18 @@ async def test_run_quantization_exists(session_fixture, mock_mlc, model_weights,
 async def test_run_multiple_models(session_fixture, mock_mlc, model_weights, mocker):
     # Mocks
     session_fixture("endpoints.model.run.run")
-    find_port = mocker.patch("endpoints.model.run.run.find_port", return_value=8899)
+
+    find_port = mocker.patch("endpoints.model.run.run.find_port")
+
+    def mock_find_port():
+        if find_port.call_count == 1:
+            return 8899
+        if find_port.call_count == 2:
+            return 8900
+        if find_port.call_count == 3:
+            return 8901
+
+    find_port.side_effect = mock_find_port
 
     # Prepare JSON streaming responses as they would be sent from the generator
     stream = run_models_generator([ID, ID, ID_2])
@@ -187,15 +198,6 @@ async def test_run_multiple_models(session_fixture, mock_mlc, model_weights, moc
     responses = []
     async for response in stream:
         responses.append(json.loads(response[5:]))
-
-        if len(response) == 3:
-            assert len(global_state_manager.model_manager.run_queue) == 2
-
-        if len(responses) == 2:
-            find_port.return_value = 8900
-
-        if find_port.call_count == 1:
-            find_port.return_value = 8901
 
     # Check the responses
     assert len(global_state_manager.model_manager.run_queue) == 0
@@ -522,3 +524,12 @@ async def test_run_get_instance_count(session_fixture, model_weights, mocker):
         {"model_id": ID_2, "instance": 2},
         {"model_id": "new_model", "instance": 1},
     ]
+
+
+def test_find_port_run_queue(mocker):
+    mocker.patch("utils.socket.socket.connect_ex", return_value=1)
+
+    assert find_port() == 8899
+
+    global_state_manager.model_manager.reserve_ports([8899])
+    assert find_port() == 8900

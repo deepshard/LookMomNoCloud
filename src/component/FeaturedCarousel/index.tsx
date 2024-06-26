@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef } from "react";
 import Carousel from "../Carousel/Carousel";
 import Featured from "../Featured";
 import { useGetNews } from "../../lib/react-query/queriesAndMutations";

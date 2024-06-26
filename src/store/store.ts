@@ -8,6 +8,8 @@ interface State {
   setHighlights: (highlights: TModel[]) => void;
   downloads: { [key: string]: TModel };
   setDownloads: (downloadedModels: TModel[]) => void;
+  retries: { [key: string]: TModel };
+  setRetries: (retries: { [key: string]: TModel }) => void;
   updateModels: (model: TModel) => void;
   onDeleteModel: (model: TModel) => void;
   clearData: () => void;
@@ -40,8 +42,11 @@ export const useStore = create<State>((set) => ({
     })
     return { ...stateCp, downloads: stateCp.downloads, highlights: stateCp.highlights }
   }),
+  retries: {},
+  setRetries: (retries) => set({ retries }),
   updateModels: (model) => set((state) => {
-    const highlights = state.highlights.map((highlight) => {
+    const stateCp = { ...state }
+    const highlights = stateCp.highlights.map((highlight) => {
       if (highlight.id === model.id) {
         return { ...highlight, ...model }
       }

@@ -14,6 +14,7 @@ interface ModelCarouselProps {
   stopModel: (...args: any) => void
   cleanupInstall: (...args: any) => void
   onModelClick: (...args: any) => void
+  onRetry: (...args: any) => void
 }
 
 const getSortValue = (status: string) => {
@@ -35,7 +36,7 @@ const getSortValue = (status: string) => {
   }
 }
 
-const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick  }) => {
+const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick, onRetry  }) => {
   const skeletonCount = 5
   const [showModels, setShowModels] = useState(false)
   const carouselInnerRef = useRef<HTMLDivElement>(null)
@@ -114,6 +115,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
                   onRun={() => runModels(model)}
                   onStop={() => stopModel(model)}
                   onCleanup={() => cleanupInstall(model)}
+                  onRetry={() => onRetry(model)}
                 />
               </motion.div>
             ))}

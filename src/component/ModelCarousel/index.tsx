@@ -111,7 +111,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
                 <ModelWidget
                   key={`${model.id}`}
                   model={model}
-                  disabled={!canFitOnMachine(model.size, sysInfo?.resources.total.ram || 0, sysInfo?.resources.total.disk || 0)}
+                  disabled={!canFitOnMachine(model.size, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)}
                   className="flex-shrink-0"
                   onClick={() => onModelClick(model)}
                   onInstall={() => installModel(model)}

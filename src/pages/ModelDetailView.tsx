@@ -11,6 +11,8 @@ import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
+import { canFitOnMachine } from "../utils/sysUtils";
+import Tooltip from "../component/common/Tooltip";
 // @ts-ignore
 import installIcon from "../assets/icons/install.svg";
 // @ts-ignore
@@ -29,6 +31,8 @@ import closeIcon from "../assets/icons/close.svg";
 import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
 // @ts-ignore
 import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
+//@ts-ignore
+import errorIcon from '../assets/icons/error.svg'
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -170,6 +174,49 @@ function ModelDetailView() {
     }
   };
 
+  const getNotDownloadedIcon = () => {
+    if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
+      return (
+        <Icon
+          src={downloadIcon}
+          imgClassName="h-[11px] w-[11px]"
+          className="w-auto flex-center gap-2 px-[24px] text-white"
+          onClick={() => {
+            modelData &&
+              installModel(modelData, undefined, (progress) => {
+                updateModels({
+                  ...modelData,
+                  ...progress,
+                });
+              });
+          }}>
+          <p className="text-sm">Install</p>
+        </Icon>
+      );
+    } else {
+      return (
+        <Tooltip
+          overlayClassName="rounded-sm glass-3d"
+          overlayInnerStyle={{
+            color: 'surface-500',
+            padding: '10px',
+            fontSize: '12px',
+          }}
+          placement="bottom"
+          color="transparent"
+          title={"This model cannot fit in either the total memory or the available storage"}
+        >
+          <Icon
+            src={errorIcon}
+            imgClassName="h-[11px] w-[11px]"
+            className="gap-2"
+          >
+          </Icon>
+        </Tooltip>
+      )
+    }
+  }
+
   return (
     <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center bg-black overflow-auto hide-scrollbar ">
       {/* Nav Bar */}
@@ -220,21 +267,9 @@ function ModelDetailView() {
               />
             </>
           ) : (
-            <Icon
-              src={downloadIcon}
-              imgClassName="h-[11px] w-[11px]"
-              className="w-auto flex-center gap-2 px-[24px] text-white"
-              onClick={() => {
-                modelData &&
-                  installModel(modelData, undefined, (progress) => {
-                    updateModels({
-                      ...modelData,
-                      ...progress,
-                    });
-                  });
-              }}>
-              <p className="text-sm">Install</p>
-            </Icon>
+            <>
+              {getNotDownloadedIcon()}
+            </>
           )}
 
           {/* Close Icon */}

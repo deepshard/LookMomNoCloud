@@ -7,8 +7,6 @@ import { useSearchModels, useGetPrediction } from "../../lib/react-query/queries
 import { useHomePageContext } from "../../context/HomePageProvider";
 import { TModel } from "../../types/schemas";
 import NoResults from "./NoResults";
-import { useAppStore } from '../../store/store'
-import { canFitOnMachine } from '../../utils/sysUtils'
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
@@ -20,7 +18,6 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
   const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
-  const { sysInfo } = useAppStore();
   const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);
   const { data: predictionData } = useGetPrediction(search);
 
@@ -85,7 +82,6 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
           <ModelWidget
             onClick={() => handleModelClick(model)}
             model={model}
-            disabled={!canFitOnMachine(model.size, sysInfo?.resources.total.ram || 0, sysInfo?.resources.total.disk || 0)}
             key={model.id}
             className="w-[124px] h-[78px]"
           />

@@ -218,18 +218,6 @@ const ModelWidget = ({
     }
   }
 
-  const getOverlay = () => {
-    if (disabled) {
-      return "bg-gray-500/85"
-    }
-
-    if (model.status === 'RUNNING') {
-      return "bg-black/70"
-    }
-
-    return "bg-black/10"
-  }
-
   return (
     <div className="relative" {...props}>
       {model.status === 'RUNNING' && (
@@ -238,15 +226,15 @@ const ModelWidget = ({
         </div>
       )}
       <div
-        className={`model-widget base-regular ${className} relative`}
+        className={`model-widget base-regular ${className} relative ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
       >
-        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
+        <img src={model.backgroundImage} alt="" className={`w-full h-full absolute inset-0 object-cover ${disabled && "blur-md"}`} />
   
         <div
           className={`
             absolute inset-0
             h-full w-full
-            ${getOverlay()}
+            ${model.status === 'RUNNING' ? 'bg-black/70' : 'bg-black/10'}
           `}
         >
           <OverlaySVG />

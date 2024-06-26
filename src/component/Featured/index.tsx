@@ -9,7 +9,6 @@ interface FeaturedProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Featured = ({ news, isLoading = true, className, ...props }: FeaturedProps) => {
-  console.log();
   return (
     <div className={`w-full h-[150px] relative overflow-hidden cursor-pointer ${className}`} {...props}>
       <div className="absolute top-0 left-0 p-5 w-full">

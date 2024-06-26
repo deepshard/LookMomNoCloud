@@ -6,6 +6,7 @@ import ModelWidget from "../ModelWidget";
 import { useSearchModels, useGetPrediction } from "../../lib/react-query/queriesAndMutations";
 import { useHomePageContext } from "../../context/HomePageProvider";
 import { TModel } from "../../types/schemas";
+import NoResults from "./NoResults";
 
 interface SearchProps {
   recentlyUsedModels?: TModel[];
@@ -69,8 +70,12 @@ const Search = ({ recentlyUsedModels, onModelClick }: SearchProps) => {
 
 
   const renderSearchResults = () => {
-    if (isTyping || isSearchLoading) return <div>loading...</div>;
-    if (!searchModels) return <p>No results</p>;
+    if (isTyping || isSearchLoading) {
+      return <div>loading...</div>
+    }
+    if (!searchModels || searchModels.length === 0) {
+      return <NoResults className="min-w-[628px] min-h-[300px] mt-[94px]" />
+    }
     return (
       <div className="grid grid-cols-4 gap-x-[44px] gap-y-[33px] mt-[42px]">
         {searchModels.slice(0, 12).map((model) => (

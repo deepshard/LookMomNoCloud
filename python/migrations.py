@@ -2,6 +2,9 @@ import os
 from alembic.config import Config
 from alembic import command
 from utils import get_db_path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_alembic_path():

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FC } from 'react'
+import { useState, useEffect, FC } from 'react'
 import './index.css'
 
 interface CarouselProps {
@@ -29,21 +29,24 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
   }
 
   return (
-    <div className="carousel">
-      {cards.map((card, index) => (
-        <div key={card.id} className={`${getCardStyle(index)}`}>
-          <div className="card-content glass-3d">
-            <div className="card-header">
-              <img src={card.icon} className='icon' alt="icon" />
-              <h3 className="card-title">{card.title}</h3>
+    <div className="carousel-container">
+      <div className="carousel-backdrop widget-3d"></div>
+      <div className="carousel-content">
+        {cards.map((card, index) => (
+          <div key={card.id} className={`${getCardStyle(index)} cursor-pointer`}>
+            <div className="card-content glass-3d">
+              <div className="card-header">
+                <img src={card.icon} className='icon' alt="icon" />
+                <h3 className="card-title">{card.title}</h3>
+              </div>
+              <div className="card-divider"></div>
+              <p className="card-description text-surface-500">{card.content}</p>
             </div>
-            <div className="card-divider"></div>
-            <p className="card-description text-surface-500">{card.content}</p>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
 
-export default Carousel
+export default Carousel;

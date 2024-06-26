@@ -81,12 +81,7 @@ export default function Home() {
                 <FeaturedCarousel />
 
                 <div className="w-full flex justify-between gap-5">
-                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
-                    <div className="">
-                      <Placeholder />
-                    </div>
-                    <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
-                  </div>
+                  <Placeholder />
                 </div>
               </div>
               <SystemInfoHardwareCarouselProvider>

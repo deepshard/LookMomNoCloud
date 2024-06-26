@@ -1,9 +1,29 @@
-.carousel {
+.carousel-container {
+    position: relative;
+    width: 320px;
+    height: 150px;
+    cursor: pointer;
+    /* Adjust as needed */
+}
+
+.carousel-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Add any additional styles for the widget-3d class here */
+}
+
+.carousel-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 200px;
-    perspective: 1000px;
 }
 
 .card {
@@ -78,10 +98,10 @@
 
 .card.next {
     z-index: 2;
-    transform: translateX(50%) translateZ(-50px) rotateY(-35deg) scale(0.85);
+    transform: translateX(40%) translateZ(-60px) rotateY(-45deg) scale(0.85);
 }
 
 .card.prev {
     z-index: 1;
-    transform: translateX(-50%) translateZ(-50px) rotateY(35deg) scale(0.85);
+    transform: translateX(-40%) translateZ(-60px) rotateY(45deg) scale(0.85);
 }

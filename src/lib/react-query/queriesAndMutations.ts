@@ -63,7 +63,7 @@ export const useGetModel = (model?: Partial<TModel> | null) => {
 
 export const useGetPrediction = (text: string) => {
   return useQuery({
-    queryKey: ["prediction", text],
+    queryKey: ["search-prediction", text],
     queryFn: () => {
       return getPrediction(text)
     }

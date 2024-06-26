@@ -36,7 +36,15 @@ jobs:
           security list-keychains -d user -s build.keychain
           security find-identity -v -p codesigning
 
-      - run: NODE_ENV=production AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} ./publish.sh
+      - name: Publish
+        run: |
+          latest_version=$(curl -s https://truffle-fe.s3.amazonaws.com/latest-mac.yml | grep "version:" | awk '{print $2}')
+          echo "** Latest version: $latest_version **"
+          new_version=$(echo $latest_version | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          sed -i.bak "s/\"version\": \".*\"/\"version\": \"$new_version\"/" package.json && rm package.json.bak
+          bun electron-forge make
+          NODE_ENV=production AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} bun electron-builder build --mac --linux --publish always
 
       - name: Notify Slack
         if: always()
@@ -45,6 +53,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Frontend app release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
+            New version: ${{ steps.publish.outputs.new_version }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

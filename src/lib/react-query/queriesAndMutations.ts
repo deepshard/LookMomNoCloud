@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getHighlights } from "../../api/general";
-import { deleteModel, getMyModels, getModel, searchModels, stopModel } from "../../api/model";
+import { deleteModel, getMyModels, getModel, searchModels, stopModel, getPrediction } from "../../api/model";
 import { TModel } from "../../types/schemas";
 
 export const useGetHighlights = () => {
@@ -60,3 +60,13 @@ export const useGetModel = (model?: Partial<TModel> | null) => {
     },
   })
 }
+
+export const useGetPrediction = (text: string) => {
+  return useQuery({
+    queryKey: ["search-prediction", text],
+    queryFn: () => {
+      return getPrediction(text)
+    },
+    enabled: !!text
+  })
+};

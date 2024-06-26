@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "antd";
 
-const SearchInput = ({ search, setSearch, predictionData }) => {
-  const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] = useState("");
+interface PredictionItem {
+  title: string;
+}
+
+interface SearchInputProps {
+  search: string;
+  setSearch: (value: string) => void;
+  predictionData?: PredictionItem[];
+}
+
+const SearchInput: React.FC<SearchInputProps> = ({ search, setSearch, predictionData }) => {
+  const [caseSensitivePredictiveText, setCaseSensitivePredictiveText] = useState<string>("");
 
   useEffect(() => {
     updateCaseSensitivePredictiveText();
@@ -27,11 +37,11 @@ const SearchInput = ({ search, setSearch, predictionData }) => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Tab" && predictionData?.[0]?.title) {
       e.preventDefault();
       setSearch(predictionData[0].title);

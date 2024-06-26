@@ -1,11 +1,18 @@
-
-// SearchSuggestions.jsx
 import React from "react";
 
-const SearchSuggestions = ({ setSearch }) => {
+interface Suggestion {
+  title: string;
+  count: number;
+}
+
+interface SearchSuggestionsProps {
+  setSearch: (search: string) => void;
+}
+
+const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ setSearch }) => {
   const searchIcon = "/src/assets/icons/search-suggestions.svg";
 
-  const suggestions = [
+  const suggestions: Suggestion[] = [
     { title: "Best math models", count: 65 },
     { title: "Best models for code", count: 279 },
   ];
@@ -24,7 +31,12 @@ const SearchSuggestions = ({ setSearch }) => {
   );
 };
 
-const SuggestionItem = ({ title, count, icon, onClick }) => (
+interface SuggestionItemProps extends Suggestion {
+  icon: string;
+  onClick: () => void;
+}
+
+const SuggestionItem: React.FC<SuggestionItemProps> = ({ title, count, icon, onClick }) => (
   <div
     onClick={onClick}
     className="bg-bg-wdget rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"

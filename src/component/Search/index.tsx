@@ -43,8 +43,8 @@ const Search = ({ onModelClick }) => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="w-full mt-32 max-w-[660px] flex flex-col justify-start items-center">
+    <div className="w-full h-full flex flex-col items-center">
+      <div className="w-full h-full mt-32 max-w-[660px] flex flex-col justify-start items-center">
         <SearchInput search={search} setSearch={setSearch} predictionData={predictionData} />
 
         {(isTyping || isSearchLoading) && <div className="w-full skeleton-model-widget h-40 bg-gray-200 rounded-md animate-pulse"></div>}
@@ -58,7 +58,11 @@ const Search = ({ onModelClick }) => {
         )}
       </div>
 
+{ search.length < 1 && (
       <DiscoverSection />
+)
+}
+
     </div>
   );
 };

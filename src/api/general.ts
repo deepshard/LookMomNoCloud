@@ -25,11 +25,11 @@ export const getFeatured = async (): Promise<TModel[]> => {
 }
 
 export const getTrendingModels = async (): Promise<TModel[]> => {
-  const response = await client.get(`/models/trending?k=100`);
+  const response = await client.get(`/models/trending?k=40`);
   return response.data;
 }
 
 export const getNewModels = async (): Promise<TModel[]> => {
-  const response = await client.get(`/models/new?k=100`);
+  const response = await client.get(`/models/new?k=40`);
   return response.data;
 }

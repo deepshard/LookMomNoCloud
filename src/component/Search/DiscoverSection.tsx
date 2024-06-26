@@ -84,7 +84,19 @@ const DiscoverGrid: React.FC<DiscoverGridProps> = ({ activeTab }) => {
   const error = activeTab === "Trending" ? trendingError : newError;
   const models = activeTab === "Trending" ? trendingModels : newModels;
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="w-full p-8 grid grid-cols-4 gap-x-6 gap-y-6">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <div
+            key={index}
+            className="relative w-[200px] h-[228px] bg-bg-wdget glass-3d rounded-lg overflow-hidden animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
+
   if (error) return <div>Error loading models</div>;
 
   return (

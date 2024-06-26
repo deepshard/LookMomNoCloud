@@ -13,11 +13,11 @@ const DiscoverItem: React.FC<DiscoverItemProps> = ({ model }) => {
 
   useEffect(() => {
     const img = new Image();
-    img.src = "https://picsum.photos/200/300"
+    img.src = model.backgroundImage;
     img.onload = () => setImageLoaded(true);
   }, []);
 
-  const handleNavigate = (model: TModel) => {
+  const handleNavigate = (model: TModel ) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
 
@@ -39,8 +39,8 @@ const DiscoverItem: React.FC<DiscoverItemProps> = ({ model }) => {
         }} />
       ) : (
         <img
-          // src={model.backgroundImage}
-          src="https://picsum.photos/200/300"
+          src={model.backgroundImage}
+          // src="https://picsum.photos/200/300"
           alt={model.title}
           className="absolute top-0 left-0 w-full h-full object-cover"
         />

@@ -37,7 +37,7 @@ export const toUnitOfCount = (size: number) => {
   } else if (size >= 1e3) {
     return `${(size / 1e3).toFixed(1)}K`;
   } else {
-    return `${size}B`;
+    return `${size}`;
   }
 
 }

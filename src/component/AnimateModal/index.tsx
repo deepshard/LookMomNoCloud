@@ -24,7 +24,7 @@ const AnimateModal = ({children, show, onClose}: AnimateModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className='animate-modal '
+          className='animate-modal overflow-auto max-h-[calc(100vh-60px)]'
         >
           <div className='flex absolute cursor-pointer h-[30px] w-[30px] bg-surface-main/5 rounded-full top-[20px] right-[20px] z-[9999] justify-center items-center text-surface-750'  onClick={onClose}>
             {/* <h1>Esc</h1> */}

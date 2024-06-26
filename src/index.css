@@ -392,8 +392,9 @@ div.slick-slide>div {
   }
 
   .animate-modal {
-    @apply fixed top-0 w-full min-h-full max-h-max items-center;
-    backdrop-filter: blur(75px);
+    @apply fixed inset-0 w-full min-h-full items-center;
+
+    backdrop-filter: blur(50px); 
     background: linear-gradient(0deg,
         rgba(0, 0, 0, 0.5) 0%,
         rgba(0, 0, 0, 0.5) 100%),

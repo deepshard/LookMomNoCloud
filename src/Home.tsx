@@ -2,17 +2,19 @@ import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import MyModels, { Placeholder } from "./component/Augmentations";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
-import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import UpdateTruffle from "./component/UpdateTruffle";
 import { useEffect, useState } from "react";
 import { TruffleUpdateInfo } from "./ota";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
+import AugmentationsView from "./component/AugmentationsView";
+
 
 interface WelcomeInfo {
   icon: string;
@@ -22,7 +24,7 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
-  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels } = useHomePageContext();
+  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
@@ -140,28 +142,23 @@ export default function Home() {
             <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
               <FeaturedCarousel />
 
-              <div className="w-full flex justify-between gap-5">
-                <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
-                  <div className="grid grid-cols-4 gap-6 p-5">
-                    {[...Array(8)].map((_, index) => (
-                      <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
-                    ))}
-                  </div>
-                  <p className="callout-regular text-surface-400 absolute bottom-[-25px] right-[50%] translate-x-[50%]">Models</p>
+                <div className="w-full flex justify-between gap-5">
+                  <Placeholder />
                 </div>
               </div>
+              <SystemInfoHardwareCarouselProvider>
+                <SystemInfoHardwareCarousel sysInfo={sysInfo} />
+              </SystemInfoHardwareCarouselProvider>
             </div>
-            <SystemInfoHardwareCarouselProvider>
-              <SystemInfoHardwareCarousel sysInfo={sysInfo} />
-            </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
-      </div>
-      <AnimateModal show={showSearch} onClose={() => {
+
+      <AnimateModal show={showSearch || showAugmentations} onClose={() => {
+        setShowAugmentations(false);
         setShowSearch(false);
-        setShowDiscover(false);
-      }}>
-        <Search onModelClick={handleNavigate}/>
+        }}>
+       {showSearch && <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />}
+        {showAugmentations && <AugmentationsView />}
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
         <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick} />

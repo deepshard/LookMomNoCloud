@@ -29,7 +29,10 @@
       "node_modules/**/*"
     ],
     "extraResources": [
-      "assets/**/*"
+      {
+        "from": "src/assets",
+        "to": "assets"
+      }
     ],
     "mac": {
       "target": [

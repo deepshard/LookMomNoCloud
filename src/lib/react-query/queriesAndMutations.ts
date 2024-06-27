@@ -2,6 +2,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { getFeatured, getHighlights, getNewModels, getNews, getTrendingModels } from "../../api/general";
 import { deleteModel, getMyModels, getModel, searchModels, stopModel, getPrediction } from "../../api/model";
 import { TModel } from "../../types/schemas";
+// @ts-ignore
+import llamaIcon from "../../assets/images/llama1.png";
 
 export const useGetHighlights = () => {
   return useQuery({
@@ -68,7 +70,7 @@ export const useGetNews = () => {
     title: `News Title ${index + 1}`,
     content: `This is the content for news item ${index + 1}. Here's some more detailed information about the news event.`,
     imageUrl: index % 3 === 0 ? `https://example.com/image${index + 1}.jpg` : undefined,
-    userProfilePicture: `/src/assets/images/llama1.png`,
+    userProfilePicture: llamaIcon,
     url: `https://example.com/news/${index + 1}`,
     createdAt: new Date().toISOString(),
   }));

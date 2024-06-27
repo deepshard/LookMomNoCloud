@@ -1,9 +1,13 @@
 import { useHomePageContext } from "../context/HomePageProvider";
 // @ts-ignore
 import discoverVid from "../assets/videos/discover-vid.mp4";
+// @ts-ignore
+import searchIcon from "../assets/icons/search-icon.svg";
+// @ts-ignore
+import gearIcon from "../assets/icons/gear.svg";
+
 
 const NavBar = () => {
-  const searchIcon = "/src/assets/icons/search-icon.svg";
   const { setShowSearch, showSearch, showAugmentations, setShowDiscover } = useHomePageContext();
 
   return (
@@ -39,7 +43,7 @@ const NavBar = () => {
           </div>
 
           <div className="h-5 w-5 rounded-full cursor-pointer">
-            <img src="/src/assets/icons/gear.svg" className="w-5 h-5" />
+            <img src={gearIcon} className="w-5 h-5" />
           </div>
         </div>
       )}

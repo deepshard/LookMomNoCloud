@@ -21,11 +21,11 @@ const AugmentationsView = () => {
       title: "MCTS",
       icon: "/src/assets/icons/mcts.svg",
       content:
-        "Monte carlo tree search uses the monte carlo property of random generations to find the best solution to a problem.",
+        "This augmentation adds Monte Carlo Tree search to LLM generations. It allows your model to explore thought pathways by sampling somewhat randomly, and generating completions & thoughts. This may slow down response times significantly.",
       color: "#4ECDC4",
       stats: [
         { text: "+10 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
-        { text: "-15 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
+        { text: "-18 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
         { text: "+0 Safety", imgSrc: "/src/assets/icons/lock.svg" },
       ]
     },
@@ -33,40 +33,27 @@ const AugmentationsView = () => {
       id: 3,
       title: "Jailbreak Model",
       icon: "/src/assets/icons/unlock.svg",
-      content: "And this is what's in the third card",
+      content: "Pliny the prompter has found a way to jailbreak most models at the cost of safety. This augmentation allows your model to become unsafe and generate content that may be harmful or dangerous. Use with caution.",
       color: "#45B7D1",
       stats: [
-        { text: "+10 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
-        { text: "-15 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
-        { text: "+0 Safety", imgSrc: "/src/assets/icons/lock.svg" },
+        { text: "+1 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
+        { text: "+0 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
+        { text: "-10 Safety", imgSrc: "/src/assets/icons/lock.svg" },
       ]
     },
 
     {
       id: 4,
       title: "Genetic Algorithms",
-      icon: "/src/assets/icons/mcts.svg",
-      content: "And this is what's in the third card",
+      icon: "/src/assets/icons/twistedarrow.svg",
+      content: "This augmentation allows your model to attach a fitness function to it's comletions, and evolve over time to generate better and better completions. This can be useful for long term projects, but may slow down response times.",
       color: "#45B7D1",
       stats: [
-        { text: "+10 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
-        { text: "-15 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
+        { text: "+4 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
+        { text: "-5 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
         { text: "+0 Safety", imgSrc: "/src/assets/icons/lock.svg" },
       ]
-    },
-
-    {
-      id: 5,
-      title: "Genetic Algorithms",
-      icon: "/src/assets/icons/unlock.svg",
-      content: "And this is what's in the third card",
-      color: "#45B7D1",
-      stats: [
-        { text: "+10 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
-        { text: "-15 Speed", imgSrc: "/src/assets/icons/running-man.svg" },
-        { text: "+0 Safety", imgSrc: "/src/assets/icons/lock.svg" },
-      ]
-    },
+    }
   ];
 
   return (

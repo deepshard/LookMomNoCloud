@@ -1,32 +1,12 @@
-import { useCallback, useEffect, useRef } from 'react'
-import { CarouselProps } from 'antd'
-import { TModel } from '../../types/schemas'
 import Carousel from './Carousel'
 import { useHomePageContext } from "../../context/HomePageProvider";
 
 
-interface SearchProps {
-  myModels?: TModel[]
-  onModelClick?: (model: TModel) => void
-}
-
-const MyAugmentations = ({ myModels = [], onModelClick }: SearchProps) => {
-
+const MyAugmentations = () => {
   return (
     <div className="my-models-container">
       <Placeholder />
     </div>
-  )
-}
-
-interface PageProps {
-  models: TModel[]
-  onModelClick?: (model: TModel) => void
-}
-
-const Page = ({ models, onModelClick }: PageProps) => {
-  return (
-    <div className="w-full h-full flex justify-center items-center mx-[145px] pt-[148px]"></div>
   )
 }
 
@@ -48,14 +28,14 @@ export const Placeholder: React.FC = () => {
       title: 'MCTS',
       icon: '/src/assets/icons/mcts.svg',
       content:
-        'Monte carlo tree search uses the monte carlo property of random generations to find the best solution to a problem.',
+        'This augmentation adds Monte Carlo Tree search to LLM generations. It allows your model to explore thought pathways by sampling somewhat randomly, and generating completions & thoughts. This may slow down response times significantly.',
       color: '#4ECDC4',
     },
     {
       id: 3,
       title: 'Jailbreak Model',
       icon: '/src/assets/icons/unlock.svg',
-      content: "And this is what's in the third card",
+      content: "This augmentation allows your model to become unsafe and generate content that may be harmful or dangerous. Use with caution.",
       color: '#45B7D1',
     },
 

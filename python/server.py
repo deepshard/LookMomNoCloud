@@ -125,7 +125,7 @@ if __name__ == "__main__":
     warnings.simplefilter("always")
     # multiprocessing and pyinstaller dont play nicely together
     multiprocessing.freeze_support()
-    multiprocessing.set_start_method("spawn" if sys.platform == "darwin" else "fork", force=True)
+    multiprocessing.set_start_method("spawn", force=True)
 
     # TODO: replace with proper certificates (ok for v1)
     os.environ["SSL_CERT_FILE"] = certifi.where()

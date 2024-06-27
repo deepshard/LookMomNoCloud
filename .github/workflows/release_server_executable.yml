@@ -96,7 +96,7 @@ jobs:
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
-            cp -rL /usr/local/cuda python/dist/server/_internal/cuda
+            cp -R /usr/local/cuda python/dist/server/_internal/cuda
           fi
 
       - name: Run integration tests

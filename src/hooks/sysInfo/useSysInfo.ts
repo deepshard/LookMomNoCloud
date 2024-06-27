@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { TSysInfo } from '../../types/schemas';
 
 interface SysInfoHookProps {
@@ -21,20 +21,55 @@ const handleEventSourceError = (eventSource: EventSource) => (error: Event) => {
   eventSource.close();
 };
 
+const MAX_RETRIES = Infinity;
+const INITIAL_RETRY_DELAY = 3000; // 1 second
+
 const useSysInfo = (
   { rootUrl, addSysInfo, EventSourceFactory }: SysInfoHookProps
 ) => {
 
-  useEffect(() => {
-    const eventSource = createEventSource(EventSourceFactory, `${rootUrl}/sysinfo`);
+  const retryCount = useRef(0);
+  const retryDelay = useRef(INITIAL_RETRY_DELAY);
 
-    eventSource.onmessage = (event) => handleEventSourceMessage(event, addSysInfo);
-    eventSource.onerror = handleEventSourceError(eventSource);
+
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+
+    const connectEventSource = () => {
+      eventSource = createEventSource(EventSourceFactory, `${rootUrl}/sysinfo`);
+
+      eventSource.onmessage = (event) => handleEventSourceMessage(event, addSysInfo);
+
+      eventSource.onerror = (error: Event) => {
+        console.error("EventSource error:", error);
+        eventSource?.close();
+
+        if (retryCount.current < MAX_RETRIES) {
+          retryCount.current += 1;
+          console.log(`Retrying connection (${retryCount.current}/${MAX_RETRIES}) in ${retryDelay.current}ms`);
+
+          setTimeout(() => {
+            retryDelay.current *= 2; // Exponential backoff
+            connectEventSource();
+          }, retryDelay.current);
+        } else {
+          console.error("Max retries reached. Giving up on reconnection.");
+        }
+      };
+
+      eventSource.onopen = () => {
+        console.log("EventSource connected successfully");
+        retryCount.current = 0;
+        retryDelay.current = INITIAL_RETRY_DELAY;
+      };
+    };
+
+    connectEventSource();
 
     return () => {
-      eventSource.close();
+      eventSource?.close();
     };
-  }, []);
+  }, [rootUrl, addSysInfo, EventSourceFactory]);
 
 };
 

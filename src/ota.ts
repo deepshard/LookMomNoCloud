@@ -328,7 +328,7 @@ export class OTAUpdater {
     // Get GPU info
     let gpu;
     if (osInfo.platform === "darwin") {
-      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2"));
+      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2") || graphicsInfo.controllers[0].model.toLowerCase().includes("m3"));
       if (!isMetal) {
         this.mainWindow.webContents.send("error", "Only M1/M2 macs are supported for now");
         log("Unsupported GPU: Non-Metal GPU on macOS.");

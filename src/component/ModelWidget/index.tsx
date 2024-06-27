@@ -18,6 +18,7 @@ import installIcon from '../../assets/icons/install.svg'
 import errorIcon from '../../assets/icons/error.svg'
 //@ts-ignore
 import retryIcon from '../../assets/icons/retry.svg'
+import AlertFill from '../../icons/AlertFill'
 
 const OverlaySVG = ({ width = 128, height = 82 }) => (
   <svg
@@ -113,17 +114,18 @@ const ModelWidget = ({
 
   const getErrorContent = (errorMessage: string) => {
     return (
-      <div className='w-full flex flex-col rounded-xs bg-white/5 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
+      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
         <div className='flex justify-start items-center gap-1.5 text-surface-main'>
-          <img src={errorIcon} alt="errorIcon" className="error-icon" />
+          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
+          {/* <AlertFill height={12} width={12} className="h-3 text-error-regular" /> */}
 
           <p>An error occurred</p>
         </div>
 
         {/* Divider */}
-        <div className='w-full h-[0.5px] bg-surface-100' />
+        {/* <div className='w-full h-[0.5px] bg-surface-100' /> */}
 
-        <p className='body-xs text-surface-500'>{errorMessage}</p>
+        <p className='body-xs text-surface-500 leading-tight'>{errorMessage}</p>
       </div>
     );
   }
@@ -131,14 +133,14 @@ const ModelWidget = ({
   const getErrorButton = (errorMessage: string) => {
     return (
       <Tooltip
-        overlayClassName="rounded-sm backdrop-blur-2xl min-w-[200px]"
+        overlayClassName="bg-black/20 rounded-sm backdrop-blur-2xl min-w-[200px]"
         overlayInnerStyle={{
           color: 'surface-500',
           padding: '5px',
           fontSize: '12px',
         }}
         placement="bottom"
-        color="bg-wdget"
+        color="transparent"
         title={getErrorContent(errorMessage)}
         
       >

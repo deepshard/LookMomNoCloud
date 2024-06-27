@@ -270,6 +270,10 @@ div.slick-slide>div {
   backdrop-filter: blur(50px);
 }
 
+.ant-tooltip .ant-tooltip-inner {
+  @apply rounded-sm !important;
+}
+
 @layer base {}
 
 @layer utilities {
@@ -536,6 +540,6 @@ div.slick-slide>div {
   }
 
   .error-icon {
-    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px] z-[99999];
+    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px];
   }
 }

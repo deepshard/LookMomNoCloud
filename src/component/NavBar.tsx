@@ -5,7 +5,7 @@ import discoverVid from '../assets/videos/discover-vid.mp4'
 
 const NavBar = () => {
   const searchIcon = "/src/assets/icons/search-icon.svg"
-  const {setShowSearch} = useHomePageContext();
+  const {setShowSearch, setShowDiscover} = useHomePageContext();
 
   return (
     <div className="navbar">
@@ -14,7 +14,7 @@ const NavBar = () => {
       <div className="bg-transparent h-5 w-5 rounded-full" />
 
       <div className="flex w-full max-w-[660px] gap-3 justify-start items-center">
-        <div className="flex items-center gap-[6px] cursor-pointer" onClick={() => setShowSearch(true)}>
+        <div className="flex items-center gap-[6px] cursor-pointer" onClick={() => {setShowDiscover(true); setShowSearch(true)}}>
           <video autoPlay loop muted className="aspect-square w-[18px] object-cover rounded-full">
             <source src={discoverVid} type="video/mp4"/>
           </video>
@@ -38,7 +38,12 @@ const NavBar = () => {
       
       
 
-      <div className="bg-surface-500 h-5 w-5 rounded-full" />
+      <div className="h-5 w-5 rounded-full cursor-pointer">
+        <img
+          src="/src/assets/icons/gear.svg"
+          className="w-5 h-5"
+        />
+      </div>
     </div>
   );
 };

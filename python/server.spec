@@ -13,15 +13,6 @@ for pkg in ['mlc_llm', 'tvm', 'aiosqlite']:
     binaries += b
     hiddenimports += h
 
-nvcc_path = '/usr/local/cuda/bin/nvcc'
-if sys.platform.startswith('linux'):
-    if os.path.exists(nvcc_path):
-        print(f"** NVCC found at {nvcc_path} **")
-        binaries.append((nvcc_path, 'nvcc'))
-    else:
-        print(f"** NVCC not found at {nvcc_path} **")
-        sys.exit(1)
-
 print("----- BINARIES -----")
 for b in binaries:
     print(b)

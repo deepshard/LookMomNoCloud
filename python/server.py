@@ -115,8 +115,9 @@ async def delete_model(model_id: str):
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_PATH"] = os.path.join(sys._MEIPASS, "cuda")
-    logger.info(f"-- Setting CUDA_PATH: {os.environ['CUDA_PATH']} --")
+    if sys.platform == "linux":
+        os.environ["CUDA_PATH"] = os.path.join(sys._MEIPASS, "cuda")
+        logger.info(f"-- Setting CUDA_PATH: {os.environ['CUDA_PATH']} --")
 
     import uvicorn
     import warnings

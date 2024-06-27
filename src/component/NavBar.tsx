@@ -26,7 +26,7 @@ const NavBar = () => {
                 setShowDiscover(true);
                 setShowSearch(true);
               }}>
-              <video autoPlay loop muted className="aspect-square w-[18px] object-cover rounded-full">
+              <video autoPlay loop muted className="aspect-square w-[18px] object-cover rounded-full saturate-0 brightness-125">
                 <source src={discoverVid} type="video/mp4" />
               </video>
 
@@ -44,7 +44,7 @@ const NavBar = () => {
           </div>
 
           <div className="h-5 w-5 rounded-full cursor-pointer">
-            <img src={gearIcon} className="w-5 h-5" />
+            {/* <img src={gearIcon} className="w-5 h-5" /> */}
           </div>
         </div>
       )}

@@ -74,12 +74,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 20px;
-    width: 20px;
+    height: 18px;
+    width: 18px;
     position: absolute;
     bottom: 0;
     right: 0;
-    margin: 8px;
+    margin: 10px;
+    cursor: pointer;
 }
 
 .stop-button {

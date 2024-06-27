@@ -3,8 +3,6 @@ import { useHomePageContext } from "../context/HomePageProvider";
 import discoverVid from "../assets/videos/discover-vid.mp4";
 // @ts-ignore
 import searchIcon from "../assets/icons/search-icon.svg";
-// @ts-ignore
-import gearIcon from "../assets/icons/gear.svg";
 
 
 

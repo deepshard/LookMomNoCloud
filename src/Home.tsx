@@ -125,7 +125,7 @@ export default function Home() {
           <div className="w-[660px] flex flex-col justify-start items-center gap-5">
             <div className="flex justify-start items-center gap-1.5 w-full">
               <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
-              <p className="text-surface-main">{getWelcomeInfo().message}</p>
+              <p className="text-surface-750">{getWelcomeInfo().message}</p>
             </div>
             <ModelCarousel
               models={storeHighlights}

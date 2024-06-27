@@ -9,6 +9,8 @@ const NavBar = () => {
 
   return (
     <div className="navbar">
+      <div className="draggable-nav absolute top-0 left-0 right-0 h-[20px] bg-transparent z-10" />
+      
       <div className="bg-transparent h-5 w-5 rounded-full" />
 
       <div className="flex w-full max-w-[660px] gap-3 justify-start items-center">
@@ -17,7 +19,7 @@ const NavBar = () => {
             <source src={discoverVid} type="video/mp4"/>
           </video>
 
-          <p className="text-surface-main">Discover</p>
+          <p className="text-surface-750 hover:text-surface-500">Discover</p>
         </div>
 
         <div className="h-4 w-[0.5px] bg-surface-100" />

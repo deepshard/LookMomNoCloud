@@ -75,6 +75,7 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel
+  disabled?: boolean
   onInstall?: () => void
   onRun?: () => void
   onStop?: () => void
@@ -83,6 +84,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ModelWidget = ({
   model,
+  disabled = false,
   className = '',
   onInstall,
   onRun,
@@ -131,6 +133,10 @@ const ModelWidget = ({
   }
 
   const getWidgetButton = () => {
+    if (disabled) {
+      return null
+    }
+
     switch (model.status) {
       case 'DOWNLOADING':
         return (
@@ -221,10 +227,10 @@ const ModelWidget = ({
         </div>
       )}
       <div
-        className={`model-widget base-regular ${className} relative`}
+        className={`model-widget base-regular ${className} relative ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
       >
-        {/* This component loads an image only when it is IN VIEWPORT. Tremendously boosts image load performance. */}
-        <LazyLoadImage effect="blur" src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage} alt="" className="w-full h-full object-cover scale-110" />
+        <LazyLoadImage effect="blur" src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage} alt="" className={`w-full h-full object-cover scale-110 ${disabled && "blur-md"}`} />
+  
         <div
           className={`
             absolute inset-0
@@ -248,6 +254,10 @@ const ModelWidget = ({
           </div>
         </div>
       </div>
+      {
+        disabled &&
+        getErrorButton("This model cannot fit in either the total memory or the available storage")
+      }
       { 
         model.error && 
         getErrorButton(model.error)

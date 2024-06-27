@@ -44,3 +44,13 @@ export const toUnitOfCount = (size: number) => {
 export function roundTo(n: number, decimals: number): number {
   return Number(n.toFixed(decimals));
 }
+
+export function canFitOnMachine(params: number, totalMemory: number, availableDisk: number): boolean {
+  const MAX_COMPRESSION = 0.23; // Constant from the backend at INT3 quantization
+  const uncompressedSize = 2 * params; // Approx 2 bytes per param
+  const compressedSize = MAX_COMPRESSION * uncompressedSize;
+
+  const expectedDiskUsage = uncompressedSize + compressedSize; // Store base weights plus smallest quantization
+
+  return expectedDiskUsage < availableDisk && compressedSize < totalMemory;
+}

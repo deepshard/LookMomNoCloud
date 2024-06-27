@@ -1,13 +1,9 @@
-import os
-import re
 import asyncio
 from state import global_state_manager
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL
 from state import global_state_manager
-from models import RunningModel
 from endpoints.model.downloaded.downloaded import get_all_local_models, get_model_details
-from utils import get_app_data_path
 
 
 async def get_highlights() -> list[Model]:

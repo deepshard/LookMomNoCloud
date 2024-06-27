@@ -54,6 +54,7 @@ def create_quants():
 @pytest.fixture(autouse=True)
 def utils_mock(mocker):
     mocker.patch("utils.get_app_data_path", return_value=Path("/tmp"))
+    mocker.patch("endpoints.model.run.run.socket.socket.connect_ex", return_value=1)
     mocker.patch("endpoints.model.run.run.get_tensor_parallelism", return_value=1)
     mocker.patch("endpoints.model.run.run.is_server_running", return_value=True)
     mocker.patch("multiprocessing.Process", return_value=MagicMock(pid=1234))
@@ -526,9 +527,7 @@ async def test_run_get_instance_count(session_fixture, model_weights, mocker):
     ]
 
 
-def test_find_port_run_queue(mocker):
-    mocker.patch("utils.socket.socket.connect_ex", return_value=1)
-
+def test_find_port_run_queue():
     assert find_port() == 8899
 
     global_state_manager.model_manager.reserve_port(8899)

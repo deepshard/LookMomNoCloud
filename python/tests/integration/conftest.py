@@ -1,15 +1,10 @@
-import pytest
 import pytest_asyncio
 import os
 import signal
 import shutil
 import asyncio
 from httpx import AsyncClient
-from pathlib import Path
-from fastapi.testclient import TestClient
-from db import get_db_session
-from state import global_state_manager
-from server import init_state, app
+from server import init_state
 from models import RunningModel
 from utils import get_app_data_path
 from tests.integration.data import models

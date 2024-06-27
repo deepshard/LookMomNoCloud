@@ -4,13 +4,10 @@ import json
 from typing import List
 from loguru import logger
 import psutil
-import time
 import os
 import subprocess
 import re
 import platform
-
-from sqlalchemy import select
 from models import RunningModel
 from truffle_types import (
     ModelResourceDetails,
@@ -18,7 +15,6 @@ from truffle_types import (
     SystemResourceDetails,
     SystemResources,
 )
-
 from utils import (
     get_app_data_path,
     get_disk_usage,
@@ -26,7 +22,6 @@ from utils import (
     get_usable_memory,
     get_total_memory,
 )
-from db import get_db_session
 
 
 CHANGE_THRESHOLD = 3
@@ -106,7 +101,8 @@ def get_model_memory_usage(pid: int) -> int:
                         gpu_pid, gpu_memory = map(int, line.split(","))
                         if gpu_pid == pid:
                             return gpu_memory * 1024 * 1024  # Convert MB to bytes
-            except subprocess.CalledProcessError:
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Failed to get CUDA memory usage: {e}")
                 return 0
         elif any(device["type"] == "rocm" for device in devices):
             try:
@@ -117,7 +113,8 @@ def get_model_memory_usage(pid: int) -> int:
                     if str(pid) in line:
                         gpu_memory = int(line.split()[-2])
                         return gpu_memory * 1024 * 1024  # Convert MB to bytes
-            except subprocess.CalledProcessError:
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Failed to get ROCm memory usage: {e}")
                 return 0
         elif any(device["type"] == "vulkan" for device in devices):
             pass  # Unsupported for now, we don't build wheels for it

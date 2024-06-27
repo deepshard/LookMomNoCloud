@@ -2,7 +2,6 @@ import shutil
 import os
 import signal
 from loguru import logger
-from sqlalchemy import select
 from models import RunningModel
 from db import get_db_session
 from utils import get_app_data_path

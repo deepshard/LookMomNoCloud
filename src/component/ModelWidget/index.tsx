@@ -6,7 +6,8 @@ import { toUnitOfCount } from '../../utils/sysUtils'
 import Tooltip from '../common/Tooltip'
 import './index.css'
 import 'react-circular-progressbar/dist/styles.css'
-//@ts-ignore
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import downloadIcon from '../../assets/icons/download.svg'
 //@ts-ignore
 import playIcon from '../../assets/icons/play.svg'
@@ -228,7 +229,7 @@ const ModelWidget = ({
       <div
         className={`model-widget base-regular ${className} relative ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
       >
-        <img src={model.backgroundImage} alt="" className={`w-full h-full absolute inset-0 object-cover ${disabled && "blur-md"}`} />
+        <LazyLoadImage effect="blur" src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage} alt="" className={`w-full h-full object-cover scale-110 ${disabled && "blur-md"}`} />
   
         <div
           className={`

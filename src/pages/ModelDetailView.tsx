@@ -4,13 +4,13 @@ import { formatDate, formatParams , canFitOnMachine } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
-import Icon from "../component/Icon";
-import Tag from "../component/Tag";
-import useModelActions from "../hooks/modelActions/useModelActions";
 import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
+import Icon from "../component/Icon";
+import Tag from "../component/Tag";
+import useModelActions from "../hooks/modelActions/useModelActions";
 import Tooltip from "../component/common/Tooltip";
 // @ts-ignore
 import installIcon from "../assets/icons/install.svg";
@@ -32,6 +32,8 @@ import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
 import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
 //@ts-ignore
 import errorIcon from '../assets/icons/error.svg'
+
+
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -217,27 +219,22 @@ function ModelDetailView() {
   return (
     <div className="absolute top-0 left-0 w-full h-full bg-bg-wdget-active">
         <div className="model-detail-navbar">
-          <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
-            <img loading="lazy" srcSet={modelData?.backgroundImage} className="shrink-0 aspect-square rounded-full w-[30px] " />
+         
+                  <div className="w-1/4"></div>
 
-            <div className="flex flex-col justify-center items-start gap-0.5">
-              <p className="text-surface-main">{modelData && modelData?.name ? modelData.name.split("/")[1] : ""}</p>
-              <p className="text-surface-500 callout-base">{modelData && modelData?.author ? modelData.author : ""}</p>
-            </div>
-          </div>
 
           <div className="flex items-center gap-3 text-surface-500 z-[1200] transition-colors duration-200">
             {navBarOptions.map((item, index) => {
               const displayTitle = item === "intro" ? "Introduction" : upperFirst(item);
               return modelData && modelData[item] ? (
-                <a key={index} onClick={() => scrollToSection(item)} className="hover:text-white transition-colors duration-200">
+                <a key={index} onClick={() => scrollToSection(item)} className="hover:text-white transition-colors duration-200 cursor-pointer">
                   {displayTitle}
                 </a>
               ) : null;
             })}
           </div>
 
-          <div className="w-1/4 flex gap-2 justify-end items-center z-[999]">
+          <div className="w-1/4 flex gap-2 justify-end items-center z-[999] cursor-pointer">
             {modelData?.status && modelData?.status !== "NOT_DOWNLOADED" ? (
               <>
                 {getModelStatusIcon()}
@@ -288,8 +285,8 @@ function ModelDetailView() {
                 </p>
               )}
               <div className="flex gap-2.5 text-sm text-white text-opacity-80">
-                <Tag text={modelData?.author || ""} />
-                <Tag text={formatParams(modelData?.size)} />
+              <Tag imgSrc="/src/assets/icons/author.svg" text={modelData?.author || ""} />
+                <Tag imgSrc="/src/assets/icons/modelsize.svg" text={formatParams(modelData?.size)} />
 
                 <Tag imgSrc={downloadCircleIcon} text={formatParams(modelData?.downloads)} />
 

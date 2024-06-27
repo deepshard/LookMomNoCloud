@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getHighlights, getNews } from "../../api/general";
+import { getFeatured, getHighlights, getNewModels, getNews, getTrendingModels } from "../../api/general";
 import { deleteModel, getMyModels, getModel, searchModels, stopModel, getPrediction } from "../../api/model";
 import { TModel } from "../../types/schemas";
 
@@ -11,6 +11,7 @@ export const useGetHighlights = () => {
     retryOnMount: false,
   });
 };
+
 
 export const useStopModel = () => {
   return useMutation({
@@ -89,3 +90,30 @@ export const useGetPrediction = (text: string) => {
     enabled: !!text
   })
 };
+
+export const useGetFeatured = () => {
+  return useQuery({
+    queryKey: ["featured"],
+    queryFn: () => {
+      return getFeatured()
+    }
+  })
+}
+
+export const useGetNewModels = () => {
+  return useQuery({
+    queryKey: ["newModels"],
+    queryFn: () => {
+      return getNewModels()
+    }
+  })
+}
+
+export const useGetTrendingModels = () => {
+  return useQuery({
+    queryKey: ["trendingModels"],
+    queryFn: () => {
+      return getTrendingModels()
+    }
+  })
+}

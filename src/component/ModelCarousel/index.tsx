@@ -16,6 +16,7 @@ interface ModelCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   stopModel: (...args: any) => void
   cleanupInstall: (...args: any) => void
   onModelClick: (...args: any) => void
+  onRetry: (...args: any) => void
 }
 
 const getSortValue = (status: string) => {
@@ -37,7 +38,7 @@ const getSortValue = (status: string) => {
   }
 }
 
-const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick, className='', ...props  }) => {
+const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick, onRetry, className='', ...props  }) => {
   const skeletonCount = 5
   const { sysInfo } = useAppStore();
   const [showModels, setShowModels] = useState(false)
@@ -93,7 +94,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
             ))}
         <AnimatePresence>
           {showModels &&
-            [...sortedModels, ...sortedModels].map((model) => (
+            sortedModels.map((model) => (
               <motion.div
                 key={`model-wrapper-${model.id}`}
                 className="model-item-wrapper"
@@ -118,6 +119,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
                   onRun={() => runModels(model)}
                   onStop={() => stopModel(model)}
                   onCleanup={() => cleanupInstall(model)}
+                  onRetry={() => onRetry(model)}
                 />
               </motion.div>
             ))}

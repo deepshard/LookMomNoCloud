@@ -91,7 +91,8 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  // mainWindow.setResizable(false);
+  mainWindow.setResizable(false);
+  mainWindow.webContents.closeDevTools();
 
   if (process.env.NODE_ENV === "development") {
     mainWindow.webContents.openDevTools();

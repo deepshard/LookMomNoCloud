@@ -23,7 +23,7 @@ interface WelcomeInfo {
 
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
-  const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
+  const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
   const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
@@ -62,38 +62,47 @@ export default function Home() {
     setShowMyModels(false);
   };
 
+  const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
+    updateModels({
+      ...prevModel,
+      ...newModel,
+    });
+    if (newModel.status === "RUNNING" && controller) {
+      controller.abort();
+    }
+  };
+
   const installModelHandler = (model: TModel) => {
     installModel(model, undefined, (progress) => {
-      updateModels({
-        ...model,
-        ...progress,
-      });
+      handleUpdateModelsCallback(model, progress);
     });
   };
 
   const runModelsHandler = (model: TModel) => {
     runModels([model], undefined, (updatedModel, controller) => {
-      updateModels({
-        ...model,
-        ...updatedModel,
-      });
-      if (updatedModel.status === "RUNNING") {
-        controller.abort();
-      }
+      handleUpdateModelsCallback(model, updatedModel, controller);
     });
   };
 
   const stopModelHandler = (model: TModel) => {
     stopModel(model).then((_) => {
-      updateModels({
-        ...model,
-        status: "STOPPED",
-      });
+      handleUpdateModelsCallback(model, { status: "STOPPED" });
     });
   };
 
   const cleanupInstallHandler = (model: TModel) => {
     cleanupInstall(model);
+  };
+
+  const retryHandler = (model: TModel) => {
+    if (model.status === "NOT_DOWNLOADED" || model.status === "STOPPED") {
+      model = { ...model, progress: 0, error: undefined };
+      retry(model, (updateModel) => {
+        handleUpdateModelsCallback(model, updateModel);
+      });
+    } else {
+      retry(model, () => retryHandler(model));
+    }
   };
 
   const getWelcomeInfo = (): WelcomeInfo => {
@@ -136,6 +145,7 @@ export default function Home() {
             stopModel={stopModelHandler}
             cleanupInstall={cleanupInstallHandler}
             onModelClick={handleNavigate}
+            onRetry={retryHandler}
           />
 
           <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
@@ -157,11 +167,8 @@ export default function Home() {
         setShowAugmentations(false);
         setShowSearch(false);
         }}>
-       {showSearch && <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />}
+       {showSearch && <Search onModelClick={handleNavigate} />}
         {showAugmentations && <AugmentationsView />}
-      </AnimateModal>
-      <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
-        <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick} />
       </AnimateModal>
       {updateInfo && <UpdateTruffle className="fixed bottom-5 left-5" onClick={() => navigate(`/update`)} />}
     </>

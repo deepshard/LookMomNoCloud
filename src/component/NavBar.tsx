@@ -4,11 +4,11 @@ import discoverVid from "../assets/videos/discover-vid.mp4";
 
 const NavBar = () => {
   const searchIcon = "/src/assets/icons/search-icon.svg";
-  const { setShowSearch, showSearch, setShowDiscover } = useHomePageContext();
+  const { setShowSearch, showSearch, showAugmentations, setShowDiscover } = useHomePageContext();
 
   return (
     <>
-      {!showSearch && (
+      {(!(showSearch || showAugmentations)) && (
         <div className="navbar">
           <div className="draggable-nav absolute top-0 left-0 right-0 h-[20px] bg-transparent z-10" />
 

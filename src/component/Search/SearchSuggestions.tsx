@@ -1,4 +1,6 @@
 import React from "react";
+// @ts-ignore
+import searchSuggestionIcon from "../../assets/icons/search-suggestions.svg";
 
 interface Suggestion {
   title: string;
@@ -10,8 +12,6 @@ interface SearchSuggestionsProps {
 }
 
 const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ setSearch }) => {
-  const searchIcon = "/src/assets/icons/search-suggestions.svg";
-
   const suggestions: Suggestion[] = [
     { title: "Best math models", count: 110 },
     { title: "Best models for code", count: 417 },
@@ -23,7 +23,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ setSearch }) => {
         <SuggestionItem
           key={index}
           {...suggestion}
-          icon={searchIcon}
+          icon={searchSuggestionIcon}
           onClick={() => setSearch(suggestion.title)}
         />
       ))}

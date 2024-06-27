@@ -1,5 +1,7 @@
 import React, { useState, useEffect, FC, CSSProperties } from "react";
 import "./index.css";
+// @ts-ignore
+import puzzleIcon from "../../assets/icons/puzzle.svg";
 
 interface CarouselProps {
   cards: {
@@ -93,7 +95,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
         </div>
       </div>
       <div className="absolute flex justify-center items-center w-[320px] mt-[10px] gap-[8px]">
-        <img src="src/assets/icons/puzzle.svg" alt="puzzle" className="w-[15px] h-[9px]"/>
+        <img src={puzzleIcon} alt="puzzle" className="w-[15px] h-[9px]"/>
         <h1
         className="text-surface-500 text-[14px]"
         >Augmentations</h1>

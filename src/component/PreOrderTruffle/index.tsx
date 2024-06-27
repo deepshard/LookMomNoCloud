@@ -1,3 +1,6 @@
+// @ts-ignore
+import trufflePreorderIcon from "../../assets/images/truffle-device.png";
+
 const PreOrderTruffle = () => {
   const handlePreOrder = () => {
     // TODO: Open the pre-order link in the default browser
@@ -8,7 +11,7 @@ const PreOrderTruffle = () => {
     <div className="group transition ease-out duration-500 flex flex-col rounded-lg overflow-hidden w-full h-full relative p-[17px] pt-[20px] pb-[20px]">
       <div className="flex-grow flex justify-center items-center">
         <img
-          src="/src/assets/images/truffle-device.png"
+          src={trufflePreorderIcon}
           alt=""
           className="w-[60%] object-contain"
         />

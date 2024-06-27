@@ -1,6 +1,4 @@
 import pytest
-import asyncio
-
 from sqlalchemy import select
 from endpoints.model.stop import stop_model_handler
 from db import get_db_session

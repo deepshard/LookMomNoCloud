@@ -1,14 +1,12 @@
 from uuid import uuid4
 from sqlalchemy import (
     BigInteger,
-    create_engine,
     Column,
     Integer,
     String,
-    ForeignKey,
     delete,
 )
-from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import select
 from db import get_db_session
 

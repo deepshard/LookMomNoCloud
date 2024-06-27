@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import List, Literal
 from pydantic import BaseModel
-from typing import List, Dict, Literal
 from uuid import UUID
 
 

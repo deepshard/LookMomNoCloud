@@ -1,10 +1,7 @@
 import os
 import json
-import aiohttp
 from aiofiles import open as aiofiles_open
 import asyncio
-import psutil
-from uuid import uuid4
 from pathlib import Path
 from loguru import logger
 from enum import Enum
@@ -424,6 +421,7 @@ async def install_generator(model_id: str, model_url: str):
     except Exception as e:
         progress_event.update(status=Status.DOWNLOADING, error=str(e))
         yield str(progress_event)
+        logger.error(f"Failed to get files to download: {str(e)}")
         return
 
     # Check if the model is Truffle compatible
@@ -432,6 +430,7 @@ async def install_generator(model_id: str, model_url: str):
     except Exception as e:
         progress_event.update(status=Status.DOWNLOADING, error=str(e))
         yield str(progress_event)
+        logger.error(f"Model is not Truffle compatible: {str(e)}")
         return
 
     # Check that there is enough space to download the model
@@ -440,6 +439,7 @@ async def install_generator(model_id: str, model_url: str):
     except Exception as e:
         progress_event.update(status=Status.DOWNLOADING, progress=100, error=str(e))
         yield str(progress_event)
+        logger.error(f"Not enough space to download model: {str(e)}")
         return
 
     # Send initial downloading progress event
@@ -461,9 +461,9 @@ async def install_generator(model_id: str, model_url: str):
         ):
             yield str(progress_event)
     except Exception as e:
-        logger.error(f"Failed to download {model_dir}: {str(e)}")
         progress_event.update(status=Status.DOWNLOADING, error=str(e))
         yield str(progress_event)
+        logger.error(f"Failed to download {model_dir}: {str(e)}")
         return
 
     # Mark as installing and send to InstallManager
@@ -481,6 +481,7 @@ async def install_generator(model_id: str, model_url: str):
     except Exception as e:
         progress_event.update(error=str(e))
         yield str(progress_event)
+        logger.error(f"Failed to get quantization decision: {str(e)}")
         return
 
     # Add conversion to the queue and wait for it to be ready for processing
@@ -494,6 +495,7 @@ async def install_generator(model_id: str, model_url: str):
         progress_event.update(error=str(e))
         yield str(progress_event)
         global_state_manager.model_manager.complete_conversion()
+        logger.error(f"Failed to queue conversion: {str(e)}")
         return
 
     # Check that there is enough space and memory to convert and quantize the model
@@ -506,6 +508,7 @@ async def install_generator(model_id: str, model_url: str):
         progress_event.update(error=str(e))
         yield str(progress_event)
         global_state_manager.model_manager.complete_conversion()
+        logger.error(f"Not enough space or memory for {model_dir}: {str(e)}")
         return
 
     # Convert and quantize the model
@@ -517,6 +520,7 @@ async def install_generator(model_id: str, model_url: str):
         progress_event.update(error=str(e))
         yield str(progress_event)
         global_state_manager.model_manager.complete_conversion()
+        logger.error(f"Failed to convert and quantize {model_dir}: {str(e)}")
         return
 
     logger.info(f"Conversion, quantization, and compilation complete for {model_dir}")

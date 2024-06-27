@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("ipc", {
   onError: (callback) => ipcRenderer.on("error", (_event, value) => callback(value)),
   onUpdateDownloaded: (callback) => ipcRenderer.on("update-downloaded", callback),
   onInitializationRequired: (callback) => ipcRenderer.on("initialization-required", callback),
+  onInitializationComplete: (callback) => ipcRenderer.on("initialization-complete", callback),
 });
 
 contextBridge.exposeInMainWorld('electronShell', {

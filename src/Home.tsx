@@ -24,10 +24,11 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
-  const { showSearch, setShowSearch, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
+  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
-
   const navigate = useNavigate();
+
+
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -40,7 +41,7 @@ export default function Home() {
 
     const handleInitializationRequired = () => {
       navigate("/initialization");
-    }
+    };
 
     //@ts-ignore
     window.ipc.onUpdateAvailable(handleUpdateAvailable);
@@ -121,26 +122,25 @@ export default function Home() {
 
   return (
     <>
-      <div className="snap-y snap-mandatory">
-        <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-          <div className="w-[660px] flex flex-col justify-start items-center gap-[14px]">
-            <div className="flex justify-start items-center gap-1.5 w-full">
-              <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
-              <p className="text-surface-main">{getWelcomeInfo().message}</p>
-            </div>
-            <ModelCarousel
-              models={storeHighlights}
-              isLoading={storeHighlights.length === 0}
-              installModel={installModelHandler}
-              runModels={runModelsHandler}
-              stopModel={stopModelHandler}
-              cleanupInstall={cleanupInstallHandler}
-              onModelClick={handleNavigate}
-            />
+      <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
+          <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
+            <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
+            <p className="text-surface-main">{getWelcomeInfo().message}</p>
+          </div>
+        <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
+          <ModelCarousel
+            models={storeHighlights}
+            isLoading={storeHighlights.length === 0}
+            installModel={installModelHandler}
+            runModels={runModelsHandler}
+            stopModel={stopModelHandler}
+            cleanupInstall={cleanupInstallHandler}
+            onModelClick={handleNavigate}
+          />
 
-            <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
-              <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
-                <FeaturedCarousel />
+          <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
+            <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
+              <FeaturedCarousel />
 
                 <div className="w-full flex justify-between gap-5">
                   <Placeholder />
@@ -152,7 +152,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
 
       <AnimateModal show={showSearch || showAugmentations} onClose={() => {
         setShowAugmentations(false);

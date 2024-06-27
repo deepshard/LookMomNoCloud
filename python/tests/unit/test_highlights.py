@@ -1,8 +1,6 @@
 import os
 import pytest
 from pathlib import Path
-from state import global_state_manager
-from server import init_state
 from endpoints.highlights.highlights import get_highlights
 from truffle_types import ModelStatus
 from tests.unit.data import MODELS
@@ -29,9 +27,8 @@ def create_model_dir(model_id: str):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_new_user(session_fixture, mocker):
+async def test_get_highlights_new_user(mocker):
     # Mocks
-    session_fixture("endpoints.highlights.highlights")
     mocker.patch(
         "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
     )
@@ -47,9 +44,8 @@ async def test_get_highlights_new_user(session_fixture, mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_models_running(session_fixture, mocker):
+async def test_get_highlights_models_running(mocker):
     # Mocks
-    session_fixture("endpoints.highlights.highlights")
     mocker.patch(
         "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
     )
@@ -78,9 +74,8 @@ async def test_get_highlights_models_running(session_fixture, mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_models_downloaded_and_running(session_fixture, mocker):
+async def test_get_highlights_models_downloaded_and_running(mocker):
     # Downloaded mocks
-    session_fixture("endpoints.highlights.highlights")
     mocker.patch(
         "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
     )
@@ -115,9 +110,8 @@ async def test_get_highlights_models_downloaded_and_running(session_fixture, moc
 
 
 @pytest.mark.asyncio
-async def test_get_highlights_six_downloaded(session_fixture, mocker):
+async def test_get_highlights_six_downloaded(mocker):
     # Downloaded mocks
-    session_fixture("endpoints.highlights.highlights")
     mocker.patch(
         "endpoints.model.downloaded.downloaded.get_app_data_path", return_value=Path("/tmp")
     )

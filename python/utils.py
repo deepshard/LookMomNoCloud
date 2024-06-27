@@ -1,10 +1,8 @@
 import os
-import re
 import psutil
 import platform
-import socket
-import subprocess
 import tvm
+from loguru import logger
 from pathlib import Path
 from truffle_types import FileInfo, Quantization
 from dotenv import load_dotenv
@@ -101,7 +99,8 @@ def get_devices() -> list[str]:
             try:
                 if cur_device.exist:
                     devices.append({"type": device_type, "id": i})
-            except Exception:
+            except Exception as e:
+                logger.error(f"Error getting devices: {e}")
                 continue
 
     return devices

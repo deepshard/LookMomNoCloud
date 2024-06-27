@@ -1,8 +1,4 @@
-import pytest
-import json
-from utils import get_app_data_path, get_devices, get_usable_memory
-from tests.integration.data import models
-from models import RunningModel
+from utils import get_devices, get_usable_memory
 import platform
 import psutil
 import tvm

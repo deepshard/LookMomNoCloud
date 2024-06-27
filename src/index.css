@@ -270,6 +270,10 @@ div.slick-slide>div {
   backdrop-filter: blur(50px);
 }
 
+.ant-tooltip .ant-tooltip-inner {
+  @apply rounded-sm !important;
+}
+
 @layer base {}
 
 @layer utilities {
@@ -283,7 +287,7 @@ div.slick-slide>div {
 
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply relative flex justify-between items-center w-full top-0 px-5 py-3;
+    @apply relative flex justify-between items-center w-full z-10 top-0 px-5 py-3;
   }
 
   /* --------  TYPOGRAPHY  -------- */
@@ -536,6 +540,6 @@ div.slick-slide>div {
   }
 
   .error-icon {
-    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px] z-[99999];
+    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px];
   }
 }

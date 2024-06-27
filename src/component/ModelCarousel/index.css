@@ -2,7 +2,6 @@
     width: 670px;
     height: auto;
     gap: 10px;
-    overflow: hidden;
     scrollbar-width: thin;
     scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
     position: relative;
@@ -11,10 +10,7 @@
 .model-carousel-inner {
     display: flex;
     gap: 10px;
-    padding: 5px 0;
-    padding-bottom: 5px;
     justify-content: center;
-    min-height: 110px;
     transition: min-height 0.3s;
     /* Add some space for the scrollbar */
 }

@@ -57,7 +57,7 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
         <motion.span className="absolute flex gap-[8px] bottom-[-29px] translate-x-[-50%] left-[50%]" initial={false}>
         { showUsage ? <img src={monitorIcon} alt="" /> : <img src={truffleIcon} alt="truffle" /> }
         {
-          showUsage ? <p className="text-surface-500 text-[14px]">{upperFirst(selection)} Usage</p> : <p className="text-surface-500 text-[14px]">Pre-Order Truffle</p>
+          showUsage ? <p className="text-surface-500 text-[14px]">{upperFirst(selection)} Usage</p> : <p className="text-surface-500 text-[14px]">Truffle–1</p>
         }
       </motion.span>
     </div>

@@ -66,6 +66,7 @@ const InitializationProgress = () => {
   }
 
   return (
+    
     <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -100 }} className="flex-center flex-col w-[271px]">
       <p className="text-white text-center text-lg mb-[66px]">Welcome to Truffle®</p>
       <img src={truffleHardwareLandscapeIcon} alt="" className="w-[327px] h-[187px] blur-[0.4px] mb-[66px]" />

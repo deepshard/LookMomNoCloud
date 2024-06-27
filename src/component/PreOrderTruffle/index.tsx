@@ -1,6 +1,3 @@
-import Button from '../common/Button'
-import { shell } from 'electron';
-
 const PreOrderTruffle = () => {
   const handlePreOrder = () => {
     // TODO: Open the pre-order link in the default browser

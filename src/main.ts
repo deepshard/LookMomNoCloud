@@ -38,6 +38,7 @@ const createWindow = () => {
     width: 950,
     height: 690,
     titleBarStyle: "hidden",
+    trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
       devTools: true,
       nodeIntegration: true,

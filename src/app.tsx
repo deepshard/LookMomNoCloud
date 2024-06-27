@@ -14,6 +14,7 @@ function App() {
   return (
     <div>
       <div className="app-body">
+        <div className="clear-dotted-bg"/>
         <Toaster />
         <HashRouter>
           <QueryProvider>

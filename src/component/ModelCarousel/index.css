@@ -2,7 +2,6 @@
     width: 670px;
     height: auto;
     gap: 10px;
-    /* overflow: hidden; */
     scrollbar-width: thin;
     scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
     position: relative;

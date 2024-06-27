@@ -5,7 +5,6 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import { formatParams } from "../../utils/sysUtils";
 import { TModel } from "../../types/schemas";
 import { GridIcon, ListIcon, ErrorIcon } from "../SVGIcons";
-import Grid from "src/icons/Grid";
 
 interface SearchResultsProps {
   searchModels: TModel[] | null;

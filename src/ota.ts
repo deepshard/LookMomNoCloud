@@ -371,6 +371,7 @@ export class OTAUpdater {
     log(`Downloading server from: ${serverUrl}`);
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
     await this.downloadServer(serverUrl, "server.tar.gz", "server");
+    this.mainWindow.webContents.send("initialization-complete");
     log("Downloaded server successfully.");
   }
 }

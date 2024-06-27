@@ -1,5 +1,3 @@
-import os
-from utils import get_app_data_path
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from utils import get_db_path

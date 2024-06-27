@@ -1,4 +1,3 @@
-import os
 import itertools
 import psutil
 from pathlib import Path

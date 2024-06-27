@@ -34,7 +34,7 @@ const Featured = ({ news, isLoading = true, className, ...props }: FeaturedProps
         {/* {!isLoading ? <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">{news?.title}</h3> : <Skeleton className="title-base base-regular mt-[7px] -mb-[1px]" />} */}
         {!isLoading ? (
           <>
-            <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main !w-full">{getTitle()}</h3>
+            <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main !w-full line-clamp-1">{getTitle()}</h3>
             <p className="body-sm break-words line-clamp-2 base-regular text-surface-500">{getContent()}</p>
           </>
         ):(

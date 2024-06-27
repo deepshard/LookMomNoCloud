@@ -22,10 +22,11 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
+  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
-
   const navigate = useNavigate();
+
+
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -128,49 +129,49 @@ export default function Home() {
 
   return (
     <>
-      <div className="snap-y snap-mandatory">
-        <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-          <div className="w-[660px] flex flex-col justify-start items-center gap-5">
-            <div className="flex justify-start items-center gap-1.5 w-full">
-              <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
-              <p className="text-surface-main">{getWelcomeInfo().message}</p>
-            </div>
-            <ModelCarousel
-              models={storeHighlights}
-              isLoading={storeHighlights.length === 0}
-              installModel={installModelHandler}
-              runModels={runModelsHandler}
-              stopModel={stopModelHandler}
-              cleanupInstall={cleanupInstallHandler}
-              onModelClick={handleNavigate}
-              onRetry={retryHandler}
-            />
+      <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
+          <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
+            <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
+            <p className="text-surface-main">{getWelcomeInfo().message}</p>
+          </div>
+        <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
+          <ModelCarousel
+            models={storeHighlights}
+            isLoading={storeHighlights.length === 0}
+            installModel={installModelHandler}
+            runModels={runModelsHandler}
+            stopModel={stopModelHandler}
+            cleanupInstall={cleanupInstallHandler}
+            onModelClick={handleNavigate}
+            onRetry={retryHandler}
+          />
 
-            <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
-              <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
-                <FeaturedCarousel />
+          <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
+            <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
+              <FeaturedCarousel />
 
-                <div className="w-full flex justify-between gap-5">
-                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
-                    <div className="grid grid-cols-4 gap-6 p-5">
-                      {[...Array(8)].map((_, index) => (
-                        <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
-                      ))}
-                    </div>
-                    <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
+              <div className="w-full flex justify-between gap-5">
+                <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
+                  <div className="grid grid-cols-4 gap-6 p-5">
+                    {[...Array(8)].map((_, index) => (
+                      <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
+                    ))}
                   </div>
+                  <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
                 </div>
               </div>
-              <SystemInfoHardwareCarouselProvider>
-                <SystemInfoHardwareCarousel sysInfo={sysInfo} />
-              </SystemInfoHardwareCarouselProvider>
             </div>
+            <SystemInfoHardwareCarouselProvider>
+              <SystemInfoHardwareCarousel sysInfo={sysInfo} />
+            </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
       </div>
-
-      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
-        <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />
+      <AnimateModal show={showSearch} onClose={() => {
+        setShowSearch(false);
+        setShowDiscover(false);
+      }}>
+        <Search onModelClick={handleNavigate}/>
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
         <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick} />

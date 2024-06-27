@@ -1,6 +1,5 @@
 import { createRoot } from "react-dom/client";
 import Home from "./Home";
-import { Toaster } from "react-hot-toast";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
 import QueryProvider from "./lib/react-query/QueryProvider";
@@ -15,7 +14,6 @@ function App() {
     <div>
       <div className="app-body">
         <div className="clear-dotted-bg"/>
-        <Toaster />
         <HashRouter>
           <QueryProvider>
             <AppWrapperProvider>

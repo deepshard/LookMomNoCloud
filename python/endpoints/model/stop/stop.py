@@ -1,7 +1,6 @@
 import os
 import signal
 from loguru import logger
-from state import global_state_manager
 from sqlalchemy import select
 from models import RunningModel
 from db import get_db_session

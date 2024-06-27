@@ -8,6 +8,8 @@ import "./index.css";
 import "react-circular-progressbar/dist/styles.css";
 //@ts-ignore
 import downloadIcon from "../../assets/icons/download.svg";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 //@ts-ignore
 import playIcon from "../../assets/icons/play.svg";
 //@ts-ignore
@@ -40,6 +42,7 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
+  disabled?: boolean
   onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
@@ -47,7 +50,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   onRetry?: () => void;
 }
 
-const ModelWidget = ({ model, className = "", onInstall, onRun, onStop, onCleanup, onRetry, ...props }: ModelWidgetProps) => {
+const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun, onStop, onCleanup, onRetry, ...props }: ModelWidgetProps) => {
   useEffect(() => {
     return () => {
       onCleanup && onCleanup();
@@ -88,6 +91,10 @@ const ModelWidget = ({ model, className = "", onInstall, onRun, onStop, onCleanu
   };
 
   const getWidgetButton = () => {
+    if (disabled) {
+      return null
+    }
+
     switch (model.status) {
       case "DOWNLOADING":
         return model.error ? (
@@ -212,7 +219,7 @@ const ModelWidget = ({ model, className = "", onInstall, onRun, onStop, onCleanu
         </div>
       )}
       <div className={`model-widget base-regular ${className} relative`}>
-        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
+        <LazyLoadImage effect="blur" src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage} alt="" className={`w-full h-full object-cover scale-110 ${disabled && "blur-md"}`} />
 
         <div
           className={`
@@ -235,6 +242,10 @@ const ModelWidget = ({ model, className = "", onInstall, onRun, onStop, onCleanu
         </div>
       </div>
       {model.error && getErrorButton(model.error)}
+      {
+        disabled &&
+        getErrorButton("This model cannot fit in either the total memory or the available storage")
+      }
       {getWidgetButton()}
     </div>
   );

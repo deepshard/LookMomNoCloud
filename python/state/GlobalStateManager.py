@@ -1,5 +1,4 @@
 import aiohttp
-from loguru import logger
 from state.ModelManager import ModelManager
 
 

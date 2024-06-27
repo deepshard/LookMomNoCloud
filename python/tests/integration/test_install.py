@@ -1,7 +1,5 @@
 import pytest
 import json
-from fastapi.testclient import TestClient
-from server import app, init_state
 from utils import get_app_data_path, get_devices
 from tests.integration.data import models
 

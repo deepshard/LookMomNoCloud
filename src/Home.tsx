@@ -147,7 +147,7 @@ export default function Home() {
                       <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
                     ))}
                   </div>
-                  <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
+                  <p className="callout-regular text-surface-400 absolute bottom-[-25px] right-[50%] translate-x-[50%]">Models</p>
                 </div>
               </div>
             </div>

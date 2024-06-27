@@ -56,7 +56,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
       zIndex: totalCards - Math.abs(angleDiff),
       opacity: opacity,
       pointerEvents: Math.abs(angleDiff) <= anglePerCard ? "auto" : "none",
-      backgroundColor: "gray",
+      backgroundColor: "#5B5B5B",
     };
 
     return baseStyle;

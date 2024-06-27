@@ -57,7 +57,7 @@ interface LargeCarouselProps {
         zIndex: totalCards - Math.abs(angleDiff),
         opacity: index === activeIndex ? 1 : 0.5,
         pointerEvents: Math.abs(angleDiff) <= anglePerCard ? "auto" : "none",
-        backgroundColor: 'rgba(108, 108, 108, 1)',
+        backgroundColor: '#555',
         backdropFilter: "blur(60px)",
         padding: "20px",
         boxShadow: "0px 4.486px 33.645px 0px rgba(255, 255, 255, 0.15) inset, 0px -4.486px 22.43px 0px rgba(85, 85, 85, 0.10) inset, 0px 0px 10.066px 0px rgba(255, 255, 255, 0.10) inset, 0px 0px 16.822px 0px rgba(85, 85, 85, 0.10)",

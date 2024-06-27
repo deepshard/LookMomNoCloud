@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import ModelWidget from "../ModelWidget";
 import { TModel } from "../../types/schemas";
 import Carousel from "../Carousel/Carousel";

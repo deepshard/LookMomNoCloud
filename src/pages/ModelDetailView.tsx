@@ -4,13 +4,13 @@ import { formatDate, formatParams , canFitOnMachine } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
-import Icon from "../component/Icon";
-import Tag from "../component/Tag";
-import useModelActions from "../hooks/modelActions/useModelActions";
 import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
+import Icon from "../component/Icon";
+import Tag from "../component/Tag";
+import useModelActions from "../hooks/modelActions/useModelActions";
 import Tooltip from "../component/common/Tooltip";
 // @ts-ignore
 import installIcon from "../assets/icons/install.svg";
@@ -32,6 +32,8 @@ import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
 import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
 //@ts-ignore
 import errorIcon from '../assets/icons/error.svg'
+
+
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];

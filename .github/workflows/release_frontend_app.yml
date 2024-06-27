@@ -52,7 +52,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Frontend app release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
-            New version: ${{ env.NEW_VERSION }}
+            New version: `${{ env.NEW_VERSION }}`
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

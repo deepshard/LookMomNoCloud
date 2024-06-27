@@ -138,7 +138,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
-            New Version: `${{ github.sha }}`
+            New Version: `${{ github.sha }}` | `${{ matrix.os }}`
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

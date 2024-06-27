@@ -12,7 +12,7 @@ const NavBar = () => {
 
   return (
     <>
-      {!showSearch && (
+      {(!(showSearch || showAugmentations)) && (
         <div className="navbar">
           <div className="draggable-nav absolute top-0 left-0 right-0 h-[20px] bg-transparent z-10" />
 

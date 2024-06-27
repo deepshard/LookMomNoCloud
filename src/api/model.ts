@@ -37,12 +37,15 @@ export const startInstallModel = async (model: TModel, signal: AbortSignal, call
                   // Decode and process the chunk
                   const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
                   const downloadResponse: Partial<TModel> = JSON.parse(text);
+                  if(downloadResponse.error) {
+                    downloadResponse.status = "NOT_DOWNLOADED"
+                  }
                   callback(downloadResponse)
                   controller.enqueue(value);
                   push();
                 });
               } catch (error: any) {
-                callback({ ...model, error: `${error.message ? error.message : error}` })
+                callback({ ...model, status: "NOT_DOWNLOADED", error: `${error.message ? error.message : error}` })
                 controller.error(error);
               }
             }
@@ -84,12 +87,15 @@ export const startRunModels = async (models: TModel[], signalController: AbortCo
               // Decode and process the chunk
               const text = (new TextDecoder().decode(value)).substring(6).trim(); // will remove the 'data: ' prefix
               const runResponse: Partial<TModel> = JSON.parse(text);
+              if(runResponse.error) {
+                runResponse.status = "STOPPED"
+              }
               callback(runResponse, signalController)
               controller.enqueue(value);
               push();
             });
           } catch (error: any) {
-            models.length && callback({ ...models[0], error: `${error.message ? error.message : error}` }, signalController)
+            models.length && callback({ ...models[0], status: "STOPPED", error: `${error.message ? error.message : error}` }, signalController)
             controller.error(error);
           }
         }

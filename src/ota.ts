@@ -4,7 +4,7 @@ import path from "path";
 import si from "systeminformation";
 import axios from "axios";
 import fs from "fs";
-import unzipper from 'unzipper';
+import extract from "extract-zip"
 import { log } from "./log";
 
 
@@ -62,9 +62,8 @@ export class OTAUpdater {
       }
 
       // Unzip file to temp folder
-      await fs.createReadStream(inputPath)
-        .pipe(unzipper.Extract({ path: tmpPath }))
-        .promise();
+      log(`Unzipping ${inputPath} to ${tmpPath}`);
+      await extract(inputPath, { dir: tmpPath });
 
       // Find the server folder in the temp folder
       const extractedContents = fs.readdirSync(tmpPath);

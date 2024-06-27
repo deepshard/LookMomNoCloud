@@ -1,4 +1,4 @@
-import { useState, useEffect, FC } from 'react'
+import React, { useState, useEffect, FC, CSSProperties } from 'react'
 import './index.css'
 
 interface CarouselProps {
@@ -16,25 +16,59 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIndex((current) => (current + 1) % cards.length)
-    }, 3000) // Change slide every 3 seconds
+    }, 1000) // Change slide every 3 seconds
     return () => clearInterval(interval)
   }, [cards.length])
 
-  const getCardStyle = (index: number): string => {
-    const diff = (index - activeIndex + cards.length) % cards.length
-    if (diff === 0) return 'card active'
-    if (diff === 1) return 'card next'
-    if (diff === cards.length - 1) return 'card prev'
-    return 'card'
+  const getCardStyle = (index: number): CSSProperties => {
+    const totalCards = cards.length
+    const anglePerCard = 360 / totalCards
+    
+    // Calculate the shortest angular distance
+    let angleDiff = ((index - activeIndex + totalCards) % totalCards) * anglePerCard
+    if (angleDiff > 180) angleDiff -= 360
+
+    const radius = 100 // Increased radius to spread cards out more
+    const maxVisibleCards = 5 // Number of cards visible on each side
+
+    // Calculate the position on the circle
+    const x = Math.sin(angleDiff * Math.PI / 180) * radius
+    const z = Math.cos(angleDiff * Math.PI / 180) * radius - radius
+
+    // Calculate opacity and scale based on distance from active card
+    const distance = Math.abs(angleDiff) / anglePerCard
+    const opacity = 1
+    const scale = Math.max(0.7, 1 - distance * 0.1)
+
+    const baseStyle: CSSProperties = {
+      position: 'absolute',
+      width: '135px',
+      height: '83px',
+      transition: 'all 0.5s ease',
+      borderRadius: '13px',
+      color: 'white',
+      overflow: 'hidden',
+      transform: `translateX(${x}px) translateZ(${z}px) rotateY(${-angleDiff}deg) scale(${scale*1.3})`,
+      zIndex: totalCards - Math.abs(angleDiff),
+      opacity: opacity,
+      pointerEvents: Math.abs(angleDiff) <= anglePerCard ? 'auto' : 'none',
+      backgroundColor: 'gray',
+    }
+
+    return baseStyle
   }
 
   return (
     <div className="carousel-container">
       <div className="carousel-backdrop widget-3d"></div>
-      <div className="carousel-content">
+      <div className="carousel-content" style={{
+        transformStyle: 'preserve-3d',
+        perspective: '1000px',
+        transform: 'translateZ(-50px)', // Move the carousel back slightly
+      }}>
         {cards.map((card, index) => (
-          <div key={card.id} className={`${getCardStyle(index)} cursor-pointer`}>
-            <div className="card-content glass-3d">
+          <div key={card.id} style={getCardStyle(index)} className="cursor-pointer">
+            <div className="card-content glass-3d bg-surface-fill">
               <div className="card-header">
                 <img src={card.icon} className='icon' alt="icon" />
                 <h3 className="card-title">{card.title}</h3>
@@ -49,4 +83,4 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
   )
 }
 
-export default Carousel;
+export default Carousel

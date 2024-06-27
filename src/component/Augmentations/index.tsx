@@ -52,6 +52,34 @@ export const Placeholder: React.FC = () => {
       content: "And this is what's in the third card",
       color: '#45B7D1',
     },
+
+    // {
+    //   id: 4,
+    //   title: 'Genetic Algorithms',
+    //   icon: '/src/assets/icons/mcts.svg',
+    //   content: "And this is what's in the third card",
+    //   color: '#45B7D1',
+    // },
+    
+
+    // {
+    //   id: 5,
+    //   title: 'Genetic Algorithms',
+    //   icon: '/src/assets/icons/unlock.svg',
+    //   content: "And this is what's in the third card",
+    //   color: '#45B7D1',
+    // },
+    
+
+    // {
+    //   id: 6,
+    //   title: 'Genetic Algorithms',
+    //   icon: '/src/assets/icons/unlock.svg',
+    //   content: "And this is what's in the third card",
+    //   color: '#45B7D1',
+    // },
+    
+    
   ]
 
   return (

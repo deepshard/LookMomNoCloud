@@ -5,8 +5,8 @@ import { TModel } from "../../types/schemas";
 const useModelActions = () => {
   const installStreamControllers: { [key: string]: AbortController } = {};
 
-  const { mutateAsync: startStopModel, isPending: isStoppingModel } = useStopModel();
-  const { mutateAsync: startDeleteModel, isPending: isDeletingModel } = useDeleteModel();
+  const {mutateAsync: startStopModel } = useStopModel()
+  const {mutateAsync: startDeleteModel } = useDeleteModel()
 
   const installModel = async (model: TModel, controller = new AbortController(), callback: (response: Partial<TModel>) => void) => {
     installStreamControllers[model.id] = controller;

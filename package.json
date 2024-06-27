@@ -45,6 +45,7 @@
       }
     },
     "dmg": {
+      "title": "Look Mom No Cloud™",
       "background": "src/assets/icons/dmg-background.png",
       "window": {
         "width": 537,

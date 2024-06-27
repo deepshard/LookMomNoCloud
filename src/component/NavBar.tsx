@@ -7,8 +7,9 @@ import searchIcon from "../assets/icons/search-icon.svg";
 import gearIcon from "../assets/icons/gear.svg";
 
 
+
 const NavBar = () => {
-  const { setShowSearch, showSearch, setShowDiscover } = useHomePageContext();
+  const { setShowSearch, showSearch, setShowDiscover, showAugmentations } = useHomePageContext();
 
   return (
     <>

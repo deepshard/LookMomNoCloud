@@ -60,7 +60,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ search, setSearch, prediction
       />
       <Input
         value={caseSensitivePredictiveText}
-        className="-mx-[11px] h-[38px] bg-transparent text-[32px] border-none text-gray-500 absolute top-0 left-0 z-0 capitalize"
+        className="-mx-[11px] h-[38px] bg-transparent text-[32px] border-none text-surface-400 absolute top-0 left-0 z-0 capitalize"
         readOnly
       />
     </div>

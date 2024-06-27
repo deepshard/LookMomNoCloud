@@ -125,7 +125,7 @@ function ModelDetailView() {
         <div className='flex justify-start items-center gap-1.5 text-surface-main'>
           <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
 
-          <p>An error occurred</p>
+          <p>An Error Occurred</p>
         </div>
 
         {/* Divider */}

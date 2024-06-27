@@ -94,7 +94,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
             ))}
         <AnimatePresence>
           {showModels &&
-            sortedModels.map((model) => (
+            [...sortedModels, ...sortedModels].map((model) => (
               <motion.div
                 key={`model-wrapper-${model.id}`}
                 className="model-item-wrapper"

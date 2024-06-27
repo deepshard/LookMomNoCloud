@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState, CSSProperties } from "react";
+import { FC, useEffect, useState, CSSProperties } from "react";
 import '../Augmentations/index.css'
 import Tag from '../Tag'
 
@@ -85,9 +85,9 @@ interface LargeCarouselProps {
               className="cursor-pointer"
             >
               <div className="card-content bg-surface-fill">
-                <div className="card-header  mb-[10px]">
+                <div className="card-header mb-[10px]">
                   <img src={card.icon} className="w-[16px] h-[13px]" alt="icon" />
-                  <h3 className="large-card-title text-3xl ml-[3px]">{card.title}</h3>
+                  <h3 className="large-card-title text-surface-main ml-[3px]">{card.title}</h3>
                 </div>
                 <div className="card-divider"></div>
                 <p className="large-card-description text-surface-500">

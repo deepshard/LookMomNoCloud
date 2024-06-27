@@ -75,7 +75,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
             <div className="card-content glass-3d bg-surface-fill">
               <div className="card-header">
                 <img src={card.icon} className='icon' alt="icon" />
-                <h3 className="card-title">{card.title}</h3>
+                <h3 className="card-title text-surface-main">{card.title}</h3>
               </div>
               <div className="card-divider"></div>
               <p className="card-description text-surface-500">{card.content}</p>

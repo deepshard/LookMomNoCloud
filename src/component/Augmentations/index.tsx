@@ -42,20 +42,10 @@ export const Placeholder: React.FC = () => {
     {
       id: 4,
       title: 'Genetic Algorithms',
-      icon: '/src/assets/icons/mcts.svg',
-      content: "And this is what's in the third card",
+      icon: '/src/assets/icons/twistedarrow.svg',
+      content: "This augmentation allows your model to attach a fitness function to it's comletions, and evolve over time to generate better and better completions. This can be useful for long term projects, but may slow down response times.",
       color: '#45B7D1',
     },
-    
-
-    {
-      id: 5,
-      title: 'Genetic Algorithms',
-      icon: '/src/assets/icons/unlock.svg',
-      content: "And this is what's in the third card",
-      color: '#45B7D1',
-    },
-  
   ]
 
   return (

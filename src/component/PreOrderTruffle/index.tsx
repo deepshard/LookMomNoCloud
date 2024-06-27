@@ -30,4 +30,4 @@ const PreOrderTruffle = () => {
   )
 }
 
-export default PreOrderTruffle
+export default PreOrderTruffle;

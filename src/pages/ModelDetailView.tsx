@@ -101,17 +101,17 @@ function ModelDetailView() {
     switch (modelData?.status) {
       case "RUNNING":
         return (
-          <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-between">
+          <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-start">
             <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[173px] h-[32px]">
               <img src={runningManIcon} className="mr-2 w-[16px] h-[16px]" />
-              <p className="text-surface-500 text-xs">https://localhost:{modelData.port}</p>
+              <p className="text-surface-500 text-xs">http://localhost:{modelData.port}</p>
             </div>
-            <div
+            {/* <div
               onClick={() => window.open(`https://google.com/search?q=${modelData.name}`)}
               className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px] cursor-pointer">
               <img src={docsIcon} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">Docs</p>
-            </div>
+            </div> */}
           </div>
         );
       default:
@@ -279,8 +279,8 @@ function ModelDetailView() {
           <div className="w-full h-full flex flex-col items-center space-y-auto">
             <div className="relative flex flex-col justify-start items-center">
               <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
-                {getModelInfoHeader()}
                 <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full scale-110" />
+                {getModelInfoHeader()}
               </div>
 
               <div className=" -bottom-10 flex flex-col items-start gap-0.5 p-6">

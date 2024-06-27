@@ -111,6 +111,23 @@ const ModelWidget = ({
     }
   }
 
+  const getErrorContent = (errorMessage: string) => {
+    return (
+      <div className='w-full flex flex-col rounded-xs bg-white/5 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
+        <div className='flex justify-start items-center gap-1.5 text-surface-main'>
+          <img src={errorIcon} alt="errorIcon" className="error-icon" />
+
+          <p>An error occurred</p>
+        </div>
+
+        {/* Divider */}
+        <div className='w-full h-[0.5px] bg-surface-100' />
+
+        <p className='body-xs text-surface-500'>{errorMessage}</p>
+      </div>
+    );
+  }
+
   const getErrorButton = (errorMessage: string) => {
     return (
       <Tooltip
@@ -122,21 +139,10 @@ const ModelWidget = ({
         }}
         placement="bottom"
         color="bg-wdget"
-        title="" // was {errorMessage}
+        title={getErrorContent(errorMessage)}
         
       >
-        <div className='w-full flex flex-col rounded-xs bg-white/5 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
-          <div className='flex justify-start items-center gap-1.5 text-surface-main'>
-            <img src={errorIcon} alt="errorIcon" className="error-icon" />
-
-            <p>An error occurred</p>
-          </div>
-
-          {/* Divider */}
-          <div className='w-full h-[0.5px] bg-surface-100' />
-
-          <p className='body-xs text-surface-500'>{errorMessage}</p>
-        </div>
+        <img src={errorIcon} alt="errorIcon" className="error-icon" />
       </Tooltip>
     )
   }

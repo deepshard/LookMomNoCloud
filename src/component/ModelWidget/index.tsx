@@ -74,6 +74,7 @@ const OverlaySVG = ({ width = 128, height = 82 }) => (
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel
+  disabled?: boolean
   onInstall?: () => void
   onRun?: () => void
   onStop?: () => void
@@ -82,6 +83,7 @@ interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ModelWidget = ({
   model,
+  disabled = false,
   className = '',
   onInstall,
   onRun,
@@ -130,6 +132,10 @@ const ModelWidget = ({
   }
 
   const getWidgetButton = () => {
+    if (disabled) {
+      return null
+    }
+
     switch (model.status) {
       case 'DOWNLOADING':
         return (
@@ -220,9 +226,9 @@ const ModelWidget = ({
         </div>
       )}
       <div
-        className={`model-widget base-regular ${className} relative`}
+        className={`model-widget base-regular ${className} relative ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
       >
-        <img src={model.backgroundImage} alt="" className="w-full h-full absolute inset-0 object-cover" />
+        <img src={model.backgroundImage} alt="" className={`w-full h-full absolute inset-0 object-cover ${disabled && "blur-md"}`} />
   
         <div
           className={`
@@ -247,6 +253,10 @@ const ModelWidget = ({
           </div>
         </div>
       </div>
+      {
+        disabled &&
+        getErrorButton("This model cannot fit in either the total memory or the available storage")
+      }
       { 
         model.error && 
         getErrorButton(model.error)

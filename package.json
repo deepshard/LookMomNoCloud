@@ -36,7 +36,9 @@
         "dmg",
         "zip"
       ],
-      "notarize": true
+      "notarize": {
+        "teamId": "4SDV2299VV"
+      }
     },
     "linux": {
       "target": [

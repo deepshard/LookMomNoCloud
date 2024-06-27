@@ -43,7 +43,7 @@ jobs:
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
           sed -i.bak "s/\"version\": \".*\"/\"version\": \"$new_version\"/" package.json && rm package.json.bak
           bun electron-forge make
-          NODE_ENV=production AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} bun electron-builder build --mac --linux --publish always
+          NODE_ENV=production AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} APPLE_ID=accounts@deepshard.org APPLE_APP_SPECIFIC_PASSWORD=rhbl-cubs-tult-hrwy APPLE_TEAM_ID=4SDV2299VV bun electron-builder build --mac --linux --publish always
 
       - name: Notify Slack
         if: always()
@@ -52,7 +52,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Frontend app release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
-            New version: ${{ env.NEW_VERSION }}
+            New version: `${{ env.NEW_VERSION }}`
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

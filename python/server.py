@@ -109,6 +109,10 @@ async def delete_model(model_id: str):
 
 
 if __name__ == "__main__":
+    if sys.platform == "linux":
+        os.environ["CUDA_PATH"] = os.path.join(sys._MEIPASS, "cuda")
+        logger.info(f"-- Setting CUDA_PATH: {os.environ['CUDA_PATH']} --")
+
     import uvicorn
     import warnings
     import multiprocessing
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     warnings.simplefilter("always")
     # multiprocessing and pyinstaller dont play nicely together
     multiprocessing.freeze_support()
-    multiprocessing.set_start_method("spawn" if sys.platform == "darwin" else "fork", force=True)
+    multiprocessing.set_start_method("spawn", force=True)
 
     # TODO: replace with proper certificates (ok for v1)
     os.environ["SSL_CERT_FILE"] = certifi.where()

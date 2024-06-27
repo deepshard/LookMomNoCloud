@@ -359,25 +359,32 @@ def convert_quantize_compile(
         config_file_compile = json.load(config_file)
     if not compile_path.exists():
         logger.info(f"Compiling model at {quant_weights_path}")
-        compile(
-            config=config_file_compile,
-            quantization=quantization_obj,
-            model_type=model,
-            target=target,
-            opt=OptimizationFlags.from_str("O2"),
-            build_func=build_func,
-            system_lib_prefix="auto",
-            output=quant_weights_path / "compilation.so",
-            overrides=ModelConfigOverride(
-                context_window_size=None,
-                sliding_window_size=None,
-                prefill_chunk_size=None,
-                attention_sink_size=None,
-                max_batch_size=1,
-                tensor_parallel_shards=shards,
-            ),
-            debug_dump=None,
-        )
+        try:
+            compile(
+                config=config_file_compile,
+                quantization=quantization_obj,
+                model_type=model,
+                target=target,
+                opt=OptimizationFlags.from_str("O2"),
+                build_func=build_func,
+                system_lib_prefix="auto",
+                output=quant_weights_path / "compilation.so",
+                overrides=ModelConfigOverride(
+                    context_window_size=None,
+                    sliding_window_size=None,
+                    prefill_chunk_size=None,
+                    attention_sink_size=None,
+                    max_batch_size=1,
+                    tensor_parallel_shards=shards,
+                ),
+                debug_dump=None,
+            )
+        except Exception as e:
+            import traceback
+
+            logger.error(f"Failed to compile model: {e}")
+            logger.error(traceback.format_exc())
+            raise e
     else:
         logger.info(
             f"""Already compiled. Skipping compilation for {

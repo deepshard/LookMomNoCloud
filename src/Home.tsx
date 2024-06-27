@@ -14,6 +14,10 @@ import { TruffleUpdateInfo } from "./ota";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
 import AugmentationsView from "./component/AugmentationsView";
+// @ts-ignore
+import dayIcon from "./assets/icons/day.svg";
+// @ts-ignore
+import nightIcon from "./assets/icons/night.svg";
 
 
 interface WelcomeInfo {
@@ -104,17 +108,17 @@ export default function Home() {
     const hours = date.getHours();
     if (hours >= 5 && hours < 12) {
       return {
-        icon: "/src/assets/icons/day.svg",
+        icon: dayIcon,
         message: "Good morning!",
       };
     } else if (hours >= 12 && hours < 20) {
       return {
-        icon: "/src/assets/icons/day.svg",
+        icon: dayIcon,
         message: "Good afternoon",
       };
     } else {
       return {
-        icon: "/src/assets/icons/night.svg",
+        icon: nightIcon,
         message: "Good evening",
       };
     }

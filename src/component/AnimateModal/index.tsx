@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect } from 'react'
+import closeIcon from "../../assets/icons/close.svg";
 
 interface AnimateModalProps {
     children: React.ReactNode
@@ -28,7 +29,7 @@ const AnimateModal = ({children, show, onClose}: AnimateModalProps) => {
         >
           <div className='flex absolute cursor-pointer h-[30px] w-[30px] bg-surface-main/5 rounded-full top-[20px] right-[20px] z-[9999] justify-center items-center text-surface-750'  onClick={onClose}>
             {/* <h1>Esc</h1> */}
-            <img src="/src/assets/icons/close.svg" alt="" className="h-3 fill-surface-500" />
+            <img src={closeIcon} alt="" className="h-3 fill-surface-500" />
           </div>
             {children}
         </motion.div>

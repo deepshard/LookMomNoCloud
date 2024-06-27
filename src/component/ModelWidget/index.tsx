@@ -8,6 +8,7 @@ import './index.css'
 import 'react-circular-progressbar/dist/styles.css'
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
+// @ts-ignore
 import downloadIcon from '../../assets/icons/download.svg'
 //@ts-ignore
 import playIcon from '../../assets/icons/play.svg'

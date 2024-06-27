@@ -32,6 +32,14 @@ import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
 import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
 //@ts-ignore
 import errorIcon from '../assets/icons/error.svg'
+// @ts-ignore
+import runningManIcon from "../assets/icons/running-man.svg";
+// @ts-ignore
+import docsIcon from "../assets/icons/docs.svg";
+// @ts-ignore
+import authorIcon from "../assets/icons/author.svg";
+// @ts-ignore
+import modelSizeIcon from "../assets/icons/modelsize.svg";
 
 
 
@@ -93,13 +101,13 @@ function ModelDetailView() {
         return (
           <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-between">
             <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[173px] h-[32px]">
-              <img src={"/src/assets/icons/running-man.svg"} className="mr-2 w-[16px] h-[16px]" />
+              <img src={runningManIcon} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">https://localhost:{modelData.port}</p>
             </div>
             <div
               onClick={() => window.open(`https://google.com/search?q=${modelData.name}`)}
               className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px] cursor-pointer">
-              <img src={"/src/assets/icons/docs.svg"} className="mr-2 w-[16px] h-[16px]" />
+              <img src={docsIcon} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">Docs</p>
             </div>
           </div>
@@ -285,8 +293,8 @@ function ModelDetailView() {
                 </p>
               )}
               <div className="flex gap-2.5 text-sm text-white text-opacity-80">
-              <Tag imgSrc="/src/assets/icons/author.svg" text={modelData?.author || ""} />
-                <Tag imgSrc="/src/assets/icons/modelsize.svg" text={formatParams(modelData?.size)} />
+              <Tag imgSrc={authorIcon} text={modelData?.author || ""} />
+                <Tag imgSrc={modelSizeIcon} text={formatParams(modelData?.size)} />
 
                 <Tag imgSrc={downloadCircleIcon} text={formatParams(modelData?.downloads)} />
 

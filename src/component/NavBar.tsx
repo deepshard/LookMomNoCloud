@@ -19,7 +19,7 @@ const NavBar = () => {
             <source src={discoverVid} type="video/mp4"/>
           </video>
 
-          <p className="text-surface-main">Discover</p>
+          <p className="text-surface-750 hover:text-surface-500">Discover</p>
         </div>
 
         <div className="h-4 w-[0.5px] bg-surface-100" />

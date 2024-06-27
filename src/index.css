@@ -274,6 +274,13 @@ div.slick-slide>div {
   @apply rounded-sm !important;
 }
 
+.ant-tooltip p {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
 @layer base {}
 
 @layer utilities {

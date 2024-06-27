@@ -17,7 +17,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIndex((current) => (current + 1) % cards.length)
-    }, 1000) // Change slide every 3 seconds
+    }, 3000) // Change slide every 3 seconds
     return () => clearInterval(interval)
   }, [cards.length])
 

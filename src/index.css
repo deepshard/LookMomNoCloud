@@ -259,7 +259,7 @@ div.slick-slide>div {
 }
 
 .ant-tooltip .ant-tooltip-inner {
-  @apply rounded-xs !important;
+  @apply rounded-sm !important;
 }
 
 @layer base {}

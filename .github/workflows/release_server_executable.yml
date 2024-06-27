@@ -55,6 +55,7 @@ jobs:
           conda activate truffle
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
+          sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
 
       - name: Import certificate to keychain
         if: matrix.os == 'macos-latest'
@@ -88,21 +89,27 @@ jobs:
       #       fi
       #     fi
 
-      - name: Run integration tests
+      - name: Copy extra files
         run: |
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle
-          echo "Copying alembic migrations"
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
-          cd python/dist/server 
-          if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            nohup ./server &
-            sleep 5
-            curl --retry 5 --retry-connrefused http://localhost:8899
-            cd ../../
-            PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
+          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+            cp -rL /usr/local/cuda python/dist/server/_internal/cuda
           fi
+
+      - name: Run integration tests
+        if: matrix.os == 'macos-latest'
+        run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+          cd python/dist/server 
+          nohup ./server &
+          sleep 5
+          curl --retry 5 --retry-connrefused http://localhost:8899
+          cd ../../
+          PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
 
       - name: Archive server executable
         run: |

@@ -1,10 +1,10 @@
-import { BrowserWindow } from 'electron/main';
 import Button from '../common/Button'
 import { shell } from 'electron';
 
 const PreOrderTruffle = () => {
   const handlePreOrder = () => {
     // TODO: Open the pre-order link in the default browser
+    window.electronShell.openExternal('https://preorder.itsalltruffles.com/');
   };
 
   return (

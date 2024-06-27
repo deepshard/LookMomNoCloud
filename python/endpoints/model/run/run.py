@@ -296,8 +296,11 @@ async def run_models_generator(model_ids: list[str]):
         await asyncio.sleep(2)
 
     # Immediately reserve port numbers for the models
-    ports = [find_port() for _ in model_ids]
-    global_state_manager.model_manager.reserve_ports(ports)
+    ports = []
+    for _ in model_ids:
+        port = find_port()
+        global_state_manager.model_manager.reserve_port(port)
+        ports.append(port)
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")

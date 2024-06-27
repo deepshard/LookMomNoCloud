@@ -86,4 +86,4 @@ async def model_installed(model_downloaded):
 @pytest_asyncio.fixture
 async def model_running(model_installed):
     model_id = models[0]["id"]
-    await run_model(model_id, Quantization.Q0F16, 0.85, 1)
+    await run_model(model_id, Quantization.Q0F16, 0.85, 1, 8900)

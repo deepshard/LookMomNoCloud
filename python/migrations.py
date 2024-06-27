@@ -8,7 +8,7 @@ load_dotenv()
 
 
 def get_alembic_path():
-    return "alembic" if os.getenv("ENV") == "dev" else "server/alembic"
+    return "alembic"
 
 
 def run_migrations():

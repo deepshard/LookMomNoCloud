@@ -9,6 +9,7 @@ import zlib from "zlib";
 import stream from "stream";
 import { promisify } from "util";
 import unzipper from 'unzipper';
+import { log } from "./log";
 
 
 interface ServerUpdateInformation {
@@ -93,7 +94,7 @@ export class OTAUpdater {
       fs.renameSync(path.join(tmpPath, serverDir), outputPath);
       fs.rmSync(tmpPath, { recursive: true, force: true });
 
-  
+
       // Delete .zip
       fs.unlinkSync(inputPath);
       return outputPath;
@@ -140,7 +141,7 @@ export class OTAUpdater {
       // If file does not exist, we want to just get the latest version from S3
       latestHash = "";
     }
-  
+
     // Get latest hash latest.txt on S3
     const url = "https://truffle-binaries.s3.amazonaws.com/latest.txt";
     let response: any = null;
@@ -149,12 +150,12 @@ export class OTAUpdater {
     } catch (error) {
       return null;
     }
-  
+
     // Compare hashes
     if (response && latestHash !== response.data) {
       return response.data.trim();
     }
-  
+
     return null;
   }
 
@@ -162,13 +163,13 @@ export class OTAUpdater {
     const response = await axios.head(url);
     return parseInt(response.headers["content-length"]);
   }
-  
+
 
   checkForAppUpdate = async () => {
     try {
       const appUpdateInfo = await this.appUpdater.checkForUpdates();
       const appUpdateAvailable = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
-  
+
       if (appUpdateAvailable) {
         return appUpdateInfo;
       }
@@ -313,6 +314,7 @@ export class OTAUpdater {
     const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
     const versionPath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     if (!fs.existsSync(serverPath) || !fs.existsSync(versionPath)) {
+      log("Initialization required");
       this.mainWindow.webContents.send("initialization-required");
       return true;
     }
@@ -321,9 +323,12 @@ export class OTAUpdater {
   }
 
   downloadInitialServer = async () => {
+    log("Starting download of initial server.");
     // Get platform information
     const osInfo = await si.osInfo();
+    log(`OS Information: ${JSON.stringify(osInfo)}`);
     const graphicsInfo = await si.graphics();
+    log(`Graphics Information: ${JSON.stringify(graphicsInfo)}`);
 
     // Get GPU info
     let gpu;
@@ -331,6 +336,7 @@ export class OTAUpdater {
       const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2"));
       if (!isMetal) {
         this.mainWindow.webContents.send("error", "Only M1/M2 macs are supported for now");
+        log("Unsupported GPU: Non-Metal GPU on macOS.");
         return;
       }
       gpu = "metal";
@@ -338,11 +344,13 @@ export class OTAUpdater {
       const isCuda = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].vendor.toLowerCase().includes("nvidia"));
       if (!isCuda) {
         this.mainWindow.webContents.send("error", "Only Nvidia GPUs are supported for now");
+        log("Unsupported GPU: Non-Nvidia GPU on Linux.");
         return;
       }
       gpu = "cuda";
     } else {
       this.mainWindow.webContents.send("error", "Only MacOS and Linux are supported for now");
+      log("Unsupported OS: " + osInfo.platform);
       return;
     }
 
@@ -352,6 +360,7 @@ export class OTAUpdater {
     try {
       response = await axios.get(url);
     } catch (error) {
+      log("Failed to retrieve latest hash from S3");
       return null;
     }
 
@@ -363,7 +372,9 @@ export class OTAUpdater {
 
     // Download server
     const serverUrl = `https://truffle-binaries.s3.amazonaws.com/${response.data.trim()}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
+    log(`Downloading server from: ${serverUrl}`);
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
     await this.downloadServer(serverUrl, "server.tar.gz", "server");
+    log("Downloaded server successfully.");
   }
 }

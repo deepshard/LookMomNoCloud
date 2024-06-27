@@ -463,7 +463,7 @@ async def test_run_kill_previous_models(session_fixture, mock_mlc, model_weights
         "id": ID,
         "status": "RUNNING",
         "instance": 2,
-        "port": 8899,
+        "port": 8900,
         "error": None,
     }
     assert responses[5] == {
@@ -531,5 +531,5 @@ def test_find_port_run_queue(mocker):
 
     assert find_port() == 8899
 
-    global_state_manager.model_manager.reserve_ports([8899])
+    global_state_manager.model_manager.reserve_port(8899)
     assert find_port() == 8900

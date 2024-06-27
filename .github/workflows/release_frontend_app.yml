@@ -1,0 +1,59 @@
+name: Release frontend app
+
+on:
+  pull_request:
+    branches:
+      - release
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.14.0'
+
+      - name: Install Bun
+        run: npm install -g bun
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Import certificate to keychain
+        run: |
+          echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
+          security create-keychain -p temporary build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p temporary build.keychain
+          security import certificate.p12 -k build.keychain -P runescape -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k temporary build.keychain
+          security list-keychains -d user -s build.keychain
+          security find-identity -v -p codesigning
+
+      - name: Publish
+        run: |
+          latest_version=$(curl -s https://truffle-fe.s3.amazonaws.com/latest-mac.yml | grep "version:" | awk '{print $2}')
+          echo "** Latest version: $latest_version **"
+          new_version=$(echo $latest_version | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+          sed -i.bak "s/\"version\": \".*\"/\"version\": \"$new_version\"/" package.json && rm package.json.bak
+          bun electron-forge make
+          NODE_ENV=production AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} bun electron-builder build --mac --linux --publish always
+
+      - name: Notify Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Frontend app release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
+            New version: ${{ env.NEW_VERSION }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}
+

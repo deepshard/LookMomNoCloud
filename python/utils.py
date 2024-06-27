@@ -7,6 +7,9 @@ import subprocess
 import tvm
 from pathlib import Path
 from truffle_types import FileInfo, Quantization
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_disk_usage(folder_path: Path) -> int:

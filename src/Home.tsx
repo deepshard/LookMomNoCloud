@@ -123,7 +123,7 @@ export default function Home() {
     <>
       <div className="snap-y snap-mandatory">
         <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-          <div className="w-[660px] flex flex-col justify-start items-center gap-5">
+          <div className="w-[660px] flex flex-col justify-start items-center gap-[14px]">
             <div className="flex justify-start items-center gap-1.5 w-full">
               <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
               <p className="text-surface-main">{getWelcomeInfo().message}</p>

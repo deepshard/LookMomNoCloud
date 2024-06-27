@@ -35,6 +35,7 @@
       }
     ],
     "mac": {
+      "icon": "src/assets/icons/truffle-logo.png",
       "target": [
         "dmg",
         "zip"
@@ -43,7 +44,11 @@
         "teamId": "4SDV2299VV"
       }
     },
+    "dmg": {
+      "background": "src/assets/icons/dmg-background.png"
+    },
     "linux": {
+      "icon": "src/assets/icons/truffle-logo.png",
       "target": [
         {
           "target": "AppImage",

@@ -144,7 +144,6 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
             })}
             className="w-full h-full"
           />
-          <div className="w-full h-full bg-gradient-to-t from-black to-transparent from-[1%] to-40% absolute top-0" />
         </motion.div>
       </div>
       <div ref={scrollViewRef} className="px-[16px] relative flex flex-col gap-[8px] scroll-view">

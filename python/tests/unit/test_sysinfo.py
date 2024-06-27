@@ -37,7 +37,6 @@ async def test_ram_change_detection(set_os, mocker):
         # Start the sysinfo generator
         generator = sysinfo_generator()
         initial_data = await generator.__anext__()  # Get initial data
-        print(initial_data)
 
         initial_ram = json.loads(initial_data.split("data: ")[1].strip())["resources"]["available"][
             "ram"

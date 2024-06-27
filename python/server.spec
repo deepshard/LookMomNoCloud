@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
-
+import os
+import sys
 
 datas = []
 binaries = []
@@ -12,24 +13,19 @@ for pkg in ['mlc_llm', 'tvm', 'aiosqlite']:
     binaries += b
     hiddenimports += h
 
+nvcc_path = '/usr/local/cuda/bin/nvcc'
+if sys.platform.startswith('linux'):
+    if os.path.exists(nvcc_path):
+        print(f"** NVCC found at {nvcc_path} **")
+        binaries.append((nvcc_path, 'nvcc'))
+    else:
+        print(f"** NVCC not found at {nvcc_path} **")
+        sys.exit(1)
+
 print("----- BINARIES -----")
 for b in binaries:
     print(b)
 print("--------------")
-
-nvcc_path = None
-if sys.platform.startswith('win'):
-    nvcc_path = os.path.join(os.environ.get('CUDA_PATH', ''), 'bin', 'nvcc.exe')
-elif sys.platform.startswith('linux'):
-    nvcc_path = '/usr/local/cuda/bin/nvcc'
-elif sys.platform == 'darwin':
-    nvcc_path = '/usr/local/cuda/bin/nvcc'
-
-if nvcc_path and os.path.exists(nvcc_path):
-    print(f"** NVCC found at {nvcc_path} **")
-    binaries.append((nvcc_path, 'nvcc'))
-else:
-    print("Warning: NVCC not found. Make sure CUDA is installed and CUDA_PATH is set correctly.")
 
 a = Analysis(
     ['server.py'],

@@ -119,6 +119,23 @@ function ModelDetailView() {
     }
   };
 
+  const getErrorContent = (errorMessage: string) => {
+    return (
+      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
+        <div className='flex justify-start items-center gap-1.5 text-surface-main'>
+          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
+
+          <p>An error occurred</p>
+        </div>
+
+        {/* Divider */}
+        <div className='w-full h-[0.5px] bg-surface-100' />
+
+        <p className='body-xs text-surface-500 leading-tight'>{errorMessage}</p>
+      </div>
+    );
+  }
+
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
@@ -213,7 +230,7 @@ function ModelDetailView() {
           }}
           placement="bottom"
           color="transparent"
-          title={"This model cannot fit in either the total memory or the available storage"}
+          title={getErrorContent("This model cannot fit in either the total memory or the available storage")}
         >
           <Icon
             src={errorIcon}

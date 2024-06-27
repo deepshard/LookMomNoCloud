@@ -2,7 +2,7 @@ import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
-import MyModels, { Placeholder } from "./component/Augmentations";
+import { Placeholder } from "./component/Augmentations";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
@@ -27,9 +27,9 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
+  const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
+  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
@@ -62,10 +62,6 @@ export default function Home() {
       window.ipc.onInitializationRequired(() => {});
     };
   }, []);
-  const handleMyModelClick = (model: TModel) => {
-    handleNavigate(model);
-    setShowMyModels(false);
-  };
 
   const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
     updateModels({

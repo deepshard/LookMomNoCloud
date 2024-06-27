@@ -28,17 +28,6 @@ const useSysInfo = (
   { rootUrl, addSysInfo, EventSourceFactory }: SysInfoHookProps
 ) => {
 
-  // useEffect(() => {
-  //   const eventSource = createEventSource(EventSourceFactory, `${rootUrl}/sysinfo`);
-
-  //   eventSource.onmessage = (event) => handleEventSourceMessage(event, addSysInfo);
-  //   eventSource.onerror = handleEventSourceError(eventSource);
-
-  //   return () => {
-  //     eventSource.close();
-  //   };
-  // }, []);
-
   const retryCount = useRef(0);
   const retryDelay = useRef(INITIAL_RETRY_DELAY);
 

@@ -9,7 +9,7 @@ import gearIcon from "../assets/icons/gear.svg";
 
 
 const NavBar = () => {
-  const { setShowSearch, showSearch, setShowDiscover, showAugmentations } = useHomePageContext();
+  const { setShowSearch, showSearch, showAugmentations, setShowDiscover } = useHomePageContext();
 
   return (
     <>

@@ -287,7 +287,7 @@ div.slick-slide>div {
 
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply relative flex justify-between items-center w-full z-10 top-0 px-5 py-3;
+    @apply absolute flex justify-between items-center w-full z-10 top-0 px-5 py-3;
   }
 
   /* --------  TYPOGRAPHY  -------- */

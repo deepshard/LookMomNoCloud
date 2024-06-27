@@ -6,9 +6,9 @@ const Layout = () => {
   return (
     <>
       <HomePageProvider>
-        <section>
+        {/* <section>
           <NavBar />
-        </section>
+        </section> */}
         <section className="flex-1 flex-center">
           <Outlet />
         </section>

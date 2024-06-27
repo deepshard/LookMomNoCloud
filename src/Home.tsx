@@ -18,6 +18,7 @@ import AugmentationsView from "./component/AugmentationsView";
 import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
+import NavBar from "./component/NavBar";
 
 
 interface WelcomeInfo {
@@ -135,6 +136,8 @@ export default function Home() {
 
   return (
     <>
+      <NavBar />
+
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
           <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
             <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />

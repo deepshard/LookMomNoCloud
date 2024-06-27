@@ -3,6 +3,8 @@ import json
 from utils import get_app_data_path, get_devices
 from tests.integration.data import models
 from models import RunningModel
+from db import get_db_path, get_db_session
+from sqlalchemy import select
 
 
 @pytest.mark.asyncio
@@ -99,11 +101,12 @@ async def test_run_multiple_models(test_fixture, model_installed):
         assert responses[-1]["instance"] == 2
         assert responses[-1]["port"] == 8901
 
-        running_models = await RunningModel.get_all()
-        assert len(running_models) == 2
-        assert running_models[0].id == models[0]["id"]
-        assert running_models[0].instance == 1
-        assert running_models[0].port == 8900
-        assert running_models[1].id == models[0]["id"]
-        assert running_models[1].instance == 2
-        assert running_models[1].port == 8901
+        async with get_db_session() as session:
+            running_models = (await session.scalars(select(RunningModel))).all()
+            assert len(running_models) == 2
+            assert running_models[0].id == models[0]["id"]
+            assert running_models[0].instance == 1
+            assert running_models[0].port == 8900
+            assert running_models[1].id == models[0]["id"]
+            assert running_models[1].instance == 2
+            assert running_models[1].port == 8901

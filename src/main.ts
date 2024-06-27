@@ -1,19 +1,25 @@
-import { app, BrowserWindow, session, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
-import os from "os";
 import { OTAUpdater } from "./ota";
-import { spawn } from "child_process";
+import { spawn, ChildProcess } from "child_process";
+import { log, initializeLogger, endLogger } from "./log";
 import fs from "fs";
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
+let serverProcess: ChildProcess;
+
 const spawnServer = () => {
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
+  if (!fs.existsSync(serverPath)) {
+    log(`Server executable not found at ${serverPath}`);
+    return;
+  }
   const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
   const f = fs.openSync(logsPath, "a+");
-  const serverProcess = spawn(serverPath, [], {
+  serverProcess = spawn(serverPath, [], {
     detached: true,
     cwd: path.join(app.getPath("userData"), "bin", "server"),
     stdio: ["ignore", f, f],
@@ -85,8 +91,12 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-  // process.env.NODE_ENV !== "development" && mainWindow.setResizable(false);
+  // mainWindow.setResizable(false);
+
+  if (process.env.NODE_ENV == "dev") {
+    mainWindow.webContents.openDevTools();
+    mainWindow.setResizable(true);
+  }
 
   return mainWindow;
 };
@@ -95,30 +105,8 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
-  const serverProcess = spawn(serverPath, [], {
-    detached: true,
-    cwd: path.join(app.getPath("userData"), "bin", "server"),
-  });
-  serverProcess.unref();
-
-  // on macOS
-  const reactDevToolsPath = path.join(
-    os.homedir(),
-    "/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/5.2.0_4"
-  );
-
-  const reduxTools = path.join(
-    os.homedir(),
-    "/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/3.1.6_0"
-  );
-
-  try {
-    await session.defaultSession.loadExtension(reactDevToolsPath);
-    await session.defaultSession.loadExtension(reduxTools);
-  } catch (error) {
-    console.error("Failed to install extension:", error);
-  }
+  initializeLogger()
+  spawnServer();
 
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
@@ -129,12 +117,16 @@ app.on("ready", async function () {
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
   window.on("ready-to-show", async () => {
+    log("Checking for initial server");
     const needInitialServer = otaUpdater.checkForInitialServer();
     if (needInitialServer) {
+      log("Downloading initial server");
       await otaUpdater.downloadInitialServer();
     }
 
+    log("Spawning server");
     spawnServer();
+    log("Checking for updates");
     await otaUpdater.checkForUpdates();
   });
 });
@@ -143,9 +135,13 @@ app.on("ready", async function () {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
+  if (serverProcess) {
+    serverProcess.kill();
+    log("Server process killed");
   }
+  log("Quitting");
+  endLogger();
+  app.quit();
 });
 
 

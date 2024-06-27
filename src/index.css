@@ -519,6 +519,6 @@ div.slick-slide>div {
   }
 
   .error-icon {
-    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px] z-[99999];
+    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px];
   }
 }

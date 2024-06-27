@@ -19,7 +19,7 @@ const PreOrderTruffle = () => {
           <p className="text-surface-main text-xl">Truffle–1</p>
         </div>
         <button
-          className="h-0 group-hover:h-10 opacity-0 group-hover:opacity-100 transition ease-out duration-500 w-full mt-2 !px-2.5 rounded-sm bg-transparent  hover:bg-bg-wdget border-none glass-3d text-surface-main"
+          className="h-0 h-10 opacity-100 transition ease-out duration-500 w-full mt-2 !px-2.5 rounded-sm bg-transparent  hover:bg-bg-wdget border-none glass-3d text-surface-main"
           onClick={handlePreOrder}
           style={{ borderRadius: '13px' }}
         >

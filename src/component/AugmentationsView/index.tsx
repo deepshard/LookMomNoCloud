@@ -8,7 +8,7 @@ const AugmentationsView = () => {
       title: "A* Search",
       icon: "/src/assets/icons/astar.svg",
       content:
-        "This augmentation add’s A* search to your model at inference time, making it search for a better answer before responding. This adds time to your completions, but can sometimes unveil interesting insights that wouldn’t normally be predicted",
+        "This augmentation adds A* search to your model at inference time, making it search for a better answer before responding. This adds time to your completions, but can sometimes unveil interesting insights that wouldn’t normally be predicted",
       color: "#FF6B6B",
       stats: [
         { text: "+10 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },
@@ -46,7 +46,7 @@ const AugmentationsView = () => {
       id: 4,
       title: "Genetic Algorithms",
       icon: "/src/assets/icons/twistedarrow.svg",
-      content: "This augmentation allows your model to attach a fitness function to it's comletions, and evolve over time to generate better and better completions. This can be useful for long term projects, but may slow down response times.",
+      content: "This augmentation allows your model to attach a fitness function to its completions, and evolve over time to generate better and better completions. This can be useful for long term projects, but may slow down response times.",
       color: "#45B7D1",
       stats: [
         { text: "+4 Smart", imgSrc: "/src/assets/icons/search-icon.svg" },

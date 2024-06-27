@@ -258,6 +258,10 @@ div.slick-slide>div {
   backdrop-filter: blur(50px);
 }
 
+.ant-tooltip .ant-tooltip-inner {
+  @apply rounded-xs !important;
+}
+
 @layer base {}
 
 @layer utilities {

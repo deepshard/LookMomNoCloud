@@ -133,7 +133,7 @@ const ModelWidget = ({
   const getErrorButton = (errorMessage: string) => {
     return (
       <Tooltip
-        overlayClassName="bg-black/20 rounded-sm backdrop-blur-2xl min-w-[200px]"
+        overlayClassName="bg-black/20 rounded-xs backdrop-blur-2xl min-w-[200px]"
         overlayInnerStyle={{
           color: 'surface-500',
           padding: '5px',

@@ -35,7 +35,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           </div>
         </div>
 
-        <div className="h-[300px] w-full bg-surface-100 p-4 rounded-sm flex justify-center items-center gap-2">
+        <div className="h-[300px] w-full bg-white/[2.5%] p-4 rounded-sm flex justify-center items-center gap-2">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"

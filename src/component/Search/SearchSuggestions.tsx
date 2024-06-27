@@ -39,7 +39,7 @@ interface SuggestionItemProps extends Suggestion {
 const SuggestionItem: React.FC<SuggestionItemProps> = ({ title, count, icon, onClick }) => (
   <div
     onClick={onClick}
-    className="bg-bg-wdget rounded-md p-2.5 flex items-center space-x-2 glass-3d w-full transition-transform cursor-pointer"
+    className="bg-white bg-opacity-[2.5%] rounded-md p-2.5 flex items-center space-x-2 w-full transition-transform cursor-pointer"
   >
     <div className="rounded-xs p-2 w-10 h-10 bg-surface-main/0 flex justify-center">
       <img src={icon} className="w-6" alt="Search suggestion icon" />

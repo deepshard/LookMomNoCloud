@@ -12,6 +12,8 @@ import Icon from "../component/Icon";
 import Tag from "../component/Tag";
 import useModelActions from "../hooks/modelActions/useModelActions";
 import Tooltip from "../component/common/Tooltip";
+import {LazyLoadImage} from 'react-lazy-load-image-component';
+import "react-lazy-load-image-component/src/effects/blur.css";
 // @ts-ignore
 import installIcon from "../assets/icons/install.svg";
 // @ts-ignore
@@ -278,7 +280,7 @@ function ModelDetailView() {
             <div className="relative flex flex-col justify-start items-center">
               <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
                 {getModelInfoHeader()}
-                <img src={modelData?.backgroundImage} className=" w-full h-full " />
+                <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full scale-110" />
               </div>
 
               <div className=" -bottom-10 flex flex-col items-start gap-0.5 p-6">

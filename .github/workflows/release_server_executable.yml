@@ -114,7 +114,7 @@ jobs:
       - name: Archive server executable
         run: |
           cd python/dist
-          zip -r ${{ matrix.filename }} server
+          zip -ry ${{ matrix.filename }} server
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

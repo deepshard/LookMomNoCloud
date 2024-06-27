@@ -1,5 +1,4 @@
 import React, {useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Input } from "antd";
 import { debounce } from "lodash";
 import {
   useSearchModels,
@@ -21,11 +20,10 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   const [search, setSearch] = useState<string>("");
   const [debouncedInput, setDebouncedInput] = useState<string>("");
-  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [isListView, setIsListView] = useState<boolean>(false);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
 
-  const { data: searchModels, isLoading: isSearchLoading } =
+  const { data: searchModels } =
     useSearchModels(debouncedInput);
   const { data: predictionData } = useGetPrediction(search);
   const { data: featuredData } = useGetFeatured();
@@ -39,10 +37,8 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   }, [featuredData]);
 
   useEffect(() => {
-    setIsTyping(search.length > 0);
     const debouncer = debounce((value: string) => {
       setDebouncedInput(value);
-      setIsTyping(false);
     }, 500);
     debouncer(search);
 

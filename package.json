@@ -45,7 +45,12 @@
       }
     },
     "dmg": {
-      "background": "src/assets/icons/dmg-background.png"
+      "title": "Look Mom No Cloud™",
+      "background": "src/assets/icons/dmg-background.png",
+      "window": {
+        "width": 537,
+        "height": 442
+      }
     },
     "linux": {
       "icon": "src/assets/icons/truffle-logo.png",

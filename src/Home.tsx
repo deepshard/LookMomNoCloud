@@ -2,7 +2,7 @@ import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
-import MyModels, { Placeholder } from "./component/Augmentations";
+import { Placeholder } from "./component/Augmentations";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
@@ -27,9 +27,9 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
+  const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, setShowDiscover, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
+  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
@@ -62,10 +62,6 @@ export default function Home() {
       window.ipc.onInitializationRequired(() => {});
     };
   }, []);
-  const handleMyModelClick = (model: TModel) => {
-    handleNavigate(model);
-    setShowMyModels(false);
-  };
 
   const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
     updateModels({
@@ -119,17 +115,17 @@ export default function Home() {
     if (hours >= 5 && hours < 12) {
       return {
         icon: dayIcon,
-        message: "Good morning!",
+        message: "Good Morning",
       };
     } else if (hours >= 12 && hours < 20) {
       return {
         icon: dayIcon,
-        message: "Good afternoon",
+        message: "Good Afternoon",
       };
     } else {
       return {
         icon: nightIcon,
-        message: "Good evening",
+        message: "Good Evening",
       };
     }
   };
@@ -140,8 +136,8 @@ export default function Home() {
 
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
           <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
-            <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
-            <p className="text-surface-main">{getWelcomeInfo().message}</p>
+            <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
+            <p className="text-surface-750">{getWelcomeInfo().message}</p>
           </div>
         <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
           <ModelCarousel
@@ -177,7 +173,7 @@ export default function Home() {
        {showSearch && <Search onModelClick={handleNavigate} />}
         {showAugmentations && <AugmentationsView />}
       </AnimateModal>
-      {updateInfo && <UpdateTruffle className="fixed bottom-5 left-5" onClick={() => navigate(`/update`)} />}
+      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
     </>
   );
 }

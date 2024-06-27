@@ -75,17 +75,17 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
 
   const getErrorContent = (errorMessage: string) => {
     return (
-      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
+      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-2.5 gap-2 justify-start items-stretch'>
         <div className='flex justify-start items-center gap-1.5 text-surface-main'>
           <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
 
-          <p>An error occurred</p>
+          <p>An Error Occurred</p>
         </div>
 
         {/* Divider */}
         <div className='w-full h-[0.5px] bg-surface-100' />
 
-        <p className='body-xs text-surface-500 leading-tight'>{errorMessage}</p>
+        <p className='body-xs text-surface-500 leading-snug'>{errorMessage}</p>
       </div>
     );
   }
@@ -252,7 +252,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
         <div className="absolute top-0 left-0 p-2 w-full">
           <div className="relative flex flex-col w-full">
             <div className="text-content flex flex-col overflow-hidden w-full">
-              <span className="title-xs inline-block capitalize truncate text-surface-main leading-normal">{model?.name.split("/")[1]}</span>
+              <span className="-mb-1 title-xs inline-block capitalize truncate text-surface-main leading-normal">{model?.name.split("/")[1]}</span>
               <span className="title-xs inline-block capitalize truncate text-surface-750 leading-normal">
                 {toUnitOfCount(model?.size)} • {model?.author}
               </span>

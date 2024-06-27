@@ -56,7 +56,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
       zIndex: totalCards - Math.abs(angleDiff),
       opacity: opacity,
       pointerEvents: Math.abs(angleDiff) <= anglePerCard ? "auto" : "none",
-      backgroundColor: "gray",
+      backgroundColor: "#5B5B5B",
     };
 
     return baseStyle;
@@ -95,7 +95,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
         </div>
       </div>
       <div className="absolute flex justify-center items-center w-[320px] mt-[10px] gap-[8px]">
-        <img src={puzzleIcon} alt="puzzle" className="w-[15px] h-[9px]"/>
+        <img src={puzzleIcon} alt="puzzle" className="w-[15px] h-[9px] opacity-75"/>
         <h1
         className="text-surface-500 text-[14px]"
         >Augmentations</h1>

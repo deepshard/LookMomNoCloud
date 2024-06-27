@@ -18,7 +18,7 @@ const InitializationProgress = () => {
       if (value.progress === 1) {
         setTimeout(() => {
           navigate("/");
-        }, 2500)
+        }, 2500);
       }
     };
 
@@ -63,7 +63,7 @@ const InitializationProgress = () => {
                 </div>
               ) : (
                 <>
-                  <Progress className="mb-[73px]" type="line" percent={percent} showInfo={false} />
+                  <Progress className="mb-[73px]" type="line" percent={Number(percent.toFixed(0))} showInfo={false} />
                   <p className="text-surface-500 text-center text-sm">Checking computer's firmware...</p>
                 </>
               )
@@ -72,7 +72,6 @@ const InitializationProgress = () => {
         )
       }
     </AnimatePresence>
-
   );
 };
 

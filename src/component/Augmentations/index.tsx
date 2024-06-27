@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef } from 'react'
 import { CarouselProps } from 'antd'
 import { TModel } from '../../types/schemas'
 import Carousel from './Carousel'
+import { useHomePageContext } from "../../context/HomePageProvider";
+
 
 interface SearchProps {
   myModels?: TModel[]
@@ -21,6 +23,7 @@ interface PageProps {
   models: TModel[]
   onModelClick?: (model: TModel) => void
 }
+
 const Page = ({ models, onModelClick }: PageProps) => {
   return (
     <div className="w-full h-full flex justify-center items-center mx-[145px] pt-[148px]"></div>
@@ -28,6 +31,9 @@ const Page = ({ models, onModelClick }: PageProps) => {
 }
 
 export const Placeholder: React.FC = () => {
+
+  const { setShowAugmentations } = useHomePageContext()
+
   const cards = [
     {
       id: 1,
@@ -53,37 +59,27 @@ export const Placeholder: React.FC = () => {
       color: '#45B7D1',
     },
 
-    // {
-    //   id: 4,
-    //   title: 'Genetic Algorithms',
-    //   icon: '/src/assets/icons/mcts.svg',
-    //   content: "And this is what's in the third card",
-    //   color: '#45B7D1',
-    // },
+    {
+      id: 4,
+      title: 'Genetic Algorithms',
+      icon: '/src/assets/icons/mcts.svg',
+      content: "And this is what's in the third card",
+      color: '#45B7D1',
+    },
     
 
-    // {
-    //   id: 5,
-    //   title: 'Genetic Algorithms',
-    //   icon: '/src/assets/icons/unlock.svg',
-    //   content: "And this is what's in the third card",
-    //   color: '#45B7D1',
-    // },
-    
-
-    // {
-    //   id: 6,
-    //   title: 'Genetic Algorithms',
-    //   icon: '/src/assets/icons/unlock.svg',
-    //   content: "And this is what's in the third card",
-    //   color: '#45B7D1',
-    // },
-    
-    
+    {
+      id: 5,
+      title: 'Genetic Algorithms',
+      icon: '/src/assets/icons/unlock.svg',
+      content: "And this is what's in the third card",
+      color: '#45B7D1',
+    },
+  
   ]
 
   return (
-    <div className="placeholder-container">
+    <div className="placeholder-container" onClick={()=>setShowAugmentations(true)}>
       <Carousel cards={cards} />
     </div>
   )

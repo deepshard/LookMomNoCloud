@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { TruffleUpdateInfo } from "./ota";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
+import AugmentationsView from "./component/AugmentationsView";
 
 
 interface WelcomeInfo {
@@ -23,7 +24,7 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
-  const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
+  const { showSearch, setShowSearch, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
 
   const navigate = useNavigate();
@@ -153,8 +154,12 @@ export default function Home() {
         </div>
       </div>
 
-      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
-        <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />
+      <AnimateModal show={showSearch || showAugmentations} onClose={() => {
+        setShowAugmentations(false);
+        setShowSearch(false);
+        }}>
+       {showSearch && <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />}
+        {showAugmentations && <AugmentationsView />}
       </AnimateModal>
       <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
         <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick} />

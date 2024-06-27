@@ -1,6 +1,7 @@
 import React, { useState, useEffect, FC, CSSProperties } from 'react'
 import './index.css'
 
+
 interface CarouselProps {
   cards: {
     id: number
@@ -28,12 +29,11 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
     let angleDiff = ((index - activeIndex + totalCards) % totalCards) * anglePerCard
     if (angleDiff > 180) angleDiff -= 360
 
-    const radius = 100 // Increased radius to spread cards out more
-    const maxVisibleCards = 5 // Number of cards visible on each side
+    const radius = 80 // Increased radius to spread cards out more
 
     // Calculate the position on the circle
-    const x = Math.sin(angleDiff * Math.PI / 180) * radius
-    const z = Math.cos(angleDiff * Math.PI / 180) * radius - radius
+    const x = (Math.sin(angleDiff * Math.PI / 180) * radius)
+    const z =( Math.cos(angleDiff * Math.PI / 180) * radius - radius)
 
     // Calculate opacity and scale based on distance from active card
     const distance = Math.abs(angleDiff) / anglePerCard
@@ -48,7 +48,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
       borderRadius: '13px',
       color: 'white',
       overflow: 'hidden',
-      transform: `translateX(${x}px) translateZ(${z}px) rotateY(${-angleDiff}deg) scale(${scale*1.3})`,
+      transform: `translateX(${x}px) translateZ(${z}px) rotateY(${-angleDiff/2}deg) scale(${scale*1.3})`,
       zIndex: totalCards - Math.abs(angleDiff),
       opacity: opacity,
       pointerEvents: Math.abs(angleDiff) <= anglePerCard ? 'auto' : 'none',
@@ -58,12 +58,16 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
     return baseStyle
   }
 
+
+  /////////////       NOTE      /////////////
+  // DO NOT use absolute positioning for the carousel cards. We are using too many blurs and chromium drops frames, runs out of memory and dies.
+
   return (
     <div className="carousel-container">
       <div className="carousel-backdrop widget-3d"></div>
       <div className="carousel-content" style={{
         transformStyle: 'preserve-3d',
-        perspective: '1000px',
+        perspective: '400px',
         transform: 'translateZ(-50px)', // Move the carousel back slightly
       }}>
         {cards.map((card, index) => (

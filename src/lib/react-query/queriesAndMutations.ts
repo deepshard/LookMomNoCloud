@@ -9,7 +9,7 @@ export const useGetHighlights = () => {
   return useQuery({
     queryKey: ["highlights"],
     queryFn: () => getHighlights(),
-    retry: 3,
+    retry: 500,
     retryOnMount: false,
   });
 };
@@ -48,6 +48,7 @@ export const useGetMyModels = () => {
     queryFn: () => {
       return getMyModels()
     },
+    retry: 500,
   })
 }
 
@@ -80,7 +81,8 @@ export const useGetNews = () => {
       return getNews()
     },
     refetchOnWindowFocus: false,
-    initialData: dummyNewsData
+    initialData: dummyNewsData,
+    retry: 500,
   })
 }
 export const useGetPrediction = (text: string) => {
@@ -107,7 +109,7 @@ export const useGetNewModels = () => {
     queryKey: ["newModels"],
     queryFn: () => {
       return getNewModels()
-    }
+    },
   })
 }
 

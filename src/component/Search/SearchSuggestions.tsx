@@ -13,8 +13,8 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ setSearch }) => {
   const searchIcon = "/src/assets/icons/search-suggestions.svg";
 
   const suggestions: Suggestion[] = [
-    { title: "Best math models", count: 65 },
-    { title: "Best models for code", count: 279 },
+    { title: "Best math models", count: 110 },
+    { title: "Best models for code", count: 417 },
   ];
 
   return (

@@ -8,7 +8,7 @@ import './index.css'
 import { useAppStore } from '../../store/store'
 import { canFitOnMachine } from '../../utils/sysUtils'
 
-interface ModelCarouselProps {
+interface ModelCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   models: TModel[]
   isLoading: boolean
   installModel: (...args: any) => void
@@ -37,7 +37,7 @@ const getSortValue = (status: string) => {
   }
 }
 
-const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick  }) => {
+const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick, className='', ...props  }) => {
   const skeletonCount = 5
   const { sysInfo } = useAppStore();
   const [showModels, setShowModels] = useState(false)
@@ -69,7 +69,7 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
   }, [models])
 
   return (
-    <div className="model-carousel custom-scrollbar">
+    <div className={`model-carousel custom-scrollbar ${className}`} {...props}>
       <div className="model-carousel-inner">
         {(isLoading || !showModels) &&
           Array(skeletonCount)

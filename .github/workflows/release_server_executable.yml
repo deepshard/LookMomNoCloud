@@ -76,7 +76,7 @@ jobs:
         run: |
           source venv/bin/activate
           cd python
-          pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
+          python -m PyInstaller server.spec --clean --noconfirm --log-level=DEBUG
 
       # - name: Disable local cuda for integration tests
       #   run: |

@@ -31,7 +31,7 @@ jobs:
         with:
           activate-environment: truffle
           python-version: "3.10"
-          channels: conda-forge,spyder-ide
+          channels: conda-forge
 
       - run: |
           source $CONDA/etc/profile.d/conda.sh
@@ -131,7 +131,7 @@ jobs:
           if [ "${{ github.ref_name }}" == "main" ]; then
             aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
           else
-            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-dev/binaries/${{ github.sha }}/
+            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries-dev/${{ github.sha }}/
           fi
 
       - name: Upload latest metadata
@@ -139,7 +139,7 @@ jobs:
           if [ "${{ github.ref_name }}" == "main" ]; then
             aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
           else
-            aws s3 cp python/dist/server/version.txt s3://truffle-dev/binaries/latest.txt
+            aws s3 cp python/dist/server/version.txt s3://truffle-binaries-dev/latest.txt
           fi
 
       - name: Notarize the binary from apple

@@ -11,6 +11,8 @@ interface HomePageContextProps {
   setSearchQuery: Dispatch<React.SetStateAction<string>>;
   showMyModels: boolean;
   setShowMyModels: Dispatch<React.SetStateAction<boolean>>;
+  showSettings: boolean;
+  setShowSettings: Dispatch<React.SetStateAction<boolean>>;
 }
 
 const HomePageContext = createContext<HomePageContextProps>({
@@ -24,6 +26,8 @@ const HomePageContext = createContext<HomePageContextProps>({
   setSearchQuery: () => {},
   showMyModels: false,
   setShowMyModels: () => {},
+  showSettings: false,
+  setShowSettings: () => {},
 });
 
 const HomePageProvider = ({ children }) => {
@@ -32,7 +36,12 @@ const HomePageProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showMyModels, setShowMyModels] = useState(false);
   const [showAugmentations, setShowAugmentations] = useState(false);
-  return <HomePageContext.Provider value={{ showSearch, setShowSearch,  showDiscover, setShowDiscover,searchQuery, setSearchQuery, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations }}>{children}</HomePageContext.Provider>;
+  const [showSettings, setShowSettings] = useState(false);
+  return (
+    <HomePageContext.Provider value={{ showSettings, setShowSettings, showSearch, setShowSearch, showDiscover, setShowDiscover, searchQuery, setSearchQuery, showMyModels, setShowMyModels, showAugmentations, setShowAugmentations }}>
+      {children}
+    </HomePageContext.Provider>
+  );
 };
 
 export const useHomePageContext = () => useContext(HomePageContext);

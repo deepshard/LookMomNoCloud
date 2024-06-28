@@ -117,6 +117,8 @@ app.on("ready", async function () {
   autoUpdater.on("error", (err) => window.webContents.send("error", err));
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
+  ipcMain.handle('is-app-packaged', () => app.isPackaged);
+
   window.on("ready-to-show", async () => {
     log("Checking for initial server");
     const needInitialServer = otaUpdater.checkForInitialServer();

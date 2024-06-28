@@ -127,10 +127,20 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload to S3
-        run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
+          else
+            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-dev/binaries/${{ github.sha }}/
+          fi
 
-      # - name: Upload latest metadata
-        # run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+      - name: Upload latest metadata
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+          else
+            aws s3 cp python/dist/server/version.txt s3://truffle-dev/binaries/latest.txt
+          fi
 
       - name: Notarize the binary from apple
         run: |
@@ -148,7 +158,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
-            New Version: `${{ github.sha }}` | `${{ matrix.os }}`
+            New Version: `${{ github.sha }}` | `${{ matrix.os }}` | `${{ github.ref_name }}`
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

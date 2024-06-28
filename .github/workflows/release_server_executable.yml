@@ -30,8 +30,6 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: truffle
-          python-version: "3.10"
-          channels: conda-forge
 
       - run: |
           source $CONDA/etc/profile.d/conda.sh

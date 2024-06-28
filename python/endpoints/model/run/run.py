@@ -245,7 +245,6 @@ async def run_model(
 
     # Start the model server as a separate process
     mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
-    print("MLC LLM PATH", mlc_llm_path)
     proc = subprocess.Popen(
         [
             mlc_llm_path,
@@ -254,6 +253,12 @@ async def run_model(
             str(model_path / "compilation.so"),
             "--port",
             str(port),
+            "--host",
+            "0.0.0.0",
+            "--mode",
+            "interactive",
+            "--overrides",
+            f'"gpu_memory_utilization={mem_share};tensor_parallel_shards={shards}"',
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

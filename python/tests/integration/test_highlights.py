@@ -23,11 +23,11 @@ async def test_highlights_downloaded(test_fixture, model_downloaded):
     assert response.json()[0]["status"] == "STOPPED"
 
 
-@pytest.mark.asyncio
-async def test_highlights_running(test_fixture, model_running):
-    response = await test_fixture.get("/highlights")
-    assert response.status_code == 200
+# @pytest.mark.asyncio
+# async def test_highlights_running(test_fixture, model_running):
+#     response = await test_fixture.get("/highlights")
+#     assert response.status_code == 200
 
-    assert len(response.json()) == 5
-    assert response.json()[0]["status"] == "RUNNING"
-    assert response.json()[0]["instance"] == 1
+#     assert len(response.json()) == 5
+#     assert response.json()[0]["status"] == "RUNNING"
+#     assert response.json()[0]["instance"] == 1

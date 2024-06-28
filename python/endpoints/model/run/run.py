@@ -245,6 +245,7 @@ async def run_model(
 
     # Start the model server as a separate process
     mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
+    print("MLC LLM PATH", mlc_llm_path)
     proc = subprocess.Popen(
         [
             mlc_llm_path,

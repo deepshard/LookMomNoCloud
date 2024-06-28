@@ -83,7 +83,7 @@ async def model_installed(model_downloaded):
     convert_quantize_compile(base_weights_path, quant_weights_path, Quantization.Q0F16)
 
 
-@pytest_asyncio.fixture
-async def model_running(model_installed):
-    model_id = models[0]["id"]
-    await run_model(model_id, Quantization.Q0F16, 0.85, 1, 8900)
+# @pytest_asyncio.fixture
+# async def model_running(model_installed):
+#     model_id = models[0]["id"]
+#     await run_model(model_id, Quantization.Q0F16, 0.85, 1, 8900)

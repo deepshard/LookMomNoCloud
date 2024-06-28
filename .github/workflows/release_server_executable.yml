@@ -77,6 +77,7 @@ jobs:
         run: |
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle
+          cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
       # - name: Disable local cuda for integration tests

@@ -27,22 +27,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - uses: conda-incubator/setup-miniconda@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          activate-environment: truffle
-          auto-update-conda: true
-          channel-priority: flexible
-          python-version: "3.10"
-          channels: conda-forge,spyder-ide
+          python-version: '3.10'
 
-      - run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
 
       - name: Install dependencies
         run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
+          source venv/bin/activate
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
@@ -53,8 +50,9 @@ jobs:
 
       - name: Apply the patch
         run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
+          source venv/bin/activate
+          which pip
+          which python
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
@@ -76,8 +74,7 @@ jobs:
 
       - name: Build server executable
         run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
+          source venv/bin/activate
           cd python
           pyinstaller server.spec --clean --noconfirm --log-level=DEBUG
 
@@ -96,8 +93,7 @@ jobs:
 
       - name: Copy extra files
         run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
+          source venv/bin/activate
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
@@ -107,8 +103,7 @@ jobs:
       - name: Run integration tests
         if: matrix.os == 'macos-latest'
         run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
+          source venv/bin/activate
           cd python/dist/server 
           nohup ./server &
           sleep 5

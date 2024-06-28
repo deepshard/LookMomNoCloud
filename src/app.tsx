@@ -6,9 +6,11 @@ import QueryProvider from "./lib/react-query/QueryProvider";
 import ModelDetailView from "./pages/ModelDetailView";
 import AppWrapperProvider from "./context/AppWrapperProvider";
 import OTA from "./pages/OTA";
-import Analytics from "./component/Analytics";
+import Analytics from "./types/Analytics";
 
+// @ts-ignore
 const root = createRoot(document.getElementById("root"));
+
 Analytics.init("de5db316f13ff4b8fefdcd81cf8bd696");
 
 function App() {

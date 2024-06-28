@@ -19,7 +19,7 @@ import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
 import NavBar from "./component/NavBar";
-
+import Settings from "./component/Settings";
 
 interface WelcomeInfo {
   icon: string;
@@ -29,11 +29,9 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations } = useHomePageContext();
+  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
-
-
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -135,10 +133,10 @@ export default function Home() {
       <NavBar />
 
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
-          <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
-            <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
-            <p className="text-surface-750">{getWelcomeInfo().message}</p>
-          </div>
+        <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
+          <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
+          <p className="text-surface-750">{getWelcomeInfo().message}</p>
+        </div>
         <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
           <ModelCarousel
             models={storeHighlights}
@@ -155,23 +153,28 @@ export default function Home() {
             <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
               <FeaturedCarousel />
 
-                <div className="w-full flex justify-between gap-5">
-                  <Placeholder />
-                </div>
+              <div className="w-full flex justify-between gap-5">
+                <Placeholder />
               </div>
-              <SystemInfoHardwareCarouselProvider>
-                <SystemInfoHardwareCarousel sysInfo={sysInfo} />
-              </SystemInfoHardwareCarouselProvider>
             </div>
+            <SystemInfoHardwareCarouselProvider>
+              <SystemInfoHardwareCarousel sysInfo={sysInfo} />
+            </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
+      </div>
 
-      <AnimateModal show={showSearch || showAugmentations} onClose={() => {
-        setShowAugmentations(false);
-        setShowSearch(false);
+      <AnimateModal
+        show={showSearch || showAugmentations}
+        onClose={() => {
+          setShowAugmentations(false);
+          setShowSearch(false);
         }}>
-       {showSearch && <Search onModelClick={handleNavigate} />}
+        {showSearch && <Search onModelClick={handleNavigate} />}
         {showAugmentations && <AugmentationsView />}
+      </AnimateModal>
+      <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
+        <Settings />
       </AnimateModal>
       {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
     </>

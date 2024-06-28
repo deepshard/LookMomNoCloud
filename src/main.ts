@@ -40,7 +40,7 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
-      devTools: false,
+      // devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
@@ -91,7 +91,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.setResizable(false);
+  // mainWindow.setResizable(false);
   mainWindow.webContents.closeDevTools();
 
   // if (process.env.NODE_ENV === "development") {
@@ -116,6 +116,8 @@ app.on("ready", async function () {
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => window.webContents.send("error", err));
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
+
+  ipcMain.handle('is-app-packaged', () => app.isPackaged);
 
   window.on("ready-to-show", async () => {
     log("Checking for initial server");

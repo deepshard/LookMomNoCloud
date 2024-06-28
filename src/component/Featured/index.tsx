@@ -30,8 +30,7 @@ const Featured = ({ news, isLoading = true, className, ...props }: FeaturedProps
   return (
     <div className={`w-full h-[150px] relative overflow-hidden cursor-pointer outline-none ${className}`} {...props}>
       <div className="absolute top-0 left-0 p-5 w-full">
-        {!isLoading ? <img src={news?.userProfilePicture} alt="" className="w-10 h-10 rounded-xs" /> : <Skeleton className="!w-10 h-10 rounded-xs opacity-10" />}
-        {/* {!isLoading ? <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main">{news?.title}</h3> : <Skeleton className="title-base base-regular mt-[7px] -mb-[1px]" />} */}
+        {!isLoading ? <img src={news?.userProfilePicture} alt="" className="w-10 h-10 rounded-xs" onError={() => console.log("error")}/> : <Skeleton className="!w-10 h-10 rounded-xs opacity-10" />}
         {!isLoading ? (
           <>
             <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main !w-full line-clamp-1">{getTitle()}</h3>

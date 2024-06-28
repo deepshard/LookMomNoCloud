@@ -1,7 +1,7 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { contextBridge, ipcRenderer, shell } from "electron";
+import { contextBridge, ipcRenderer, shell, app } from "electron";
 
 contextBridge.exposeInMainWorld("ipc", {
   downloadUpdate: () => ipcRenderer.send("download-update"),
@@ -17,3 +17,7 @@ contextBridge.exposeInMainWorld("ipc", {
 contextBridge.exposeInMainWorld('electronShell', {
   openExternal: (url) => shell.openExternal(url)
 });
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  isPackaged: () => ipcRenderer.invoke('is-app-packaged')
+})

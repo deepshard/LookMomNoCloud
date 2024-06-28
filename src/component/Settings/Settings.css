@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.switch-enabled {
+    
+    .ant-switch-inner {
+        background-color: #32DE4B;
+
+    }
+}

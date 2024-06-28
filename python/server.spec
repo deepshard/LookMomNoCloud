@@ -34,7 +34,7 @@ server_analysis = Analysis(
 )
 
 mlc_serve_analysis = Analysis(
-    [site.getusersitepackages() + '/mlc_llm/cli/serve.py'],
+    ['mlc_serve.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,

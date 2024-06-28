@@ -51,14 +51,13 @@ jobs:
       - name: Apply the patch
         run: |
           source venv/bin/activate
-          which pip
-          which python
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+          echo "SITE_PACKAGES: $SITE_PACKAGES"
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
           fi
-          echo -e "\n\nif __name__ == \"__main__\":\n    import sys\n    main(sys.argv[1:])" >> $SITE_PACKAGES/mlc_llm/cli/serve.py
+          # echo -e "\n\nif __name__ == \"__main__\":\n    import sys\n    main(sys.argv[1:])" >> $SITE_PACKAGES/mlc_llm/cli/serve.py
 
       - name: Import certificate to keychain
         if: matrix.os == 'macos-latest'

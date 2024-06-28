@@ -1,9 +1,9 @@
 import pytest
 import json
-from utils import get_app_data_path, get_devices
+from utils import get_devices
 from tests.integration.data import models
 from models import RunningModel
-from db import get_db_path, get_db_session
+from db import get_db_session
 from sqlalchemy import select
 
 

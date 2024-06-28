@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
@@ -33,14 +33,14 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = () => {
-  const factor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 950,
     height: 690,
     titleBarStyle: "hidden",
+    trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
-      devTools: true,
+      devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
@@ -92,11 +92,12 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.setResizable(false);
+  mainWindow.webContents.closeDevTools();
 
-  if (process.env.NODE_ENV == "dev") {
-    mainWindow.webContents.openDevTools();
-    mainWindow.setResizable(true);
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   mainWindow.webContents.openDevTools();
+  //   mainWindow.setResizable(true);
+  // }
 
   return mainWindow;
 };
@@ -115,6 +116,8 @@ app.on("ready", async function () {
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => window.webContents.send("error", err));
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
+
+  ipcMain.handle('is-app-packaged', () => app.isPackaged);
 
   window.on("ready-to-show", async () => {
     log("Checking for initial server");
@@ -150,7 +153,7 @@ app.on("activate", async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    const window = createWindow();
+    createWindow();
     // const otaUpdater = new OTAUpdater(window, autoUpdater);
     // ipcMain.on("download-update", otaUpdater.downloadUpdate);
     // ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);

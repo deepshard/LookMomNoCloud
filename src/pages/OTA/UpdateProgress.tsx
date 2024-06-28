@@ -1,5 +1,5 @@
 import { Progress } from "antd";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 // @ts-ignore

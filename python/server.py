@@ -15,7 +15,6 @@ from endpoints import (
     run_models_generator,
     stop_model_handler,
     get_highlights,
-    get_new,
     get_downloaded_models,
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
@@ -66,11 +65,6 @@ async def highlights():
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=500, detail="Failed to fetch highlights")
-
-
-@app.get("/new")
-async def new():
-    return get_new()
 
 
 @app.get("/model/downloaded")

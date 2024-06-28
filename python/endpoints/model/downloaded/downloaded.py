@@ -1,14 +1,9 @@
 import asyncio
 import os
 import re
-import aiohttp
 from models import RunningModel
 from state import global_state_manager
-from endpoints.model.install.install import (
-    get_hf_repo_info,
-    get_local_files,
-    get_files_to_download,
-)
+from endpoints.model.install.install import get_files_to_download
 from utils import get_app_data_path
 from truffle_types import Model, ModelStatus
 from constants import TRUFFLE_API_URL

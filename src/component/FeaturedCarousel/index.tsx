@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef } from "react";
 import Carousel from "../Carousel/Carousel";
 import Featured from "../Featured";
 import { useGetNews } from "../../lib/react-query/queriesAndMutations";
@@ -30,7 +30,7 @@ const FeaturedCarousel = () => {
         autoplay={!isGettingNews}
         easing="linear"
         waitForAnimate
-        className="w-80 h-[150px] widget-3d">
+        className="w-80 h-[150px] widget-3d outline-none">
         {news.slice(0, 5).map((item) => (
           <Featured key={item.id} news={item} isLoading={isGettingNews} onClick={() => {
             if(isGettingNews) return;

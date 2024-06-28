@@ -1,16 +1,19 @@
 import { TModel } from "../types/schemas";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatDate, formatParams } from "../utils/sysUtils";
+import { formatDate, formatParams , canFitOnMachine } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
-import Icon from "../component/Icon";
-import Tag from "../component/Tag";
-import useModelActions from "../hooks/modelActions/useModelActions";
 import { useAppStore } from "../store/store";
 import { upperFirst } from "lodash";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useAppWrapper } from "../context/AppWrapperProvider";
+import Icon from "../component/Icon";
+import Tag from "../component/Tag";
+import useModelActions from "../hooks/modelActions/useModelActions";
+import Tooltip from "../component/common/Tooltip";
+import {LazyLoadImage} from 'react-lazy-load-image-component';
+import "react-lazy-load-image-component/src/effects/blur.css";
 // @ts-ignore
 import installIcon from "../assets/icons/install.svg";
 // @ts-ignore
@@ -29,6 +32,16 @@ import closeIcon from "../assets/icons/close.svg";
 import downloadCircleIcon from "../assets/icons/download-circle-fill.svg";
 // @ts-ignore
 import likeCircleIcon from "../assets/icons/like-circle-fill.svg";
+//@ts-ignore
+import errorIcon from '../assets/icons/error.svg'
+// @ts-ignore
+import runningManIcon from "../assets/icons/running-man.svg";
+// @ts-ignore
+import authorIcon from "../assets/icons/author.svg";
+// @ts-ignore
+import modelSizeIcon from "../assets/icons/modelsize.svg";
+
+
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -86,23 +99,40 @@ function ModelDetailView() {
     switch (modelData?.status) {
       case "RUNNING":
         return (
-          <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-between">
+          <div className="absolute top-0 left-0 p-4 flex w-full h-full justify-start">
             <div className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[173px] h-[32px]">
-              <img src={"/src/assets/icons/running-man.svg"} className="mr-2 w-[16px] h-[16px]" />
-              <p className="text-surface-500 text-xs">https://localhost:{modelData.port}</p>
+              <img src={runningManIcon} className="mr-2 w-[16px] h-[16px]" />
+              <p className="text-surface-500 text-xs">http://localhost:{modelData.port}</p>
             </div>
-            <div
+            {/* <div
               onClick={() => window.open(`https://google.com/search?q=${modelData.name}`)}
               className="running-info flex justify-center items-center px-3 py-1 rounded-sm w-[72px] h-[32px] cursor-pointer">
-              <img src={"/src/assets/icons/docs.svg"} className="mr-2 w-[16px] h-[16px]" />
+              <img src={docsIcon} className="mr-2 w-[16px] h-[16px]" />
               <p className="text-surface-500 text-xs">Docs</p>
-            </div>
+            </div> */}
           </div>
         );
       default:
         break;
     }
   };
+
+  const getErrorContent = (errorMessage: string) => {
+    return (
+      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch'>
+        <div className='flex justify-start items-center gap-1.5 text-surface-main'>
+          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
+
+          <p>An Error Occurred</p>
+        </div>
+
+        {/* Divider */}
+        <div className='w-full h-[0.5px] bg-surface-100' />
+
+        <p className='body-xs text-surface-500 leading-tight'>{errorMessage}</p>
+      </div>
+    );
+  }
 
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
@@ -168,36 +198,75 @@ function ModelDetailView() {
     }
   };
 
+  const getNotDownloadedIcon = () => {
+    if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
+      return (
+        <Icon
+          src={downloadIcon}
+          imgClassName="h-[11px] w-[11px]"
+          className="w-auto flex-center gap-2 px-[24px] text-white"
+          onClick={() => {
+            modelData &&
+              installModel(modelData, undefined, (progress) => {
+                updateModels({
+                  ...modelData,
+                  ...progress,
+                });
+              });
+          }}>
+          <p className="text-sm">Install</p>
+        </Icon>
+      );
+    } else {
+      return (
+        <Tooltip
+          overlayClassName="rounded-sm glass-3d"
+          overlayInnerStyle={{
+            color: 'surface-500',
+            padding: '10px',
+            fontSize: '12px',
+          }}
+          placement="bottom"
+          color="transparent"
+          title={getErrorContent("This model cannot fit in either the total memory or the available storage")}
+        >
+          <Icon
+            src={errorIcon}
+            imgClassName="h-[11px] w-[11px]"
+            className="gap-2"
+          >
+          </Icon>
+        </Tooltip>
+      )
+    }
+  }
+
   return (
     <div className="absolute top-0 left-0 w-full h-full bg-bg-wdget-active">
         <div className="model-detail-navbar">
-          <div className="w-1/4 flex gap-2.5 justify-start items-center z-[10]">
-            <img loading="lazy" srcSet={modelData?.backgroundImage} className="shrink-0 aspect-square rounded-full w-[30px] " />
+         
+                  <div className="w-1/4"></div>
 
-            <div className="flex flex-col justify-center items-start gap-0.5">
-              <p className="text-surface-main">{modelData && modelData?.name ? modelData.name.split("/")[1] : ""}</p>
-              <p className="text-surface-500 callout-base">{modelData && modelData?.author ? modelData.author : ""}</p>
-            </div>
-          </div>
 
           <div className="flex items-center gap-3 text-surface-500 z-[1200] transition-colors duration-200">
             {navBarOptions.map((item, index) => {
               const displayTitle = item === "intro" ? "Introduction" : upperFirst(item);
               return modelData && modelData[item] ? (
-                <a key={index} onClick={() => scrollToSection(item)} className="hover:text-white transition-colors duration-200">
+                <a key={index} onClick={() => scrollToSection(item)} className="hover:text-white transition-colors duration-200 cursor-pointer">
                   {displayTitle}
                 </a>
               ) : null;
             })}
           </div>
 
-          <div className="w-1/4 flex gap-2 justify-end items-center z-[999]">
+          <div className="w-1/4 flex gap-2 justify-end items-center z-[999] cursor-pointer">
             {modelData?.status && modelData?.status !== "NOT_DOWNLOADED" ? (
               <>
                 {getModelStatusIcon()}
 
                 <Icon src={shareIcon} imgClassName="h-[11px] w-[11px]" />
 
+                {/* Remove Icon */}
                 <Icon
                   src={trashIcon}
                   imgClassName="h-[11px] w-[11px]"
@@ -211,21 +280,9 @@ function ModelDetailView() {
                 />
               </>
             ) : (
-              <Icon
-                src={downloadIcon}
-                imgClassName="h-[11px] w-[11px]"
-                className="w-auto flex-center gap-2 px-[24px] text-white"
-                onClick={() => {
-                  modelData &&
-                    installModel(modelData, undefined, (progress) => {
-                      updateModels({
-                        ...modelData,
-                        ...progress,
-                      });
-                    });
-                }}>
-                <p className="text-sm">Install</p>
-              </Icon>
+              <>
+                {getNotDownloadedIcon()}
+              </>
             )}
 
             <Icon src={closeIcon} imgClassName="h-[11px] w-[11px]" onClick={() => window.history.back()} />
@@ -237,8 +294,8 @@ function ModelDetailView() {
           <div className="w-full h-full flex flex-col items-center space-y-auto">
             <div className="relative flex flex-col justify-start items-center">
               <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
+                <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full scale-110" />
                 {getModelInfoHeader()}
-                <img src={modelData?.backgroundImage} className=" w-full h-full " />
               </div>
 
               <div className=" -bottom-10 flex flex-col items-start gap-0.5 p-6">
@@ -253,8 +310,8 @@ function ModelDetailView() {
                 </p>
               )}
               <div className="flex gap-2.5 text-sm text-white text-opacity-80">
-                <Tag text={modelData?.author || ""} />
-                <Tag text={formatParams(modelData?.size)} />
+              <Tag imgSrc={authorIcon} text={modelData?.author || ""} />
+                <Tag imgSrc={modelSizeIcon} text={formatParams(modelData?.size)} />
 
                 <Tag imgSrc={downloadCircleIcon} text={formatParams(modelData?.downloads)} />
 

@@ -1,4 +1,3 @@
-import { on } from 'events';
 import { infer as Infer, z } from 'zod';
 
 export const SysinfoSchema = z.object({
@@ -33,6 +32,7 @@ export const ModelSchema = z.object({
     modifiedAt: z.string(),
     status: z.enum([ "ACKNOWLEDGED", "DOWNLOADING", "INSTALLING", "RUNNING", "STOPPED", "NOT_DOWNLOADED"]),
     backgroundImage: z.string(),
+    lowresBackgroundImage: z.string(),
     port: z.number().optional(),
     instance: z.number().optional(),
     progress: z.number().optional(),

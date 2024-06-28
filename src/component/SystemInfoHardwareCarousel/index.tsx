@@ -8,6 +8,8 @@ import { useCallback, useRef, useState } from "react";
 import {motion} from 'framer-motion'
 // @ts-ignore
 import monitorIcon from "../../assets/icons/monitor.svg";
+// @ts-ignore
+import truffleIcon from "../../assets/icons/truffle-logo.svg";
 
 interface SystemInfoHardwareCarouselProps {
   sysInfo: TSysInfo | null;
@@ -52,9 +54,11 @@ const SystemInfoHardwareCarousel = ({ sysInfo }: SystemInfoHardwareCarouselProps
         <Sysinfo sysInfo={sysInfo} />
         <PreOrderTruffle />
       </Carousel>
-      <motion.span className="absolute flex gap-[8px] bottom-[-35px] translate-x-[-50%] left-[50%]" initial={false} animate={{ opacity: showUsage }}>
-        <img src={monitorIcon} alt="" />
-        <p className="text-surface-400 text-xs">{upperFirst(selection)} Usage</p>
+        <motion.span className="absolute flex gap-[8px] bottom-[-29px] translate-x-[-50%] left-[50%]" initial={false}>
+        { showUsage ? <img src={monitorIcon} alt="" /> : <img src={truffleIcon} alt="truffle" /> }
+        {
+          showUsage ? <p className="text-surface-500 text-[14px]">{upperFirst(selection)} Usage</p> : <p className="text-surface-500 text-[14px]">Truffle–1</p>
+        }
       </motion.span>
     </div>
   );

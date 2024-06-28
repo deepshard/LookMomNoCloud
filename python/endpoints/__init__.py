@@ -7,4 +7,3 @@ from .model import (
 )
 from .sysinfo import sysinfo_generator
 from .highlights import get_highlights
-from .new import get_new

@@ -1,16 +1,19 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getHighlights, getNews } from "../../api/general";
+import { getFeatured, getHighlights, getNewModels, getNews, getTrendingModels } from "../../api/general";
 import { deleteModel, getMyModels, getModel, searchModels, stopModel, getPrediction } from "../../api/model";
 import { TModel } from "../../types/schemas";
+// @ts-ignore
+import llamaIcon from "../../assets/images/llama1.png";
 
 export const useGetHighlights = () => {
   return useQuery({
     queryKey: ["highlights"],
     queryFn: () => getHighlights(),
-    retry: 3,
+    retry: 500,
     retryOnMount: false,
   });
 };
+
 
 export const useStopModel = () => {
   return useMutation({
@@ -45,6 +48,7 @@ export const useGetMyModels = () => {
     queryFn: () => {
       return getMyModels()
     },
+    retry: 500,
   })
 }
 
@@ -67,7 +71,7 @@ export const useGetNews = () => {
     title: `News Title ${index + 1}`,
     content: `This is the content for news item ${index + 1}. Here's some more detailed information about the news event.`,
     imageUrl: index % 3 === 0 ? `https://example.com/image${index + 1}.jpg` : undefined,
-    userProfilePicture: `/src/assets/images/llama1.png`,
+    userProfilePicture: llamaIcon,
     url: `https://example.com/news/${index + 1}`,
     createdAt: new Date().toISOString(),
   }));
@@ -77,7 +81,8 @@ export const useGetNews = () => {
       return getNews()
     },
     refetchOnWindowFocus: false,
-    initialData: dummyNewsData
+    initialData: dummyNewsData,
+    retry: 500,
   })
 }
 export const useGetPrediction = (text: string) => {
@@ -89,3 +94,30 @@ export const useGetPrediction = (text: string) => {
     enabled: !!text
   })
 };
+
+export const useGetFeatured = () => {
+  return useQuery({
+    queryKey: ["featured"],
+    queryFn: () => {
+      return getFeatured()
+    }
+  })
+}
+
+export const useGetNewModels = () => {
+  return useQuery({
+    queryKey: ["newModels"],
+    queryFn: () => {
+      return getNewModels()
+    },
+  })
+}
+
+export const useGetTrendingModels = () => {
+  return useQuery({
+    queryKey: ["trendingModels"],
+    queryFn: () => {
+      return getTrendingModels()
+    }
+  })
+}

@@ -1,14 +1,10 @@
 import { BrowserWindow, app, autoUpdater } from "electron";
 import { AppUpdater } from "electron-updater";
 import path from "path";
-import os from "os";
 import si from "systeminformation";
 import axios from "axios";
 import fs from "fs";
-import zlib from "zlib";
-import stream from "stream";
-import { promisify } from "util";
-import unzipper from 'unzipper';
+import extract from "extract-zip"
 import { log } from "./log";
 
 
@@ -66,9 +62,8 @@ export class OTAUpdater {
       }
 
       // Unzip file to temp folder
-      await fs.createReadStream(inputPath)
-        .pipe(unzipper.Extract({ path: tmpPath }))
-        .promise();
+      log(`Unzipping ${inputPath} to ${tmpPath}`);
+      await extract(inputPath, { dir: tmpPath });
 
       // Find the server folder in the temp folder
       const extractedContents = fs.readdirSync(tmpPath);
@@ -333,7 +328,7 @@ export class OTAUpdater {
     // Get GPU info
     let gpu;
     if (osInfo.platform === "darwin") {
-      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2"));
+      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2") || graphicsInfo.controllers[0].model.toLowerCase().includes("m3"));
       if (!isMetal) {
         this.mainWindow.webContents.send("error", "Only M1/M2 macs are supported for now");
         log("Unsupported GPU: Non-Metal GPU on macOS.");
@@ -375,6 +370,7 @@ export class OTAUpdater {
     log(`Downloading server from: ${serverUrl}`);
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
     await this.downloadServer(serverUrl, "server.tar.gz", "server");
+    this.mainWindow.webContents.send("initialization-complete");
     log("Downloaded server successfully.");
   }
 }

@@ -1,12 +1,10 @@
 import os
 import multiprocessing
 import asyncio
-import aiohttp
 import json
 import socket
 from pathlib import Path
 from loguru import logger
-import signal
 from enum import Enum
 from mlc_llm.interface.serve import serve
 from sqlalchemy import select
@@ -310,6 +308,7 @@ async def run_models_generator(model_ids: list[str]):
     Yields a string of the JSON representation of a ProgressEvent
     """
 
+    logger.info(f"Running models: {model_ids}")
     for model_id in model_ids:
         acknowledgement_event = ProgressEvent(model_id, Status.ACKNOWLEDGED, None, None)
         yield str(acknowledgement_event)
@@ -321,6 +320,7 @@ async def run_models_generator(model_ids: list[str]):
         port = find_port()
         global_state_manager.model_manager.reserve_port(port)
         ports.append(port)
+    logger.info(f"Reserving ports: {ports}")
 
     # Determine optimal quantization for each model and determine its instance number
     logger.info("Determining optimal quantizations and instance numbers")
@@ -341,6 +341,7 @@ async def run_models_generator(model_ids: list[str]):
         error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         global_state_manager.model_manager.clear_reserved_ports(ports)
+        logger.error(f"Error determining optimal quantizations and instance numbers: {e}")
         return
 
     # Identify the models that need to be converted and quantized and sum their compressed sizes
@@ -367,6 +368,7 @@ async def run_models_generator(model_ids: list[str]):
 
         # Check if the quantization already exists
         if not does_quantization_exist(model_id, quant):
+            logger.info(f"Model {model_id} needs to be converted and quantized")
             _, compressed_size = get_model_size_info(weights_path, quant)
             total_compressed_size += compressed_size
             conversions.append(
@@ -385,10 +387,12 @@ async def run_models_generator(model_ids: list[str]):
         error_event = ProgressEvent(None, Status.INSTALLING, None, None, str(e))
         yield str(error_event)
         global_state_manager.model_manager.clear_reserved_ports(ports)
+        logger.error(f"Not enough disk space to convert and quantize models: {e}")
         return
 
     # Add all of the conversions to the queue at once to avoid weird space calculations
     # or allowing a secondary run request to interfere with an earlier one
+    logger.info("Adding models to the conversion queue")
     for conversion in conversions:
         model_path = get_app_data_path() / "models" / conversion["model_id"]
         global_state_manager.model_manager.add_to_conversion_queue(
@@ -420,6 +424,7 @@ async def run_models_generator(model_ids: list[str]):
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             global_state_manager.model_manager.clear_reserved_ports(ports)
+            logger.error(f"Not enough memory to convert and quantize model {model_id}: {e}")
             return
 
         # Send quantization event
@@ -434,6 +439,7 @@ async def run_models_generator(model_ids: list[str]):
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)
             global_state_manager.model_manager.clear_reserved_ports(ports)
+            logger.error(f"Error converting and quantizing model {model_id}: {e}")
             return
         global_state_manager.model_manager.complete_conversion()
 
@@ -456,6 +462,7 @@ async def run_models_generator(model_ids: list[str]):
             yield str(error_event)
             await kill_models(models_started)
             global_state_manager.model_manager.clear_reserved_ports(ports)
+            logger.error(f"Not enough memory to run model {model_id}: {e}")
             return
 
         # Start the model server

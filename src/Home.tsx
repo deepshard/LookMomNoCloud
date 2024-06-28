@@ -2,17 +2,24 @@ import { useHomePageContext } from "./context/HomePageProvider";
 import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
+import { Placeholder } from "./component/Augmentations";
+import { useEffect, useState } from "react";
+import { TruffleUpdateInfo } from "./ota";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
-import MyModels from "./component/MyModels";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import UpdateTruffle from "./component/UpdateTruffle";
-import { useEffect, useState } from "react";
-import { TruffleUpdateInfo } from "./ota";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
+import AugmentationsView from "./component/AugmentationsView";
+// @ts-ignore
+import dayIcon from "./assets/icons/day.svg";
+// @ts-ignore
+import nightIcon from "./assets/icons/night.svg";
+import NavBar from "./component/NavBar";
+import Settings from "./component/Settings";
 
 interface WelcomeInfo {
   icon: string;
@@ -20,11 +27,10 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, sysInfo, downloads, updateModels } = useAppStore();
-  const { installModel, runModels, stopModel, cleanupInstall } = useModelActions();
-  const { showSearch, setShowSearch, showMyModels, setShowMyModels } = useHomePageContext();
+  const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
+  const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
+  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
-
   const navigate = useNavigate();
 
   const handleNavigate = (model: TModel) => {
@@ -38,7 +44,7 @@ export default function Home() {
 
     const handleInitializationRequired = () => {
       navigate("/initialization");
-    }
+    };
 
     //@ts-ignore
     window.ipc.onUpdateAvailable(handleUpdateAvailable);
@@ -54,43 +60,48 @@ export default function Home() {
       window.ipc.onInitializationRequired(() => {});
     };
   }, []);
-  const handleMyModelClick = (model: TModel) => {
-    handleNavigate(model);
-    setShowMyModels(false);
+
+  const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
+    updateModels({
+      ...prevModel,
+      ...newModel,
+    });
+    if (newModel.status === "RUNNING" && controller) {
+      controller.abort();
+    }
   };
 
   const installModelHandler = (model: TModel) => {
     installModel(model, undefined, (progress) => {
-      updateModels({
-        ...model,
-        ...progress,
-      });
+      handleUpdateModelsCallback(model, progress);
     });
   };
 
   const runModelsHandler = (model: TModel) => {
     runModels([model], undefined, (updatedModel, controller) => {
-      updateModels({
-        ...model,
-        ...updatedModel,
-      });
-      if (updatedModel.status === "RUNNING") {
-        controller.abort();
-      }
+      handleUpdateModelsCallback(model, updatedModel, controller);
     });
   };
 
   const stopModelHandler = (model: TModel) => {
     stopModel(model).then((_) => {
-      updateModels({
-        ...model,
-        status: "STOPPED",
-      });
+      handleUpdateModelsCallback(model, { status: "STOPPED" });
     });
   };
 
   const cleanupInstallHandler = (model: TModel) => {
     cleanupInstall(model);
+  };
+
+  const retryHandler = (model: TModel) => {
+    if (model.status === "NOT_DOWNLOADED" || model.status === "STOPPED") {
+      model = { ...model, progress: 0, error: undefined };
+      retry(model, (updateModel) => {
+        handleUpdateModelsCallback(model, updateModel);
+      });
+    } else {
+      retry(model, () => retryHandler(model));
+    }
   };
 
   const getWelcomeInfo = (): WelcomeInfo => {
@@ -101,71 +112,71 @@ export default function Home() {
     const hours = date.getHours();
     if (hours >= 5 && hours < 12) {
       return {
-        icon: "/src/assets/icons/day.svg",
-        message: "Good morning!",
+        icon: dayIcon,
+        message: "Good Morning",
       };
     } else if (hours >= 12 && hours < 20) {
       return {
-        icon: "/src/assets/icons/day.svg",
-        message: "Good afternoon",
+        icon: dayIcon,
+        message: "Good Afternoon",
       };
     } else {
       return {
-        icon: "/src/assets/icons/night.svg",
-        message: "Good evening",
+        icon: nightIcon,
+        message: "Good Evening",
       };
     }
   };
 
   return (
     <>
-      <div className="snap-y snap-mandatory">
-        <div className="w-full h-full flex flex-col justify-between items-center gap-5 p-14">
-          <div className="w-[660px] flex flex-col justify-start items-center gap-5">
-            <div className="flex justify-start items-center gap-1.5 w-full">
-              <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-400" />
-              <p className="text-surface-main">{getWelcomeInfo().message}</p>
-            </div>
-            <ModelCarousel
-              models={storeHighlights}
-              isLoading={storeHighlights.length === 0}
-              installModel={installModelHandler}
-              runModels={runModelsHandler}
-              stopModel={stopModelHandler}
-              cleanupInstall={cleanupInstallHandler}
-              onModelClick={handleNavigate}
-            />
+      <NavBar />
 
-            <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
-              <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
-                <FeaturedCarousel />
+      <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
+        <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
+          <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
+          <p className="text-surface-750">{getWelcomeInfo().message}</p>
+        </div>
+        <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
+          <ModelCarousel
+            models={storeHighlights}
+            isLoading={storeHighlights.length === 0}
+            installModel={installModelHandler}
+            runModels={runModelsHandler}
+            stopModel={stopModelHandler}
+            cleanupInstall={cleanupInstallHandler}
+            onModelClick={handleNavigate}
+            onRetry={retryHandler}
+          />
 
-                <div className="w-full flex justify-between gap-5">
-                  <div onClick={() => setShowMyModels(true)} className="cursor-pointer flex justify-center items-center w-full min-h-[150px] widget-3d rounded-lg relative">
-                    <div className="grid grid-cols-4 gap-6 p-5">
-                      {[...Array(8)].map((_, index) => (
-                        <div key={index} className="bg-surface-100 h-[38px] w-[38px] rounded-xs"></div>
-                      ))}
-                    </div>
-                    <p className="callout-regular text-surface-400 absolute bottom-[-35px] right-[50%] translate-x-[50%]">Models</p>
-                  </div>
-                </div>
+          <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
+            <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
+              <FeaturedCarousel />
+
+              <div className="w-full flex justify-between gap-5">
+                <Placeholder />
               </div>
-              <SystemInfoHardwareCarouselProvider>
-                <SystemInfoHardwareCarousel sysInfo={sysInfo} />
-              </SystemInfoHardwareCarouselProvider>
             </div>
+            <SystemInfoHardwareCarouselProvider>
+              <SystemInfoHardwareCarousel sysInfo={sysInfo} />
+            </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
       </div>
 
-      <AnimateModal show={showSearch} onClose={() => setShowSearch(false)}>
-        <Search recentlyUsedModels={storeHighlights} onModelClick={handleNavigate} />
+      <AnimateModal
+        show={showSearch || showAugmentations}
+        onClose={() => {
+          setShowAugmentations(false);
+          setShowSearch(false);
+        }}>
+        {showSearch && <Search onModelClick={handleNavigate} />}
+        {showAugmentations && <AugmentationsView />}
       </AnimateModal>
-      <AnimateModal show={showMyModels} onClose={() => setShowMyModels(false)}>
-        <MyModels myModels={Object.values(downloads)} onModelClick={handleMyModelClick} />
+      <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
+        <Settings />
       </AnimateModal>
-      {updateInfo && <UpdateTruffle className="fixed bottom-5 left-5" onClick={() => navigate(`/update`)} />}
+      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
     </>
   );
 }

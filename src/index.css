@@ -62,11 +62,6 @@ body {
 
   /* No Select */
   -webkit-user-select: none;
-  /* Safari */
-  -moz-user-select: none;
-  /* Firefox */
-  -ms-user-select: none;
-  /* Internet Explorer/Edge */
   user-select: none;
   /* Non-prefixed version, currently supported by Chrome, Edge, Opera, Firefox, Safari */
   height: 100vh;
@@ -74,6 +69,7 @@ body {
   justify-content: center;
   align-items: center;
 }
+
 
 .app-body {
   width: 950px;
@@ -90,7 +86,6 @@ body {
     0px 3.59px 89.756px 0px rgba(0, 0, 0, 0.1),
     0px 0px 44.878px 0px rgba(255, 255, 255, 0.1) inset;
   backdrop-filter: blur(0.5px);
-  position: sticky;
 }
 
 .app-body::before {
@@ -125,7 +120,7 @@ input::placeholder,
   color: var(--input-placeholder-color);
 }
 
-.ant-input {
+.ant-input.search-input {
   outline: none !important;
   color: #fff !important;
 }
@@ -137,6 +132,23 @@ input::placeholder,
   border: none !important;
   box-shadow: none !important;
   color: #fff !important;
+}
+
+.ant-skeleton .ant-skeleton-content .ant-skeleton-paragraph >li {
+  height: 10px;
+}
+
+.ant-skeleton .ant-skeleton-content .ant-skeleton-paragraph >li +li {
+  margin-block-start: 4px;
+}
+
+.ant-skeleton .ant-skeleton-content .ant-skeleton-paragraph >li {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5) 25%, rgba(255, 255, 255, 0.75) 37%, rgba(255, 255, 255, 0.5) 63%);
+  background-size: 400% 100%;
+  animation-name: css-dev-only-do-not-override-1r287do-ant-skeleton-loading;
+  animation-duration: 1.4s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
 }
 
 .react-multi-carousel-track {
@@ -258,6 +270,17 @@ div.slick-slide>div {
   backdrop-filter: blur(50px);
 }
 
+.ant-tooltip .ant-tooltip-inner {
+  @apply rounded-sm !important;
+}
+
+.ant-tooltip p {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
 @layer base {}
 
 @layer utilities {
@@ -265,9 +288,13 @@ div.slick-slide>div {
     @apply bg-bg-wdget-active text-surface-500 rounded-lg p-2.5 !important;
   }
 
+  .draggable-nav {
+    -webkit-app-region: drag;
+  }
+
   .navbar {
     /* @apply grid grid-cols-4 items-center; */
-    @apply relative flex justify-between items-center w-full top-0 p-5;
+    @apply absolute flex justify-between items-center w-full z-10 top-0 px-5 py-3;
   }
 
   /* --------  TYPOGRAPHY  -------- */
@@ -343,7 +370,7 @@ div.slick-slide>div {
   }
 
   .model-widget {
-    @apply h-[78px] w-[124px] overflow-hidden cursor-pointer relative !important;
+    @apply h-[78px] w-[124px] overflow-hidden relative cursor-pointer !important;
     transition: transform 0.15s ease-out, box-shadow 0.1s ease-out;
     clip-path: path("M 104.5 0 c 6.0572 0 9.0859 0 11.4749 0.9896 a 13.0000 13.0000 0 0 1 7.0355 7.0355 c 0.9896 2.3890 0.9896 5.4176 0.9896 11.4749 L 124 58.5 c 0 6.0572 0 9.0859 -0.9896 11.4749 a 13.0000 13.0000 0 0 1 -7.0355 7.0355 c -2.3890 0.9896 -5.4176 0.9896 -11.4749 0.9896 L 19.5 78 c -6.0572 0 -9.0859 0 -11.4749 -0.9896 a 13.0000 13.0000 0 0 1 -7.0355 -7.0355 c -0.9896 -2.3890 -0.9896 -5.4176 -0.9896 -11.4749 L 0 19.5 c 0 -6.0572 0 -9.0859 0.9896 -11.4749 a 13.0000 13.0000 0 0 1 7.0355 -7.0355 c 2.3890 -0.9896 5.4176 -0.9896 11.4749 -0.9896 Z");
   }
@@ -431,9 +458,14 @@ div.slick-slide>div {
   }
 
   .animate-modal {
-    @apply fixed top-0 w-full h-full;
-    backdrop-filter: blur(75px);
-    background: rgba(0, 0, 0, 0.30);
+    @apply fixed inset-0 w-full min-h-full items-center;
+
+    backdrop-filter: blur(50px); 
+    /* background: linear-gradient(0deg,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0.5) 100%),
+      rgba(255, 255, 255, 0.1); */
+    background: rgba(0, 0, 0, 0.6)
   }
 
   .model-detail-view { 
@@ -442,7 +474,7 @@ div.slick-slide>div {
   }
   .model-detail-navbar {
     @apply sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6 ;
-    backdrop-filter: blur(25px);
+    /* backdrop-filter: blur(25px); */
   }
   .model-detail-navbar::before {}
 
@@ -515,6 +547,6 @@ div.slick-slide>div {
   }
 
   .error-icon {
-    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px] z-[99999];
+    @apply h-[17px] w-[17px] absolute bottom-0 left-0 ml-[10px] mb-[10px];
   }
 }

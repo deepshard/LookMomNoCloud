@@ -29,9 +29,13 @@
       "node_modules/**/*"
     ],
     "extraResources": [
-      "assets/**/*"
+      {
+        "from": "src/assets",
+        "to": "assets"
+      }
     ],
     "mac": {
+      "icon": "src/assets/icons/truffle-logo.png",
       "target": [
         "dmg",
         "zip"
@@ -39,8 +43,18 @@
       "notarize": {
         "teamId": "4SDV2299VV"
       }
+
+    },
+    "dmg": {
+      "title": "Look Mom No Cloud™",
+      "background": "src/assets/icons/dmg-background.png",
+      "window": {
+        "width": 537,
+        "height": 442
+      }
     },
     "linux": {
+      "icon": "src/assets/icons/truffle-logo.png",
       "target": [
         {
           "target": "AppImage",
@@ -128,21 +142,23 @@
     "electron-settings": "^4.0.4",
     "electron-squirrel-startup": "^1.0.0",
     "electron-updater": "^6.2.1",
+    "extract-zip": "^2.0.1",
     "framer-motion": "^11.2.9",
     "glob": "^10.3.15",
     "lodash": "^4.17.21",
+    "mixpanel-browser": "^2.53.0",
     "msw": "^2.3.0",
     "node-gyp": "^10.1.0",
     "react": "^18.3.1",
     "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
+    "react-lazy-load-image-component": "^1.6.2",
     "react-loading-skeleton": "^3.4.0",
     "react-router-dom": "^6.23.1",
     "react-spinners": "^0.13.8",
-    "systeminformation": "^5.22.11",
-    "unzipper": "^0.12.1",
     "react-transition-group": "^4.4.5",
+    "systeminformation": "^5.22.11",
     "uuid": "^9.0.1",
     "winston": "^3.13.0",
     "zod": "^3.23.8",

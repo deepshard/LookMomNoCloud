@@ -15,6 +15,7 @@ const OTA = ({ initialization }: OTAProps) => {
   const [startUpdate, setStartUpdate] = React.useState(false);
   const navigate = useNavigate();
 
+
   if (initialization) {
     return (
       <div className="update">

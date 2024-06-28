@@ -102,7 +102,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
       percentText.style.transform = 'rotate(89deg)';
       percentText.setAttribute('x', '50');
       percentText.setAttribute('y', '-50');
-    }, 100);
+    }, 300);
   }, []);
 
   if (!sysInfo) return null;
@@ -137,7 +137,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
             strokeWidth={11}
             styles={buildStyles({
               textColor: "rgba(255, 255, 255, 0.75)",
-              pathColor: "rgba(255, 255, 255, 1)",
+              pathColor: "rgba(255, 255, 255, 0.75)",
               trailColor: "rgba(255, 255, 255, 0.1)",
               textSize: "8px",
               pathTransitionDuration: 0.5,

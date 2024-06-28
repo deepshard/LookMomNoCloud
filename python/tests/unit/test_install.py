@@ -13,20 +13,14 @@ from endpoints.model.install.install import (
     get_file_size_hf,
     get_hf_repo_info,
 )
-from truffle_types import FileInfo, Quantization
+from truffle_types import FileInfo
 from tests.unit.data import (
     ID,
     MODEL_URL,
-    MOCK_API_RESPONSE,
-    FILE_ONE_URL,
-    FILE_TWO_URL,
-    FILE_THREE_URL,
-    FILE_FOUR_URL,
     MOCK_FILE_ONE_DATA,
     MOCK_FILE_TWO_DATA,
     MOCK_FILE_THREE_DATA,
     MOCK_FILE_FOUR_DATA,
-    HF_API_URL,
 )
 
 schema = {

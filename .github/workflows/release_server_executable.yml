@@ -58,6 +58,7 @@ jobs:
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
           fi
+          echo -e "\n\nif __name__ == \"__main__\":\n    import sys\n    main(sys.argv[1:])" >> $SITE_PACKAGES/mlc_llm/cli/serve.py
 
       - name: Import certificate to keychain
         if: matrix.os == 'macos-latest'
@@ -128,8 +129,8 @@ jobs:
       - name: Upload to S3
         run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
 
-      - name: Upload latest metadata
-        run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+      # - name: Upload latest metadata
+        # run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
 
       - name: Notarize the binary from apple
         run: |

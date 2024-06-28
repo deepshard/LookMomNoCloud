@@ -2,6 +2,7 @@ import mixpanel from 'mixpanel-browser'
 
 interface Analytics {
   isInitialized: boolean
+  isProd: boolean
   init(token: string): void
   track(eventName: string, properties: any): void
   identify(userId: string): void
@@ -15,6 +16,7 @@ interface Analytics {
 class Analytics implements Analytics {
   constructor() {
     this.isInitialized = false
+    this.isProd = true
   }
 
   init(token: string) {
@@ -25,51 +27,63 @@ class Analytics implements Analytics {
         persistence: 'localStorage',
       })
       this.isInitialized = true
+      this.checkIsPackaged()
     }
   }
 
+  async checkIsPackaged() {
+    // @ts-ignore
+    const isPackaged = await window.electronAPI.isPackaged()
+    this.isProd = isPackaged
+  }
+
   trackModelRun(models: any[]): void {
-    this.track('Model run', {
+    this.isProd && this.track('Model run', {
       models,
     })
   }
 
   track(eventName, properties) {
     if (this.isInitialized) {
-      mixpanel.track(eventName, properties)
+        this.isProd && mixpanel.track(eventName, properties)
     } else {
       console.warn('Mixpanel not initialized. Call init() first.')
     }
   }
 
-  identify(userId) {
-    if (this.isInitialized) {
-      mixpanel.identify(userId)
+  async identify(userId) {
+    // @ts-ignore
+    const isPackaged = await window.electronAPI.isPackaged()
+    if (this.isInitialized && isPackaged) {
+         mixpanel.identify(userId)
+         mixpanel.people.set({
+            '$name': userId
+         })
     } else {
       console.warn('Mixpanel not initialized. Call init() first.')
     }
   }
 
   trackFirstUserVisit(os: string): void {
-    this.track('First Usage', {
+    this.isProd && this.track('First Usage', {
       os,
     })
   }
 
   trackModelInstall(model: any): void {
-    this.track('Model installed', {
+    this.isProd && this.track('Model installed', {
       model: model.name,
     })
   }
 
   trackModelStop(model: any): void {
-    this.track('Model stopped', {
+    this.isProd && this.track('Model stopped', {
       model: model.name,
     })
   }
 
   trackModelError(model: any, error: any): void {
-    this.track('Model error', {
+    this.isProd && this.track('Model error', {
       model: model.name,
       error: error.message,
     })

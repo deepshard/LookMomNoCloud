@@ -40,7 +40,7 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
-      // devTools: false,
+      devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
@@ -91,7 +91,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  // mainWindow.setResizable(false);
+  mainWindow.setResizable(false);
   mainWindow.webContents.closeDevTools();
 
   // if (process.env.NODE_ENV === "development") {

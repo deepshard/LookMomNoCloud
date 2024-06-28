@@ -244,7 +244,7 @@ async def run_model(
     )
 
     # Start the model server as a separate process
-    mlc_llm_path = Path(os.path.abspath(os.path.dirname(__file__))) / "mlc_llm_serve"
+    mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
     proc = subprocess.Popen(
         [
             mlc_llm_path,

@@ -54,6 +54,7 @@ jobs:
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+          echo "SITE_PACKAGES: $SITE_PACKAGES"
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
@@ -93,13 +94,23 @@ jobs:
 
       - name: Copy extra files
         run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
           if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
-            cp -R -P /usr/local/cuda-12.1 python/dist/server/_internal/cuda
+            cp -rL /usr/local/cuda python/dist/server/_internal/cuda
           fi
+
+      - name: Run integration tests
+        if: matrix.os == 'macos-latest'
+        run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+          cd python/dist/server 
+          nohup ./server &
+          sleep 5
+          curl --retry 5 --retry-connrefused http://localhost:8899
+          cd ../../
+          PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
 
       - name: Run integration tests
         if: matrix.os == 'macos-latest'
@@ -126,10 +137,20 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload to S3
-        run: aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
+          else
+            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries-dev/${{ github.sha }}/
+          fi
 
       - name: Upload latest metadata
-        run: aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
+          else
+            aws s3 cp python/dist/server/version.txt s3://truffle-binaries-dev/latest.txt
+          fi
 
       - name: Notarize the binary from apple
         run: |
@@ -147,7 +168,7 @@ jobs:
           status: ${{ job.status }}
           text: |
             Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
-            New Version: `${{ github.sha }}` | `${{ matrix.os }}`
+            New Version: `${{ github.sha }}` | `${{ matrix.os }}` | `${{ github.ref_name }}`
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

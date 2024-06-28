@@ -23,6 +23,8 @@ from utils import (
 )
 from truffle_types import Quantization
 from constants import TRUFFLE_API_URL
+import sys
+import subprocess
 
 
 class Status(Enum):
@@ -240,8 +242,26 @@ async def run_model(
     )
 
     # Start the model server as a separate process
-    proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
-    proc.start()
+    mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
+    proc = subprocess.Popen(
+        [
+            mlc_llm_path,
+            model_path,
+            "--model-lib",
+            str(model_path / "compilation.so"),
+            "--port",
+            str(port),
+            "--host",
+            "0.0.0.0",
+            "--mode",
+            "interactive",
+            "--overrides",
+            f'"gpu_memory_utilization={mem_share};tensor_parallel_shards={shards}"',
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
 
     # Wait for the server to start and be available
     server_ready = await is_server_running(port)

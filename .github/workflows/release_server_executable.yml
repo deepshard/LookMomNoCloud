@@ -144,14 +144,6 @@ jobs:
             aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries-dev/${{ github.sha }}/
           fi
 
-      - name: Upload latest metadata
-        run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            aws s3 cp python/dist/server/version.txt s3://truffle-binaries/latest.txt
-          else
-            aws s3 cp python/dist/server/version.txt s3://truffle-binaries-dev/latest.txt
-          fi
-
       - name: Notarize the binary from apple
         run: |
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
@@ -172,3 +164,22 @@ jobs:
           fields: repo,message,commit,author,action,eventName,ref,workflow
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}
+  
+  update-latest:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Update latest metadata
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "${{ github.sha }}" | aws s3 cp - s3://truffle-binaries/latest.txt
+          else
+            echo "${{ github.sha }}" | aws s3 cp - s3://truffle-binaries-dev/latest.txt
+          fi

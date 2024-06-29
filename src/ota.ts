@@ -299,7 +299,6 @@ export class OTAUpdater {
     if (this.updateApp.available) {
       log("Quitting and installing for app update.")
       autoUpdater.quitAndInstall();
-      return;
     }
 
     // If there is a server update but no app update, relaunch the app

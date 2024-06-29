@@ -3,8 +3,6 @@ import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
 import { Placeholder } from "./component/Augmentations";
-import { useEffect, useState } from "react";
-import { TruffleUpdateInfo } from "./ota";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";

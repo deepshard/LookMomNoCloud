@@ -1,13 +1,12 @@
-import { createContext, useContext, useEffect, useLayoutEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 import useSysInfo from "../hooks/sysInfo/useSysInfo";
 import { LOCAL_ROOT_URL } from "../api/client";
 import { useGetHighlights, useGetMyModels } from "../lib/react-query/queriesAndMutations";
 import { useAppStore } from "../store/store";
 import Analytics from "../types/Analytics";
 import { v4 as uuidv4 } from 'uuid';
-import mixpanel from "mixpanel-browser";
 import { useNavigate } from "react-router-dom";
-import { TruffleUpdateInfo } from "src/ota";
+import { TruffleUpdateInfo } from "../ota";
 
 
 const AppWrapperContext = createContext({

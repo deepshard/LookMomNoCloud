@@ -3,6 +3,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 interface State {
+  updateInfo: any;
+  addUpdateInfo: (info: any) => void;
   sysInfo: TSysInfo | null;
   addSysInfo: (info: TSysInfo) => void;
   highlights: TModel[];
@@ -22,6 +24,8 @@ interface State {
 export const useStore = create<State>()(
   persist(
     (set) => ({
+      updateInfo: null,
+      addUpdateInfo: (info) => set({ updateInfo: info }),
       sysInfo: null,
       addSysInfo: (info) =>
         set((store) => {

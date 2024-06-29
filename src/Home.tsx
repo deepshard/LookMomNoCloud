@@ -3,8 +3,6 @@ import { useAppStore } from "./store/store";
 import { useNavigate } from "react-router-dom";
 import { TModel } from "./types/schemas";
 import { Placeholder } from "./component/Augmentations";
-import { useEffect, useState } from "react";
-import { TruffleUpdateInfo } from "./ota";
 import SystemInfoHardwareCarousel from "./component/SystemInfoHardwareCarousel";
 import SystemInfoHardwareCarouselProvider from "./context/SystemInfoHardwareCarouselProvider";
 import useModelActions from "./hooks/modelActions/useModelActions";
@@ -27,39 +25,14 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
+  const { highlights: storeHighlights, updateInfo, sysInfo, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
   const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
-  const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
-
-  useEffect(() => {
-    const handleUpdateAvailable = (newUpdateInfo: TruffleUpdateInfo) => {
-      setUpdateInfo(newUpdateInfo);
-    };
-
-    const handleInitializationRequired = () => {
-      navigate("/initialization");
-    };
-
-    //@ts-ignore
-    window.ipc.onUpdateAvailable(handleUpdateAvailable);
-
-    //@ts-ignore
-    window.ipc.onInitializationRequired(handleInitializationRequired);
-
-    return () => {
-      //@ts-ignore
-      window.ipc.onUpdateAvailable(() => {});
-
-      //@ts-ignore
-      window.ipc.onInitializationRequired(() => {});
-    };
-  }, []);
 
   const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
     updateModels({

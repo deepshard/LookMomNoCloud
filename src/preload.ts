@@ -4,6 +4,7 @@
 import { contextBridge, ipcRenderer, shell, app } from "electron";
 
 contextBridge.exposeInMainWorld("ipc", {
+  checkForUpdates: () => ipcRenderer.send("check-for-updates"),
   downloadUpdate: () => ipcRenderer.send("download-update"),
   restartAndUpdate: () => ipcRenderer.send("restart-and-update"),
   onDownloadUpdateProgress: (callback) => ipcRenderer.on("update-download-progress", (_event, value) => callback(value)),

@@ -111,10 +111,14 @@ app.on("ready", async function () {
 
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
+  ipcMain.on("check-for-updates", otaUpdater.checkForUpdates)
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
-  autoUpdater.on("error", (err) => window.webContents.send("error", err));
+  autoUpdater.on("error", (err) => {
+    log(`Error: ${err}`);
+    if (!window.isDestroyed()) window.webContents.send("error", err);
+  });
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
   ipcMain.handle('is-app-packaged', () => app.isPackaged);
@@ -125,12 +129,10 @@ app.on("ready", async function () {
     if (needInitialServer) {
       log("Downloading initial server");
       await otaUpdater.downloadInitialServer();
-    }
 
-    log("Spawning server");
-    spawnServer();
-    log("Checking for updates");
-    await otaUpdater.checkForUpdates();
+      log("Spawning server");
+      spawnServer();
+    }
   });
 });
 
@@ -140,7 +142,7 @@ app.on("ready", async function () {
 app.on("window-all-closed", () => {
   if (serverProcess) {
     serverProcess.kill();
-    log("Server process killed");
+    log(`Server process killed at ${serverProcess.pid}`);
   }
   log("Quitting");
   endLogger();

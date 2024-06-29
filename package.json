@@ -18,7 +18,7 @@
     "build:fe": "electron-builder build  --publish always",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "full-build": "electron-forge make && electron-builder build --mac --linux",
+    "full-build": "electron-forge make && electron-builder build --mac",
     "full-build:publish": "electron-forge make && electron-builder build --mac --linux --publish always"
   },
   "build": {

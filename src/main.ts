@@ -46,8 +46,6 @@ const createWindow = () => {
     },
   });
 
-  autoUpdater.on("error", (err) => mainWindow.webContents.send("error", err));
-
   const template = [
     {
       label: 'View',
@@ -116,8 +114,10 @@ app.on("ready", async function () {
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
   autoUpdater.on("error", (err) => {
-    log(`Error: ${err}`);
-    if (!window.isDestroyed()) window.webContents.send("error", err);
+    log(`Error in autoUpdater: ${err}`);
+    if (!window.isDestroyed()) {
+      window.webContents.send("error", err);
+    }
   });
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 

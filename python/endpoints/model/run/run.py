@@ -1,3 +1,5 @@
+import contextlib
+import io
 import os
 import multiprocessing
 import asyncio
@@ -230,6 +232,24 @@ async def is_server_running(port: int, timeout: int = 120) -> bool:
     return False
 
 
+class AutoFlushFile(io.TextIOWrapper):
+    def __init__(self, f):
+        super().__init__(f, encoding="utf-8")
+
+    def write(self, s):
+        super().write(s)
+        self.flush()
+
+
+@contextlib.contextmanager
+def managed_file(filename):
+    file = open(filename, "a+b")
+    try:
+        yield AutoFlushFile(file)
+    finally:
+        file.close()
+
+
 async def run_model(
     model_id: str, quantization: Quantization, mem_share: float, instance: int, port: int
 ) -> ProgressEvent:
@@ -241,30 +261,35 @@ async def run_model(
         quantization,
     )
 
-    # Start the model server as a separate process
-    proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
-    proc.start()
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        # Running in PyInstaller bundle
+        mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
+    else:
+        # Running in development mode
+        mlc_llm_path = "mlc_llm serve"
 
-    # mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
-    # proc = subprocess.Popen(
-    #     [
-    #         mlc_llm_path,
-    #         model_path,
-    #         "--model-lib",
-    #         str(model_path / "compilation.so"),
-    #         "--port",
-    #         str(port),
-    #         "--host",
-    #         "0.0.0.0",
-    #         "--mode",
-    #         "interactive",
-    #         "--overrides",
-    #         f'"gpu_memory_utilization={mem_share};tensor_parallel_shards={shards}"',
-    #     ],
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    #     start_new_session=True,
-    # )
+    with managed_file("models.log") as auto_flush_file:
+        cmd = [
+            mlc_llm_path,
+            model_path,
+            "--model-lib",
+            str(model_path / "compilation.so"),
+            "--port",
+            str(port),
+            "--host",
+            "0.0.0.0",
+            "--mode",
+            "interactive",
+            "--overrides",
+            f"gpu_memory_utilization={mem_share};tensor_parallel_shards={shards}",
+        ]
+        logger.info(f"Running command: {cmd}")
+        proc = subprocess.Popen(
+            cmd,
+            stdout=auto_flush_file,
+            stderr=auto_flush_file,
+            start_new_session=True,
+        )
 
     # Wait for the server to start and be available
     server_ready = await is_server_running(port)

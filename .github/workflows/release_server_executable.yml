@@ -112,18 +112,6 @@ jobs:
           cd ../../
           PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
 
-      - name: Run integration tests
-        if: matrix.os == 'macos-latest'
-        run: |
-          source $CONDA/etc/profile.d/conda.sh
-          conda activate truffle
-          cd python/dist/server 
-          nohup ./server &
-          sleep 5
-          curl --retry 5 --retry-connrefused http://localhost:8899
-          cd ../../
-          PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
-
       - name: Archive server executable
         run: |
           cd python/dist

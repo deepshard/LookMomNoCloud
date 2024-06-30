@@ -6,14 +6,10 @@ import { Switch } from "antd";
 import "./Settings.css";
 import { useState } from "react";
 import { useAppStore } from "../../store/store";
-// @ts-ignore
-import questionMarkIcon from "../../assets/icons/questionmark.svg";
 
 const Settings = () => {
   const { setSetting, settings } = useAppStore();
   const [isCheckingData, setIsCheckingData] = useState(settings.collectData);
-  const [isShowingDataCollectionDetails, setIsShowingDataCollectionDetails] =
-    useState(false);
   const onChange = (checked: boolean) => {
     setIsCheckingData(checked);
     setSetting("collectData", checked);
@@ -36,17 +32,11 @@ const Settings = () => {
             />
             <div className="flex flex-row gap-2 justify-center items-center">
               <p>Data Collection</p>
-              <img
-                src={questionMarkIcon}
-                alt="question mark"
-                className="w-4 h-4 cursor-pointer invert"
-                onClick={() => setIsShowingDataCollectionDetails(!isShowingDataCollectionDetails)}
-              />
             </div>
           </span>
 
           <span
-          className={`text-surface-main text-[14px] transition-opacity duration-300 ${isShowingDataCollectionDetails ? "opacity-100" : "opacity-0"}`}
+          className={`text-surface-main text-[14px] transition-opacity duration-300`}
           >
             We're not ClosedAI. Our software, designed for downloading and
             running local models, does not collect any usage data or personal

@@ -22,13 +22,6 @@ from utils import get_app_data_path
 import certifi
 import ssl
 import sys
-import sentry_sdk
-
-sentry_sdk.init(
-    dsn="https://bb4e91f71f5d39ce023dbc4ac5ecda1f@o4505509110480896.ingest.us.sentry.io/4507518842044416",
-    traces_sample_rate=1.0,
-    profiles_sample_rate=1.0,
-)
 
 
 @asynccontextmanager

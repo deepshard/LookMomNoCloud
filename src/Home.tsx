@@ -29,7 +29,7 @@ interface WelcomeInfo {
 export default function Home() {
   const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations } = useHomePageContext();
+  const { showSearch, setShowSearch, setSearchQuery,  setShowDiscover, showAugmentations, setShowAugmentations } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
@@ -169,6 +169,8 @@ export default function Home() {
       <AnimateModal show={showSearch || showAugmentations} onClose={() => {
         setShowAugmentations(false);
         setShowSearch(false);
+        setSearchQuery("");
+        setShowDiscover(false);
         }}>
        {showSearch && <Search onModelClick={handleNavigate} />}
         {showAugmentations && <AugmentationsView />}

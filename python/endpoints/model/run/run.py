@@ -261,7 +261,13 @@ async def run_model(
         quantization,
     )
 
-    mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # Running in PyInstaller bundle
+        mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
+    else:
+        # Running in development mode
+        mlc_llm_path = "mlc_llm serve"
+
     with managed_file("models.log") as auto_flush_file:
         cmd = [
             mlc_llm_path,

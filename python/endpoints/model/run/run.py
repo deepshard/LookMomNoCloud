@@ -234,7 +234,7 @@ async def is_server_running(port: int, timeout: int = 120) -> bool:
 
 class AutoFlushFile(io.TextIOWrapper):
     def __init__(self, f):
-        super().__init__(f, encoding='utf-8')
+        super().__init__(f, encoding="utf-8")
 
     def write(self, s):
         super().write(s)
@@ -248,7 +248,8 @@ def managed_file(filename):
         yield AutoFlushFile(file)
     finally:
         file.close()
-        
+
+
 async def run_model(
     model_id: str, quantization: Quantization, mem_share: float, instance: int, port: int
 ) -> ProgressEvent:
@@ -260,25 +261,21 @@ async def run_model(
         quantization,
     )
 
-    # Start the model server as a separate process
-    # proc = multiprocessing.Process(target=serve_model, args=(model_path, mem_share, port, shards))
-    # proc.start()
-
     mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
     with managed_file("models.log") as auto_flush_file:
         cmd = [
-                mlc_llm_path,
-                model_path,
-                "--model-lib",
-                str(model_path / "compilation.so"),
-                "--port",
-                str(port),
-                "--host",
-                "0.0.0.0",
-                "--mode",
-                "interactive",
-                "--overrides",
-                f"gpu_memory_utilization={mem_share};tensor_parallel_shards={shards}",
+            mlc_llm_path,
+            model_path,
+            "--model-lib",
+            str(model_path / "compilation.so"),
+            "--port",
+            str(port),
+            "--host",
+            "0.0.0.0",
+            "--mode",
+            "interactive",
+            "--overrides",
+            f"gpu_memory_utilization={mem_share};tensor_parallel_shards={shards}",
         ]
         logger.info(f"Running command: {cmd}")
         proc = subprocess.Popen(

@@ -261,7 +261,7 @@ async def run_model(
         quantization,
     )
 
-    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
         # Running in PyInstaller bundle
         mlc_llm_path = Path(sys._MEIPASS) / ".." / "mlc_llm_serve"
     else:

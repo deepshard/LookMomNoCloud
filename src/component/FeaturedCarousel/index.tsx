@@ -34,7 +34,7 @@ const FeaturedCarousel = () => {
         {news.slice(0, 5).map((item) => (
           <Featured key={item.id} news={item} isLoading={isGettingNews} onClick={() => {
             if(isGettingNews) return;
-            //@ts-ignore
+            // @ts-ignore
             window.electronShell.openExternal(item.url);
           }}/>
         ))}

@@ -31,7 +31,6 @@ sentry_sdk.init(
 )
 
 
-
 @asynccontextmanager
 async def init_state():
     await global_state_manager.launch()
@@ -114,6 +113,11 @@ async def stop_model(request: StopRequest):
 async def delete_model(model_id: str):
     await delete_model_handler(model_id)
     return {}
+
+
+@app.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0
 
 
 if __name__ == "__main__":

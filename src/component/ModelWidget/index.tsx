@@ -75,7 +75,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
 
   const getErrorContent = (errorMessage: string) => {
     return (
-      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-2.5 gap-2 justify-start items-stretch'>
+      <div className='w-full flex flex-col gap-2 justify-start items-stretch'>
         <div className='flex justify-start items-center gap-1.5 text-surface-main'>
           <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
 
@@ -93,14 +93,8 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
   const getErrorButton = (errorMessage: string) => {
     return (
       <Tooltip
-        overlayClassName="bg-black/20 rounded-sm backdrop-blur-2xl min-w-[200px]"
-        overlayInnerStyle={{
-          color: 'surface-500',
-          padding: '5px',
-          fontSize: '12px',
-        }}
+        overlayClassName="min-w-[200px]"
         placement="bottom"
-        color="transparent"
         title={getErrorContent(errorMessage)}
         
       >

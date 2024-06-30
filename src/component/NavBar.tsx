@@ -5,15 +5,17 @@ import discoverVid from "../assets/videos/discover-vid.mp4";
 import searchIcon from "../assets/icons/search-icon.svg";
 // @ts-ignore
 import gearIcon from "../assets/icons/gear.svg";
-
-
+import { useAppStore } from "../store/store";
+import RunningModelsPill from "./RunningModelsPill";
+import Tooltip from "./common/Tooltip";
+import RunningModelsDropDown from "./RunningModelsPill/RunningModelsDropDown";
 
 const NavBar = () => {
   const { setShowSearch, showSearch, showAugmentations, setShowDiscover, showSettings, setShowSettings } = useHomePageContext();
-
+  const { sysInfo } = useAppStore();
   return (
     <>
-      {(!(showSearch || showAugmentations || showSettings)) && (
+      {!(showSearch || showAugmentations || showSettings) && (
         <div className="navbar">
           <div className="draggable-nav absolute top-0 left-0 right-0 h-[20px] bg-transparent z-10" />
 
@@ -43,8 +45,27 @@ const NavBar = () => {
             </div>
           </div>
 
-          <div className="h-5 w-5 rounded-full cursor-pointer" onClick={() => setShowSettings(true)}>
-            <img src={gearIcon} className="w-5 h-5" />
+          <div className="flex-center gap-4">
+            {sysInfo?.resources.models.every((model) => model.title) && (
+              <Tooltip
+                open
+                placement="bottomRight"
+
+                arrow={false}
+                title={<RunningModelsDropDown models={sysInfo?.resources.models || []}/>}
+              >
+                <RunningModelsPill models={sysInfo?.resources.models || []} />
+              </Tooltip>
+            )}
+            {/* <Tooltip
+                open
+                placement="bottomRight"
+                arrow={false}
+                title={<RunningModelsDropDown models={sysInfo?.resources.models || []}/>}
+              >
+                <RunningModelsPill models={sysInfo?.resources.models || []} />
+              </Tooltip> */}
+            <img src={gearIcon} className="w-5 h-5 rounded-full cursor-pointer" onClick={() => setShowSettings(true)} />
           </div>
         </div>
       )}

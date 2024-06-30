@@ -115,11 +115,6 @@ async def delete_model(model_id: str):
     return {}
 
 
-@app.get("/sentry-debug")
-async def trigger_error():
-    division_by_zero = 1 / 0
-
-
 if __name__ == "__main__":
     if sys.platform == "linux":
         os.environ["CUDA_PATH"] = os.path.join(sys._MEIPASS, "cuda")

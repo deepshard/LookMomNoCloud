@@ -25,17 +25,36 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, updateInfo, sysInfo, updateModels } = useAppStore();
-  const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, setSearchQuery,  setShowDiscover, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
-  const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
+  const {
+    highlights: storeHighlights,
+    updateInfo,
+    sysInfo,
+    updateModels,
+  } = useAppStore();
+  const { installModel, runModels, stopModel, cleanupInstall, retry } =
+    useModelActions();
+  const {
+    showSearch,
+    setShowSearch,
+    setSearchQuery,
+    setShowDiscover,
+    showAugmentations,
+    setShowAugmentations,
+    showSettings,
+    setShowSettings,
+  } = useHomePageContext();
+  // const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
 
-  const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
+  const handleUpdateModelsCallback = (
+    prevModel: TModel,
+    newModel: Partial<TModel>,
+    controller?: AbortController
+  ) => {
     updateModels({
       ...prevModel,
       ...newModel,
@@ -108,7 +127,11 @@ export default function Home() {
 
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
         <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
-          <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
+          <img
+            src={getWelcomeInfo().icon}
+            alt="day"
+            className="w-5 h-5 text-surface-750"
+          />
           <p className="text-surface-750">{getWelcomeInfo().message}</p>
         </div>
         <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
@@ -139,20 +162,33 @@ export default function Home() {
       </div>
 
       <AnimateModal
-        show={showSearch || showAugmentations}
+        show={showSearch}
         onClose={() => {
-          setShowAugmentations(false);
           setShowSearch(false);
           setSearchQuery("");
           setShowDiscover(false);
-        }}>
+        }}
+      >
         {showSearch && <Search onModelClick={handleNavigate} />}
-        {showAugmentations && <AugmentationsView />}
       </AnimateModal>
+
+      <AnimateModal
+        show={showAugmentations}
+        onClose={() => setShowAugmentations(false)}
+      >
+        <AugmentationsView />
+      </AnimateModal>
+
       <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
         <Settings />
       </AnimateModal>
-      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
+      
+      {updateInfo && (
+        <UpdateTruffle
+          className="fixed bottom-3 "
+          onClick={() => navigate(`/update`)}
+        />
+      )}
     </>
   );
 }

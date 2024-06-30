@@ -20,7 +20,7 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   const [search, setSearch] = useState<string>("");
   const [debouncedInput, setDebouncedInput] = useState<string>("");
-  const [isListView, setIsListView] = useState<boolean>(false);
+  const [isListView, setIsListView] = useState<boolean>(true);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
 
   const { data: searchModels } = useSearchModels(debouncedInput);

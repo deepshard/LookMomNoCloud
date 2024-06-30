@@ -10,8 +10,10 @@ const initializeLogger = () => {
 }
 
 const log = (message: string) => {
-    const timestamp = new Date().toISOString();
-    logStream.write(`[${timestamp}] ${message}\n`);
+    if (logStream && logStream.writable) {
+        const timestamp = new Date().toISOString();
+        logStream.write(`[${timestamp}] ${message}\n`);
+    }
 }
 
 const endLogger = () => {

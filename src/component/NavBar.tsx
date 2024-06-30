@@ -3,15 +3,17 @@ import { useHomePageContext } from "../context/HomePageProvider";
 import discoverVid from "../assets/videos/discover-vid.mp4";
 // @ts-ignore
 import searchIcon from "../assets/icons/search-icon.svg";
+// @ts-ignore
+import gearIcon from "../assets/icons/gear.svg";
 
 
 
 const NavBar = () => {
-  const { setShowSearch, showSearch, showAugmentations, setShowDiscover } = useHomePageContext();
+  const { setShowSearch, showSearch, showAugmentations, setShowDiscover, showSettings, setShowSettings } = useHomePageContext();
 
   return (
     <>
-      {(!(showSearch || showAugmentations)) && (
+      {(!(showSearch || showAugmentations || showSettings)) && (
         <div className="navbar">
           <div className="draggable-nav absolute top-0 left-0 right-0 h-[20px] bg-transparent z-10" />
 
@@ -41,8 +43,8 @@ const NavBar = () => {
             </div>
           </div>
 
-          <div className="h-5 w-5 rounded-full cursor-pointer">
-            {/* <img src={gearIcon} className="w-5 h-5" /> */}
+          <div className="h-5 w-5 rounded-full cursor-pointer" onClick={() => setShowSettings(true)}>
+            <img src={gearIcon} className="w-5 h-5" />
           </div>
         </div>
       )}

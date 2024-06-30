@@ -225,6 +225,7 @@ async def download_file(
 ):
     file_path = os.path.join(install_path, file_info.file)
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    logger.info(f"Downloading {file_info.file}...")
 
     async with global_state_manager.session.get(
         url, allow_redirects=True, timeout=None

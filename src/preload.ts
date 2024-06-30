@@ -4,6 +4,7 @@
 import { contextBridge, ipcRenderer, shell } from "electron";
 
 contextBridge.exposeInMainWorld("ipc", {
+  checkForUpdates: () => ipcRenderer.send("check-for-updates"),
   downloadUpdate: () => ipcRenderer.send("download-update"),
   restartAndUpdate: () => ipcRenderer.send("restart-and-update"),
   onDownloadUpdateProgress: (callback) => ipcRenderer.on("update-download-progress", (_event, value) => callback(value)),
@@ -17,3 +18,7 @@ contextBridge.exposeInMainWorld("ipc", {
 contextBridge.exposeInMainWorld('electronShell', {
   openExternal: (url) => shell.openExternal(url)
 });
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  isPackaged: () => ipcRenderer.invoke('is-app-packaged')
+})

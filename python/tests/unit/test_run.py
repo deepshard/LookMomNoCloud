@@ -57,7 +57,7 @@ def utils_mock(mocker):
     mocker.patch("endpoints.model.run.run.socket.socket.connect_ex", return_value=1)
     mocker.patch("endpoints.model.run.run.get_tensor_parallelism", return_value=1)
     mocker.patch("endpoints.model.run.run.is_server_running", return_value=True)
-    mocker.patch("multiprocessing.Process", return_value=MagicMock(pid=1234))
+    mocker.patch("subprocess.Popen", return_value=MagicMock(pid=1234))
     mocker.patch("state.ModelManager.get_usable_memory", return_value=8192)
     mocker.patch("endpoints.model.run.run.get_usable_memory", return_value=8192)
 

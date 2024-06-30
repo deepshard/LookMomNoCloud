@@ -37,8 +37,6 @@ import errorIcon from '../assets/icons/error.svg'
 // @ts-ignore
 import runningManIcon from "../assets/icons/running-man.svg";
 // @ts-ignore
-import docsIcon from "../assets/icons/docs.svg";
-// @ts-ignore
 import authorIcon from "../assets/icons/author.svg";
 // @ts-ignore
 import modelSizeIcon from "../assets/icons/modelsize.svg";

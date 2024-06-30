@@ -9,8 +9,6 @@ import useModelActions from "./hooks/modelActions/useModelActions";
 import Search from "./component/Search";
 import FeaturedCarousel from "./component/FeaturedCarousel";
 import UpdateTruffle from "./component/UpdateTruffle";
-import { useEffect, useState } from "react";
-import { TruffleUpdateInfo } from "./ota";
 import ModelCarousel from "./component/ModelCarousel";
 import AnimateModal from "./component/AnimateModal";
 import AugmentationsView from "./component/AugmentationsView";
@@ -19,7 +17,7 @@ import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
 import NavBar from "./component/NavBar";
-
+import Settings from "./component/Settings";
 
 interface WelcomeInfo {
   icon: string;
@@ -27,41 +25,15 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, sysInfo, updateModels } = useAppStore();
+  const { highlights: storeHighlights, updateInfo, sysInfo, updateModels } = useAppStore();
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, setSearchQuery,  setShowDiscover, showAugmentations, setShowAugmentations } = useHomePageContext();
+  const { showSearch, setShowSearch, setSearchQuery,  setShowDiscover, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
   const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
-
-
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
-
-  useEffect(() => {
-    const handleUpdateAvailable = (newUpdateInfo: TruffleUpdateInfo) => {
-      setUpdateInfo(newUpdateInfo);
-    };
-
-    const handleInitializationRequired = () => {
-      navigate("/initialization");
-    };
-
-    //@ts-ignore
-    window.ipc.onUpdateAvailable(handleUpdateAvailable);
-
-    //@ts-ignore
-    window.ipc.onInitializationRequired(handleInitializationRequired);
-
-    return () => {
-      //@ts-ignore
-      window.ipc.onUpdateAvailable(() => {});
-
-      //@ts-ignore
-      window.ipc.onInitializationRequired(() => {});
-    };
-  }, []);
 
   const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
     updateModels({
@@ -135,10 +107,10 @@ export default function Home() {
       <NavBar />
 
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
-          <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
-            <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
-            <p className="text-surface-750">{getWelcomeInfo().message}</p>
-          </div>
+        <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
+          <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
+          <p className="text-surface-750">{getWelcomeInfo().message}</p>
+        </div>
         <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
           <ModelCarousel
             models={storeHighlights}
@@ -155,25 +127,30 @@ export default function Home() {
             <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
               <FeaturedCarousel />
 
-                <div className="w-full flex justify-between gap-5">
-                  <Placeholder />
-                </div>
+              <div className="w-full flex justify-between gap-5">
+                <Placeholder />
               </div>
-              <SystemInfoHardwareCarouselProvider>
-                <SystemInfoHardwareCarousel sysInfo={sysInfo} />
-              </SystemInfoHardwareCarouselProvider>
             </div>
+            <SystemInfoHardwareCarouselProvider>
+              <SystemInfoHardwareCarousel sysInfo={sysInfo} />
+            </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
+      </div>
 
-      <AnimateModal show={showSearch || showAugmentations} onClose={() => {
-        setShowAugmentations(false);
-        setShowSearch(false);
-        setSearchQuery("");
-        setShowDiscover(false);
+      <AnimateModal
+        show={showSearch || showAugmentations}
+        onClose={() => {
+          setShowAugmentations(false);
+          setShowSearch(false);
+          setSearchQuery("");
+          setShowDiscover(false);
         }}>
-       {showSearch && <Search onModelClick={handleNavigate} />}
+        {showSearch && <Search onModelClick={handleNavigate} />}
         {showAugmentations && <AugmentationsView />}
+      </AnimateModal>
+      <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
+        <Settings />
       </AnimateModal>
       {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
     </>

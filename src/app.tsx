@@ -7,13 +7,15 @@ import ModelDetailView from "./pages/ModelDetailView";
 import AppWrapperProvider from "./context/AppWrapperProvider";
 import OTA from "./pages/OTA";
 
+
+// @ts-ignore
 const root = createRoot(document.getElementById("root"));
 
 function App() {
   return (
     <div>
       <div className="app-body">
-        <div className="clear-dotted-bg"/>
+        <div className="clear-dotted-bg" />
         <HashRouter>
           <QueryProvider>
             <AppWrapperProvider>

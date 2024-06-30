@@ -147,7 +147,7 @@ export class OTAUpdater {
     }
 
     // Compare hashes
-    if (response && latestHash !== response.data) {
+    if (response && latestHash.trim() !== response.data.trim()) {
       return response.data.trim();
     }
 
@@ -206,6 +206,7 @@ export class OTAUpdater {
       const graphicsInfo = await si.graphics();
       const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
       const url = `https://truffle-binaries.s3.amazonaws.com/${serverUpdateInfo}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
+      log(`Server update available at: ${url}`);
 
       this.updateServer = {
         available: true,
@@ -222,6 +223,8 @@ export class OTAUpdater {
         available: true,
         updateInfo: appUpdateInfo,
       };
+      log(`App update available: ${appUpdateInfo.updateInfo.version}`);
+
       this.addBytesToDownload(await this.getAppUpdateSize(appUpdateInfo));
     }
 
@@ -294,11 +297,13 @@ export class OTAUpdater {
 
     // If there is an app update, quit and install
     if (this.updateApp.available) {
+      log("Quitting and installing for app update.")
       autoUpdater.quitAndInstall();
     }
 
     // If there is a server update but no app update, relaunch the app
     if (this.updateServer.available) {
+      log("Relaunching app for server update.")
       app.relaunch();
       app.quit();
     }
@@ -328,7 +333,7 @@ export class OTAUpdater {
     // Get GPU info
     let gpu;
     if (osInfo.platform === "darwin") {
-      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2"));
+      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2") || graphicsInfo.controllers[0].model.toLowerCase().includes("m3"));
       if (!isMetal) {
         this.mainWindow.webContents.send("error", "Only M1/M2 macs are supported for now");
         log("Unsupported GPU: Non-Metal GPU on macOS.");

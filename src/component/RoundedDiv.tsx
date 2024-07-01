@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { getSvgPath } from 'figma-squircle'
 
-interface SmoothCornerDivProps extends React.HTMLAttributes<HTMLDivElement> {
+interface RoundedDiv extends React.HTMLAttributes<HTMLDivElement> {
   cornerRadius: number
   className?: string
 }
 
-const SmoothCornerDiv: React.FC<SmoothCornerDivProps> = ({
+const RoundedDiv: React.FC<RoundedDiv> = ({
   cornerRadius,
   className = '',
   children,
@@ -42,4 +42,4 @@ const SmoothCornerDiv: React.FC<SmoothCornerDivProps> = ({
   )
 }
 
-export default SmoothCornerDiv
+export default RoundedDiv;

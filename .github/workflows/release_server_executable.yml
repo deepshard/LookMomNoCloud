@@ -16,12 +16,12 @@ jobs:
       matrix:
         os: [
             macos-latest, 
-            ubuntu-cuda12.1-x86_64-1x-4090,
+            onprem-ubuntu-1x-4060,
         ]
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.zip
-          - os: ubuntu-cuda12.1-x86_64-1x-4090
+          - os: onprem-ubuntu-1x-4060
             filename: linux-cuda-x64.zip
     steps:
       - name: Checkout repository
@@ -44,7 +44,7 @@ jobs:
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
-          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+          elif [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
           pip install -r python/requirements.txt
@@ -56,7 +56,7 @@ jobs:
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
           echo "SITE_PACKAGES: $SITE_PACKAGES"
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
-          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+          if [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
           fi
 
@@ -96,12 +96,11 @@ jobs:
         run: |
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
-          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+          if [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
             cp -rL /usr/local/cuda python/dist/server/_internal/cuda
           fi
 
       - name: Run integration tests
-        if: matrix.os == 'macos-latest'
         run: |
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle

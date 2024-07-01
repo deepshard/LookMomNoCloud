@@ -1,6 +1,6 @@
 import { TModel } from "../types/schemas";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatDate, formatParams, canFitOnMachine } from "../utils/sysUtils";
+import { formatDate, formatParams, canFitOnMachine, bytesToHumanReadable, MODEL_PRECISION } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
@@ -53,7 +53,7 @@ function ModelDetailView() {
   const { refetch: getModel } = useGetModel(modelData);
   const { refetch: getMyModels } = useGetMyModels();
   const { refetch: getHighlights } = useGetHighlights();
-  
+
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const risksRef = useRef(null);
@@ -91,7 +91,7 @@ function ModelDetailView() {
   }, []);
 
   const handleExit = () => {
-    window.history.back()
+    window.history.back();
   };
 
   const scrollToSection = (sectionName) => {
@@ -204,24 +204,35 @@ function ModelDetailView() {
     }
   };
 
+  const getModelSize = () => {
+    return MODEL_PRECISION * (modelData?.size || 0);
+  };
+
+  const calculateDownloadedSize = () => {
+    const totalSize = getModelSize();
+    return totalSize * ((modelData?.progress || 0) / 100);
+  };
+
   const getNotDownloadedIcon = () => {
     if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
       return (
-        <Icon
-          src={downloadIcon}
-          imgClassName="h-[11px] w-[11px]"
-          className="w-auto flex-center gap-2 px-[24px] text-white"
-          onClick={() => {
-            modelData &&
-              installModel(modelData, undefined, (progress) => {
-                updateModels({
-                  ...modelData,
-                  ...progress,
+        <Tooltip arrow={false} placement="bottom" overlay={<p>{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
+          <Icon
+            src={downloadIcon}
+            imgClassName="h-[11px] w-[11px]"
+            className="w-auto flex-center gap-2 px-[24px] text-white"
+            onClick={() => {
+              modelData &&
+                installModel(modelData, undefined, (progress) => {
+                  updateModels({
+                    ...modelData,
+                    ...progress,
+                  });
                 });
-              });
-          }}>
-          <p className="text-sm">Install</p>
-        </Icon>
+            }}>
+            <p className="text-sm">Install</p>
+          </Icon>
+        </Tooltip>
       );
     } else {
       return (

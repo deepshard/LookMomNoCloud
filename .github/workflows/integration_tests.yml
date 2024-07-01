@@ -26,7 +26,7 @@ jobs:
         run: |
           curl -L https://truffle-binaries.s3.amazonaws.com/b58796121ab166957733e9bf42d5592218a27168/darwin-metal-arm64.zip -o server.zip
           unzip server.zip
-          chmod +x server
+          chmod 0755 server
           nohup ./server &
           sleep 5
           curl --retry 5 --retry-connrefused http://localhost:8899

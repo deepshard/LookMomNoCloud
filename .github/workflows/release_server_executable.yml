@@ -62,6 +62,7 @@ jobs:
         if: matrix.os == 'onprem-mac-metal'
         run: |
           echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
+          security delete-keychain build.keychain || true
           security create-keychain -p temporary build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p temporary build.keychain

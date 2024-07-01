@@ -1,0 +1,36 @@
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  integration_tests:
+    runs-on: ${{ matrix.os }}
+    env:
+      DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          macos-latest,
+          macos-13-xlarge,
+        ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get server from S3 and start it
+        run: |
+          curl -L https://truffle-binaries.s3.amazonaws.com/b58796121ab166957733e9bf42d5592218a27168/darwin-metal-arm64.zip -o server.zip
+          unzip server.zip
+          chmod +x server
+          nohup ./server &
+          sleep 5
+          curl --retry 5 --retry-connrefused http://localhost:8899
+
+      - name: Run integration tests
+        run: |
+          PYTHONPATH="." pytest --maxfail=1 -vvv python/tests/integration
+
+      - name: Cleanup
+        run: killall server || true

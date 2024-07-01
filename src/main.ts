@@ -61,6 +61,15 @@ const spawnServer = () => {
   serverProcess.unref();
 }
 
+const getVersionHash = () => {
+  try {
+    const data = fs.readFileSync(path.join(app.getPath("userData"), "bin", "server", "version.txt"), 'utf8');
+    return data;
+  } catch (error) {
+    console.error('Error reading file:', error);
+  }
+}
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
@@ -74,20 +83,15 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
-      devTools: false,
+      // devTools: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
+      additionalArguments: [
+        `--app-version=${app.getVersion()}`,
+        `--app-version-hash=${getVersionHash()}`,
+      ]
     },
   });
-
-  const serverVersionPath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
-  let latestHash = "";
-  try {
-    latestHash = fs.readFileSync(serverVersionPath, "utf8");
-  } catch (error) {
-    // If file does not exist, we want to just get the latest version from S3
-    latestHash = "";
-  }
 
   const template = [
     {
@@ -102,7 +106,7 @@ const createWindow = () => {
     {
       label: "Version",
       submenu: [
-        { label: `${app.getVersion()} | ${latestHash}`, enabled: false },
+        { label: `${app.getVersion()} | ${getVersionHash()}`, enabled: false },
       ]
     }
   ];
@@ -132,7 +136,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.setResizable(false);
+  // mainWindow.setResizable(false);
   mainWindow.webContents.closeDevTools();
 
   // if (process.env.NODE_ENV === "development") {

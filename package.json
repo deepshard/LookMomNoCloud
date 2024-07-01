@@ -43,7 +43,6 @@
       "notarize": {
         "teamId": "4SDV2299VV"
       }
-
     },
     "dmg": {
       "title": "Look Mom No Cloud™",
@@ -143,6 +142,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "electron-updater": "^6.2.1",
     "extract-zip": "^2.0.1",
+    "figma-squircle": "^0.3.1",
     "framer-motion": "^11.2.9",
     "glob": "^10.3.15",
     "lodash": "^4.17.21",

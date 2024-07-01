@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect } from 'react'
+// @ts-ignore
 import closeIcon from "../../assets/icons/close.svg";
 
 interface AnimateModalProps {

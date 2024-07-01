@@ -252,7 +252,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
         <div className="absolute top-0 left-0 p-2 w-full">
           <div className="relative flex flex-col w-full">
             <div className="text-content flex flex-col overflow-hidden w-full">
-              <span className="-mb-1 title-xs inline-block capitalize truncate text-surface-main leading-normal">{model?.name.split("/")[1]}</span>
+              <span className="-mb-1 title-sm inline-block capitalize truncate text-surface-main leading-normal">{model?.name.split("/")[1]}</span>
               <span className="title-xs inline-block capitalize truncate text-surface-750 leading-normal">
                 {toUnitOfCount(model?.size)} • {model?.author}
               </span>

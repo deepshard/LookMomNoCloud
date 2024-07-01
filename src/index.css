@@ -72,8 +72,8 @@ body {
 
 
 .app-body {
-  width: 950px;
-  height: 688px;
+  width: 980px;
+  height: 740px;
   border-radius: 9px;
   display: flex;
   flex-direction: column;
@@ -473,7 +473,7 @@ div.slick-slide>div {
     backdrop-filter: blur(75px);
   }
   .model-detail-navbar {
-    @apply sticky top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6 ;
+    @apply fixed top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6 ;
     /* backdrop-filter: blur(25px); */
   }
   .model-detail-navbar::before {}

@@ -285,8 +285,10 @@ function ModelDetailView() {
         </div>
       </div>
       <div className="model-detail-view hide-scrollbar">
-        <section className={"h-[100vh] max-w-[660px] mb-10 "}>
-          <div className="w-full h-full flex flex-col items-center space-y-auto">
+        <section className={"h-[100vh] max-w-[660px] p-5"}>
+          <div className="w-full h-full flex flex-col justify-between items-center">
+            <div/>
+
             <div className="relative flex flex-col justify-start items-center">
               <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
                 <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full scale-110" />
@@ -316,7 +318,7 @@ function ModelDetailView() {
           </div>
         </section>
 
-        <section className="pt-16 pb-14">
+        <section className="py-14">
           <div>
             {modelData && (
               <div className="w-[660px] flex flex-col justify-start items-start gap-5">

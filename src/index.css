@@ -72,8 +72,8 @@ body {
 
 
 .app-body {
-  width: 980px;
-  height: 760px;
+  width:1060px;
+  height: 800px;
   border-radius: 9px;
   display: flex;
   flex-direction: column;

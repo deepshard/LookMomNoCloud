@@ -108,7 +108,7 @@ export default function Home() {
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
         <div className="flex items-center gap-1.5 w-[740px] mb-[20px]">
           <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
-          <p className="text-[16px] text-surface-750">{getWelcomeInfo().message}</p>
+          <p className="text-[18px] text-surface-750">{getWelcomeInfo().message}</p>
         </div>
         <div className="w-[740px] flex flex-col justify-center items-center  gap-[20px]">
           <ModelCarousel

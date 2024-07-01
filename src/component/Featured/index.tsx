@@ -33,8 +33,8 @@ const Featured = ({ news, isLoading = true, className, ...props }: FeaturedProps
         {!isLoading ? <img src={news?.userProfilePicture} alt="" className="w-10 h-10 rounded-xs" onError={() => console.log("error")}/> : <Skeleton className="!w-10 h-10 rounded-xs opacity-10" />}
         {!isLoading ? (
           <>
-            <h3 className="title-base base-regular mt-[7px] -mb-[1px] text-surface-main !w-full line-clamp-1">{getTitle()}</h3>
-            <p className="body-sm break-words line-clamp-3 base-regular text-surface-500">{getContent()}</p>
+            <h3 className="text-[16px] base-regular mt-[7px] -mb-[1px] text-surface-main !w-full line-clamp-1">{getTitle()}</h3>
+            <p className="body-long leading-tight break-words line-clamp-3 base-regular text-surface-500">{getContent()}</p>
           </>
         ):(
           <Skeleton className="title-base base-regular mt-[7px] -mb-[1px] opacity-10" count={2}/>

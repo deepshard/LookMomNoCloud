@@ -30,15 +30,15 @@ const NavBar = () => {
                 <source src={discoverVid} type="video/mp4" />
               </video>
 
-              <p className="text-[14px] text-surface-750 hover:text-surface-500">Discover</p>
+              <p className="text-[16px] text-surface-750 hover:text-surface-500">Discover</p>
             </div>
 
-            <div className="h-4 w-[0.5px] bg-surface-100" />
+            <div className="h-[18px] w-[0.5px] bg-white/20" />
 
             <div className="h-8 flex-grow flex-center-y gap-1.5 items-center" onClick={() => setShowSearch(true)}>
               <img src={searchIcon} alt="search" className="w-3 h-3 text-surface-400" />
               <div className="flex-grow bg-transparent outline-none base-medium cursor-text">
-                <p className="text-[14px] text-surface-400">Search AI...</p>
+                <p className="text-[16px] text-surface-400">Search AI...</p>
               </div>
             </div>
           </div>

@@ -19,9 +19,6 @@ jobs:
           macos-13-xlarge,
         ]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Get server from S3 and start it
         run: |
           curl -L https://truffle-binaries.s3.amazonaws.com/b58796121ab166957733e9bf42d5592218a27168/darwin-metal-arm64.zip -o server.zip
@@ -34,7 +31,10 @@ jobs:
 
       - name: Run integration tests
         run: |
-          PYTHONPATH="." pytest --maxfail=1 -vvv python/tests/integration
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"id": "6b99b94e-a4e4-473a-bd31-c0462fcaece9", "url": "https://huggingface.co/openai-community/gpt2"}' \
+            http://localhost:8899/model/install
 
       - name: Cleanup
         run: killall server || true

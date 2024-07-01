@@ -36,7 +36,7 @@ const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 980,
-    height: 740,
+    height: 760,
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {

@@ -285,12 +285,12 @@ function ModelDetailView() {
         </div>
       </div>
       <div className="model-detail-view hide-scrollbar">
-        <section className={"h-[100vh] max-w-[660px] p-5"}>
+        <section className={"h-[100vh] max-w-[740px] p-5"}>
           <div className="w-full h-full flex flex-col justify-between items-center">
             <div/>
 
             <div className="relative flex flex-col justify-start items-center">
-              <div className="w-[660px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
+              <div className="w-[740px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
                 <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full scale-110" />
                 {getModelInfoHeader()}
               </div>
@@ -321,7 +321,7 @@ function ModelDetailView() {
         <section className="py-14">
           <div>
             {modelData && (
-              <div className="w-[660px] flex flex-col justify-start items-start gap-5">
+              <div className="w-[740px] flex flex-col justify-start items-start gap-5">
                 {navBarOptions.map((section) => {
                   if (modelData[section] && modelData[section] !== "") {
                     let sectionRef;

@@ -21,8 +21,8 @@ import errorIcon from "../../assets/icons/error.svg";
 //@ts-ignore
 import retryIcon from "../../assets/icons/retry.svg";
 
-const OverlaySVG = ({ width = 128, height = 82 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 124 79" fill="none">
+const OverlaySVG = ({ width = 140, height = 86 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 140 86" fill="none">
     <defs>
       <filter id="blur_filter" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
         <feGaussianBlur stdDeviation="25" />
@@ -139,7 +139,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
               styles={{
                 path: { stroke: "rgba(255, 255, 255, 1)" },
                 trail: { stroke: "rgba(255, 255, 255, 0.4)" },
-                text: { fill: "rgba(255, 255, 255, 0.85)", fontSize: "30px" },
+                text: { fill: "rgba(255, 255, 255, 0.85)", fontSize: "34px" },
               }}
             />
           </motion.div>

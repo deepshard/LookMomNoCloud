@@ -19,7 +19,7 @@ const NavBar = () => {
 
           <div className="bg-transparent h-5 w-5 rounded-full" />
 
-          <div className="flex w-full max-w-[660px] gap-3 justify-start items-center">
+          <div className="flex w-full max-w-[740px] gap-3 justify-start items-center">
             <div
               className="flex items-center gap-[6px] cursor-pointer"
               onClick={() => {

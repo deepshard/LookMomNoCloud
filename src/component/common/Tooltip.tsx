@@ -6,7 +6,6 @@ const Tooltip = forwardRef<TooltipRef, AntdTooltipProps>(({ children, className,
   return (
     <AntdTooltip 
       ref={ref} 
-      // className={`bg-black/10 rounded-sm backdrop-blur-[20px] p-[5px] border-[0.5px] border-surface-100 ${className}`}
       overlayClassName={` ${overlayClassName}`}
       overlayInnerStyle={{
         padding: '10px',

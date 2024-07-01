@@ -141,7 +141,6 @@ jobs:
           text: |
             Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
             Version: `${{ github.sha }}` | `${{ matrix.os }}` | `${{ github.ref_name }}`
-            (${{ env.S3_BUCKET }}/${{ github.sha }})[Link]
           fields: message,commit,author,action,eventName,ref
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}

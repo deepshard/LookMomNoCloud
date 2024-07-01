@@ -1,6 +1,9 @@
 name: Integration Tests - macOS
 
 on:
+  push:
+    branches:
+      - running-fixes
   workflow_dispatch:
 
 jobs:

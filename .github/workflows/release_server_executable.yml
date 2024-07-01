@@ -57,19 +57,20 @@ jobs:
           if [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
           fi
-
-      - name: Import certificate to keychain
-        if: matrix.os == 'onprem-mac-metal'
-        run: |
-          echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
-          security delete-keychain build.keychain || true
-          security create-keychain -p temporary build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p temporary build.keychain
-          security import certificate.p12 -k build.keychain -P runescape -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k temporary build.keychain
-          security list-keychains -d user -s build.keychain
-          security find-identity -v -p codesigning
+      
+      # disabling for now, as its not needed on prem
+      # - name: Import certificate to keychain
+      #   if: matrix.os == 'onprem-mac-metal'
+      #   run: |
+      #     echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
+      #     security delete-keychain build.keychain || true
+      #     security create-keychain -p temporary build.keychain
+      #     security default-keychain -s build.keychain
+      #     security unlock-keychain -p temporary build.keychain
+      #     security import certificate.p12 -k build.keychain -P runescape -T /usr/bin/codesign
+      #     security set-key-partition-list -S apple-tool:,apple: -s -k temporary build.keychain
+      #     security list-keychains -d user -s build.keychain
+      #     security find-identity -v -p codesigning
 
       - name: Build server executable
         run: |

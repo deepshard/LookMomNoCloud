@@ -103,12 +103,7 @@ const createWindow = () => {
         { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
       ]
     },
-    {
-      label: "Version",
-      submenu: [
-        { label: `${app.getVersion()} | ${getVersionHash()}`, enabled: false },
-      ]
-    }
+
   ];
 
   setTimeout(() => {

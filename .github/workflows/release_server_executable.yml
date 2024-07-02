@@ -68,12 +68,12 @@ jobs:
       - name: Import certificate to keychain
         if: matrix.os == 'onprem-mac-metal'
         run: |
-          # echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
-          # security delete-keychain build.keychain || true
-          # security create-keychain -p temporary build.keychain
-          # security default-keychain -s build.keychain
+          echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
+          security delete-keychain ci.keychain || true
+          security create-keychain -p runescape ci.keychain
+          security default-keychain -s ci.keychain
           security unlock-keychain -p runescape ci.keychain
-          # security import certificate.p12 -k build.keychain -P runescape -T /usr/bin/codesign
+          security import certificate.p12 -k ci.keychain -P runescape -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k runescape ci.keychain
           security list-keychains -d user -s ci.keychain
           security find-identity -v -p codesigning

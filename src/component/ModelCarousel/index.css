@@ -6,7 +6,8 @@
 @layer utilities {
     
     .model-carousel {
-        width: 670px;
+        /* width: 670px;  */
+        width: 740px;
         height: auto;
         scrollbar-width: thin;
         scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
@@ -56,8 +57,8 @@
     
     .model-item-wrapper {
         position: relative;
-        width: 124px;
-        height: 78px;
+        width: 140px;
+        height: 86px;
         flex-shrink: 0;
     }
     

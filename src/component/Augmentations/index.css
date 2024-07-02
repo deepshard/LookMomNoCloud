@@ -1,8 +1,8 @@
 
 .carousel-container {
   position: relative;
-  width: 320px;
-  height: 150px;
+  width: 360px;
+  height: 170px;
   cursor: pointer;
   perspective: 1000px;
 }

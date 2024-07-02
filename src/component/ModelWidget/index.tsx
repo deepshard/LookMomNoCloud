@@ -21,8 +21,8 @@ import errorIcon from "../../assets/icons/error.svg";
 //@ts-ignore
 import retryIcon from "../../assets/icons/retry.svg";
 
-const OverlaySVG = ({ width = 128, height = 82 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 124 79" fill="none">
+const OverlaySVG = ({ width = 140, height = 86 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 140 86" fill="none">
     <defs>
       <filter id="blur_filter" x="-50%" y="-50%" width="200%" height="200%" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
         <feGaussianBlur stdDeviation="25" />
@@ -287,8 +287,8 @@ model.status = 'INSTALLING';
         <div className="absolute top-0 left-0 p-2 w-full">
           <div className="relative flex flex-col w-full">
             <div className="text-content flex flex-col overflow-hidden w-full">
-              <span className="-mb-1 title-xs inline-block capitalize truncate text-surface-main leading-normal">{model?.name.split("/")[1]}</span>
-              <span className="title-xs inline-block capitalize truncate text-surface-750 leading-normal">
+              <span className="-mb-1 text-[16px] inline-block capitalize truncate text-surface-main leading-normal">{model?.name.split("/")[1]}</span>
+              <span className="title-base inline-block capitalize truncate text-surface-750 leading-normal">
                 {toUnitOfCount(model?.size)} • {model?.author}
               </span>
             </div>

@@ -2,7 +2,7 @@ import { Tooltip as AntdTooltip, TooltipProps as AntdTooltipProps } from "antd";
 import { TooltipRef } from "antd/es/tooltip";
 import { forwardRef } from "react";
 
-const Tooltip = forwardRef<TooltipRef, AntdTooltipProps>(({ children, className, overlayClassName = "", ...props }, ref) => {
+const Tooltip = forwardRef<TooltipRef, AntdTooltipProps>(({ children, className, arrow = false, placement='bottom', overlayClassName = "", ...props }, ref) => {
   return (
     <AntdTooltip
       ref={ref}
@@ -17,6 +17,8 @@ const Tooltip = forwardRef<TooltipRef, AntdTooltipProps>(({ children, className,
         backdropFilter: "blur(20px)",
         ...props.overlayInnerStyle,
       }}
+      placement={placement}
+      arrow={arrow}
       {...props}>
       {children}
     </AntdTooltip>

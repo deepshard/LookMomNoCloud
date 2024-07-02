@@ -175,7 +175,12 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
                 }}
               />
             ) : (
-              <img src={installIcon} alt="installIcon" className="animate-spin" />
+              <Tooltip
+                overlay={<p>Installing</p>}
+              >
+
+                <img src={installIcon} alt="installIcon" className="animate-spin" />
+              </Tooltip>
             )}
           </div>
         );
@@ -254,7 +259,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
         return null;
     }
   };
-
+model.status = 'INSTALLING';
   return (
     <div className="relative" {...props}>
       {model.status === "RUNNING" && (

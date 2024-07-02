@@ -163,7 +163,11 @@ function ModelDetailView() {
         );
 
       case "INSTALLING":
-        return <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />;
+        return (
+          <Tooltip overlay="Installing">
+            <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />
+          </Tooltip>
+        )
 
       case "RUNNING":
         return (
@@ -206,11 +210,6 @@ function ModelDetailView() {
 
   const getModelSize = () => {
     return MODEL_PRECISION * (modelData?.size || 0);
-  };
-
-  const calculateDownloadedSize = () => {
-    const totalSize = getModelSize();
-    return totalSize * ((modelData?.progress || 0) / 100);
   };
 
   const getNotDownloadedIcon = () => {

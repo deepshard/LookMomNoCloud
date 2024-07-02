@@ -80,7 +80,6 @@ async def get_model_details(model):
     """Helper function to fetch model details if downloaded."""
     async with global_state_manager.session.get(
         f"{TRUFFLE_API_URL}/models/{model['id']}",
-        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model['id']}"
         model_data = await response.json()

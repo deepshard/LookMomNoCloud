@@ -527,8 +527,11 @@ async def install_generator(model_id: str, model_url: str):
     # Convert and quantize the model
     logger.info(f"Converting and quantizing {model_dir}")
     try:
+        # Convert, quantize, and compile the model with a timeout of 20 minutes
         quant_path = model_dir / quantization.value
-        await convert_quantize_compile(model_id, install_path, quant_path, quantization)
+        await asyncio.wait_for(
+            convert_quantize_compile(model_id, install_path, quant_path, quantization), timeout=1200
+        )
     except Exception as e:
         progress_event.update(error=str(e))
         yield str(progress_event)

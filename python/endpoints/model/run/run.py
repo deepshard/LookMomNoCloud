@@ -461,8 +461,11 @@ async def run_models_generator(model_ids: list[str]):
 
         # Perform the conversion and quantization
         try:
+            # Convert, quantize, and compile the model with a timeout of 20 minutes
             global_state_manager.model_manager.remove_from_conversion_queue()
-            await convert_quantize_compile(weights_path, quant_path, quant)
+            await asyncio.wait_for(
+                convert_quantize_compile(weights_path, quant_path, quant), timeout=1200
+            )
         except Exception as e:
             error_event = ProgressEvent(model_id, Status.INSTALLING, None, None, str(e))
             yield str(error_event)

@@ -259,7 +259,6 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
         return null;
     }
   };
-model.status = 'INSTALLING';
   return (
     <div className="relative" {...props}>
       {model.status === "RUNNING" && (

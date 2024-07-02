@@ -99,6 +99,7 @@ async def get_model_details(model):
             hfLink=model_data["hfLink"],
             status=await get_model_status(model["id"]),
             backgroundImage=model_data["backgroundImage"],
+            convTemplate=model_data["convTemplate"],
             instance=model["instance"] if model["instance"] is not None else 0,
             port=model["port"] if model["port"] is not None else None,
             progress=0,

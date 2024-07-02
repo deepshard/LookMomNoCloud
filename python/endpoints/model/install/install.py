@@ -24,6 +24,7 @@ from utils import (
     get_tensor_parallelism,
     is_truffle_compatible,
 )
+from constants import TRUFFLE_API_URL
 
 
 class Status(Enum):
@@ -200,9 +201,13 @@ def get_file_download_url(url: str, file: str) -> str:
         raise ValueError(f"Unsupported repo type: {repo_type}")
 
 
-def get_conv_template(base_weights_path: str) -> str:
-    # NOTE: We can replace this with a more sophisticated method later
-    return "LM"
+async def get_conv_template(model_id: str) -> str:
+    async with global_state_manager.session.get(
+        f"{TRUFFLE_API_URL}/models/{model_id}",
+    ) as response:
+        assert response.status == 200, f"Failed to fetch model {model_id}"
+        model_details = await response.json()
+        return model_details["convTemplate"]
 
 
 async def get_base_quantization_decision(model_id: str) -> Quantization:
@@ -308,8 +313,8 @@ async def queue_conversion(
     await asyncio.sleep(3)
 
 
-def convert_quantize_compile(
-    base_weights_path: Path, quant_weights_path: Path, quantization: Quantization
+async def convert_quantize_compile(
+    model_id: str, base_weights_path: Path, quant_weights_path: Path, quantization: Quantization
 ):
     # Gather necessary info for conversion
     config = detect_config(base_weights_path)
@@ -320,7 +325,7 @@ def convert_quantize_compile(
         weight_format="auto",
     )
     device = detect_device("auto")
-    conv_template = get_conv_template(base_weights_path)
+    conv_template = await get_conv_template(model_id)
     quantization_obj = get_quantization_object(quantization, model)
     target, build_func = detect_target_and_host("auto", "auto")
     shards = get_tensor_parallelism(base_weights_path, quantization)
@@ -523,7 +528,7 @@ async def install_generator(model_id: str, model_url: str):
     logger.info(f"Converting and quantizing {model_dir}")
     try:
         quant_path = model_dir / quantization.value
-        convert_quantize_compile(install_path, quant_path, quantization)
+        await convert_quantize_compile(model_id, install_path, quant_path, quantization)
     except Exception as e:
         progress_event.update(error=str(e))
         yield str(progress_event)

@@ -228,7 +228,11 @@ async def test_dont_return_model_if_null(set_os, mocker):
                 return None
             else:
                 return 8000000000
-        mocker.patch("endpoints.sysinfo.sysinfo.get_model_memory_usage", side_effect=mock_get_model_memory_usage)
+
+        mocker.patch(
+            "endpoints.sysinfo.sysinfo.get_model_memory_usage",
+            side_effect=mock_get_model_memory_usage,
+        )
         mocker.patch("endpoints.sysinfo.sysinfo.get_disk_usage", return_value=1000000)
 
         # Start the sysinfo generator

@@ -243,7 +243,7 @@ function ModelDetailView() {
 
   return (
     <div className="absolute top-0 left-0 w-full h-full bg-bg-wdget-active">
-      <div className="model-detail-navbar">
+      <div className="fixed model-detail-navbar">
         <div className="w-1/4"></div>
 
         <div className="flex items-center gap-3 text-surface-500 z-[1200] transition-colors duration-200">
@@ -284,23 +284,24 @@ function ModelDetailView() {
           <Icon src={closeIcon} imgClassName="h-[11px] w-[11px]" onClick={() => handleExit()} />
         </div>
       </div>
+
       <div className="model-detail-view hide-scrollbar">
-        <section className={"h-[100vh] max-w-[740px] p-5"}>
-          <div className="w-full h-full flex flex-col justify-between items-center">
-            <div/>
+        <section className={" "}>
+          <div className="w-full h-[100vh] max-w-[740px] p-5 flex flex-col justify-between items-center">
+            <div className="h-[70px]"/>
 
             <div className="relative flex flex-col justify-start items-center">
               <div className="w-[740px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">
-                <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full scale-110" />
+                <LazyLoadImage effect="blur" src={modelData?.backgroundImage} className=" w-full h-full" />
                 {getModelInfoHeader()}
               </div>
 
-              <div className=" -bottom-10 flex flex-col items-start gap-0.5 p-6">
-                <p className="heading-md text-surface-main ">{modelData?.name.split("/")[1]}</p>
+              <div className=" -bottom-10 flex flex-col items-start gap-0.5 pt-6">
+                <p className="heading-md text-surface-main capitalize">{modelData?.name.split("/")[1]}</p>
               </div>
             </div>
 
-            <div className="flex flex-col  items-center gap-5">
+            <div className="flex flex-col items-center gap-5">
               {modelData?.createdAt && modelData?.modifiedAt && (
                 <p className="text-surface-500">
                   Created {formatDate(modelData?.createdAt)} • Last Modified {formatDate(modelData?.modifiedAt)}
@@ -321,7 +322,7 @@ function ModelDetailView() {
         <section className="py-14">
           <div>
             {modelData && (
-              <div className="w-[740px] flex flex-col justify-start items-start gap-5">
+              <div className="w-[740px] flex flex-col justify-start items-start gap-10">
                 {navBarOptions.map((section) => {
                   if (modelData[section] && modelData[section] !== "") {
                     let sectionRef;

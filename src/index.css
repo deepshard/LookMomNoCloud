@@ -108,6 +108,8 @@ body {
 :root {
   --input-text-color: rgba(255, 255, 255, 0.75);
   --input-placeholder-color: rgba(255, 255, 255, 0.4);
+  --window-height: 100vh;
+  --window-width: 100vw;
 }
 
 input {
@@ -469,11 +471,11 @@ div.slick-slide>div {
   }
 
   .model-detail-view { 
-    @apply absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center pt-[99px] overflow-auto;
+    @apply absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center overflow-auto;
     backdrop-filter: blur(75px);
   }
   .model-detail-navbar {
-    @apply fixed top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] mb-6 ;
+    @apply fixed top-0 w-full p-5 gap-5 flex justify-between items-center z-[1000] ;
     /* backdrop-filter: blur(25px); */
   }
   .model-detail-navbar::before {}

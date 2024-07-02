@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: onprem-mac-metal
+          - os: macos-latest
             filename: darwin-metal-arm64.zip
           - os: onprem-ubuntu-1x-4060
             filename: linux-cuda-x64.zip
@@ -47,7 +47,7 @@ jobs:
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
-          if [ "${{ matrix.os }}" == "onprem-mac-metal" ]; then
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
           elif [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
@@ -66,7 +66,7 @@ jobs:
           fi
       
       - name: Import certificate to keychain
-        if: matrix.os == 'onprem-mac-metal'
+        if: matrix.os == 'macos-latest'
         run: |
           echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
           security delete-keychain ci.keychain || true
@@ -127,7 +127,7 @@ jobs:
           aws s3 cp python/dist/${{ matrix.filename }} ${{ env.S3_BUCKET }}/${{ github.sha }}/
 
       - name: Notarize the binary from apple
-        if: matrix.os == 'onprem-mac-metal'
+        if: matrix.os == 'macos-latest'
         run: |
           xcrun notarytool submit python/dist/${{ matrix.filename }} --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV --wait --timeout 15m
 

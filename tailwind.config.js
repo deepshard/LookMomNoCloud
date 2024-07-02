@@ -60,7 +60,13 @@ module.exports = {
       animation: {
         spin: 'spin 1s linear infinite',
         "in-out": 'in-out 2s linear infinite'
-      }
+      },
+      height: {
+        'window-height': 'var(--window-height)',
+      },
+      width: {
+        'window-width': 'var(--window-width)',
+      },
     },
   },
   plugins: [],

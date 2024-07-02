@@ -94,7 +94,7 @@ const Carousel: FC<CarouselProps> = ({ cards }) => {
           ))}
         </div>
       </div>
-      <div className="absolute flex justify-center items-center w-[320px] mt-[10px] gap-[8px]">
+      <div className="absolute flex justify-center items-center w-[360px] mt-[10px] gap-[8px]">
         <img src={puzzleIcon} alt="puzzle" className="w-[15px] h-[9px] opacity-75"/>
         <h1
         className="text-surface-500 text-[14px]"

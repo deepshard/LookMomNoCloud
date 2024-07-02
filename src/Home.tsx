@@ -106,11 +106,11 @@ export default function Home() {
       <NavBar />
 
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
-        <div className="flex items-center gap-1.5 w-[660px] mb-[20px]">
+        <div className="flex items-center gap-1.5 w-[740px] mb-[20px]">
           <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
-          <p className="text-surface-750">{getWelcomeInfo().message}</p>
+          <p className="text-[18px] text-surface-750">{getWelcomeInfo().message}</p>
         </div>
-        <div className="w-[660px] flex flex-col justify-center items-center  gap-[20px]">
+        <div className="w-[740px] flex flex-col justify-center items-center  gap-[20px]">
           <ModelCarousel
             models={storeHighlights}
             isLoading={storeHighlights.length === 0}
@@ -122,8 +122,8 @@ export default function Home() {
             onRetry={retryHandler}
           />
 
-          <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[660px] items-center justify-center">
-            <div className="col-span-1 flex flex-col gap-5 justify-between w-80">
+          <div className="grid grid-cols-2 gap-5 lg:gap-5 w-auto max-w-[740px] items-center justify-center">
+            <div className="col-span-1 flex flex-col gap-5 justify-between w-[360px]">
               <FeaturedCarousel />
 
               <div className="w-full flex justify-between gap-5">

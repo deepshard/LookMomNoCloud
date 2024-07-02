@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, ipcMain, Tray } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
@@ -25,12 +25,14 @@ const spawnServer = () => {
     stdio: ["ignore", f, f],
   });
   serverProcess.unref();
-}
+};
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
+
+let tray;
 
 const createWindow = () => {
   // Create the browser window.
@@ -48,20 +50,18 @@ const createWindow = () => {
 
   const template = [
     {
-      label: 'View',
+      label: "View",
       submenu: [
-        { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
-        { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+I', click: () => mainWindow.webContents.toggleDevTools() },
-        { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
-        { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
-      ]
+        { label: "Reload", accelerator: "CmdOrCtrl+R", click: () => mainWindow.reload() },
+        { label: "Toggle Developer Tools", accelerator: "CmdOrCtrl+I", click: () => mainWindow.webContents.toggleDevTools() },
+        { label: "Zoom In", accelerator: "CmdOrCtrl+Plus", enabled: false }, // Disabled
+        { label: "Zoom Out", accelerator: "CmdOrCtrl+-", enabled: false }, // Disabled
+      ],
     },
     {
       label: "Version",
-      submenu: [
-        { label: `${app.getVersion()}`, enabled: false },
-      ]
-    }
+      submenu: [{ label: `${app.getVersion()}`, enabled: false }],
+    },
   ];
 
   setTimeout(() => {
@@ -70,6 +70,39 @@ const createWindow = () => {
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+
+  tray = new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
+
+  tray.setToolTip("Truffle Desktop");
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Item 1",
+      click: () => {
+        console.log("Item 1 clicked");
+      },
+    },
+    {
+      label: "Item 2",
+      click: () => {
+        console.log("Item 2 clicked");
+      },
+    },
+    { type: "separator" },
+    {
+      label: "Quit",
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  tray.on("click", (event, bounds) => {
+    console.log("Tray icon clicked");
+    // Toggle app visibility or perform other actions
+  });
 
   // Disable zoom shortcuts
   mainWindow.webContents.on("before-input-event", (event, input) => {
@@ -104,12 +137,12 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  initializeLogger()
+  initializeLogger();
   spawnServer();
 
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
-  ipcMain.on("check-for-updates", otaUpdater.checkForUpdates)
+  ipcMain.on("check-for-updates", otaUpdater.checkForUpdates);
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
   autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
@@ -121,7 +154,34 @@ app.on("ready", async function () {
   });
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
-  ipcMain.handle('is-app-packaged', () => app.isPackaged);
+  ipcMain.handle("is-app-packaged", () => app.isPackaged);
+
+  ipcMain.on("update-running-models", async (event, models) => {
+    console.log("Got running models:", models);
+    const modelsMenu = models.map((m) => ({
+      label: m.id,
+      submenu: [
+        {
+          label: "Stop",
+          click: () => {
+            window.webContents.send("tray-stop-model", m);
+          },
+        },
+      ],
+    }));
+    const contextMenu = Menu.buildFromTemplate([
+      ...modelsMenu,
+      { type: "separator" },
+      {
+        label: "Quit",
+        click: () => {
+          app.quit();
+        },
+      },
+    ]);
+
+    tray.setContextMenu(contextMenu);
+  });
 
   window.on("ready-to-show", async () => {
     log("Checking for initial server");
@@ -148,8 +208,6 @@ app.on("window-all-closed", () => {
   endLogger();
   app.quit();
 });
-
-
 
 app.on("activate", async () => {
   // On OS X it's common to re-create a window in the app when the

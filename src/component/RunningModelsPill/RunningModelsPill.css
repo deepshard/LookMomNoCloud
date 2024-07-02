@@ -18,7 +18,7 @@
     }
 
     .model-pill:nth-child(1) {
-        @apply z-[3];
+        @apply z-[3] ml-0;
     }
 
     .model-pill:nth-child(2) {

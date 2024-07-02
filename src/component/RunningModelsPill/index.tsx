@@ -9,7 +9,7 @@ const RunningModelsPill = ({ models, className='', ...props}: RunningModelsPillP
   return (
     <div className={`flex-center gap-[6px] min-w-[147px] py-[6px] pl-2 pr-3 widget-3d ${className}`} {...props}>
         <span className='models'>
-            {[...models, ...models, ...models].slice(0, 3).map((model) => (
+            {models.slice(0, 3).map((model) => (
                 <img key={model.id} src={model.backgroundImage} alt="" className='model-pill'/>
             ))}
         </span>

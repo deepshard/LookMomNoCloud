@@ -14,10 +14,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, macos-13-xlarge]
+        os: [macos-latest, macos-13-xlarge, ubuntu-cuda12.1-x86_64-1x-4090]
         python-version: ["3.10", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: truffle
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge,spyder-ide
+
+      - run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -29,6 +40,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
           if [ "${{ matrix.os }}" != "onprem-ubuntu-1x-4060" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
           elif [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
@@ -50,6 +63,8 @@ jobs:
 
       - name: Run tests
         run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
           tail -f server_output.log &
           PYTHONPATH="." pytest --maxfail=1 -vvv python/tests/integration
 

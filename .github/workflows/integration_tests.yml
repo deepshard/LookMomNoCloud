@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: |
           tail -f server_output.log &
-          PYTHONPATH="." pytest --maxfail=1 -vvv tests/integration
+          PYTHONPATH="." pytest --maxfail=1 -vvv python/tests/integration
 
       - name: Cleanup
         run: killall server || true

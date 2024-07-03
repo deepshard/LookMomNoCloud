@@ -47,8 +47,8 @@ const AppWrapperProvider = ({ children }) => {
     //@ts-ignore
     window.ipc.checkForUpdates();
 
+    //@ts-ignore
     window.ipc.onTrayModelStopped((model) => {
-      console.log("onTrayModelStopped", model);
       stopModel(model).then(() => {
         updateModels({
           ...model,

@@ -9,10 +9,12 @@ import { useAppStore } from "../store/store";
 import RunningModelsPill from "./RunningModelsPill";
 import Tooltip from "./common/Tooltip";
 import RunningModelsDropDown from "./RunningModelsPill/RunningModelsDropDown";
+import { useState } from "react";
 
 const NavBar = () => {
   const { setShowSearch, showSearch, showAugmentations, setShowDiscover, showSettings, setShowSettings } = useHomePageContext();
   const { sysInfo } = useAppStore();
+  const [showRunningModelDropDown, setShowRunningModelDropDown] = useState(false);
   return (
     <>
       {!(showSearch || showAugmentations || showSettings) && (
@@ -46,9 +48,9 @@ const NavBar = () => {
           </div>
 
           <div className="flex-center gap-4">
-            {sysInfo?.resources.models.every((model) => model.title) && (
+            {(sysInfo?.resources.models && sysInfo?.resources.models.length > 0 && sysInfo?.resources.models.every((model) => model.title)) && (
               <Tooltip
-                open
+                // open={showRunningModelDropDown}
                 placement="bottomRight"
 
                 arrow={false}
@@ -57,14 +59,6 @@ const NavBar = () => {
                 <RunningModelsPill models={sysInfo?.resources.models || []} />
               </Tooltip>
             )}
-            {/* <Tooltip
-                open
-                placement="bottomRight"
-                arrow={false}
-                title={<RunningModelsDropDown models={sysInfo?.resources.models || []}/>}
-              >
-                <RunningModelsPill models={sysInfo?.resources.models || []} />
-              </Tooltip> */}
             <img src={gearIcon} className="w-5 h-5 rounded-full cursor-pointer" onClick={() => setShowSettings(true)} />
           </div>
         </div>

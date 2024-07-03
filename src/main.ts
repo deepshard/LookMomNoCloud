@@ -77,19 +77,6 @@ const createWindow = () => {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "Item 1",
-      click: () => {
-        console.log("Item 1 clicked");
-      },
-    },
-    {
-      label: "Item 2",
-      click: () => {
-        console.log("Item 2 clicked");
-      },
-    },
-    { type: "separator" },
-    {
       label: "Quit",
       click: () => {
         app.quit();
@@ -98,11 +85,6 @@ const createWindow = () => {
   ]);
 
   tray.setContextMenu(contextMenu);
-
-  tray.on("click", (event, bounds) => {
-    console.log("Tray icon clicked");
-    // Toggle app visibility or perform other actions
-  });
 
   // Disable zoom shortcuts
   mainWindow.webContents.on("before-input-event", (event, input) => {
@@ -157,9 +139,8 @@ app.on("ready", async function () {
   ipcMain.handle("is-app-packaged", () => app.isPackaged);
 
   ipcMain.on("update-running-models", async (event, models) => {
-    console.log("Got running models:", models);
     const modelsMenu = models.map((m) => ({
-      label: m.id,
+      label: m.name,
       submenu: [
         {
           label: "Stop",
@@ -169,9 +150,9 @@ app.on("ready", async function () {
         },
       ],
     }));
+    modelsMenu.length && modelsMenu.push({ type: "separator" });
     const contextMenu = Menu.buildFromTemplate([
       ...modelsMenu,
-      { type: "separator" },
       {
         label: "Quit",
         click: () => {

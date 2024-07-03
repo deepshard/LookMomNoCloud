@@ -1,18 +1,15 @@
 import { Outlet } from "react-router-dom";
 import HomePageProvider from "./context/HomePageProvider";
+import Playground from "./pages/Playgorund";
 
 const Layout = () => {
   return (
-    <>
-      <HomePageProvider>
-        {/* <section>
-          <NavBar />
-        </section> */}
-        <section className="flex-1 flex-center">
-          <Outlet />
-        </section>
-      </HomePageProvider>
-    </>
+    <HomePageProvider>
+      <Playground />
+      <section className="flex-1 flex-center">
+        {/* <Outlet /> */}
+      </section>
+    </HomePageProvider>
   );
 };
 

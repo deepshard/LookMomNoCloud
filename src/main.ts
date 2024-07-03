@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, ipcMain, globalShortcut } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
@@ -10,6 +10,8 @@ autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 let serverProcess: ChildProcess;
+let forceQuit = false;
+let mainWindow;
 
 const spawnServer = () => {
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
@@ -34,7 +36,7 @@ if (require("electron-squirrel-startup")) {
 
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1060,
     height: 800,
     titleBarStyle: "hidden",
@@ -92,6 +94,15 @@ const createWindow = () => {
   app.isPackaged && mainWindow.setResizable(false);
   mainWindow.webContents.closeDevTools();
 
+  // Prevent the window from being destroyed when it's closed
+  mainWindow.on('close', (event) => {
+    if (!forceQuit) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+    return false;
+  });
+
   // if (process.env.NODE_ENV === "development") {
   //   mainWindow.webContents.openDevTools();
   //   mainWindow.setResizable(true);
@@ -106,6 +117,13 @@ const createWindow = () => {
 app.on("ready", async function () {
   initializeLogger()
   spawnServer();
+
+   // Set up the global shortcut
+   const shortcut = process.platform === 'darwin' ? 'Command+Q' : 'Ctrl+Q';
+   globalShortcut.register(shortcut, () => {
+     forceQuit = true;
+     app.quit();
+   });
 
   const window = createWindow();
   const otaUpdater = new OTAUpdater(window, autoUpdater);
@@ -156,11 +174,8 @@ app.on("activate", async () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
-    // const otaUpdater = new OTAUpdater(window, autoUpdater);
-    // ipcMain.on("download-update", otaUpdater.downloadUpdate);
-    // ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
-    // autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
-    // await otaUpdater.checkForUpdates();
+  } else {
+    mainWindow?.show();
   }
 });
 

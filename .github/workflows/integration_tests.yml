@@ -38,7 +38,9 @@ jobs:
 
       - name: Get server from S3
         run: |
-          curl -L https://truffle-binaries.s3.amazonaws.com/b58796121ab166957733e9bf42d5592218a27168/darwin-metal-arm64.zip -o server.zip
+          latest_version=$(curl -s https://truffle-binaries-dev.s3.amazonaws.com/latest.txt)
+          echo "** Downloading server version $latest_version **"
+          curl -L https://truffle-binaries-dev.s3.amazonaws.com/$latest_version/darwin-metal-arm64.zip -o server.zip
           unzip server.zip
           chmod 0755 server/server
           cp -r ./server/alembic ./alembic

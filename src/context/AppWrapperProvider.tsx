@@ -4,13 +4,12 @@ import { LOCAL_ROOT_URL } from "../api/client";
 import { useGetHighlights, useGetMyModels } from "../lib/react-query/queriesAndMutations";
 import { useAppStore } from "../store/store";
 import Analytics from "../types/Analytics";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { TruffleUpdateInfo } from "../ota";
 
-
 const AppWrapperContext = createContext({
-  isLoadingMyModels: false
+  isLoadingMyModels: false,
 });
 
 Analytics.init("a45767d32d620a6ba48640ccec2bf2f3");
@@ -18,7 +17,7 @@ Analytics.init("a45767d32d620a6ba48640ccec2bf2f3");
 const AppWrapperProvider = ({ children }) => {
   const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
   const { data: highlights } = useGetHighlights();
-  const { addUpdateInfo, addSysInfo, setDownloads, setHighlights } = useAppStore();
+  const { addUpdateInfo, sysInfo, addSysInfo, setDownloads, setHighlights } = useAppStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +26,7 @@ const AppWrapperProvider = ({ children }) => {
       deviceId = uuidv4();
       localStorage.setItem("deviceId", deviceId);
     }
-    Analytics.identify(deviceId)
+    Analytics.identify(deviceId);
 
     const handleUpdateAvailable = (newUpdateInfo: TruffleUpdateInfo) => {
       addUpdateInfo(newUpdateInfo);
@@ -53,7 +52,7 @@ const AppWrapperProvider = ({ children }) => {
       //@ts-ignore
       window.ipc.onInitializationRequired(() => {});
     };
-  }, [])
+  }, []);
   useSysInfo({
     rootUrl: LOCAL_ROOT_URL,
     addSysInfo,
@@ -67,14 +66,17 @@ const AppWrapperProvider = ({ children }) => {
   }, [myModels]);
 
   useEffect(() => {
-    if (highlights) {
-      setHighlights(highlights);
+    console.log('sysInfo', sysInfo, highlights);
+    if (sysInfo) {
+      if (highlights) {
+        setHighlights(highlights);
+      }
     }
-  }, [highlights]);
+  }, [highlights, sysInfo]);
   return <AppWrapperContext.Provider value={{ isLoadingMyModels }}>{children}</AppWrapperContext.Provider>;
 };
 
 export const useAppWrapper = () => {
   return useContext(AppWrapperContext);
-}
+};
 export default AppWrapperProvider;

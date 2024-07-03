@@ -4,7 +4,7 @@ models = [
         "url": "https://huggingface.co/openai-community/gpt2",
     },
     {
-        "id": "8933c0e6-c7d5-41f8-a02e-936a1e03afb9",
-        "url": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct",
+        "id": "119e0024-5a46-4ea2-8dfc-9ba6bd04770f",
+        "url": "https://huggingface.co/JackFram/llama-68m",
     },
 ]

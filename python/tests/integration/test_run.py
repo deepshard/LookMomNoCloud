@@ -1,5 +1,6 @@
 import pytest
 import json
+import asyncio
 from utils import get_devices
 from tests.integration.data import models
 from models import RunningModel
@@ -114,32 +115,25 @@ async def test_run_multiple_models(test_fixture, model_installed):
 
 @pytest.mark.asyncio
 async def test_run_sequential_requests(test_fixture, models_installed):
-    responses = []
-    async with test_fixture.stream(
-        "POST",
-        "/model/run",
-        json={
-            "ids": [models[0]["id"]],
-        },
-    ) as response:
-        assert response.status_code == 200
-        async for line in response.aiter_lines():
-            if line:
-                event_data = json.loads(line.split("data: ", 1)[1])
-                responses.append(event_data)
+    async def run_model(model):
+        responses = []
+        async with test_fixture.stream(
+            "POST",
+            "/model/run",
+            json={
+                "ids": [model["id"]],
+            },
+        ) as response:
+            assert response.status_code == 200
+            async for line in response.aiter_lines():
+                if line:
+                    event_data = json.loads(line.split("data: ", 1)[1])
+                    responses.append(event_data)
+        return responses
 
-    async with test_fixture.stream(
-        "POST",
-        "/model/run",
-        json={
-            "ids": [models[1]["id"]],
-        },
-    ) as response:
-        assert response.status_code == 200
-        async for line in response.aiter_lines():
-            if line:
-                event_data = json.loads(line.split("data: ", 1)[1])
-                responses.append(event_data)
+    tasks = [run_model(model) for model in models]
+    results = await asyncio.gather(*tasks)
+    responses = [response for task_result in results for response in task_result]
 
     if len(get_devices()) == 0:
         assert responses[-1]["error"] == "No usable configurations found"

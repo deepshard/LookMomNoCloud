@@ -9,14 +9,35 @@ import "./Playground.css";
 import plusIcon from "../../assets/icons/plus.svg";
 // @ts-ignore
 import sendIcon from "../../assets/icons/send-fill.svg";
+// @ts-ignore
+import dragOverIcon from "../../assets/icons/drag-over.svg";
+import { useState } from "react";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
+  const [isDragging, setIsDragging] = useState(false);
 
-  console.log(downloads)
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    console.log("Drag over");
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+    console.log("Drag leave");
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    // Handle file upload here
+    const files = e.dataTransfer.files;
+    console.log("Dropped files:", files);
+  };
 
   if (Object.keys(downloads).length === 0) {
     return (
@@ -49,9 +70,19 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     );
   }
 
-  return <>
-    To:do user has model
-  </>;
+  return (
+    <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`w-full h-full${className}`} {...props}>
+      {isDragging && (
+        <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
+          <div className="drag-over-dash">
+            <img src={dragOverIcon} alt="" />
+            <p>Release your files</p>
+          </div>
+        </div>
+      )}
+      To:do user has model
+    </div>
+  );
 };
 
 export default Playground;

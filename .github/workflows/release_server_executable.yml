@@ -17,8 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - os: macos-latest
-            # filename: darwin-metal-arm64.zip
+          - os: macos-latest
+            filename: darwin-metal-arm64.zip
           - os: ubuntu-1x-4090
             filename: linux-cuda-x64.zip
     steps:

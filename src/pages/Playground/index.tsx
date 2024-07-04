@@ -14,6 +14,7 @@ import plusIcon from "../../assets/icons/plus.svg";
 import sendIcon from "../../assets/icons/send-fill.svg";
 import ModelCarousel from "../../component/ModelCarousel";
 import { Input } from "antd";
+import "./Playground.css";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {
 
@@ -33,7 +34,7 @@ export interface ChatMessage {
   content: string;
 }
 
-const Playground = ({ ...props}: PlaygroundProps) => {
+const Playground = ({className = "", ...props}: PlaygroundProps) => {
   const [model, setModel] = useState<TModel>({
     id: "1",
     name: "Test Model",

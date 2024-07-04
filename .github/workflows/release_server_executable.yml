@@ -32,8 +32,8 @@ jobs:
           dpkg -i cuda-keyring_1.0-1_all.deb
           apt-get update
           apt-get -y install cuda
-          nvcc -V
-
+          
+      - run: nvcc -V
 
       - uses: conda-incubator/setup-miniconda@v3
         with:

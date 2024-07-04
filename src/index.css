@@ -499,6 +499,12 @@ div.slick-slide>div {
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
   }
 
+  .playground {
+    @apply w-full h-full flex-center-x justify-center items-center;
+    backdrop-filter: blur(75px);
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
+  }
+
   .clip-rectangle {
     overflow: hidden;
   }

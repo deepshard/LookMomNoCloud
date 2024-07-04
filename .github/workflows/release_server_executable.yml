@@ -25,6 +25,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - run: nvcc -V
+        if: matrix.os == 'ubuntu-1x-t4'
+
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: truffle

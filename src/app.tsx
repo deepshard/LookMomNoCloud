@@ -22,10 +22,10 @@ function App() {
                 <Routes>
                   <Route element={<Layout />}>
                     <Route index element={<Home />} />
+                  </Route>
                     <Route path="/model/:id" element={<ModelDetailView />} />
                     <Route path="/initialization" element={<OTA initialization={true} />} />
                     <Route path="/update" element={<OTA initialization={false} />} />
-                  </Route>
                 </Routes>
               </AppWrapperProvider>
             </QueryProvider>

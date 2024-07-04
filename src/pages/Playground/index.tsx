@@ -18,9 +18,7 @@ import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import dragOverIcon from "../../assets/icons/drag-over.svg";
 
-interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {
-
-}
+interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 interface Settings {
   temperature: number;
@@ -36,7 +34,7 @@ export interface ChatMessage {
   content: string;
 }
 
-const Playground = ({className = "", ...props}: PlaygroundProps) => {
+const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const [model, setModel] = useState<TModel>({
     id: "1",
     name: "Test Model",
@@ -73,9 +71,9 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
   });
 
   // Chat data (so we can persist through mode changes)
-  const [systemMessage, setSystemMessage] = useState<string>('');
+  const [systemMessage, setSystemMessage] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [userMessage, setUserMessage] = useState<string>('');
+  const [userMessage, setUserMessage] = useState<string>("");
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [isDragging, setIsDragging] = useState(false);
@@ -131,7 +129,12 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
   }
 
   return (
-    <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px]  ${className}`} {...props}>
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px]  ${className}`}
+      {...props}>
       {isDragging && (
         <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
           <div className="drag-over-dash">
@@ -140,7 +143,7 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
           </div>
         </div>
       )}
-      <div className="flex flex-col w-[660px] h-[533px] mt-[100px]" >
+      <div className="flex flex-col w-[660px] h-[533px] mt-[100px]">
         {/* Header */}
         <div className="flex items-center mb-[11px] w-full h-[16px]">
           <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
@@ -148,12 +151,16 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
         </div>
 
         {/* Welcome Message */}
-          <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
+        <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
 
         {/* Configuration */}
         <div className="flex items-center w-full h-[30px] mb-5">
-          <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>Chat</button>
-          <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>Completions</button>
+          <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
+            Chat
+          </button>
+          <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
+            Completions
+          </button>
         </div>
 
         {/* Interface */}
@@ -169,11 +176,22 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
             setUserMessage={setUserMessage}
           />
         ) : (
-          <></> 
+          <></>
         )}
       </div>
-    </div>
-  )
-}
 
-export default Playground
+      <p>Matt please try to redesign your chat component but use the chat input below(look in the actual react code. not the ui)</p>
+      <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+        <span className="h-8 flex-center">
+          <img src={plusIcon} alt="" className="w-6 h-6" />
+        </span>
+        <Input.TextArea autoSize className="" placeholder="Chat with Llama-3..." />
+        <span className="h-8 flex-center">
+          <img src={sendIcon} alt="" className="w-6 h-6" />
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export default Playground;

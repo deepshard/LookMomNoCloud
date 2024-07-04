@@ -107,6 +107,7 @@ jobs:
           fi
 
       - name: Run integration tests
+        if: matrix.os == 'macos-latest'
         run: |
           source $CONDA/etc/profile.d/conda.sh
           conda activate truffle

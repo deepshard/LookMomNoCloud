@@ -32,9 +32,6 @@ function App() {
           </HashRouter>
         </div>
       </div>
-      {/* <div className="app-body">
-        <div className="clear-dotted-bg" />
-      </div> */}
     </div>
   );
 }

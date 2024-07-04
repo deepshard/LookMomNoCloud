@@ -15,7 +15,7 @@ function App() {
     <div>
       <div className="clear-dotted-bg" />
       <div className="fixed inset-0 overflow-hidden">
-        <div className="scrollable w-full h-full overflow-y-scroll snap-y snap-mandatory">
+        <div className="scrollable w-full h-full overflow-y-scroll snap-y snap-mandatory hide-scrollbar">
           <HashRouter>
             <QueryProvider>
               <AppWrapperProvider>

@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import HomePageProvider from "./context/HomePageProvider";
-import Playground from "./pages/Playgorund";
+import Playground from "./pages/Playground";
 import { useLayoutEffect, useRef } from "react";
 import { useAppWrapper } from "./context/AppWrapperProvider";
 import NavBar from "./component/NavBar";

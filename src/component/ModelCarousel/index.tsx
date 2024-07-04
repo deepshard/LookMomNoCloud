@@ -10,13 +10,13 @@ import { canFitOnMachine } from '../../utils/sysUtils'
 
 interface ModelCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   models: TModel[]
-  isLoading: boolean
-  installModel: (...args: any) => void
-  runModels: (...args: any) => void
-  stopModel: (...args: any) => void
-  cleanupInstall: (...args: any) => void
-  onModelClick: (...args: any) => void
-  onRetry: (...args: any) => void
+  isLoading?: boolean
+  installModel?: (...args: any) => void
+  runModels?: (...args: any) => void
+  stopModel?: (...args: any) => void
+  cleanupInstall?: (...args: any) => void
+  onModelClick?: (...args: any) => void
+  onRetry?: (...args: any) => void
 }
 
 const getSortValue = (status: string) => {
@@ -38,7 +38,7 @@ const getSortValue = (status: string) => {
   }
 }
 
-const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, installModel, runModels, stopModel, cleanupInstall, onModelClick, onRetry, className='', ...props  }) => {
+const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading=false, installModel, runModels, stopModel, cleanupInstall, onModelClick, onRetry, className='', ...props  }) => {
   const skeletonCount = 5
   const { sysInfo } = useAppStore();
   const [showModels, setShowModels] = useState(false)
@@ -114,12 +114,12 @@ const ModelCarousel: React.FC<ModelCarouselProps> = ({ models, isLoading, instal
                   model={model}
                   disabled={!canFitOnMachine(model.size, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)}
                   className="flex-shrink-0"
-                  onClick={() => onModelClick(model)}
-                  onInstall={() => installModel(model)}
-                  onRun={() => runModels(model)}
-                  onStop={() => stopModel(model)}
-                  onCleanup={() => cleanupInstall(model)}
-                  onRetry={() => onRetry(model)}
+                  onClick={() => {onModelClick && onModelClick(model)}}
+                  onInstall={() => {installModel && installModel(model)}}
+                  onRun={() => {runModels && runModels(model)}}
+                  onStop={() => {stopModel && stopModel(model)}}
+                  onCleanup={() => {cleanupInstall && cleanupInstall(model)}}
+                  onRetry={() => {onRetry && onRetry(model)}}
                 />
               </motion.div>
             ))}

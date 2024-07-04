@@ -125,7 +125,7 @@ body::before {
   --window-width: 100vw;
 }
 
-input {
+input, textarea {
   color: var(--input-text-color);
   caret-color: white;
 }

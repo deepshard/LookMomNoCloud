@@ -8,15 +8,15 @@ import NavBar from "./component/NavBar";
 const Layout = () => {
   const homeRef = useRef<HTMLDivElement>(null);
   const { playgroundRef } = useAppWrapper();
-  useLayoutEffect(() => {
-    if (homeRef.current && homeRef.current) {
-      homeRef.current.scrollIntoView();
-    }
-  }, []);
+  // useLayoutEffect(() => {
+  //   if (homeRef.current && homeRef.current) {
+  //     homeRef.current.scrollIntoView();
+  //   }
+  // }, []);
   return (
     <HomePageProvider>
       <section ref={playgroundRef} className="w-full h-full snap-start">
-        <Playground className=" w-full h-full" />
+        <Playground />
       </section>
       <section ref={homeRef} className="w-full h-full snap-start relative">
         <NavBar />

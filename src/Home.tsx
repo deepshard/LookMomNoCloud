@@ -16,9 +16,7 @@ import AugmentationsView from "./component/AugmentationsView";
 import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
-import NavBar from "./component/NavBar";
 import Settings from "./component/Settings";
-import Playground from "./pages/Playgorund";
 import { useAppWrapper } from "./context/AppWrapperProvider";
 
 interface WelcomeInfo {

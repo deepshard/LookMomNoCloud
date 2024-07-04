@@ -94,7 +94,7 @@ export class OTAUpdater {
       fs.unlinkSync(inputPath);
       return outputPath;
     } catch (error) {
-      console.error(error);
+      log(`Error unzipping file: ${error}`);
     }
   }
 
@@ -127,6 +127,7 @@ export class OTAUpdater {
   }
 
   checkForServerUpdate = async () => {
+    log("Checking for server update...");
     // Read hash from latest.txt
     const filePath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     let latestHash = "";
@@ -143,14 +144,16 @@ export class OTAUpdater {
     try {
       response = await axios.get(url);
     } catch (error) {
+      log(`Error checking for server update: ${error}`);
       return null;
     }
 
     // Compare hashes
     if (response && latestHash.trim() !== response.data.trim()) {
+      log(`Server update available: ${response.data.trim()}`);
       return response.data.trim();
     }
-
+    log("No server update available");
     return null;
   }
 
@@ -161,17 +164,20 @@ export class OTAUpdater {
 
 
   checkForAppUpdate = async () => {
+    log("Checking for app update...");
     try {
       const appUpdateInfo = await this.appUpdater.checkForUpdates();
       const appUpdateAvailable = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
 
       if (appUpdateAvailable) {
+        log(`App update available: ${appUpdateAvailable}`);
         return appUpdateInfo;
       }
     } catch (error) {
-      console.error(error);
+      log(`Error checking for app update: ${error}`);
     }
 
+    log("No app update available");
     return null;
   }
 
@@ -189,6 +195,7 @@ export class OTAUpdater {
   }
 
   checkForUpdates = async () => {
+    log("Checking for updates...");
     // If bin folder does not exist, create it
     const binPath = path.join(app.getPath("userData"), "bin");
     if (!fs.existsSync(binPath)) {
@@ -206,7 +213,7 @@ export class OTAUpdater {
       const graphicsInfo = await si.graphics();
       const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
       const url = `https://truffle-binaries.s3.amazonaws.com/${serverUpdateInfo}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
-      log(`Server update available at: ${url}`);
+      log(`Server update available: ${serverUpdateInfo}`);
 
       this.updateServer = {
         available: true,
@@ -239,6 +246,7 @@ export class OTAUpdater {
   }
 
   downloadServer = async (url: string, output: string, unzip_output: string) => {
+    log(`Downloading server from: ${url}`);
     const response = await axios({
       method: "get",
       url: url,
@@ -276,6 +284,7 @@ export class OTAUpdater {
 
     // Download app updates if available
     if (this.updateApp.available) {
+      log("Downloading app update...");
       await this.appUpdater.downloadUpdate();
     }
   }
@@ -314,7 +323,6 @@ export class OTAUpdater {
     const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
     const versionPath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     if (!fs.existsSync(serverPath) || !fs.existsSync(versionPath)) {
-      log("Initialization required");
       this.mainWindow.webContents.send("initialization-required");
       return true;
     }
@@ -323,7 +331,6 @@ export class OTAUpdater {
   }
 
   downloadInitialServer = async () => {
-    log("Starting download of initial server.");
     // Get platform information
     const osInfo = await si.osInfo();
     log(`OS Information: ${JSON.stringify(osInfo)}`);
@@ -372,10 +379,8 @@ export class OTAUpdater {
 
     // Download server
     const serverUrl = `https://truffle-binaries.s3.amazonaws.com/${response.data.trim()}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
-    log(`Downloading server from: ${serverUrl}`);
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
     await this.downloadServer(serverUrl, "server.tar.gz", "server");
     this.mainWindow.webContents.send("initialization-complete");
-    log("Downloaded server successfully.");
   }
 }

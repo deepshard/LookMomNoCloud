@@ -27,7 +27,6 @@ function App() {
                     <Route path="/model/:id" element={<ModelDetailView />} />
                     <Route path="/initialization" element={<OTA initialization={true} />} />
                     <Route path="/update" element={<OTA initialization={false} />} />
-                    <Route path="/playground" element={<Playground />} />
                 </Routes>
               </AppWrapperProvider>
             </QueryProvider>

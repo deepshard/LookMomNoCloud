@@ -18,6 +18,11 @@ interface Settings {
   bestOf: number;
 }
 
+export interface ChatMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
 const Playground = ({ ...props}: PlaygroundProps) => {
   const [model, setModel] = useState<TModel>({
     id: "1",
@@ -54,9 +59,14 @@ const Playground = ({ ...props}: PlaygroundProps) => {
     bestOf: 1,
   });
 
+  // Chat data (so we can persist through mode changes)
+  const [systemMessage, setSystemMessage] = useState<string>('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [userMessage, setUserMessage] = useState<string>('');
+
   return (
-    <div className="playground">
-      <div className="flex flex-col w-[660px] h-[533px]" {...props}>
+    <div {...props}>
+      <div className="flex flex-col w-[660px] h-[533px]" >
         {/* Header */}
         <div className="flex items-center mb-[11px] w-full h-[16px]">
           <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
@@ -70,14 +80,24 @@ const Playground = ({ ...props}: PlaygroundProps) => {
 
         {/* Configuration */}
         <div className="flex items-center w-full h-[30px] mb-5">
-          {/* TODO */}
+          <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>Chat</button>
+          <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>Completions</button>
         </div>
 
         {/* Interface */}
         {mode === "chat" ? (
-          <Chat model={model} />
+          <Chat
+            model={model}
+            settings={settings}
+            systemMessage={systemMessage}
+            messages={messages}
+            userMessage={userMessage}
+            setSystemMessage={setSystemMessage}
+            setMessages={setMessages}
+            setUserMessage={setUserMessage}
+          />
         ) : (
-         <></> 
+          <></> 
         )}
       </div>
     </div>

@@ -16,7 +16,7 @@ const Layout = () => {
   return (
     <HomePageProvider>
       <section ref={playgroundRef} className="w-full h-full snap-start">
-        <Playground className=" w-full h-full" />
+        <Playground className="flex flex-col justify-center items-center w-full h-full" />
       </section>
       <section ref={homeRef} className="w-full h-full snap-start relative">
         <NavBar />

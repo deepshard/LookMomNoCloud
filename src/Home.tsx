@@ -16,9 +16,7 @@ import AugmentationsView from "./component/AugmentationsView";
 import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
-import NavBar from "./component/NavBar";
 import Settings from "./component/Settings";
-import Playground from "./pages/Playground";
 import { useAppWrapper } from "./context/AppWrapperProvider";
 
 interface WelcomeInfo {
@@ -152,7 +150,7 @@ export default function Home() {
       <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
         <Settings />
       </AnimateModal>
-      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/playground`)} />}
+      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
     </>
   );
 }

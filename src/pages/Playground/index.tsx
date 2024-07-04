@@ -131,7 +131,7 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
   }
 
   return (
-    <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`w-full h-full${className}`} {...props}>
+    <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px]  ${className}`} {...props}>
       {isDragging && (
         <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
           <div className="drag-over-dash">
@@ -140,7 +140,7 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
           </div>
         </div>
       )}
-      <div className="flex flex-col w-[660px] h-[533px]" >
+      <div className="flex flex-col w-[660px] h-[533px] mt-[100px]" >
         {/* Header */}
         <div className="flex items-center mb-[11px] w-full h-[16px]">
           <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
@@ -148,9 +148,7 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
         </div>
 
         {/* Welcome Message */}
-        <div className="flex items-center w-full h-[37px]">
           <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
-        </div>
 
         {/* Configuration */}
         <div className="flex items-center w-full h-[30px] mb-5">

@@ -63,7 +63,7 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, setSystem
 
     setMessages([...newMessageSet, { "role": "assistant", "content": "" }]);
 
-    let value;;
+    let value;
     while (true) {
       ({ value } = await reader.read());
       

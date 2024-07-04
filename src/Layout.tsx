@@ -3,6 +3,7 @@ import HomePageProvider from "./context/HomePageProvider";
 import Playground from "./pages/Playgorund";
 import { useLayoutEffect, useRef } from "react";
 import { useAppWrapper } from "./context/AppWrapperProvider";
+import NavBar from "./component/NavBar";
 
 const Layout = () => {
   const homeRef = useRef<HTMLDivElement>(null);
@@ -11,14 +12,17 @@ const Layout = () => {
     if (homeRef.current && homeRef.current) {
       homeRef.current.scrollIntoView();
     }
-  },[]);
+  }, []);
   return (
     <HomePageProvider>
       <section ref={playgroundRef} className="w-full h-full snap-start">
         <Playground className=" w-full h-full" />
       </section>
-      <section ref={homeRef} className=" flex-center w-full h-full snap-start">
-        <Outlet />
+      <section ref={homeRef} className="w-full h-full snap-start relative">
+        <NavBar />
+        <span className="flex-center w-full h-full">
+          <Outlet />
+        </span>
       </section>
     </HomePageProvider>
   );

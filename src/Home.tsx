@@ -106,7 +106,7 @@ export default function Home() {
 
   return (
     <>
-      <NavBar />
+      {/* <NavBar /> */}
 
       <div className="w-full h-full flex flex-col justify-center items-center relative">
         <div className="flex items-center gap-1.5 w-[740px] mb-[20px]">

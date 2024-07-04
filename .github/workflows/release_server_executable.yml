@@ -19,21 +19,12 @@ jobs:
         include:
           # - os: macos-latest
             # filename: darwin-metal-arm64.zip
-          - os: ubuntu-1x-t4
+          - os: ubuntu-1x-4090
             filename: linux-cuda-x64.zip
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install cuda 12.1
-        if: matrix.os == 'ubuntu-1x-t4'
-        run: |
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
-          sudo dpkg -i cuda-keyring_1.0-1_all.deb
-          sudo apt-get update
-          sudo apt-get -y install cuda
-          
-      - run: nvcc -V
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
@@ -59,7 +50,7 @@ jobs:
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
-          elif [ "${{ matrix.os }}" == "ubuntu-1x-t4" ]; then
+          elif [ "${{ matrix.os }}" == "ubuntu-1x-4090" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
           pip install -r python/requirements.txt
@@ -71,7 +62,7 @@ jobs:
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
           echo "SITE_PACKAGES: $SITE_PACKAGES"
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
-          if [ "${{ matrix.os }}" == "ubuntu-1x-t4" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-1x-4090" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
           fi
       
@@ -112,7 +103,7 @@ jobs:
         run: |
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
-          if [ "${{ matrix.os }}" == "ubuntu-1x-t4" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-1x-4090" ]; then
             cp -rL /usr/local/cuda python/dist/server/_internal/cuda
           fi
 

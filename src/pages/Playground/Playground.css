@@ -26,3 +26,9 @@ textarea::placeholder {
   box-shadow: none !important;
   color: #fff !important;
 }
+
+@layer utilities {
+  .drag-over-dash {
+    @apply w-full h-[95%] flex justify-center items-center flex-col;
+  }
+}

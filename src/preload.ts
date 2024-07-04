@@ -1,7 +1,14 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { contextBridge, ipcRenderer, shell } from "electron";
+import { contextBridge, ipcRenderer, shell, app } from "electron";
+import fs from 'fs';
+import path from 'path';
+
+
+
+const appVersion = process.argv.find(arg => arg.startsWith('--app-version='))?.split('=')[1];
+const appVersionHash = process.argv.find(arg => arg.startsWith('--app-version-hash='))?.split('=')[1];
 
 contextBridge.exposeInMainWorld("ipc", {
   checkForUpdates: () => ipcRenderer.send("check-for-updates"),
@@ -20,5 +27,7 @@ contextBridge.exposeInMainWorld('electronShell', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  isPackaged: () => ipcRenderer.invoke('is-app-packaged')
+  isPackaged: () => ipcRenderer.invoke('is-app-packaged'),
+  getAppVersion: () => appVersion,
+  getAppVersionHash: () => appVersionHash
 })

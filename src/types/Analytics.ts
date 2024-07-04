@@ -22,7 +22,7 @@ class Analytics implements Analytics {
   init(token: string) {
     if (!this.isInitialized) {
       mixpanel.init(token, {
-        debug: true,
+        // debug: true,
         track_pageview: true,
         persistence: 'localStorage',
       })

@@ -8,13 +8,15 @@ import { useAppStore } from "../../store/store";
 import { useHomePageContext } from "../../context/HomePageProvider";
 // @ts-ignore
 import discoverVid from "../../assets/videos/discover-vid.mp4";
+import ModelCarousel from "../../component/ModelCarousel";
+import { Input } from "antd";
+import "./Playground.css";
 // @ts-ignore
 import plusIcon from "../../assets/icons/plus.svg";
 // @ts-ignore
 import sendIcon from "../../assets/icons/send-fill.svg";
-import ModelCarousel from "../../component/ModelCarousel";
-import { Input } from "antd";
-import "./Playground.css";
+// @ts-ignore
+import dragOverIcon from "../../assets/icons/drag-over.svg";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {
 
@@ -76,6 +78,26 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
   const [userMessage, setUserMessage] = useState<string>('');
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    console.log("Drag over");
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+    console.log("Drag leave");
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    // Handle file upload here
+    const files = e.dataTransfer.files;
+    console.log("Dropped files:", files);
+  };
 
   if (Object.keys(downloads).length === 0) {
     return (
@@ -109,7 +131,15 @@ const Playground = ({className = "", ...props}: PlaygroundProps) => {
   }
 
   return (
-    <div {...props}>
+    <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`w-full h-full${className}`} {...props}>
+      {isDragging && (
+        <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
+          <div className="drag-over-dash">
+            <img src={dragOverIcon} alt="" />
+            <p>Release your files</p>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col w-[660px] h-[533px]" >
         {/* Header */}
         <div className="flex items-center mb-[11px] w-full h-[16px]">

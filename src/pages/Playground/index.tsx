@@ -17,8 +17,12 @@ import plusIcon from "../../assets/icons/plus.svg";
 import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import dragOverIcon from "../../assets/icons/drag-over.svg";
+import { useGetMyModels } from "../../lib/react-query/queriesAndMutations";
+import { formatParams } from "../../utils/sysUtils";
+import ArrowDown from "../../icons/ArrowDown";
+import ArrowUp from "../../icons/ArrowUp";
 
-interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 interface Settings {
   temperature: number;
@@ -34,31 +38,7 @@ export interface ChatMessage {
 }
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
-  const [model, setModel] = useState<TModel>({
-    id: "1",
-    name: "Test Model",
-    title: "Test Model",
-    size: 0,
-    author: "Test Author",
-    downloads: 0,
-    likes: 0,
-    intro: "Test Intro",
-    capabilities: "Test Capabilities",
-    risks: "Test Risks",
-    hfLink: "https://huggingface.co",
-    evalId: "1",
-    createdAt: "2021-10-01",
-    modifiedAt: "2021-10-01",
-    status: "ACKNOWLEDGED",
-    backgroundImage: "",
-    lowresBackgroundImage: "",
-    port: 8900,
-    instance: 1,
-    progress: 0,
-    description: "Test Description",
-    params: 0,
-    error: "",
-  });
+  const [model, setModel] = useState<TModel>();
   const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
@@ -67,6 +47,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     frequencyPenalty: 0,
     presencePenalty: 0,
   });
+  const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
 
   // Chat data (so we can persist through mode changes)
   const [systemMessage, setSystemMessage] = useState<string>("");
@@ -152,15 +133,18 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         {/* Welcome Message */}
         <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
 
+        <ModelSwitcher setModel={setModel} model={model} />
         {/* Configuration */}
-        <div className="flex items-center w-full h-[30px] mb-5">
+        {/* <div className="flex items-center w-full h-[30px] mb-5">
           <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
             Chat
           </button>
           <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
             Completions
           </button>
-        </div>
+        </div> */}
+
+
 
         {/* Interface */}
         {mode === "chat" ? (
@@ -194,5 +178,46 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     </div>
   );
 };
+
+function ModelSwitcher({ setModel, model }: { setModel: (model: TModel) => void, model: TModel | undefined }) {
+  const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
+  const [showModelSelector, setShowModelSelector] = useState(false);
+
+  if (isLoadingMyModels || !myModels) return null;
+
+  let runningModels = myModels.filter((model) => model.status === "RUNNING");
+  if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>
+
+  return (
+    <div className="relative">
+      <div className="bg-white/5 w-40 p-2 px-5 rounded-full cursor-pointer flex items-center justify-between" onClick={() => setShowModelSelector(!showModelSelector)}>
+        {model ? <div className="flex items-center gap-2">
+          <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
+          <div>
+            <div>{model.title}</div>
+          </div>
+        </div> : "Select a model"}
+        {showModelSelector ? <ArrowUp height={12} width={12} /> : <ArrowDown height={12} width={12} />}
+      </div>
+      {showModelSelector && (
+        <div className="absolute bg-white/10 w-96 p-2 rounded-md mt-1">
+          {runningModels.map((model) => (
+            <div key={model.id} className="p-2 cursor-pointer flex items-center gap-2" onClick={() => { setModel(model); setShowModelSelector(false); }}>
+              <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
+              <div className="flex flex-col gap-1 -mt-1">
+                <p className="text-surface-750 title-sm h-3.5 leading-tight">
+                  {model.name}
+                </p>
+                <p className="text-surface-500 text-xs h-3.5 leading-normal">
+                  {`${model.author} • ${formatParams(model.size)}`}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default Playground;

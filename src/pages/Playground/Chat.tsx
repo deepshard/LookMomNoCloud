@@ -107,7 +107,7 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, images, s
     let value;
     while (true) {
       ({ value } = await reader.read());
-      
+
       const chunk = decoder.decode(value).substring(6).trim();
       if (chunk.includes("data: [DONE]")) {
         break;
@@ -161,14 +161,14 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, images, s
           <TextArea
             autoSize={{ minRows: 1, maxRows: 5 }}
             className="p-1 w-full bg-transparent border-none text-surface-750 text-[16px] flex-grow"
-            placeholder={`Chat with ${model.name}`}
+            placeholder={`${model?.title ? `Chat with ${model.title}` : "Chat with model"}`}
             value={userMessage}
             onChange={(e) => setUserMessage(e.target.value)}
             onPressEnter={(e) => handleSendMessage(e)}
           />
           {loading ? (
             <img src={installIcon} alt="chattingIcon" className="animate-spin flex-shrink-0" />
-          ): (
+          ) : (
             <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => handleSendMessage(userMessage)} />
           )}
         </div>

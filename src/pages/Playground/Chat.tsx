@@ -20,7 +20,7 @@ interface ChatProps {
   model: TModel;
   settings: any;
   systemMessage: string;
-  messages: ChatMessage[];
+  // messages: ChatMessage[];
   userMessage: string;
   images: string[];
   setSystemMessage: (message: string) => void;

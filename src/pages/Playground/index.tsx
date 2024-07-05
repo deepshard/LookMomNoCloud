@@ -61,7 +61,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     error: "",
     multimodal: false
   });
-  const [mode, setMode] = useState<"chat" | "completions">("chat");
+  const [mode, setMode] = useState<"chat" | "completions">("completions");
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
     maxTokens: 100,
@@ -85,14 +85,12 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     if (!model.multimodal) return;
 
     setIsDragging(true);
-    console.log("Drag over");
   };
 
   const handleDragLeave = () => {
     if (!model.multimodal) return;
 
     setIsDragging(false);
-    console.log("Drag leave");
   };
 
   const handleDrop = (e) => {
@@ -103,7 +101,6 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     setIsDragging(false);
     // Handle file upload here
     const files = e.dataTransfer.files;
-    console.log("Dropped files:", files);
   };
 
   if (Object.keys(downloads).length === 0) {
@@ -184,7 +181,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             setImages={setImages}
           />
         ) : (
-          <Completion></Completion>
+          <Completion model={model}/>
         )}
       {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
         <span className="h-8 flex-center">

@@ -58,6 +58,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     description: "Test Description",
     params: 0,
     error: "",
+    multimodal: false
   });
   const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [settings, setSettings] = useState<Settings>({
@@ -79,17 +80,25 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   const handleDragOver = (e) => {
     e.preventDefault();
+
+    if (!model.multimodal) return;
+
     setIsDragging(true);
     console.log("Drag over");
   };
 
   const handleDragLeave = () => {
+    if (!model.multimodal) return;
+
     setIsDragging(false);
     console.log("Drag leave");
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+
+    if (!model.multimodal) return;
+
     setIsDragging(false);
     // Handle file upload here
     const files = e.dataTransfer.files;
@@ -142,7 +151,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
           </div>
         </div>
       )}
-      <div className="flex flex-col w-[660px] h-[533px] mt-[100px]">
+      <div className="flex flex-col w-[660px] h-[573px] mt-[100px]">
         {/* Header */}
         <div className="flex items-center mb-[11px] w-full h-[16px]">
           <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
@@ -181,7 +190,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         )}
       </div>
 
-      <p>Matt please try to redesign your chat component but use the chat input below(look in the actual react code. not the ui)</p>
+      {/* <p>Matt please try to redesign your chat component but use the chat input below(look in the actual react code. not the ui)</p>
       <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
         <span className="h-8 flex-center">
           <img src={plusIcon} alt="" className="w-6 h-6" />
@@ -190,7 +199,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         <span className="h-8 flex-center">
           <img src={sendIcon} alt="" className="w-6 h-6" />
         </span>
-      </div>
+      </div> */}
     </div>
   );
 };

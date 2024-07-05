@@ -61,7 +61,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     error: "",
     multimodal: false
   });
-  const [mode, setMode] = useState<"chat" | "completions">("completions");
+  const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
     maxTokens: 100,

@@ -29,9 +29,14 @@ interface Settings {
   presencePenalty: number;
 }
 
+export interface Image {
+  id: string;
+  url: string;
+}
+
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | { type: string; text?: string; image_url?: { url: string } }[];
 }
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
@@ -74,7 +79,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const [systemMessage, setSystemMessage] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<Image[]>([]);
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [isDragging, setIsDragging] = useState(false);

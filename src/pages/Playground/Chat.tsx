@@ -4,7 +4,7 @@ import { Input } from "antd";
 // @ts-ignore
 import arrowUpIcon from "../../assets/icons/arrow-up.svg";
 import { TModel } from "../../types/schemas";
-import { ChatMessage } from ".";
+import { ChatMessage, Image } from ".";
 import ArrowUp from "../../icons/ArrowUp";
 //@ts-ignore
 import installIcon from "../../assets/icons/install.svg";
@@ -22,11 +22,11 @@ interface ChatProps {
   systemMessage: string;
   messages: ChatMessage[];
   userMessage: string;
-  images: string[];
+  images: Image[];
   setSystemMessage: (message: string) => void;
   setMessages: (messages: ChatMessage[]) => void;
   setUserMessage: (message: string) => void;
-  setImages: (image: string[]) => void;
+  setImages: (image: Image[]) => void;
 }
 
 const Chat = ({ model, settings, systemMessage, messages, userMessage, images, setSystemMessage, setMessages, setUserMessage, setImages }: ChatProps) => {
@@ -43,22 +43,101 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, images, s
   }, [messages, userMessage, images]);
 
   const addImage = (e: any) => {
+    console.log("Adding image...");
+
     const file = e.target.files[0];
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setImages([...images, e.target.result]);
+      const newImage = {
+        id: crypto.randomUUID().toString(),
+        url: e.target.result as string,
+      }
+      setImages([...images, newImage]);
     }
     reader.readAsDataURL(file);
+
+    // Reset the file input
+    e.target.value = '';
   }
 
-  const deleteImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
+  const deleteImage = (id: string) => {
+    console.log("Deleting image with id:", id);
+    console.log("Images:", images);
+
+    const newImages = images.filter((image) => image.id !== id);
     setImages(newImages);
   }
 
   const handleSetSystemMessage = (message: string) => {
     setSystemMessage(message);
+  }
+
+  const createNewUserMessage = (message: string, images: Image[]): ChatMessage => {
+    if (images.length == 0) {
+      return { "role": "user", "content": message };
+    }
+
+    return {
+      role: "user",
+      content: [
+        { type: "text", text: message },
+        ...images.map(image => ({ type: "image_url", image_url: { url: image.url } }))
+      ]
+    };
+  }
+
+  const updateAssistantMessage = (data: any) => {
+    setMessages((prevMessages) => {
+      const newMessageSet = [...prevMessages];
+      const lastMessage = newMessageSet[newMessageSet.length - 1];
+      if (typeof lastMessage.content === 'string') {
+        lastMessage.content += data.choices[0].delta.content || '';
+      }
+      return newMessageSet;
+    });
+  }
+
+  const sendMessageToAssistant = async (messageSet: ChatMessage[]) => {
+    const response = await fetch(`http://localhost:${model.port}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "system", content: systemMessage }, ...messageSet],
+        stream: true,
+        temperature: settings.temperature,
+        max_tokens: settings.maxTokens,
+        top_p: settings.topP,
+        frequency_penalty: settings.frequencyPenalty,
+        presence_penalty: settings.presencePenalty
+      }),
+    });
+
+    if (!response.ok) {
+      setError("An error occurred while sending the message to the assistant.");
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    setMessages([...messageSet, { role: "assistant", content: "" }]);
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+  
+      const chunk = decoder.decode(value).substring(6).trim();
+      if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) break;
+  
+      try {
+        const data = JSON.parse(chunk);
+        updateAssistantMessage(data);
+      } catch (error) {
+        console.error("Error parsing chunk:", error);
+      }
+    }
   }
 
   const handleSendMessage = async (e: any) => {
@@ -69,76 +148,25 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, images, s
       return;
     }
 
-    const message = e.target.value;
-    if (message == "") return;
+    const message = e.target.value as string;
+    if (!message.trim()) return;
 
     setLoading(true);
     setUserMessage('');
 
-    let newMessage;
-    if (images.length == 0) {
-      newMessage = { "role": "user", "content": message };
-    } else {
-      newMessage = {
-        "role": "user",
-        "content": [
-          {
-            "type": "text",
-            "text": userMessage
-          },
-          images.map((image) => {
-            return {
-              "type": "image_url",
-              "image_url": {
-                "url": image
-              }
-            }
-          })
-        ]
-      };
-      setImages([]);
-    }
+    const newMessage: ChatMessage = createNewUserMessage(message, images);
+    if (images.length > 0) setImages([]);
 
     const newMessageSet: ChatMessage[] = [...messages, newMessage];
     setMessages(newMessageSet);
 
-    // Send message to assistant
-    const response = await fetch(`http://localhost:${model.port}/v1/chat/completions`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        "messages": [{ "role": "system", "content": systemMessage }, ...newMessageSet],
-        "max_tokens": 100,
-        "stream": true,
-        ...settings
-      }),
-    });
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    setMessages([...newMessageSet, { "role": "assistant", "content": "" }]);
-
-    let value;
-    while (true) {
-      ({ value } = await reader.read());
-      
-      const chunk = decoder.decode(value).substring(6).trim();
-      if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) {
-        break;
-      }
-
-      const data = JSON.parse(chunk);
-
-      setMessages((prevMessages) => {
-        const newMessageSet = [...prevMessages];
-        newMessageSet[newMessageSet.length - 1].content += data["choices"][0]["delta"]["content"];
-        return newMessageSet;
-      });
+    try {
+      await sendMessageToAssistant(newMessageSet);
+    } catch (error) {
+      setError("Failed to send message to assistant");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   const getErrorContent = (errorMessage: string) => {
@@ -223,6 +251,28 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, images, s
     );
   }
 
+  const getMessageContent = (message: ChatMessage) => {
+    
+    if (typeof message.content === 'string') {
+      return (
+        <div className={`flex items-center w-full ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+          <div className={`flex items-center gap-2 p-2 max-w-[300px] bg-white/5 mb-4 break-normal overflow-wrap ${message.role === "user" ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"}`}>
+            <p className="text-surface-750 text-[16px]">{message.content}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`flex items-center w-full ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+        <div className={`flex flex-col items-start gap-2 p-2 w-[300px] bg-white/5 mb-4 break-normal overflow-wrap ${message.role === "user" ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"}`}>
+          <img src={message.content[1]["image_url"]["url"]} alt="image" className="w-[50px] h-[50px] object-cover rounded-xs shadow-md" />
+          <p className="text-surface-750 text-[16px]">{message.content[0]["text"]}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col justify-between w-full h-[447px]">
       {/* System Prompt */}
@@ -234,10 +284,8 @@ const Chat = ({ model, settings, systemMessage, messages, userMessage, images, s
       {/* Messages */}
       <div ref={messagesContainerRef} className="flex flex-col items-start mb-5 w-full h-[350px] flex-grow overflow-y-scroll">
         {messages.map((message, index) => (
-          <div key={index} className={`flex items-center w-full ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`flex items-center gap-2 p-2 w-[300px] bg-white/5 mb-4 break-words overflow-wrap-anywhere ${message.role === "user" ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"}`}>
-              <p className="text-surface-750 text-[16px]">{message.content}</p>
-            </div>
+          <div key={index} className="w-full">
+            {getMessageContent(message)}
           </div>
         ))}
       </div>

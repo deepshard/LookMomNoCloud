@@ -59,6 +59,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     description: "Test Description",
     params: 0,
     error: "",
+    multimodal: false
   });
   const [mode, setMode] = useState<"chat" | "completions">("completions");
   const [settings, setSettings] = useState<Settings>({
@@ -80,17 +81,25 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   const handleDragOver = (e) => {
     e.preventDefault();
+
+    if (!model.multimodal) return;
+
     setIsDragging(true);
     console.log("Drag over");
   };
 
   const handleDragLeave = () => {
+    if (!model.multimodal) return;
+
     setIsDragging(false);
     console.log("Drag leave");
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+
+    if (!model.multimodal) return;
+
     setIsDragging(false);
     // Handle file upload here
     const files = e.dataTransfer.files;

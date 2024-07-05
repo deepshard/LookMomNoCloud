@@ -17,6 +17,7 @@ import plusIcon from "../../assets/icons/plus.svg";
 import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import dragOverIcon from "../../assets/icons/drag-over.svg";
+import Completion from "./Completion";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -59,7 +60,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     params: 0,
     error: "",
   });
-  const [mode, setMode] = useState<"chat" | "completions">("chat");
+  const [mode, setMode] = useState<"chat" | "completions">("completions");
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
     maxTokens: 100,
@@ -114,7 +115,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
           <p className="text-sm text-surface-500">Discover More Models</p>
         </div>
-        <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+        <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex mt-auto">
           <span className="h-8 flex-center">
             <img src={plusIcon} alt="" className="w-6 h-6" />
           </span>
@@ -132,7 +133,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px]  ${className}`}
+      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
       {...props}>
       {isDragging && (
         <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
@@ -142,7 +143,6 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
           </div>
         </div>
       )}
-      <div className="flex flex-col w-[660px] h-[533px] mt-[100px]">
         {/* Header */}
         <div className="flex items-center mb-[11px] w-full h-[16px]">
           <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
@@ -150,7 +150,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         </div>
 
         {/* Welcome Message */}
-        <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
+        <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
 
         {/* Configuration */}
         <div className="flex items-center w-full h-[30px] mb-5">
@@ -161,8 +161,6 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             Completions
           </button>
         </div>
-
-        {/* Interface */}
         {mode === "chat" ? (
           <Chat
             model={model}
@@ -177,12 +175,9 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             setImages={setImages}
           />
         ) : (
-          <></>
+          <Completion></Completion>
         )}
-      </div>
-
-      <p>Matt please try to redesign your chat component but use the chat input below(look in the actual react code. not the ui)</p>
-      <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+      {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
         <span className="h-8 flex-center">
           <img src={plusIcon} alt="" className="w-6 h-6" />
         </span>
@@ -190,7 +185,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         <span className="h-8 flex-center">
           <img src={sendIcon} alt="" className="w-6 h-6" />
         </span>
-      </div>
+      </div> */}
     </div>
   );
 };

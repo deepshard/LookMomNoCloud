@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import json
 from models import RunningModel
 from state import global_state_manager
 from endpoints.model.install.install import get_files_to_download
@@ -84,6 +85,17 @@ async def get_model_details(model):
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model['id']}"
         model_data = await response.json()
+
+        multimodal = False
+        model_config_path = get_app_data_path() / "models" / model["id"] / "base" / "config.json"
+        with open(model_config_path, "r") as f:
+            model_config = f.read()
+            model_config = json.loads(model_config)
+            architecture = model_config["architectures"][0]
+
+            if architecture == "LlavaLlamaForCausalLM":
+                multimodal = True
+
         return Model(
             id=model_data["id"],
             name=model_data["name"],
@@ -102,4 +114,5 @@ async def get_model_details(model):
             instance=model["instance"] if model["instance"] is not None else 0,
             port=model["port"] if model["port"] is not None else None,
             progress=0,
+            multimodal=multimodal,
         )

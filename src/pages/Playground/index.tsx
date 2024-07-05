@@ -22,6 +22,7 @@ import { formatParams } from "../../utils/sysUtils";
 import ArrowDown from "../../icons/ArrowDown";
 import ArrowUp from "../../icons/ArrowUp";
 import SettingsIcon from "../../icons/SettingsIcon";
+import Completion from "./Completion";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -33,9 +34,14 @@ interface Settings {
   presencePenalty: number;
 }
 
+export interface Image {
+  id: string;
+  url: string;
+}
+
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | { type: string; text?: string; image_url?: { url: string } }[];
 }
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
@@ -53,24 +59,32 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const [systemMessage, setSystemMessage] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<Image[]>([]);
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e) => {
     e.preventDefault();
+
+    if (!model.multimodal) return;
+
     setIsDragging(true);
     console.log("Drag over");
   };
 
   const handleDragLeave = () => {
+    if (!model.multimodal) return;
+
     setIsDragging(false);
     console.log("Drag leave");
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+
+    if (!model.multimodal) return;
+
     setIsDragging(false);
     // Handle file upload here
     const files = e.dataTransfer.files;
@@ -95,7 +109,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
           <p className="text-sm text-surface-500">Discover More Models</p>
         </div>
-        <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+        <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex mt-auto">
           <span className="h-8 flex-center">
             <img src={plusIcon} alt="" className="w-6 h-6" />
           </span>
@@ -113,7 +127,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px]  ${className}`}
+      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
       {...props}>
       {isDragging && (
         <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
@@ -123,53 +137,47 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
           </div>
         </div>
       )}
-      <div className="flex flex-col w-[660px] h-[533px] mt-[100px]">
-        {/* Header */}
-        <div className="flex items-center mb-[11px] w-full h-[16px]">
-          <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
-          <p className="text-md text-surface-500">LMNC™ Playground</p>
-        </div>
+      {/* Header */}
+      <div className="flex items-center mb-[11px] w-full h-[16px]">
+        <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
+        <p className="text-md text-surface-500">LMNC™ Playground</p>
+      </div>
 
-        {/* Welcome Message */}
-        <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
+      {/* Welcome Message */}
+      <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
 
-        <div className="flex">
-          <ModelSwitcher setModel={setModel} model={model} />
-          <ChatSettings settings={settings} setSettings={setSettings} />
-        </div>
-        {/* Configuration */}
-        {/* <div className="flex items-center w-full h-[30px] mb-5">
+      <div className="flex">
+        <ModelSwitcher setModel={setModel} model={model} />
+        <ChatSettings settings={settings} setSettings={setSettings} />
+      </div>
+      {/* Configuration */}
+      {/* <div className="flex items-center w-full h-[30px] mb-5">
           <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
             Chat
           </button>
           <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
             Completions
           </button>
-        </div> */}
-
-
-
-        {/* Interface */}
-        {mode === "chat" ? (
-          <Chat
-            model={model}
-            settings={settings}
-            systemMessage={systemMessage}
-            messages={messages}
-            userMessage={userMessage}
-            images={images}
-            setSystemMessage={setSystemMessage}
-            setMessages={setMessages}
-            setUserMessage={setUserMessage}
-            setImages={setImages}
-          />
-        ) : (
-          <></>
-        )}
-      </div>
-
-      <p>Matt please try to redesign your chat component but use the chat input below(look in the actual react code. not the ui)</p>
-      <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+        </div>
+        {
+    mode === "chat" ? (
+      <Chat
+        model={model}
+        settings={settings}
+        systemMessage={systemMessage}
+        messages={messages}
+        userMessage={userMessage}
+        images={images}
+        setSystemMessage={setSystemMessage}
+        setMessages={setMessages}
+        setUserMessage={setUserMessage}
+        setImages={setImages}
+      />
+    ) : (
+    <Completion></Completion>
+  )
+  }
+  {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
         <span className="h-8 flex-center">
           <img src={plusIcon} alt="" className="w-6 h-6" />
         </span>
@@ -177,8 +185,8 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         <span className="h-8 flex-center">
           <img src={sendIcon} alt="" className="w-6 h-6" />
         </span>
-      </div>
-    </div>
+      </div> */}
+    </div >
   );
 };
 

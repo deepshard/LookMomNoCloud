@@ -22,11 +22,10 @@ interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 interface Settings {
   temperature: number;
-  maximumLength: number;
+  maxTokens: number;
   topP: number;
   frequencyPenalty: number;
   presencePenalty: number;
-  bestOf: number;
 }
 
 export interface ChatMessage {
@@ -63,17 +62,17 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
-    maximumLength: 100,
+    maxTokens: 100,
     topP: 1,
     frequencyPenalty: 0,
     presencePenalty: 0,
-    bestOf: 1,
   });
 
   // Chat data (so we can persist through mode changes)
   const [systemMessage, setSystemMessage] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");
+  const [images, setImages] = useState<string[]>([]);
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [isDragging, setIsDragging] = useState(false);
@@ -171,9 +170,11 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             systemMessage={systemMessage}
             messages={messages}
             userMessage={userMessage}
+            images={images}
             setSystemMessage={setSystemMessage}
             setMessages={setMessages}
             setUserMessage={setUserMessage}
+            setImages={setImages}
           />
         ) : (
           <></>

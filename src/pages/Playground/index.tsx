@@ -9,7 +9,7 @@ import { useHomePageContext } from "../../context/HomePageProvider";
 // @ts-ignore
 import discoverVid from "../../assets/videos/discover-vid.mp4";
 import ModelCarousel from "../../component/ModelCarousel";
-import { Input } from "antd";
+import { Input, Slider } from "antd";
 import "./Playground.css";
 // @ts-ignore
 import plusIcon from "../../assets/icons/plus.svg";
@@ -21,6 +21,7 @@ import { useGetMyModels } from "../../lib/react-query/queriesAndMutations";
 import { formatParams } from "../../utils/sysUtils";
 import ArrowDown from "../../icons/ArrowDown";
 import ArrowUp from "../../icons/ArrowUp";
+import SettingsIcon from "../../icons/SettingsIcon";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -47,7 +48,6 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     frequencyPenalty: 0,
     presencePenalty: 0,
   });
-  const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
 
   // Chat data (so we can persist through mode changes)
   const [systemMessage, setSystemMessage] = useState<string>("");
@@ -133,7 +133,10 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         {/* Welcome Message */}
         <p className="text-[32px] text-white">Hey, there! What’s new today?</p>
 
-        <ModelSwitcher setModel={setModel} model={model} />
+        <div className="flex">
+          <ModelSwitcher setModel={setModel} model={model} />
+          <ChatSettings settings={settings} setSettings={setSettings} />
+        </div>
         {/* Configuration */}
         {/* <div className="flex items-center w-full h-[30px] mb-5">
           <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
@@ -214,6 +217,47 @@ function ModelSwitcher({ setModel, model }: { setModel: (model: TModel) => void,
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChatSettings({ settings, setSettings }: { settings: Settings, setSettings: (settings: Settings) => void }) {
+  const [showSettings, setShowSettings] = useState(false);
+
+  return (
+    <div className="relative ml-4 z-50">
+      <div
+        className="bg-white/5 p-2 px-4 rounded-full cursor-pointer flex items-center"
+        onClick={() => setShowSettings(!showSettings)}
+      >
+        <SettingsIcon height={12} width={12} />
+        {showSettings ? <ArrowUp height={12} width={12} className="ml-2" /> : <ArrowDown height={12} width={12} className="ml-2" />}
+      </div>
+      {showSettings && (
+        <div className="absolute bg-white/10 w-64 p-4 rounded-md mt-1 right-0">
+          <div className="mb-4">
+            <label className="text-sm text-surface-500">Temperature: {settings.temperature}</label>
+            <Slider
+              min={0}
+              max={1}
+              step={0.1}
+              value={settings.temperature}
+              onChange={(value) => setSettings({ ...settings, temperature: value })}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="text-sm text-surface-500">Max Tokens: {settings.maxTokens}</label>
+            <Slider
+              min={1}
+              max={2048}
+              step={1}
+              value={settings.maxTokens}
+              onChange={(value) => setSettings({ ...settings, maxTokens: value })}
+            />
+          </div>
+          {/* Add similar sliders for topP, frequencyPenalty, and presencePenalty */}
         </div>
       )}
     </div>

@@ -289,7 +289,7 @@ const Chat = () => {
   return (
     <div className="flex flex-col justify-between w-full h-[573px]">
       {/* System Prompt */}
-      <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
+      <div className="flex flex-col items-start p-3 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
         <p className="text-surface-750 text-[16px] mb-1">System</p>
         <Input
           className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
@@ -311,7 +311,7 @@ const Chat = () => {
       <Dock images={images} deleteImage={deleteImage} />
 
       {/* Chat Input */}
-      <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-lg flex-shrink-0">
+      <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm flex-shrink-0">
         <span className="h-8 flex-center">
           {getAddFileButton()}
         </span>
@@ -323,7 +323,7 @@ const Chat = () => {
           onChange={(e) => setUserMessage(e.target.value)}
           onPressEnter={(e) => handleSendMessage(e)}
         />
-        <span className="h-8 flex-center">
+        <span className="h-8 flex-center mr-1">
           {getSubmitButton()}
         </span>
       </div>

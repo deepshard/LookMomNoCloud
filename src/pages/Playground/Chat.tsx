@@ -123,7 +123,7 @@ const Chat = () => {
   const handleSendMessage = async (e: any) => {
     e.preventDefault();
 
-    if (!model.multimodal && images.length > 0) {
+    if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");
       return;
     }
@@ -184,7 +184,7 @@ const Chat = () => {
   }
 
   const getAddFileButton = () => {
-    if (model.multimodal) {
+    if (model?.multimodal) {
       return (
         <div>
           <input
@@ -318,7 +318,7 @@ const Chat = () => {
         <TextArea
           autoSize={{ minRows: 1, maxRows: 5 }}
           className="playground-chat-box max-h-[100px] align-middle"
-          placeholder={`Chat with ${model.name}`}
+          placeholder={`Chat with ${model?.name}`}
           value={userMessage}
           onChange={(e) => setUserMessage(e.target.value)}
           onPressEnter={(e) => handleSendMessage(e)}

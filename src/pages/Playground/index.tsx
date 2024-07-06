@@ -122,8 +122,8 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         </div>
 
         <div className="flex">
-          <ModelSwitcher setModel={setModel} model={model} />
-          <ChatSettings settings={settings} setSettings={setSettings} />
+          <ModelSwitcher />
+          <ChatSettings />
         </div>
 
         {mode === "chat" ? (
@@ -145,7 +145,8 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   );
 };
 
-function ModelSwitcher({ setModel, model }: { setModel: (model: TModel) => void, model: TModel | undefined }) {
+function ModelSwitcher() {
+  const { model, setModel } = usePlayground();
   const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
   const [showModelSelector, setShowModelSelector] = useState(false);
 
@@ -186,7 +187,8 @@ function ModelSwitcher({ setModel, model }: { setModel: (model: TModel) => void,
   );
 }
 
-function ChatSettings({ settings, setSettings }: { settings: Settings, setSettings: (settings: Settings) => void }) {
+function ChatSettings() {
+  const { settings, setSettings } = usePlayground();
   const [showSettings, setShowSettings] = useState(false);
 
   return (

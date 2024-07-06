@@ -1,8 +1,5 @@
-// @ts-ignore
-import Icon from "../../component/Icon";
-import closeIcon from "../../assets/icons/close.svg";
-import Close from "../../icons/Close";
 import { Image } from ".";
+import Close from "../../icons/Close";
 
 interface DockProps {
   images: Image[];
@@ -15,12 +12,12 @@ const Dock = ({ images, deleteImage }: DockProps) => {
   }
 
   return (
-    <div className="relative w-full h-[60px] mt-5">
+    <div className="relative w-full h-[62px] mt-5 mb-2">
       {/* Dock */}
-      <div className="trapezoid absolute bottom-0 mb-[10px]"></div>
+      <div className="trapezoid absolute bottom-0"></div>
 
       {/* Images */}
-      <div className="absolute bottom-[20px] flex gap-2.5 px-4">
+      <div className="absolute bottom-[10px] flex gap-2.5 px-4">
           {images.map((image, index) => (
             <div key={index} className="relative w-[50px] h-[50px]">
               <img src={image.url} alt={`image-${index}`} className="w-full h-full object-cover rounded-xs shadow-md" />

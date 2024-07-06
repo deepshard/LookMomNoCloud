@@ -23,67 +23,31 @@ import ArrowDown from "../../icons/ArrowDown";
 import ArrowUp from "../../icons/ArrowUp";
 import SettingsIcon from "../../icons/SettingsIcon";
 import Completion from "./Completion";
+import { PlaygroundProvider, usePlayground } from "./PlaygroundContext";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> { }
 
-interface Settings {
-  temperature: number;
-  maxTokens: number;
-  topP: number;
-  frequencyPenalty: number;
-  presencePenalty: number;
-}
-
-export interface Image {
-  id: string;
-  url: string;
-}
-
-export interface ChatMessage {
-  role: "system" | "user" | "assistant";
-  content: string | { type: string; text?: string; image_url?: { url: string } }[];
-}
-
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
-  const [model, setModel] = useState<TModel>();
-  const [mode, setMode] = useState<"chat" | "completions">("chat");
-  const [settings, setSettings] = useState<Settings>({
-    temperature: 1,
-    maxTokens: 100,
-    topP: 1,
-    frequencyPenalty: 0,
-    presencePenalty: 0,
-  });
-
-  // Chat data (so we can persist through mode changes)
-  const [systemMessage, setSystemMessage] = useState<string>("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [userMessage, setUserMessage] = useState<string>("");
-  const [images, setImages] = useState<Image[]>([]);
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
+  const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [isDragging, setIsDragging] = useState(false);
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
-
-    if (!model.multimodal) return;
 
     setIsDragging(true);
     console.log("Drag over");
   };
 
   const handleDragLeave = () => {
-    if (!model.multimodal) return;
-
     setIsDragging(false);
     console.log("Drag leave");
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-
-    if (!model.multimodal) return;
 
     setIsDragging(false);
     // Handle file upload here
@@ -123,61 +87,61 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   }
 
   return (
-    <div
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
-      {...props}>
-      {isDragging && (
-        <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
-          <div className="drag-over-dash">
-            <img src={dragOverIcon} alt="" />
-            <p>Release your files</p>
+    <PlaygroundProvider>
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
+        {...props}>
+        {isDragging && (
+          <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
+            <div className="drag-over-dash">
+              <img src={dragOverIcon} alt="" />
+              <p>Release your files</p>
+            </div>
           </div>
+        )}
+        {/* Header */}
+        <div className="flex items-center mb-[11px] w-full h-[16px]">
+          <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
+          <p className="text-md text-surface-500">LMNC™ Playground</p>
         </div>
-      )}
-      {/* Header */}
-      <div className="flex items-center mb-[11px] w-full h-[16px]">
-        <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
-        <p className="text-md text-surface-500">LMNC™ Playground</p>
-      </div>
 
-      {/* Welcome Message */}
-      <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
+        {/* Welcome Message */}
+        <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
 
-      <div className="flex">
-        <ModelSwitcher setModel={setModel} model={model} />
-        <ChatSettings settings={settings} setSettings={setSettings} />
-      </div>
-      <Completion></Completion>
-      {/* {
-        mode === "chat" ? (
-          <Chat
-            model={model}
-            settings={settings}
-            systemMessage={systemMessage}
-            messages={messages}
-            userMessage={userMessage}
-            images={images}
-            setSystemMessage={setSystemMessage}
-            setMessages={setMessages}
-            setUserMessage={setUserMessage}
-            setImages={setImages}
-          />
+        {/* Configuration */}
+        <div className="flex items-center w-full h-[30px] mb-5">
+          <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
+            Chat
+          </button>
+          <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
+            Completions
+          </button>
+        </div>
+
+        <div className="flex">
+          <ModelSwitcher setModel={setModel} model={model} />
+          <ChatSettings settings={settings} setSettings={setSettings} />
+        </div>
+
+        {mode === "chat" ? (
+          <Chat />
         ) : (
-        )
-      } */}
-      {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
-        <span className="h-8 flex-center">
-          <img src={plusIcon} alt="" className="w-6 h-6" />
-        </span>
-        <Input.TextArea autoSize className="" placeholder="Chat with Llama-3..." />
-        <span className="h-8 flex-center">
-          <img src={sendIcon} alt="" className="w-6 h-6" />
-        </span>
-      </div> */}
-    </div >
+          <Completion></Completion>
+        )}
+        {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+          <span className="h-8 flex-center">
+            <img src={plusIcon} alt="" className="w-6 h-6" />
+          </span>
+          <Input.TextArea autoSize className="" placeholder="Chat with Llama-3..." />
+          <span className="h-8 flex-center">
+            <img src={sendIcon} alt="" className="w-6 h-6" />
+          </span>
+        </div> */}
+      </div>
+    </PlaygroundProvider>
   );
 };
 

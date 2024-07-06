@@ -1,4 +1,3 @@
-import { ChatMessage } from "src/pages/Playground/playgroundTypes";
 import { TModel } from "../types/schemas";
 import ApiClient, { LOCAL_ROOT_URL } from "./client";
 

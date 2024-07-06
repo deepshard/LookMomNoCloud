@@ -1,14 +1,14 @@
 import { useState } from "react";
-
-// @ts-ignore
-import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
-import Chat from "./Chat";
-import { TModel } from "../../types/schemas";
 import { useAppStore } from "../../store/store";
 import { useHomePageContext } from "../../context/HomePageProvider";
+import { PlaygroundProvider } from "./PlaygroundContext";
+import ModelCarousel from "../../component/ModelCarousel";
+import Chat from "./Chat";
+import Completion from "./Completion";
+// @ts-ignore
+import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-landscape.svg";
 // @ts-ignore
 import discoverVid from "../../assets/videos/discover-vid.mp4";
-import ModelCarousel from "../../component/ModelCarousel";
 import { Input } from "antd";
 import "./Playground.css";
 // @ts-ignore
@@ -17,10 +17,8 @@ import plusIcon from "../../assets/icons/plus.svg";
 import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import dragOverIcon from "../../assets/icons/drag-over.svg";
-import Completion from "./Completion";
-import { PlaygroundProvider } from "./PlaygroundContext";
 
-interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
+type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
@@ -45,6 +43,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     setIsDragging(false);
     // Handle file upload here
     const files = e.dataTransfer.files;
+    console.log(files[0]);
   };
 
   if (Object.keys(downloads).length === 0) {

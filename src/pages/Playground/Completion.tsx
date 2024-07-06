@@ -1,4 +1,4 @@
-import { Input, Form } from "antd";
+import { Form } from "antd";
 import { getCompletions } from "../../api/model";
 import { TModel } from "../../types/schemas";
 import { useEffect, useRef, useState } from "react";

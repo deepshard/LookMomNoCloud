@@ -6,7 +6,6 @@ import QueryProvider from "./lib/react-query/QueryProvider";
 import ModelDetailView from "./pages/ModelDetailView";
 import AppWrapperProvider from "./context/AppWrapperProvider";
 import OTA from "./pages/OTA";
-import Playground from "./pages/Playground";
 
 // @ts-ignore
 const root = createRoot(document.getElementById("root"));

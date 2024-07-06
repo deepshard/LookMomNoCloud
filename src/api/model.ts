@@ -1,4 +1,3 @@
-import axios from "axios";
 import { TModel } from "../types/schemas";
 import ApiClient, { LOCAL_ROOT_URL } from "./client";
 

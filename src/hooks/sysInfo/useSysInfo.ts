@@ -46,7 +46,6 @@ const useSysInfo = (
 
         if (retryCount.current < MAX_RETRIES) {
           retryCount.current += 1;
-          console.log(`Retrying connection (${retryCount.current}/${MAX_RETRIES}) in ${retryDelay.current}ms`);
 
           setTimeout(() => {
             retryDelay.current *= 2; // Exponential backoff
@@ -58,7 +57,6 @@ const useSysInfo = (
       };
 
       eventSource.onopen = () => {
-        console.log("EventSource connected successfully");
         retryCount.current = 0;
         retryDelay.current = INITIAL_RETRY_DELAY;
       };

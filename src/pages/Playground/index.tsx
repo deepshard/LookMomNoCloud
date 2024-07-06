@@ -18,7 +18,7 @@ import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import dragOverIcon from "../../assets/icons/drag-over.svg";
 import Completion from "./Completion";
-import { PlaygroundProvider, usePlayground } from "./PlaygroundContext";
+import { PlaygroundProvider } from "./PlaygroundContext";
 
 interface PlaygroundProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -33,12 +33,10 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     e.preventDefault();
 
     setIsDragging(true);
-    console.log("Drag over");
   };
 
   const handleDragLeave = () => {
     setIsDragging(false);
-    console.log("Drag leave");
   };
 
   const handleDrop = (e) => {
@@ -47,7 +45,6 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
     setIsDragging(false);
     // Handle file upload here
     const files = e.dataTransfer.files;
-    console.log("Dropped files:", files);
   };
 
   if (Object.keys(downloads).length === 0) {
@@ -88,15 +85,16 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
-        {...props}>
-        {isDragging && (
-          <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
-            <div className="drag-over-dash">
-              <img src={dragOverIcon} alt="" />
-              <p>Release your files</p>
+        {...props}
+      >
+          {isDragging && (
+            <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
+              <div className="drag-over-dash">
+                <img src={dragOverIcon} alt="" />
+                <p>Release your files</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
           {/* Header */}
           <div className="flex items-center mb-[11px] w-full h-[16px]">
             <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />

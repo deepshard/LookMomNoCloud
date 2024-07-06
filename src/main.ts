@@ -101,6 +101,7 @@ const createWindow = () => {
         { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+I', click: () => mainWindow.webContents.toggleDevTools() },
         { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
         { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
+        { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
       ]
     },
 

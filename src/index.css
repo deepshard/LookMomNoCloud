@@ -43,6 +43,8 @@
   src: url('../src/assets/fonts/NeueMontreal-MediumItalic.otf'); /*URL to font*/
 }
 
+
+
 body {
   /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif; */
@@ -52,7 +54,7 @@ body {
   font-weight: 400;
   /* Regular */
   color: #fff;
-  /* background-color: rgba(0, 0, 0, 0.75); */
+  background-color: rgba(0, 0, 0, 0.75);
 
   /* Font Smoothing */
   -webkit-font-smoothing: antialiased;
@@ -62,24 +64,10 @@ body {
   -webkit-user-select: none;
   user-select: none;
   /* Non-prefixed version, currently supported by Chrome, Edge, Opera, Firefox, Safari */
-  height: 100%;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url("../src/assets/images/truffle-background-1.png");
-  background-size: cover;
-  overflow: hidden;
-}
-body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  backdrop-filter: blur(75px);
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: -1
 }
 
 
@@ -112,10 +100,9 @@ body::before {
   z-index: -1
 }
 .clear-dotted-bg {
-  @apply absolute top-0 left-0 w-full h-full opacity-15 overflow-hidden;
+  @apply absolute w-full h-full opacity-15;
   background: url("../src/assets/images/clear-dotted-bg.png");
   background-size: cover;
-  background-repeat: repeat;
 }
 
 :root {
@@ -125,7 +112,7 @@ body::before {
   --window-width: 100vw;
 }
 
-input, textarea {
+input {
   color: var(--input-text-color);
   caret-color: white;
 }
@@ -495,12 +482,6 @@ div.slick-slide>div {
 
   .update {
     @apply fixed top-0 w-full h-full flex-center-x;
-    backdrop-filter: blur(75px);
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
-  }
-
-  .playground {
-    @apply w-full h-full flex-center-x justify-center items-center;
     backdrop-filter: blur(75px);
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), rgba(255, 255, 255, 0.1);
   }

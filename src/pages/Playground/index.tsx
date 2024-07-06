@@ -150,34 +150,25 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         <ModelSwitcher setModel={setModel} model={model} />
         <ChatSettings settings={settings} setSettings={setSettings} />
       </div>
-      {/* Configuration */}
-      {/* <div className="flex items-center w-full h-[30px] mb-5">
-          <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
-            Chat
-          </button>
-          <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
-            Completions
-          </button>
-        </div>
-        {
-    mode === "chat" ? (
-      <Chat
-        model={model}
-        settings={settings}
-        systemMessage={systemMessage}
-        messages={messages}
-        userMessage={userMessage}
-        images={images}
-        setSystemMessage={setSystemMessage}
-        setMessages={setMessages}
-        setUserMessage={setUserMessage}
-        setImages={setImages}
-      />
-    ) : (
-    <Completion></Completion>
-  )
-  }
-  {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+      <Completion></Completion>
+      {/* {
+        mode === "chat" ? (
+          <Chat
+            model={model}
+            settings={settings}
+            systemMessage={systemMessage}
+            messages={messages}
+            userMessage={userMessage}
+            images={images}
+            setSystemMessage={setSystemMessage}
+            setMessages={setMessages}
+            setUserMessage={setUserMessage}
+            setImages={setImages}
+          />
+        ) : (
+        )
+      } */}
+      {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
         <span className="h-8 flex-center">
           <img src={plusIcon} alt="" className="w-6 h-6" />
         </span>
@@ -200,7 +191,7 @@ function ModelSwitcher({ setModel, model }: { setModel: (model: TModel) => void,
   if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <div className="bg-white/5 w-40 p-2 px-5 rounded-full cursor-pointer flex items-center justify-between" onClick={() => setShowModelSelector(!showModelSelector)}>
         {model ? <div className="flex items-center gap-2">
           <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
@@ -241,7 +232,6 @@ function ChatSettings({ settings, setSettings }: { settings: Settings, setSettin
         onClick={() => setShowSettings(!showSettings)}
       >
         <SettingsIcon height={12} width={12} />
-        {showSettings ? <ArrowUp height={12} width={12} className="ml-2" /> : <ArrowDown height={12} width={12} className="ml-2" />}
       </div>
       {showSettings && (
         <div className="absolute bg-white/10 w-64 p-4 rounded-md mt-1 right-0">
@@ -265,7 +255,36 @@ function ChatSettings({ settings, setSettings }: { settings: Settings, setSettin
               onChange={(value) => setSettings({ ...settings, maxTokens: value })}
             />
           </div>
-          {/* Add similar sliders for topP, frequencyPenalty, and presencePenalty */}
+          <div className="mb-4">
+            <label className="text-sm text-surface-500">Top P: {settings.topP}</label>
+            <Slider
+              min={0}
+              max={1}
+              step={0.1}
+              value={settings.topP}
+              onChange={(value) => setSettings({ ...settings, topP: value })}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="text-sm text-surface-500">Frequency Penalty: {settings.frequencyPenalty}</label>
+            <Slider
+              min={0}
+              max={2}
+              step={0.1}
+              value={settings.frequencyPenalty}
+              onChange={(value) => setSettings({ ...settings, frequencyPenalty: value })}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="text-sm text-surface-500">Presence Penalty: {settings.presencePenalty}</label>
+            <Slider
+              min={0}
+              max={2}
+              step={0.1}
+              value={settings.presencePenalty}
+              onChange={(value) => setSettings({ ...settings, presencePenalty: value })}
+            />
+          </div>
         </div>
       )}
     </div>

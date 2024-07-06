@@ -168,7 +168,8 @@ MODELS = [
 
 # Mock file data
 MOCK_FILE_ONE_DATA = os.urandom(1024)
-MOCK_FILE_TWO_DATA = '{"architectures": ["Phi3ForCausalLM"]}'.encode()
+padding = "a" * (1024 - len('{"architectures": ["Phi3ForCausalLM"]}'))
+MOCK_FILE_TWO_DATA = ('{"architectures": ["Phi3ForCausalLM"], "empty": "' + padding + '"}').encode()
 MOCK_FILE_THREE_DATA = os.urandom(1024)
 MOCK_FILE_FOUR_DATA = os.urandom(1024)
 MOCK_VALID_FILES = [

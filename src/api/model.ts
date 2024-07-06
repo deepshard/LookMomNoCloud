@@ -1,3 +1,4 @@
+import { ChatMessage } from "src/pages/Playground/playgroundTypes";
 import { TModel } from "../types/schemas";
 import ApiClient, { LOCAL_ROOT_URL } from "./client";
 
@@ -151,9 +152,12 @@ export const getCompletions = async (model: TModel, prompt: string, settings?: a
     },
     body: JSON.stringify({
       prompt: prompt,
-      max_tokens: 100,
       stream: true,
-      ...settings,
+      temperature: settings.temperature,
+      max_tokens: settings.maxTokens,
+      top_p: settings.topP,
+      frequency_penalty: settings.frequencyPenalty,
+      presence_penalty: settings.presencePenalty,
     }),
   });
   const reader = response?.body?.getReader();

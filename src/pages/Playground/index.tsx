@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAppStore } from "../../store/store";
 import { useHomePageContext } from "../../context/HomePageProvider";
-import { PlaygroundProvider } from "./PlaygroundContext";
 import ModelCarousel from "../../component/ModelCarousel";
 import Chat from "./Chat";
 import Completion from "./Completion";
@@ -17,15 +16,16 @@ import plusIcon from "../../assets/icons/plus.svg";
 import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import dragOverIcon from "../../assets/icons/drag-over.svg";
+import { usePlayground } from "./PlaygroundContext";
 
-type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>
+type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>;
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [isDragging, setIsDragging] = useState(false);
-
+  const {model} = usePlayground();
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -78,46 +78,40 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   }
 
   return (
-    <PlaygroundProvider>
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
-        {...props}
-      >
-          {isDragging && (
-            <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
-              <div className="drag-over-dash">
-                <img src={dragOverIcon} alt="" />
-                <p>Release your files</p>
-              </div>
-            </div>
-          )}
-          {/* Header */}
-          <div className="flex items-center mb-[11px] w-full h-[16px]">
-            <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
-            <p className="text-md text-surface-500">LMNC™ Playground</p>
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
+      {...props}>
+      {isDragging && (
+        <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
+          <div className="drag-over-dash">
+            <img src={dragOverIcon} alt="" />
+            <p>Release your files</p>
           </div>
+        </div>
+      )}
+      {/* Header */}
+      <div className="flex items-center mb-[11px] w-full h-[16px]">
+        <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
+        <p className="text-md text-surface-500">LMNC™ Playground</p>
+      </div>
 
-          {/* Welcome Message */}
-          <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
+      {/* Welcome Message */}
+      <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
 
-          {/* Configuration */}
-          <div className="flex items-center w-full h-[30px] mb-5">
-            <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
-              Chat
-            </button>
-            <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
-              Completions
-            </button>
-          </div>
-          {mode === "chat" ? (
-            <Chat />
-          ) : (
-            <Completion></Completion>
-          )}
-        {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
+      {/* Configuration */}
+      <div className="flex items-center w-full h-[30px] mb-5">
+        <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
+          Chat
+        </button>
+        <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
+          Completions
+        </button>
+      </div>
+      {mode === "chat" ? <Chat /> : <Completion model={model} />}
+      {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
           <span className="h-8 flex-center">
             <img src={plusIcon} alt="" className="w-6 h-6" />
           </span>
@@ -126,8 +120,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             <img src={sendIcon} alt="" className="w-6 h-6" />
           </span>
         </div> */}
-      </div>
-    </PlaygroundProvider>
+    </div>
   );
 };
 

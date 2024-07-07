@@ -64,6 +64,7 @@ const Chat = () => {
   }
 
   const updateAssistantMessage = (data: any) => {
+    //@ts-ignore
     setMessages((prevMessages) => {
       const newMessageSet = [...prevMessages];
       const lastMessage = newMessageSet[newMessageSet.length - 1];

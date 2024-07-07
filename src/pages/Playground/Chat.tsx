@@ -289,14 +289,14 @@ const Chat = () => {
   return (
     <div className="flex flex-col justify-between w-full h-[573px]">
       {/* System Prompt */}
-      <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
+      {/* <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
         <p className="text-surface-750 text-[16px] mb-1">System</p>
         <Input
           className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
           placeholder="Enter system instructions..."
           value={systemMessage} onChange={(e) => setSystemMessage(e.target.value)}
         />
-      </div>
+      </div> */}
 
       {/* Messages */}
       <div ref={messagesContainerRef} className="flex flex-col items-start pb-5 w-full max-h-[307px] flex-grow overflow-y-auto">

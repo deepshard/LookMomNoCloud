@@ -311,7 +311,7 @@ const Chat = () => {
       <Dock images={images} deleteImage={deleteImage} />
 
       {/* Chat Input */}
-      <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-lg flex-shrink-0">
+      <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm flex-shrink-0">
         <span className="h-8 flex-center">
           {getAddFileButton()}
         </span>
@@ -323,7 +323,7 @@ const Chat = () => {
           onChange={(e) => setUserMessage(e.target.value)}
           onPressEnter={(e) => handleSendMessage(e)}
         />
-        <span className="h-8 flex-center">
+        <span className="h-8 flex-center mr-1">
           {getSubmitButton()}
         </span>
       </div>

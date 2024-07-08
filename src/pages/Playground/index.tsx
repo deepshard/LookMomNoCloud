@@ -58,12 +58,12 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   if (Object.keys(downloads).length === 0) {
     return (
-      <div className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] ${className}`} {...props}>
+      <div className={`w-full h-[100vh] flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] ${className}`} {...props}>
         <h1 className="heading-lg mt-[171px]">Welcome to LMNC™ Playground</h1>
         <p className="text-[16px] text-surface-500">Get started by downloading and running a model</p>
         <ModelCarousel models={highlights} className="mt-[60px] w-full flex-center" />
         <div
-          className="flex-center gap-[6px] cursor-pointer bg-white/5 p-[8px] rounded-md mt-[62px]"
+          className="flex-center gap-[6px] cursor-pointer bg-white/5 p-2 pr-3 rounded-md mt-[60px]"
           onClick={() => {
             setShowDiscover(true);
             setShowSearch(true);
@@ -74,14 +74,14 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
           <p className="text-sm text-surface-500">Discover More Models</p>
         </div>
-        <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex mt-auto">
-          <span className="h-8 flex-center">
-            <img src={plusIcon} alt="" className="w-6 h-6" />
-          </span>
-          <Input.TextArea autoSize className="" placeholder="Chat with Llama-3..." />
-          <span className="h-8 flex-center">
-            <img src={sendIcon} alt="" className="w-6 h-6" />
-          </span>
+        <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 gap-1 flex mt-auto">
+          <div className="h-6 w-6 flex-center">
+            <img src={plusIcon} alt="" className="h-6" />
+          </div>
+          <Input.TextArea autoSize className="h-auto p-0" placeholder="Chat with Llama-3..." />
+          <div className="h-6 flex-center">
+            <img src={sendIcon} alt="" className="h-6" />
+          </div>
         </div>
       </div>
     );

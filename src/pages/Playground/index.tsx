@@ -22,14 +22,15 @@ import SettingsIcon from "../../icons/SettingsIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "../../Popup";
 import { TModel } from "../../types/schemas";
 
-type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>
+type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>;
 
 const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [mode, setMode] = useState<"chat" | "completions">("chat");
   const [isDragging, setIsDragging] = useState(false);
-  const {model} = usePlayground();
+  const { model, settings } = usePlayground();
+  const [showModeSelector, setShowModeSelector] = useState(false);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -106,19 +107,30 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
       <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
 
       {/* Configuration */}
-      <div className="flex items-center w-full h-[30px] mb-5">
-        <button className={`mr-2 text-sm text-surface-500 ${mode === "chat" ? "text-white" : ""}`} onClick={() => setMode("chat")}>
-          Chat
-        </button>
-        <button className={`mr-2 text-sm text-surface-500 ${mode === "completions" ? "text-white" : ""}`} onClick={() => setMode("completions")}>
-          Completions
-        </button>
+      <div className="flex self-start mt-5 mb-5 gap-2">
+        <ModelSwitcher myModels={Object.values(downloads)} />
+        <Popover open={showModeSelector} onOpenChange={setShowModeSelector}>
+          <PopoverTrigger>
+            <div className="cursor-pointer !min-w-6 playground-popup p-1.5">{mode}</div>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="playground-popup p-2 mt-1">
+              {["chat", "completions"].map((m) => (
+                <p
+                  onClick={() => {
+                    setMode(m as "chat" | "completions");
+                    setShowModeSelector(false);
+                  }}
+                  className="rounded-[13px] p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10">
+                  {m}
+                </p>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        <ChatSettings />
       </div>
-      <div className="flex self-start mt-5 gap-2">
-          <ModelSwitcher myModels={Object.values(downloads)}/>
-          <ChatSettings />
-        </div>
-      {mode === "chat" ? <Chat /> : <Completion model={model} />}
+      {mode === "chat" ? <Chat /> : <Completion model={model} settings={settings} />}
       {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
           <span className="h-8 flex-center">
             <img src={plusIcon} alt="" className="w-6 h-6" />
@@ -132,45 +144,50 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   );
 };
 
-function ModelSwitcher({myModels}:{myModels: TModel[]}) {
+function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   const { model, setModel } = usePlayground();
   const [showModelSelector, setShowModelSelector] = useState(false);
 
   const runningModels = myModels.filter((model) => model.status === "RUNNING");
-  if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>
+  if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>;
 
   return (
     <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
       <PopoverTrigger>
         <div className="bg-white/5 w-40 h-10 p-2 rounded-[13px] cursor-pointer flex items-center justify-between playground-popup">
-          {model ? <div className="flex items-center gap-2">
-            <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
-            <div>
-              <div>{model.title}</div>
+          {model ? (
+            <div className="flex items-center gap-2">
+              <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
+              <div>
+                <div>{model.title}</div>
+              </div>
             </div>
-          </div> : "Select a model"}
+          ) : (
+            "Select a model"
+          )}
         </div>
       </PopoverTrigger>
       <PopoverContent>
         <div className="playground-popup p-2 mt-1">
           {runningModels.map((model) => (
-            <div key={model.id} className="p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10 rounded-[13px]" onClick={() => { setModel(model); setShowModelSelector(false); }}>
+            <div
+              key={model.id}
+              className="p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10 rounded-[13px]"
+              onClick={() => {
+                setModel(model);
+                setShowModelSelector(false);
+              }}>
               <img src={model.backgroundImage} className="w-16 h-12 rounded-sm" />
               <div className="flex flex-col gap-1 -mt-1">
-                <p className="text-surface-750 title-sm h-3.5 leading-tight">
-                  {model.name}
-                </p>
-                <p className="text-surface-500 text-xs h-3.5 leading-normal">
-                  {`${model.author} • ${formatParams(model.size)}`}
-                </p>
+                <p className="text-surface-750 title-sm h-3.5 leading-tight">{model.name}</p>
+                <p className="text-surface-500 text-xs h-3.5 leading-normal">{`${model.author} • ${formatParams(model.size)}`}</p>
               </div>
             </div>
           ))}
         </div>
       </PopoverContent>
     </Popover>
-
-  )
+  );
 }
 
 function ChatSettings() {
@@ -200,65 +217,43 @@ function ChatSettings() {
                 railHoverBg: "rgba(255, 255, 255, 0.2)",
               },
             },
-          }}
-        >
+          }}>
           <div className="playground-popup  w-64 p-4  mt-1 right-0">
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Temperature:</span> <span className="text-white">{settings.temperature}</span></label>
-              <Slider
-                min={0}
-                max={1}
-                step={0.1}
-                value={settings.temperature}
-                onChange={(value) => setSettings({ ...settings, temperature: value })}
-              />
+              <label className="text-sm flex justify-between">
+                <span className="text-surface-500">Temperature:</span> <span className="text-white">{settings.temperature}</span>
+              </label>
+              <Slider min={0} max={1} step={0.1} value={settings.temperature} onChange={(value) => setSettings({ ...settings, temperature: value })} />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Max Tokens:</span> <span className="text-white">{settings.maxTokens}</span></label>
-              <Slider
-                min={1}
-                max={2048}
-                step={1}
-                value={settings.maxTokens}
-                onChange={(value) => setSettings({ ...settings, maxTokens: value })}
-              />
+              <label className="text-sm flex justify-between">
+                <span className="text-surface-500">Max Tokens:</span> <span className="text-white">{settings.maxTokens}</span>
+              </label>
+              <Slider min={1} max={2048} step={1} value={settings.maxTokens} onChange={(value) => setSettings({ ...settings, maxTokens: value })} />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Top P:</span> <span className="text-white">{settings.topP}</span></label>
-              <Slider
-                min={0}
-                max={1}
-                step={0.1}
-                value={settings.topP}
-                onChange={(value) => setSettings({ ...settings, topP: value })}
-              />
+              <label className="text-sm flex justify-between">
+                <span className="text-surface-500">Top P:</span> <span className="text-white">{settings.topP}</span>
+              </label>
+              <Slider min={0} max={1} step={0.1} value={settings.topP} onChange={(value) => setSettings({ ...settings, topP: value })} />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Frequency Penalty:</span> <span className="text-white">{settings.frequencyPenalty}</span></label>
-              <Slider
-                min={0}
-                max={2}
-                step={0.1}
-                value={settings.frequencyPenalty}
-                onChange={(value) => setSettings({ ...settings, frequencyPenalty: value })}
-              />
+              <label className="text-sm flex justify-between">
+                <span className="text-surface-500">Frequency Penalty:</span> <span className="text-white">{settings.frequencyPenalty}</span>
+              </label>
+              <Slider min={0} max={2} step={0.1} value={settings.frequencyPenalty} onChange={(value) => setSettings({ ...settings, frequencyPenalty: value })} />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Presence Penalty:</span> <span className="text-white">{settings.presencePenalty}</span></label>
-              <Slider
-                min={0}
-                max={2}
-                step={0.1}
-                value={settings.presencePenalty}
-                onChange={(value) => setSettings({ ...settings, presencePenalty: value })}
-              />
+              <label className="text-sm flex justify-between">
+                <span className="text-surface-500">Presence Penalty:</span> <span className="text-white">{settings.presencePenalty}</span>
+              </label>
+              <Slider min={0} max={2} step={0.1} value={settings.presencePenalty} onChange={(value) => setSettings({ ...settings, presencePenalty: value })} />
             </div>
           </div>
         </ConfigProvider>
       </PopoverContent>
     </Popover>
-  )
-
+  );
 }
 
 export default Playground;

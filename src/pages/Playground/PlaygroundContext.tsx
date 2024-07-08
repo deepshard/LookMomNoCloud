@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { TModel } from "../../types/schemas";
 import { ChatMessage, Image, Settings } from "./playgroundTypes";
+import { useAppStore } from "../../store/store";
 
 interface PlaygroundContextProps {
   model: TModel | null;
@@ -33,6 +34,7 @@ const PlaygroundContext = createContext<PlaygroundContextProps>({
 });
 
 export const PlaygroundProvider = ({ children }) => {
+  const {downloads} = useAppStore();
   const [model, setModel] = useState<TModel | null>(null);
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
@@ -45,6 +47,16 @@ export const PlaygroundProvider = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");
   const [images, setImages] = useState<Image[]>([]);
+
+  useEffect(() => {
+    console.log('settings', settings)
+  }, [settings]);
+
+  useEffect(() => {
+    if (Object.keys(downloads).length > 0) {
+      setModel(downloads[Object.keys(downloads)[0]]);
+    }
+  }, [downloads]);
 
   return (
     <PlaygroundContext.Provider

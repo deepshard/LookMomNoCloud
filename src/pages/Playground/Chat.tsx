@@ -77,6 +77,9 @@ const Chat = () => {
 
   const sendMessageToAssistant = async (messageSet: ChatMessage[]) => {
     try {
+      if(!model) {
+        return;
+      }
       const response = await fetch(`http://localhost:${model.port}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -127,10 +127,10 @@ const Chat = () => {
         try {
           const data = JSON.parse(chunk);
 
-          // if (data.choices[0].delta.content === "<|endoftext|>") {
-          //   await reader.cancel();
-          //   break;
-          // }
+          if (data.choices[0].delta.content === "<|endoftext|>") {
+            await reader.cancel();
+            break;
+          }
 
           updateAssistantMessage(data);
         } catch (error) {

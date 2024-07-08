@@ -117,6 +117,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             <div className="playground-popup p-2 mt-1">
               {["chat", "completions"].map((m) => (
                 <p
+                  key={m}
                   onClick={() => {
                     setMode(m as "chat" | "completions");
                     setShowModeSelector(false);

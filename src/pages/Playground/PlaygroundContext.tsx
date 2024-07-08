@@ -12,8 +12,6 @@ interface PlaygroundContextProps {
   setSystemMessage: (message: string) => void;
   messages: ChatMessage[];
   setMessages: (messages: ChatMessage[]) => void;
-  userMessage: string;
-  setUserMessage: (message: string) => void;
   images: Image[];
   setImages: (images: Image[]) => void;
 }
@@ -27,8 +25,6 @@ const PlaygroundContext = createContext<PlaygroundContextProps>({
   setSystemMessage: () => { },
   messages: [],
   setMessages: () => { },
-  userMessage: "",
-  setUserMessage: () => { },
   images: [],
   setImages: () => { },
 });
@@ -45,12 +41,7 @@ export const PlaygroundProvider = ({ children }) => {
   });
   const [systemMessage, setSystemMessage] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [userMessage, setUserMessage] = useState<string>("");
   const [images, setImages] = useState<Image[]>([]);
-
-  useEffect(() => {
-    console.log('settings', settings)
-  }, [settings]);
 
   useEffect(() => {
     if (Object.keys(downloads).length > 0) {
@@ -69,8 +60,6 @@ export const PlaygroundProvider = ({ children }) => {
         setSystemMessage,
         messages,
         setMessages,
-        userMessage,
-        setUserMessage,
         images,
         setImages,
       }}

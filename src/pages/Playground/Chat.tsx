@@ -19,7 +19,7 @@ import "./Playground.css";
 const { TextArea } = Input;
 
 const Chat = () => {
-  const { model, settings, systemMessage, messages, setMessages, images, setImages } = usePlayground();
+  const { model, settings, systemMessage, setSystemMessage, messages, setMessages, images, setImages } = usePlayground();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -235,7 +235,7 @@ const Chat = () => {
       return <img src={installIcon} alt="generating" className="animate-spin" />;
     }
 
-    return <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => onFinish(userMessage)} />;
+    return <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => onFinish(form.getFieldsValue())} />;
   };
 
   const getMessageContent = (message: ChatMessage) => {
@@ -273,6 +273,16 @@ const Chat = () => {
           </div>
         </div>
       )}
+
+      {/* System Prompt */}
+      <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
+        <p className="text-surface-750 text-[16px] mb-1">System</p>
+        <Input
+          className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
+          placeholder="Enter system instructions..."
+          value={systemMessage} onChange={(e) => setSystemMessage(e.target.value)}
+        />
+      </div>
 
       {/* Messages */}
       <div ref={messagesContainerRef} className="flex flex-col items-start pb-5 w-full h-[68%] overflow-auto ">

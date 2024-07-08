@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Input } from "antd";
+import { Form, Input } from "antd";
 import Tooltip from "../../component/common/Tooltip";
 import Dock from "./Dock";
 import { Image, ChatMessage } from "./playgroundTypes";
@@ -19,19 +19,21 @@ import "./Playground.css";
 const { TextArea } = Input;
 
 const Chat = () => {
-  const { model, settings, systemMessage, messages, setMessages, userMessage, setUserMessage, images, setImages } = usePlayground();
+  const { model, settings, systemMessage, setSystemMessage, messages, setMessages, images, setImages } = usePlayground();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [form] = Form.useForm();
+
   useEffect(() => {
     if (messagesContainerRef.current) {
       const { scrollHeight, clientHeight } = messagesContainerRef.current;
       messagesContainerRef.current.scrollTop = scrollHeight - clientHeight;
     }
-  }, [messages, userMessage, images]);
+  }, [messages, images]);
 
   const addImage = (e: any) => {
     const file = e.target.files[0];
@@ -53,13 +55,6 @@ const Chat = () => {
   const deleteImage = (id: string) => {
     setImages(images.filter((image) => image.id !== id));
   };
-
-  const handleSubmit = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSendMessage(event);
-    }
-  }
 
   const createNewUserMessage = (message: string, images: Image[]): ChatMessage => {
     if (images.length == 0) {
@@ -179,21 +174,19 @@ const Chat = () => {
     }
   };
 
-  const handleSendMessage = async (e: any) => {
-    e.preventDefault();
-
-    if (loading) return;
+  const onFinish = async (values: any) => {
+    if(loading) return;
 
     if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");
       return;
     }
 
-    const message = userMessage.trim();
+    const message = values?.userMessage?.trim() || null;
     if (!message) return;
 
     setLoading(true);
-    setUserMessage("");
+    form.setFieldValue("userMessage", "");
 
     const newMessage: ChatMessage = createNewUserMessage(message, images);
     if (images.length > 0) setImages([]);
@@ -207,6 +200,13 @@ const Chat = () => {
       setError("Failed to send message to assistant");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form.submit();
     }
   };
 
@@ -280,7 +280,7 @@ const Chat = () => {
       return <img src={installIcon} alt="generating" className="animate-spin" />;
     }
 
-    return <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => handleSendMessage(userMessage)} />;
+    return <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => onFinish(form.getFieldsValue())} />;
   };
 
   const getMessageContent = (message: ChatMessage) => {
@@ -292,7 +292,7 @@ const Chat = () => {
       return (
         <div className={containerClasses}>
           <div className={messageClasses}>
-            <p className="text-surface-750 text-[16px]">{message.content}</p>
+            <p className="text-surface-750 text-[16px] break-words">{message.content}</p>
           </div>
         </div>
       );
@@ -309,7 +309,7 @@ const Chat = () => {
   };
 
   return (
-    <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className="w-full h-full">
+    <Form form={form} onFinish={onFinish} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className="w-full h-full">
       {isDragging && (
         <div className="drag-over-container">
           <div className="drag-over-dash">
@@ -318,6 +318,16 @@ const Chat = () => {
           </div>
         </div>
       )}
+
+      {/* System Prompt */}
+      <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
+        <p className="text-surface-750 text-[16px] mb-1">System</p>
+        <Input
+          className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
+          placeholder="Enter system instructions..."
+          value={systemMessage} onChange={(e) => setSystemMessage(e.target.value)}
+        />
+      </div>
 
       {/* Messages */}
       <div ref={messagesContainerRef} className="flex flex-col items-start pb-5 w-full h-[68%] overflow-auto ">
@@ -330,23 +340,24 @@ const Chat = () => {
 
       {/* Chat Input */}
       <div className="absolute bottom-[16px] left-0 right-0 w-full px-[145px]">
+        {/* File Display */}
+        <Dock images={images} deleteImage={deleteImage} />
         <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm ">
           <span className="h-8 flex-center">{getAddFileButton()}</span>
-          <TextArea
-            autoFocus
-            autoSize={{ minRows: 1, maxRows: 5 }}
-            className="playground-chat-box max-h-[100px] align-middle"
-            placeholder={`Chat with ${model?.name}`}
-            value={userMessage}
-            onChange={(e) => setUserMessage(e.target.value)}
-            onKeyDown={(e) => handleSubmit(e)}
-          />
+          <Form.Item name="userMessage" noStyle>
+            <TextArea
+              autoFocus
+              autoSize={{ minRows: 1, maxRows: 5 }}
+              className="playground-chat-box max-h-[100px] align-middle"
+              placeholder={`Chat with ${model?.name}`}
+              value={form.getFieldValue("userMessage")}
+              onKeyDown={handleSubmit}
+            />
+          </Form.Item>
           <span className="h-8 flex-center mr-1">{getSubmitButton()}</span>
         </div>
       </div>
-      {/* File Display */}
-      {/* <Dock images={images} deleteImage={deleteImage} /> */}
-    </div>
+    </Form>
   );
 };
 

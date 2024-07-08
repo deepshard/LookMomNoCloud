@@ -53,7 +53,6 @@ const Completion = ({ model, settings }: CompletionProps) => {
 
   useEffect(() => {
     setTimeout(() => {
-      console.log("textIndex");
       if (textAreaRef.current) {
         textAreaRef.current.focus();
         textAreaRef.current.setSelectionRange(textIndex.endIndex + 1, form.getFieldValue("prompt").length);

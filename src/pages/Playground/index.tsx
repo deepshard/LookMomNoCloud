@@ -26,28 +26,8 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [mode, setMode] = useState<"chat" | "completions">("chat");
-  // const [isDragging, setIsDragging] = useState(true);
   const { model, settings } = usePlayground();
   const [showModeSelector, setShowModeSelector] = useState(false);
-
-  // const handleDragOver = (e) => {
-  //   e.preventDefault();
-
-  //   setIsDragging(true);
-  // };
-
-  // const handleDragLeave = () => {
-  //   setIsDragging(false);
-  // };
-
-  // const handleDrop = (e) => {
-  //   e.preventDefault();
-
-  //   setIsDragging(false);
-  //   // Handle file upload here
-  //   const files = e.dataTransfer.files;
-  //   console.log(files[0]);
-  // };
 
   if (Object.keys(downloads).length === 0) {
     return (
@@ -82,19 +62,8 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   return (
     <div
-    // onDragOver={handleDragOver}
-    // onDragLeave={handleDragLeave}
-    // onDrop={handleDrop}
       className={`playground overflow-hidden relative ${className}`}
       {...props}>
-      {/* {isDragging && (
-        <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
-          <div className="drag-over-dash">
-            <img src={dragOverIcon} alt="" />
-            <p>Release your files</p>
-          </div>
-        </div>
-      )} */}
       {/* Header */}
       <div className="flex items-center mb-[11px] w-full h-[16px]">
         <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
@@ -115,6 +84,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             <div className="playground-popup p-2 mt-1">
               {["chat", "completions"].map((m) => (
                 <p
+                  key={m}
                   onClick={() => {
                     setMode(m as "chat" | "completions");
                     setShowModeSelector(false);
@@ -129,15 +99,6 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
         <ChatSettings model={model} />
       </div>
       {mode === "chat" ? <Chat /> : <Completion model={model} settings={settings} />}
-      {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
-          <span className="h-8 flex-center">
-            <img src={plusIcon} alt="" className="w-6 h-6" />
-          </span>
-          <Input.TextArea autoSize className="" placeholder="Chat with Llama-3..." />
-          <span className="h-8 flex-center">
-            <img src={sendIcon} alt="" className="w-6 h-6" />
-          </span>
-        </div> */}
     </div>
   );
 };

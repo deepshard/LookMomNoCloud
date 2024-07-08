@@ -38,6 +38,7 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   useEffect(() => {
     if (searchQuery) {
       setSearch(searchQuery);
+      setSearchQuery("");
     }
 
     const debouncer = debounce((value: string) => {

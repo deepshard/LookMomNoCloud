@@ -3,8 +3,8 @@ import { TModel } from "../../types/schemas";
 import { ChatMessage, Image, Settings } from "./playgroundTypes";
 
 interface PlaygroundContextProps {
-  model: TModel;
-  setModel: (model: TModel) => void;
+  model: TModel | null;
+  setModel: (model: TModel | null) => void;
   settings: Settings;
   setSettings: (settings: Settings) => void;
   systemMessage: string;
@@ -18,47 +18,22 @@ interface PlaygroundContextProps {
 }
 
 const PlaygroundContext = createContext<PlaygroundContextProps>({
-  model: {} as TModel,
-  setModel: () => {},
+  model: null,
+  setModel: () => { },
   settings: {} as Settings,
-  setSettings: () => {},
+  setSettings: () => { },
   systemMessage: "",
-  setSystemMessage: () => {},
+  setSystemMessage: () => { },
   messages: [],
-  setMessages: () => {},
+  setMessages: () => { },
   userMessage: "",
-  setUserMessage: () => {},
+  setUserMessage: () => { },
   images: [],
-  setImages: () => {},
+  setImages: () => { },
 });
 
 export const PlaygroundProvider = ({ children }) => {
-  const [model, setModel] = useState<TModel>({
-    id: "1",
-    name: "Test Model",
-    title: "Test Model",
-    size: 0,
-    author: "Test Author",
-    downloads: 0,
-    likes: 0,
-    intro: "Test Intro",
-    capabilities: "Test Capabilities",
-    risks: "Test Risks",
-    hfLink: "https://huggingface.co",
-    evalId: "1",
-    createdAt: "2021-10-01",
-    modifiedAt: "2021-10-01",
-    status: "ACKNOWLEDGED",
-    backgroundImage: "",
-    lowresBackgroundImage: "",
-    port: 8900,
-    instance: 1,
-    progress: 0,
-    description: "Test Description",
-    params: 0,
-    error: "",
-    multimodal: true
-  });
+  const [model, setModel] = useState<TModel | null>(null);
   const [settings, setSettings] = useState<Settings>({
     temperature: 1,
     maxTokens: 100,

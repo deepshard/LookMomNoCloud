@@ -104,11 +104,11 @@ const Chat = () => {
       while (reader) {
         const { value, done } = await reader.read();
         if (done) break;
-    
+
         const chunk = decoder.decode(value).substring(6).trim();
         // Check if the message is done, sometimes the message is not wrapped in JSON or flagged as done
         if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) break;
-    
+
         try {
           const data = JSON.parse(chunk);
           updateAssistantMessage(data);
@@ -124,7 +124,7 @@ const Chat = () => {
   const handleSendMessage = async (e: any) => {
     e.preventDefault();
 
-    if (!model.multimodal && images.length > 0) {
+    if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");
       return;
     }
@@ -185,7 +185,7 @@ const Chat = () => {
   }
 
   const getAddFileButton = () => {
-    if (model.multimodal) {
+    if (model?.multimodal) {
       return (
         <div>
           <input
@@ -216,7 +216,7 @@ const Chat = () => {
         placement="top"
         color="transparent"
         title={getWarningContent("This model does not support multimodal inputs")}
-        
+
       >
         <Add height={12} width={12} className="mr-1 fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" />
       </Tooltip>
@@ -236,7 +236,7 @@ const Chat = () => {
           placement="top"
           color="transparent"
           title={getErrorContent(error)}
-          
+
         >
           <img src={errorIcon} alt="errorIcon" className="h-[17px] w-[17px]" />
         </Tooltip>
@@ -260,10 +260,9 @@ const Chat = () => {
   }
 
   const getMessageContent = (message: ChatMessage) => {
-      const isUser = message.role === "user";
-      const containerClasses = `flex items-center w-full ${isUser ? "justify-end" : "justify-start"}`;
-      const messageClasses = `flex items-start gap-2 p-2 max-w-[300px] bg-white/5 mb-4 break-words ${
-        isUser ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"
+    const isUser = message.role === "user";
+    const containerClasses = `flex items-center w-full ${isUser ? "justify-end" : "justify-start"}`;
+    const messageClasses = `flex items-start gap-2 p-2 max-w-[300px] bg-white/5 mb-4 break-words ${isUser ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"
       }`;
 
     if (typeof message.content === 'string') {
@@ -291,14 +290,14 @@ const Chat = () => {
   return (
     <div className="flex flex-col justify-between w-full h-[573px]">
       {/* System Prompt */}
-      <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
+      {/* <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
         <p className="text-surface-750 text-[16px] mb-1">System</p>
         <Input
           className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
           placeholder="Enter system instructions..."
           value={systemMessage} onChange={(e) => setSystemMessage(e.target.value)}
         />
-      </div>
+      </div> */}
 
       {/* Messages */}
       <div ref={messagesContainerRef} className="flex flex-col items-start pb-5 w-full max-h-[307px] flex-grow overflow-y-auto">
@@ -313,19 +312,19 @@ const Chat = () => {
       <Dock images={images} deleteImage={deleteImage} />
 
       {/* Chat Input */}
-      <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-lg flex-shrink-0">
+      <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm flex-shrink-0">
         <span className="h-8 flex-center">
           {getAddFileButton()}
         </span>
         <TextArea
           autoSize={{ minRows: 1, maxRows: 5 }}
           className="playground-chat-box max-h-[100px] align-middle"
-          placeholder={`Chat with ${model.name}`}
+          placeholder={`Chat with ${model?.name}`}
           value={userMessage}
           onChange={(e) => setUserMessage(e.target.value)}
           onPressEnter={(e) => handleSendMessage(e)}
         />
-        <span className="h-8 flex-center">
+        <span className="h-8 flex-center mr-1">
           {getSubmitButton()}
         </span>
       </div>

@@ -7,15 +7,20 @@ import Analytics from "../types/Analytics";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { TruffleUpdateInfo } from "../ota";
+import { useInView } from "react-intersection-observer";
 
 interface AppWrapperContextType {
   isLoadingMyModels: boolean;
-  playgroundRef: React.RefObject<HTMLDivElement> | null;
+  playgroundRef: any;
+  playgroundInView: boolean;
+  playgroungTarget?: Element ;
 }
 
 const AppWrapperContext = createContext<AppWrapperContextType>({
   isLoadingMyModels: false,
   playgroundRef: null,
+  playgroundInView: false,
+  playgroungTarget: undefined,
 });
 
 Analytics.init("a45767d32d620a6ba48640ccec2bf2f3");
@@ -25,7 +30,10 @@ const AppWrapperProvider = ({ children }) => {
   const { data: highlights } = useGetHighlights();
   const { addUpdateInfo, addSysInfo, setDownloads, setHighlights } = useAppStore();
   const navigate = useNavigate();
-  const playgroundRef = useRef<HTMLDivElement>(null);
+  // const playgroundRef = useRef<HTMLDivElement>(null);
+  const {ref, inView, entry} = useInView({
+    threshold: 0.95,
+  })
 
   useEffect(() => {
     let deviceId = localStorage.getItem("deviceId");
@@ -77,7 +85,18 @@ const AppWrapperProvider = ({ children }) => {
       setHighlights(highlights);
     }
   }, [highlights]);
-  return <AppWrapperContext.Provider value={{ isLoadingMyModels, playgroundRef }}>{children}</AppWrapperContext.Provider>;
+
+  useEffect(() => {
+    if (inView) {
+      const playground = entry?.target.getElementsByClassName("playground")[0];
+      if (playground) {
+        // @ts-ignore
+        playground.style.position = "relative";
+      }
+
+    }
+  }, [inView]);
+  return <AppWrapperContext.Provider value={{ isLoadingMyModels, playgroundRef: ref, playgroungTarget: entry?.target, playgroundInView: inView }}>{children}</AppWrapperContext.Provider>;
 };
 
 export const useAppWrapper = () => {

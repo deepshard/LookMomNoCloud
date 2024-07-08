@@ -62,7 +62,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   return (
     <div
-      className={`playground overflow-hidden relative ${className}`}
+      className={`playground overflow-hidden  ${className}`}
       {...props}>
       {/* Header */}
       <div className="flex items-center mb-[11px] w-full h-[16px]">

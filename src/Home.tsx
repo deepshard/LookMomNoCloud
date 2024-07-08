@@ -32,7 +32,7 @@ export default function Home() {
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
   const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
   const navigate = useNavigate();
-  const { playgroundRef } = useAppWrapper();
+  const { playgroundRef, playgroungTarget } = useAppWrapper();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -137,8 +137,8 @@ export default function Home() {
             </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
-        {playgroundRef && playgroundRef.current && (
-          <Button onClick={() => playgroundRef?.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })} className="absolute bottom-3 left-3 rounded-full p-2">
+        {playgroungTarget && (
+          <Button onClick={() => playgroungTarget?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })} className="absolute bottom-3 left-3 rounded-full p-2">
             <img src={chatIcon} alt="" className="w-[18px] h-[18px]" />
           </Button>
         )}

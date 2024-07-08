@@ -129,8 +129,9 @@ const Chat = () => {
   };
 
   const onFinish = async (values: any) => {
+    if(loading) return;
     values.userMessage = values?.userMessage?.trim();
-    // e.preventDefault();
+
 
     if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");

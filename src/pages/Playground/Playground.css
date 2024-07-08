@@ -71,8 +71,27 @@ textarea::placeholder {
 }
 
 @layer utilities {
+  .drag-over-container{
+    @apply w-full h-full absolute top-0 left-0 backdrop-blur-[50px] flex flex-col-reverse;
+  }
+
   .drag-over-dash {
     @apply w-full h-[95%] flex justify-center items-center flex-col;
+  }
+
+  .playground {
+    @apply w-full h-full flex items-center flex-col px-[145px] pb-[17px] pt-[100px];
+  }
+
+  .playground::before {
+    content: '';
+    z-index: -1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(50px);
   }
 }
 

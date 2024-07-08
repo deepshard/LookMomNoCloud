@@ -49,6 +49,13 @@ const Chat = () => {
     setImages(images.filter((image) => image.id !== id));
   }
 
+  const handleSubmit = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage(event);
+    }
+  }
+
   const createNewUserMessage = (message: string, images: Image[]): ChatMessage => {
     if (images.length == 0) {
       return { "role": "user", "content": message };
@@ -344,7 +351,7 @@ const Chat = () => {
           disabled={loading}
           value={userMessage}
           onChange={(e) => setUserMessage(e.target.value)}
-          onPressEnter={(e) => handleSendMessage(e)}
+          onKeyDown={handleSubmit}
         />
         <span className="h-8 flex-center mr-1">
           {getSubmitButton()}

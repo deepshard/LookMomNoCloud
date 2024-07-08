@@ -160,9 +160,9 @@ function ModelSwitcher() {
   return (
     <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
       <PopoverTrigger>
-        <div className="bg-white/5 w-40 h-10 p-2 rounded-[13px] cursor-pointer flex items-center justify-between playground-popup">
-          {model ? <div className="flex items-center gap-2">
-            <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
+        <div className="bg-white/5 h-10 p-1.5 pr-2.5 cursor-pointer flex items-center justify-between playground-popup">
+          {model ? <div className="flex items-center gap-1">
+            <img src={model.backgroundImage} className="w-[18px] h-[18px] rounded-full" />
             <div>
               <div>{model.title}</div>
             </div>
@@ -172,8 +172,8 @@ function ModelSwitcher() {
       <PopoverContent>
         <div className="playground-popup p-2 mt-1">
           {runningModels.map((model) => (
-            <div key={model.id} className="p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10 rounded-[13px]" onClick={() => { setModel(model); setShowModelSelector(false); }}>
-              <img src={model.backgroundImage} className="w-16 h-12 rounded-sm" />
+            <div key={model.id} className="p-1 cursor-pointer flex items-center gap-2 hover:bg-white/5 rounded-xs" onClick={() => { setModel(model); setShowModelSelector(false); }}>
+              <img src={model.backgroundImage} className="w-13 h-9 rounded-[5px]" />
               <div className="flex flex-col gap-1 -mt-1">
                 <p className="text-surface-750 title-sm h-3.5 leading-tight">
                   {model.name}
@@ -198,8 +198,8 @@ function ChatSettings() {
   return (
     <Popover open={showSettings} onOpenChange={setShowSettings}>
       <PopoverTrigger>
-        <div className="bg-white/5 w-10 h-10 rounded-full cursor-pointer playground-popup flex items-center">
-          <SettingsIcon height={18} width={18} className="mx-auto" />
+        <div className="bg-white/5 w-[30px] h-[30px] rounded-full cursor-pointer playground-popup flex items-center">
+          <SettingsIcon height={10} width={14} className="mx-auto" />
         </div>
       </PopoverTrigger>
       <PopoverContent>
@@ -222,7 +222,7 @@ function ChatSettings() {
         >
           <div className="playground-popup  w-64 p-4  mt-1 right-0">
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Temperature:</span> <span className="text-white">{settings.temperature}</span></label>
+              <label className="text-sm flex justify-between"><span className="text-surface-500">Creativity Level</span> <span className="text-white">{settings.temperature}</span></label>
               <Slider
                 min={0}
                 max={1}
@@ -232,7 +232,7 @@ function ChatSettings() {
               />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Max Tokens:</span> <span className="text-white">{settings.maxTokens}</span></label>
+              <label className="text-sm flex justify-between"><span className="text-surface-500">Response Length</span> <span className="text-white">{settings.maxTokens}</span></label>
               <Slider
                 min={1}
                 max={2048}
@@ -242,7 +242,7 @@ function ChatSettings() {
               />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Top P:</span> <span className="text-white">{settings.topP}</span></label>
+              <label className="text-sm flex justify-between"><span className="text-surface-500">Diversity Level</span> <span className="text-white">{settings.topP}</span></label>
               <Slider
                 min={0}
                 max={1}
@@ -252,7 +252,7 @@ function ChatSettings() {
               />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Frequency Penalty:</span> <span className="text-white">{settings.frequencyPenalty}</span></label>
+              <label className="text-sm flex justify-between"><span className="text-surface-500">Repetition Control</span> <span className="text-white">{settings.frequencyPenalty}</span></label>
               <Slider
                 min={0}
                 max={2}
@@ -262,7 +262,7 @@ function ChatSettings() {
               />
             </div>
             <div className="mb-4">
-              <label className="text-sm flex justify-between"><span className="text-surface-500">Presence Penalty:</span> <span className="text-white">{settings.presencePenalty}</span></label>
+              <label className="text-sm flex justify-between"><span className="text-surface-500">Variety Boost</span> <span className="text-white">{settings.presencePenalty}</span></label>
               <Slider
                 min={0}
                 max={2}

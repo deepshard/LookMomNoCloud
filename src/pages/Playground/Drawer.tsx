@@ -7,6 +7,7 @@ const Drawer = ({
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
     <DrawerPrimitive.Root
         shouldScaleBackground={shouldScaleBackground}
+        setBackgroundColorOnScale={false}
         {...props}
     />
 )
@@ -24,7 +25,7 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <DrawerPrimitive.Overlay
         ref={ref}
-        className={`fixed inset-0 z-40 bg-black/10 ${className}`}
+        className={`fixed inset-0 z-40 ${className}`}
         {...props}
     />
 ))

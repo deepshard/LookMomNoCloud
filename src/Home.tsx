@@ -156,7 +156,6 @@ export default function Home() {
             </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
-        {/* {(playgroundRef && playgroundRef.current) && <button onClick={() => playgroundRef?.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })} className="absolute bottom-3 left-3">go to Playground</button>} */}
         <Drawer>
           <DrawerTrigger className="outline-none">Go to playground</DrawerTrigger>
           <DrawerContent className="h-[100vh]">

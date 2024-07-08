@@ -110,10 +110,28 @@ const Chat = () => {
 
         const chunk = decoder.decode(value).substring(6).trim();
         // Check if the message is done, sometimes the message is not wrapped in JSON or flagged as done
-        if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) break;
+        if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) {
+          // Strip the [DONE] flag from the message
+          let cleanedChunk = chunk.replace("data: ", "").replace("[DONE]", "");
+          let data = JSON.parse(cleanedChunk);
+
+          // Check if there is anything to append to the last message
+          if (data.choices[0].delta.content) {
+            updateAssistantMessage(data);
+          }
+
+          await reader.cancel();
+          break
+        }
 
         try {
           const data = JSON.parse(chunk);
+
+          // if (data.choices[0].delta.content === "<|endoftext|>") {
+          //   await reader.cancel();
+          //   break;
+          // }
+
           updateAssistantMessage(data);
         } catch (error) {
           console.error("Error parsing chunk:", error);
@@ -323,6 +341,7 @@ const Chat = () => {
           autoSize={{ minRows: 1, maxRows: 5 }}
           className="playground-chat-box max-h-[100px] align-middle"
           placeholder={`Chat with ${model?.name}`}
+          disabled={loading}
           value={userMessage}
           onChange={(e) => setUserMessage(e.target.value)}
           onPressEnter={(e) => handleSendMessage(e)}

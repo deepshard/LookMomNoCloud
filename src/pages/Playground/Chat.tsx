@@ -309,7 +309,7 @@ const Chat = () => {
             placeholder={`Chat with ${model?.name}`}
             value={userMessage}
             onChange={(e) => setUserMessage(e.target.value)}
-            onPressEnter={(e) => handleSendMessage(e)}
+            onKeyDown={(e) => handleSubmit(e)}
           />
           <span className="h-8 flex-center mr-1">{getSubmitButton()}</span>
         </div>

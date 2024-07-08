@@ -11,27 +11,33 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
+      S3_BUCKET: ${{ github.ref_name == 'main' && 's3://truffle-binaries' || 's3://truffle-binaries-dev' }}
+
     strategy:
       fail-fast: false
       matrix:
-        os: [
-            macos-latest, 
-            ubuntu-cuda12.1-x86_64-1x-4090,
-        ]
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.zip
-          - os: ubuntu-cuda12.1-x86_64-1x-4090
+          - os: ubuntu-1x-4090
             filename: linux-cuda-x64.zip
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
 
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: truffle
           python-version: "3.10"
           channels: conda-forge,spyder-ide
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - run: |
           source $CONDA/etc/profile.d/conda.sh
@@ -44,7 +50,7 @@ jobs:
           pip install --pre -U -f https://mlc.ai/wheels mlc-ai-nightly
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
-          elif [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+          elif [ "${{ matrix.os }}" == "ubuntu-1x-4090" ]; then
             pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
           fi
           pip install -r python/requirements.txt
@@ -56,20 +62,21 @@ jobs:
           SITE_PACKAGES=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
           echo "SITE_PACKAGES: $SITE_PACKAGES"
           patch -d $SITE_PACKAGES/mlc_llm -p1 < truffle.patch --verbose
-          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-1x-4090" ]; then
             sed -i '/cmd = \["nvcc"\]/c\    cuda_path = find_cuda_path(); print("---- CUDA PATH:", cuda_path); cmd = [os.path.join(cuda_path, "bin", "nvcc")]' $SITE_PACKAGES/tvm/contrib/nvcc.py
           fi
-
+      
       - name: Import certificate to keychain
         if: matrix.os == 'macos-latest'
         run: |
           echo "${{ secrets.APPLE_CODESIGN_CERT }}" | base64 --decode > certificate.p12
-          security create-keychain -p temporary build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p temporary build.keychain
-          security import certificate.p12 -k build.keychain -P runescape -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k temporary build.keychain
-          security list-keychains -d user -s build.keychain
+          security delete-keychain ci.keychain || true
+          security create-keychain -p runescape ci.keychain
+          security default-keychain -s ci.keychain
+          security unlock-keychain -p runescape ci.keychain
+          security import certificate.p12 -k ci.keychain -P runescape -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k runescape ci.keychain
+          security list-keychains -d user -s ci.keychain
           security find-identity -v -p codesigning
 
       - name: Build server executable
@@ -96,7 +103,7 @@ jobs:
         run: |
           cp -r python/alembic python/dist/server/alembic
           echo ${{ github.sha }} > python/dist/server/version.txt
-          if [ "${{ matrix.os }}" == "ubuntu-cuda12.1-x86_64-1x-4090" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-1x-4090" ]; then
             cp -rL /usr/local/cuda python/dist/server/_internal/cuda
           fi
 
@@ -117,26 +124,14 @@ jobs:
           cd python/dist
           zip -ry ${{ matrix.filename }} server
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
       - name: Upload to S3
         run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries/${{ github.sha }}/
-          else
-            aws s3 cp python/dist/${{ matrix.filename }} s3://truffle-binaries-dev/${{ github.sha }}/
-          fi
+          aws s3 cp python/dist/${{ matrix.filename }} ${{ env.S3_BUCKET }}/${{ github.sha }}/
 
       - name: Notarize the binary from apple
+        if: matrix.os == 'macos-latest'
         run: |
-          if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            xcrun notarytool submit python/dist/${{ matrix.filename }} --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV
-          fi
+          xcrun notarytool submit python/dist/${{ matrix.filename }} --apple-id accounts@deepshard.org --password rhbl-cubs-tult-hrwy --team-id 4SDV2299VV --wait --timeout 15m
 
       - name: Cleanup
         run: killall server || true
@@ -148,13 +143,15 @@ jobs:
           status: ${{ job.status }}
           text: |
             Server executable release ${{ job.status == 'success' && 'succeeded! :rocket:' || 'failed! :x:' }}
-            New Version: `${{ github.sha }}` | `${{ matrix.os }}` | `${{ github.ref_name }}`
-          fields: repo,message,commit,author,action,eventName,ref,workflow
+            Version: `${{ github.sha }}` | `${{ matrix.os }}` | `${{ github.ref_name }}`
+          fields: message,commit,author,action,eventName,ref
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_ALERT_WEBHOOK_URL }}
   
   update-latest:
     needs: release
+    env:
+      S3_BUCKET: ${{ github.ref_name == 'main' && 's3://truffle-binaries' || 's3://truffle-binaries-dev' }}
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -166,8 +163,4 @@ jobs:
 
       - name: Update latest metadata
         run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "${{ github.sha }}" | aws s3 cp - s3://truffle-binaries/latest.txt
-          else
-            echo "${{ github.sha }}" | aws s3 cp - s3://truffle-binaries-dev/latest.txt
-          fi
+          echo "${{ github.sha }}" | aws s3 cp - ${{ env.S3_BUCKET }}/latest.txt

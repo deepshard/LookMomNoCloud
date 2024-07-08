@@ -63,7 +63,7 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
 
   return (
     <div className="w-full h-full flex flex-col items-center">
-      <div className="w-full h-full mt-32 max-w-[660px] flex flex-col justify-start items-center">
+      <div className="w-full h-full mt-32 max-w-[740px] flex flex-col justify-start items-center">
         <SearchInput
           search={search}
           setSearch={setSearch}

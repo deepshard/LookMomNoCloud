@@ -28,28 +28,28 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [mode, setMode] = useState<"chat" | "completions">("chat");
-  const [isDragging, setIsDragging] = useState(false);
+  // const [isDragging, setIsDragging] = useState(true);
   const { model, settings } = usePlayground();
   const [showModeSelector, setShowModeSelector] = useState(false);
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  // const handleDragOver = (e) => {
+  //   e.preventDefault();
 
-    setIsDragging(true);
-  };
+  //   setIsDragging(true);
+  // };
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
+  // const handleDragLeave = () => {
+  //   setIsDragging(false);
+  // };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
+  // const handleDrop = (e) => {
+  //   e.preventDefault();
 
-    setIsDragging(false);
-    // Handle file upload here
-    const files = e.dataTransfer.files;
-    console.log(files[0]);
-  };
+  //   setIsDragging(false);
+  //   // Handle file upload here
+  //   const files = e.dataTransfer.files;
+  //   console.log(files[0]);
+  // };
 
   if (Object.keys(downloads).length === 0) {
     return (
@@ -84,19 +84,19 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   return (
     <div
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      className={`w-full h-full flex items-center flex-col backdrop-blur-[50px] px-[145px] pb-[17px] pt-[100px] ${className}`}
+    // onDragOver={handleDragOver}
+    // onDragLeave={handleDragLeave}
+    // onDrop={handleDrop}
+      className={`playground overflow-hidden relative ${className}`}
       {...props}>
-      {isDragging && (
+      {/* {isDragging && (
         <div className="w-full h-full absolute flex flex-col-reverse backdrop-blur-[50px]">
           <div className="drag-over-dash">
             <img src={dragOverIcon} alt="" />
             <p>Release your files</p>
           </div>
         </div>
-      )}
+      )} */}
       {/* Header */}
       <div className="flex items-center mb-[11px] w-full h-[16px]">
         <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />

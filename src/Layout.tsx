@@ -9,11 +9,11 @@ import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 const Layout = () => {
   const homeRef = useRef<HTMLDivElement>(null);
   const { playgroundRef } = useAppWrapper();
-  useLayoutEffect(() => {
-    if (homeRef.current && homeRef.current) {
-      homeRef.current.scrollIntoView();
-    }
-  }, []);
+  // useLayoutEffect(() => {
+  //   if (homeRef.current && homeRef.current) {
+  //     homeRef.current.scrollIntoView();
+  //   }
+  // }, []);
   return (
     <HomePageProvider>
       <section ref={playgroundRef} className="w-full h-full snap-start">

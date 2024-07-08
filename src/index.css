@@ -86,9 +86,10 @@ body::before {
 
 
 .clear-dotted-bg {
-  @apply absolute w-full h-full opacity-15;
+  @apply absolute top-0 left-0 w-full h-full opacity-15 overflow-hidden;
   background: url("../src/assets/images/clear-dotted-bg.png");
   background-size: cover;
+  background-repeat: repeat;
 }
 
 :root {

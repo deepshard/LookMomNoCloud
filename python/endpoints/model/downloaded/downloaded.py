@@ -87,14 +87,18 @@ async def get_model_details(model):
         model_data = await response.json()
 
         multimodal = False
+        contextLength = 0
         model_config_path = get_app_data_path() / "models" / model["id"] / "base" / "config.json"
         with open(model_config_path, "r") as f:
             model_config = f.read()
             model_config = json.loads(model_config)
             architecture = model_config["architectures"][0]
+            max_position_embeddings = model_config["max_position_embeddings"]
 
             if architecture == "LlavaLlamaForCausalLM":
                 multimodal = True
+
+            contextLength = max_position_embeddings
 
         return Model(
             id=model_data["id"],
@@ -115,4 +119,5 @@ async def get_model_details(model):
             port=model["port"] if model["port"] is not None else None,
             progress=0,
             multimodal=multimodal,
+            contextLength=contextLength,
         )

@@ -3,7 +3,7 @@ import HomePageProvider from "./context/HomePageProvider";
 import Playground from "./pages/Playground";
 import { useAppWrapper } from "./context/AppWrapperProvider";
 import NavBar from "./component/NavBar";
-import { useLayoutEffect, useRef } from "react";
+import { useRef } from "react";
 import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 
 const Layout = () => {

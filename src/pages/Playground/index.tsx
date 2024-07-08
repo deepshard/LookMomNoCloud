@@ -14,8 +14,6 @@ import "./Playground.css";
 import plusIcon from "../../assets/icons/plus.svg";
 // @ts-ignore
 import sendIcon from "../../assets/icons/send-fill.svg";
-// @ts-ignore
-import dragOverIcon from "../../assets/icons/drag-over.svg";
 import { usePlayground } from "./PlaygroundContext";
 import { formatParams } from "../../utils/sysUtils";
 import SettingsIcon from "../../icons/SettingsIcon";
@@ -128,7 +126,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             </div>
           </PopoverContent>
         </Popover>
-        <ChatSettings />
+        <ChatSettings model={model} />
       </div>
       {mode === "chat" ? <Chat /> : <Completion model={model} settings={settings} />}
       {/* <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex items-end mt-auto">
@@ -190,7 +188,8 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   );
 }
 
-function ChatSettings() {
+function ChatSettings(model: TModel | null) {
+  const maxTokens = model ? Math.trunc((0.9 * model.contextLength) / 2) : 0; // Provide buffer for template tokens
   const { settings, setSettings } = usePlayground();
   const [showSettings, setShowSettings] = useState(false);
 
@@ -229,7 +228,7 @@ function ChatSettings() {
               <label className="text-sm flex justify-between">
                 <span className="text-surface-500">Max Tokens:</span> <span className="text-white">{settings.maxTokens}</span>
               </label>
-              <Slider min={1} max={2048} step={1} value={settings.maxTokens} onChange={(value) => setSettings({ ...settings, maxTokens: value })} />
+              <Slider min={1} max={maxTokens} step={1} value={settings.maxTokens} onChange={(value) => setSettings({ ...settings, maxTokens: value })} />
             </div>
             <div className="mb-4">
               <label className="text-sm flex justify-between">

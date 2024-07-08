@@ -89,11 +89,45 @@ const Chat = () => {
       if (!model) {
         return;
       }
+
+      // Limit the total chat history
+      const maxPromptLength = Math.trunc((0.9 * model.contextLength) / 2);
+      const cleanedMessages: ChatMessage[] = [];
+      let totalLength = systemMessage.split(/\s+/).length * 0.75;
+      for (let i = messageSet.length - 1; i >= 0; i--) {
+        const message = messages[i];
+        let messageLength = 0;
+
+        // Treat words as approximately 0.75 tokens
+        if (typeof message.content === 'string') {
+          messageLength = message.content.split(/\s+/).length * 0.75;
+        } else {
+          for (const item of message.content) {
+            if (item.text) {
+              messageLength += item.text.split(/\s+/).length * 0.75;
+            }
+
+            // Treat each character in the image URL as 1 token
+            if (item.image_url) {
+              messageLength += item.image_url.url.length;
+            }
+          }
+        }
+
+        if (totalLength + messageLength <= maxPromptLength) {
+          cleanedMessages.unshift(message);
+          totalLength += messageLength;
+        } else {
+          break;
+        }
+      }
+
+
       const response = await fetch(`http://localhost:${model.port}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [{ role: "system", content: systemMessage }, ...messageSet],
+          messages: [{ role: "system", content: systemMessage }, ...cleanedMessages],
           stream: true,
           temperature: settings.temperature,
           max_tokens: settings.maxTokens,
@@ -121,8 +155,8 @@ const Chat = () => {
         // Check if the message is done, sometimes the message is not wrapped in JSON or flagged as done
         if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) {
           // Strip the [DONE] flag from the message
-          let cleanedChunk = chunk.replace("data: ", "").replace("[DONE]", "");
-          let data = JSON.parse(cleanedChunk);
+          const cleanedChunk = chunk.replace("data: ", "").replace("[DONE]", "");
+          const data = JSON.parse(cleanedChunk);
 
           // Check if there is anything to append to the last message
           if (data.choices[0].delta.content) {
@@ -135,12 +169,6 @@ const Chat = () => {
 
         try {
           const data = JSON.parse(chunk);
-
-          if (data.choices[0].delta.content === "<|endoftext|>") {
-            await reader.cancel();
-            break;
-          }
-
           updateAssistantMessage(data);
         } catch (error) {
           console.error("Error parsing chunk:", error);
@@ -153,6 +181,8 @@ const Chat = () => {
 
   const handleSendMessage = async (e: any) => {
     e.preventDefault();
+
+    if (loading) return;
 
     if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");

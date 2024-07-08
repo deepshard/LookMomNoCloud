@@ -53,6 +53,7 @@ async def get_trending_models(num: int) -> list[Model]:
                 port=None,
                 progress=0,
                 multimodal=False,  # This is not strictly true, but we only care about multimodality for downloaded models
+                contextLength=0,  # This is not strictly true, but we only care about context length for downloaded models
             )
             for model in data
         ]

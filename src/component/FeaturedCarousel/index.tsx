@@ -30,7 +30,7 @@ const FeaturedCarousel = () => {
         autoplay={!isGettingNews}
         easing="linear"
         waitForAnimate
-        className="w-80 h-[150px] widget-3d outline-none">
+        className="w-[360px] h-[170px] widget-3d outline-none">
         {news.slice(0, 5).map((item) => (
           <Featured key={item.id} news={item} isLoading={isGettingNews} onClick={() => {
             if(isGettingNews) return;

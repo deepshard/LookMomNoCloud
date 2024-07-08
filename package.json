@@ -1,7 +1,7 @@
 {
   "name": "truffle-app",
   "productName": "truffle-app",
-  "version": "0.0.7",
+  "version": "0.0.12",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
   "scripts": {
@@ -43,7 +43,6 @@
       "notarize": {
         "teamId": "4SDV2299VV"
       }
-
     },
     "dmg": {
       "title": "Look Mom No Cloud™",

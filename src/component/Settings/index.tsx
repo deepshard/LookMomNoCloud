@@ -15,6 +15,14 @@ const Settings = () => {
     setSetting("collectData", checked);
   };
 
+  const getVersion = () => {
+    // @ts-ignore
+    return window.electronAPI.getAppVersion();
+  }
+  const getVersionHash = () => {
+    // @ts-ignore
+    return window.electronAPI.getAppVersionHash();
+  }
   return (
     <div className="h-full px-[145px] pt-[126px]">
       <span className="flex items-center gap-[10px]">
@@ -65,6 +73,10 @@ const Settings = () => {
           onChange={onChange}
           className={`${isCheckingData ? "switch-enabled" : ""}`}
         />
+      </div>
+
+      <div className="absolute bottom-0 right-3 text-surface-500 text-xs">
+        v{getVersion()} {getVersionHash()}
       </div>
     </div>
   );

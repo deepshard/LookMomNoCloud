@@ -18,6 +18,8 @@ import dayIcon from "./assets/icons/day.svg";
 import nightIcon from "./assets/icons/night.svg";
 import Settings from "./component/Settings";
 import { useAppWrapper } from "./context/AppWrapperProvider";
+import Playground from "./pages/Playground";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "./pages/Playground/Drawer";
 
 interface WelcomeInfo {
   icon: string;
@@ -45,7 +47,7 @@ export default function Home() {
   } = useHomePageContext();
   // const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
-  const {playgroundRef} = useAppWrapper();
+  const { playgroundRef } = useAppWrapper();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -124,7 +126,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="w-full h-full flex flex-col justify-center items-center relative">
+      <div className="w-full h-full flex flex-col justify-center items-center relative" vaul-drawer-wrapper="">
         <div className="flex items-center gap-1.5 w-[740px] mb-[20px]">
           <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
           <p className="text-[18px] text-surface-750">{getWelcomeInfo().message}</p>
@@ -154,7 +156,13 @@ export default function Home() {
             </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
-      {(playgroundRef && playgroundRef.current) && <button onClick={() => playgroundRef?.current?.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})} className="absolute bottom-3 left-3">go to Playground</button>}
+        {/* {(playgroundRef && playgroundRef.current) && <button onClick={() => playgroundRef?.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })} className="absolute bottom-3 left-3">go to Playground</button>} */}
+        <Drawer>
+          <DrawerTrigger>Go to playground</DrawerTrigger>
+          <DrawerContent>
+            <Playground />
+          </DrawerContent>
+        </Drawer>
       </div>
 
 
@@ -179,7 +187,7 @@ export default function Home() {
       <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
         <Settings />
       </AnimateModal>
-      
+
       {updateInfo && (
         <UpdateTruffle
           className="fixed bottom-3 "
@@ -189,3 +197,4 @@ export default function Home() {
     </>
   );
 }
+

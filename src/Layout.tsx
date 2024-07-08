@@ -15,9 +15,9 @@ const Layout = () => {
   // }, []);
   return (
     <HomePageProvider>
-      <section ref={playgroundRef} className="w-full h-full snap-start">
+      {/* <section ref={playgroundRef} className="w-full h-full snap-start">
         <Playground />
-      </section>
+      </section> */}
       <section ref={homeRef} className="w-full h-full snap-start relative">
         <NavBar />
         <span className="flex-center w-full h-full">

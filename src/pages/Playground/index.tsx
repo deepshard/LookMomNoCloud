@@ -158,7 +158,7 @@ function ModelSwitcher() {
   if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>
 
   return (
-    <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
+    <Popover open={showModelSelector} onOpenChange={setShowModelSelector} modal>
       <PopoverTrigger>
         <div className="bg-white/5 h-10 p-1.5 pr-2.5 cursor-pointer flex items-center justify-between playground-popup">
           {model ? <div className="flex items-center gap-1">
@@ -196,7 +196,7 @@ function ChatSettings() {
   const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <Popover open={showSettings} onOpenChange={setShowSettings}>
+    <Popover open={showSettings} onOpenChange={setShowSettings} modal>
       <PopoverTrigger>
         <div className="bg-white/5 w-[30px] h-[30px] rounded-full cursor-pointer playground-popup flex items-center">
           <SettingsIcon height={10} width={14} className="mx-auto" />
@@ -220,7 +220,7 @@ function ChatSettings() {
             },
           }}
         >
-          <div className="playground-popup  w-64 p-4  mt-1 right-0">
+          <div className="playground-popup z-50 w-64 p-4  mt-1 right-0">
             <div className="mb-4">
               <label className="text-sm flex justify-between"><span className="text-surface-500">Creativity Level</span> <span className="text-white">{settings.temperature}</span></label>
               <Slider

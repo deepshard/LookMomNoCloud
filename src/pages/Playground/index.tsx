@@ -113,7 +113,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             </div>
           </PopoverContent>
         </Popover>
-        <ChatSettings />
+        <ChatSettings model={model} />
       </div>
       {mode === "chat" ? <Chat /> : <Completion model={model} settings={settings} />}
     </div>
@@ -168,7 +168,8 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   );
 }
 
-function ChatSettings() {
+function ChatSettings({ model }: { model: TModel | null}) {
+  const maxTokens = model ? Math.trunc((0.85 * model?.contextLength) / 2) : 0; // 0.85 provides a buffer for template tokens
   const { settings, setSettings } = usePlayground();
   const [showSettings, setShowSettings] = useState(false);
 
@@ -207,7 +208,7 @@ function ChatSettings() {
               <label className="text-sm flex justify-between">
                 <span className="text-surface-500">Max Tokens:</span> <span className="text-white">{settings.maxTokens}</span>
               </label>
-              <Slider min={1} max={2048} step={1} value={settings.maxTokens} onChange={(value) => setSettings({ ...settings, maxTokens: value })} />
+              <Slider min={1} max={maxTokens} step={1} value={settings.maxTokens} onChange={(value) => setSettings({ ...settings, maxTokens: value })} />
             </div>
             <div className="mb-4">
               <label className="text-sm flex justify-between">

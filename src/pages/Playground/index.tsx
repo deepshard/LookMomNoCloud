@@ -107,7 +107,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
                     setShowModeSelector(false);
                   }}
                   className="rounded-[13px] p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10">
-                  {m}
+                  {upperFirst(m)}
                 </div>
               ))}
             </div>
@@ -130,7 +130,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   return (
     <Popover open={showModelSelector} onOpenChange={setShowModelSelector} modal>
       <PopoverTrigger>
-        <div className=" playground-popup">
+        <div className="playground-popup">
           {model ? (
             <div className="flex items-center justify-start gap-2 p-1.5 pr-3">
               <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />

@@ -102,7 +102,7 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
       percentText.style.transform = 'rotate(89deg)';
       percentText.setAttribute('x', '50');
       percentText.setAttribute('y', '-50');
-    }, 300);
+    }, 500);
   }, []);
 
   if (!sysInfo) return null;

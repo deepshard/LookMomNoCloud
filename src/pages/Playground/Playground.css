@@ -13,18 +13,21 @@ textarea {
 }
 
 textarea::placeholder {
+  color: rgba(255, 255, 255, 0.40);
   font-size: 14px;
-  height: 100%;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 textarea.completion::selection {
   color: #FFF;
-text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.50);
-font-family: "SF Pro Display";
-font-size: 14px;
-font-style: normal;
-font-weight: 400;
-line-height: normal;
+  text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.50);
+  font-family: "SF Pro Display";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 .ant-input:hover,
@@ -105,12 +108,12 @@ line-height: normal;
   }
 
   .playground-popup {
-    @apply rounded-full h-full bg-surface-main/5 ;
+    @apply rounded-full h-full bg-surface-main/5 hover:bg-surface-100;
     box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05), 0px 20px 80px 0px rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(100px);
   }
   .playground-popup-content {
-    @apply bg-surface-main/5 rounded-sm min-w-[400px] p-3 flex flex-col gap-[12px];
+    @apply bg-surface-main/5 rounded-sm min-w-[400px] p-3 flex flex-col;
     backdrop-filter: blur(100px);
     box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05), 0px 20px 80px 0px rgba(0, 0, 0, 0.05);
   }

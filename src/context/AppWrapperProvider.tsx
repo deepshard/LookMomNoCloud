@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect } from "react";
 import useSysInfo from "../hooks/sysInfo/useSysInfo";
 import { LOCAL_ROOT_URL } from "../api/client";
 import { useGetHighlights, useGetMyModels } from "../lib/react-query/queriesAndMutations";

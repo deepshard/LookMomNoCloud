@@ -87,14 +87,19 @@ async def get_model_details(model):
         model_data = await response.json()
 
         multimodal = False
-        contextLength = 1024 # Start with a reasonable default, this may not hold in all cases, but most models can support it
+        contextLength = 1024  # Start with a reasonable default, this may not hold in all cases, but most models can support it
         model_config_path = get_app_data_path() / "models" / model["id"] / "base" / "config.json"
         with open(model_config_path, "r") as f:
             model_config = f.read()
             model_config = json.loads(model_config)
             architecture = model_config["architectures"][0]
 
-            for name in ["max_position_embeddings", "max_sequence_length", "n_positions", "seq_length", ]:
+            for name in [
+                "max_position_embeddings",
+                "max_sequence_length",
+                "n_positions",
+                "seq_length",
+            ]:
                 if name in model_config:
                     contextLength = model_config[name]
                     break
@@ -121,5 +126,5 @@ async def get_model_details(model):
             port=model["port"] if model["port"] is not None else None,
             progress=0,
             multimodal=multimodal,
-            contextLength=contextLength
+            contextLength=contextLength,
         )

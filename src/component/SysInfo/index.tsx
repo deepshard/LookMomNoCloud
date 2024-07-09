@@ -3,9 +3,9 @@ import SysInfoModelListItem from "./SysInfoModelListItem";
 import MemoryChip from "../../icons/MemoryChip";
 import ExternalDrive from "../../icons/ExternalDrive";
 import { TSysInfo } from "../../types/schemas";
-import { bytesToHumanReadable, roundTo } from "../../utils/sysUtils";
+import { bytesToHumanReadable } from "../../utils/sysUtils";
 import { useSystemInfoHardwareCarouselContext } from "../../context/SystemInfoHardwareCarouselProvider";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 interface SysInfoProps {

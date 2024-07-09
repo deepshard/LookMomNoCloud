@@ -5,9 +5,10 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import { formatParams } from "../../utils/sysUtils";
 import { TModel } from "../../types/schemas";
 import { GridIcon, ListIcon, ErrorIcon } from "../SVGIcons";
+import { SetupApi } from "msw";
 
 interface SearchResultsProps {
-  searchModels: TModel[] | null;
+  searchModels?: TModel[];
   isListView: boolean;
   setIsListView: (isListView: boolean) => void;
   handleModelClick: (model: TModel) => void;
@@ -93,7 +94,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ isListView, setIsListView }) =>
 );
 
 interface ListViewProps {
-  searchModels: TModel[] | null;
+  searchModels? : TModel[];
   handleModelClick: (model: TModel) => void;
 }
 
@@ -144,7 +145,7 @@ const ListView: React.FC<ListViewProps> = ({ searchModels, handleModelClick }) =
 );
 
 interface GridViewProps {
-  searchModels: TModel[] | null;
+  searchModels?: TModel[];
   handleModelClick: (model: TModel) => void;
 }
 

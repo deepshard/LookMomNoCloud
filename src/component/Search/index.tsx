@@ -80,7 +80,11 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
           </div>
         ) : (
           <SearchResults
-            searchModels={searchModels}
+            searchModels={
+              [...(predictionData ?? []), ...(searchModels ?? [])].filter(
+                (v, i, a) => a.findIndex((t) => t.id === v.id) === i
+              ) // concatenates prediction data and search models and removes duplicates
+            }
             isListView={isListView}
             setIsListView={setIsListView}
             handleModelClick={handleModelClick}

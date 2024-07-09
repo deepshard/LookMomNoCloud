@@ -307,7 +307,7 @@ const Chat = () => {
               autoFocus
               autoSize={{ minRows: 1, maxRows: 5 }}
               className="playground-chat-box max-h-[100px] "
-              placeholder={`Chat with ${model?.name}`}
+              placeholder={`Chat${model ? ` with ${model?.name}...` : "..."}`}
               value={form.getFieldValue("userMessage")}
               onKeyDown={handleSubmit}
             />

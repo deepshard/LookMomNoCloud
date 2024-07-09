@@ -45,7 +45,8 @@ export const PlaygroundProvider = ({ children }) => {
 
   useEffect(() => {
     if (Object.keys(downloads).length > 0) {
-      setModel(downloads[Object.keys(downloads)[0]]);
+      const runningModels = Object.values(downloads).filter((model) => model.status === "RUNNING");
+      runningModels.length > 0 && setModel(runningModels[0]);
     }
   }, [downloads]);
 

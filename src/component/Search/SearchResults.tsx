@@ -5,12 +5,14 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import { formatParams } from "../../utils/sysUtils";
 import { TModel } from "../../types/schemas";
 import { GridIcon, ListIcon, ErrorIcon } from "../SVGIcons";
+import { useState, useEffect } from "react";
 
 interface SearchResultsProps {
   searchModels?: TModel[];
   isListView: boolean;
   setIsListView: (isListView: boolean) => void;
   handleModelClick: (model: TModel) => void;
+  isLoading: boolean;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
@@ -18,8 +20,28 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   isListView,
   setIsListView,
   handleModelClick,
+  isLoading,
 }) => {
-  if (searchModels?.length === 0) {
+  const [showNoResults, setShowNoResults] = useState(false);
+
+  useEffect(() => { // This is for preventing the glitch where the "No results found" message is shown for a split second before the loading skeleton is shown (debouncer)
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
+    if (!isLoading && !searchModels?.length) {
+      timeout = setTimeout(() => {
+        setShowNoResults(true);
+      }, 300);
+    } else {
+      setShowNoResults(false);
+    }
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [isLoading, searchModels]);
+
+  if (!searchModels?.length && showNoResults) {
     return (
       <>
         <div className="w-full py-3 mt-11 mb-5 flex justify-between gap-8">
@@ -61,9 +83,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       </div>
 
       {isListView ? (
-        <ListView searchModels={searchModels} handleModelClick={handleModelClick} />
+        <ListView searchModels={searchModels} handleModelClick={handleModelClick} isLoading={isLoading} />
       ) : (
-        <GridView searchModels={searchModels} handleModelClick={handleModelClick} />
+        <GridView searchModels={searchModels} handleModelClick={handleModelClick}isLoading={isLoading}  />
       )}
     </>
   );
@@ -95,11 +117,12 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ isListView, setIsListView }) =>
 interface ListViewProps {
   searchModels? : TModel[];
   handleModelClick: (model: TModel) => void;
+  isLoading: boolean;
 }
 
-const ListView: React.FC<ListViewProps> = ({ searchModels, handleModelClick }) => (
+const ListView: React.FC<ListViewProps> = ({ searchModels, handleModelClick, isLoading }) => (
   <div className="flex flex-col gap-1">
-    {!searchModels
+    {isLoading
       ? Array.from({ length: 16 }).map((_, index) => (
           <div
             key={index}
@@ -115,7 +138,7 @@ const ListView: React.FC<ListViewProps> = ({ searchModels, handleModelClick }) =
             <div className="h-4 w-20 bg-surface-main/10 animate-pulse rounded-md" />
           </div>
         ))
-      : searchModels.map((model) => (
+      : searchModels?.map((model) => (
           <div
             key={model.id}
             className="flex flex-grow w-[688px] p-3.5 justify-between items-center hover:bg-surface-main/5 rounded-md cursor-pointer transition transition-100"
@@ -146,18 +169,19 @@ const ListView: React.FC<ListViewProps> = ({ searchModels, handleModelClick }) =
 interface GridViewProps {
   searchModels?: TModel[];
   handleModelClick: (model: TModel) => void;
+  isLoading: boolean;
 }
 
-const GridView: React.FC<GridViewProps> = ({ searchModels, handleModelClick }) => (
+const GridView: React.FC<GridViewProps> = ({ searchModels, handleModelClick, isLoading }) => (
   <div className="w-full grid grid-cols-4 gap-x-[54px] gap-y-11">
-    {!searchModels
+    {isLoading
       ? Array.from({ length: 16 }).map((_, index) => (
           <div
             key={index}
             className="w-[124px] h-[78px] bg-surface-main/10 animate-pulse rounded-md"
           />
         ))
-      : searchModels.map((model) => (
+      : searchModels?.map((model) => (
           <ModelWidget
             onClick={() => handleModelClick(model)}
             model={model}

@@ -22,8 +22,8 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   const [debouncedInput, setDebouncedInput] = useState<string>("");
   const [isListView, setIsListView] = useState<boolean>(true);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
+  const { data: searchModels, isLoading: isLoading} = useSearchModels(debouncedInput);
 
-  const { data: searchModels } = useSearchModels(debouncedInput);
   const { data: predictionData } = useGetPrediction(search);
   const { data: featuredData } = useGetFeatured();
 
@@ -43,7 +43,7 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
 
     const debouncer = debounce((value: string) => {
       setDebouncedInput(value);
-    }, 500);
+    }, 300);
     debouncer(search);
 
     return () => debouncer.cancel();
@@ -88,6 +88,7 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
             isListView={isListView}
             setIsListView={setIsListView}
             handleModelClick={handleModelClick}
+            isLoading={isLoading}
           />
         )}
       </div>

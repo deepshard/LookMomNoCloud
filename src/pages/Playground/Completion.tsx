@@ -11,6 +11,8 @@ import retryIcon from "../../assets/icons/retry.svg";
 // @ts-ignore
 import refreshIcon from "../../assets/icons/refresh.svg";
 
+import './Playground.css';
+
 interface CompletionProps {
   model: TModel | null;
   settings: Settings;
@@ -64,7 +66,7 @@ const Completion = ({ model, settings }: CompletionProps) => {
     <Form form={form} className="w-full h-full flex flex-col" onFinish={onFinish}>
       <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex h-full">
         <Form.Item name="prompt" noStyle>
-          <textarea ref={textAreaRef} onKeyDown={handleSubmit} className="!h-full !w-full" placeholder="Write a tagline for an ice cream..." />
+          <textarea ref={textAreaRef} onKeyDown={handleSubmit} className="completion !h-full !w-full" placeholder="Write a tagline for an ice cream..." />
         </Form.Item>
       </div>
       <div className="flex gap-2 mt-4">

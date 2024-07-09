@@ -14,11 +14,19 @@ import "./Playground.css";
 import plusIcon from "../../assets/icons/plus.svg";
 // @ts-ignore
 import sendIcon from "../../assets/icons/send-fill.svg";
+// @ts-ignore
+import accordionIcon from "../../assets/icons/accordion.svg";
+// @ts-ignore
+import chatBubble from "../../assets/icons/chat-bubble.svg";
+// @ts-ignore
+import closeIcon from "../../assets/icons/close.svg";
 import { usePlayground } from "./PlaygroundContext";
 import { formatParams } from "../../utils/sysUtils";
 import SettingsIcon from "../../icons/SettingsIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "../../Popup";
 import { TModel } from "../../types/schemas";
+import { DrawerClose } from "./Drawer";
+import { upperFirst } from "lodash";
 
 type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -61,13 +69,16 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   }
 
   return (
-    <div
-      className={`playground overflow-hidden relative ${className}`}
-      {...props}>
+    <div className={`playground overflow-hidden  ${className}`} {...props}>
       {/* Header */}
       <div className="flex items-center mb-[11px] w-full h-[16px]">
         <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
         <p className="text-md text-surface-500">LMNC™ Playground</p>
+        <DrawerClose className="ml-auto">
+        <div className='flex absolute cursor-pointer h-[30px] w-[30px] bg-surface-main/5 rounded-full top-[20px] right-[20px] z-[9999] justify-center items-center text-surface-750'>
+          <img src={closeIcon} alt="" className="h-3 fill-surface-500" />
+        </div>
+        </DrawerClose>
       </div>
 
       {/* Welcome Message */}
@@ -76,22 +87,28 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
       {/* Configuration */}
       <div className="flex self-start mt-5 mb-5 gap-2">
         <ModelSwitcher myModels={Object.values(downloads)} />
-        <Popover open={showModeSelector} onOpenChange={setShowModeSelector}>
+        <Popover open={showModeSelector} onOpenChange={setShowModeSelector} modal>
           <PopoverTrigger>
-            <div className="cursor-pointer !min-w-6 playground-popup p-1.5">{mode}</div>
+            <div className="cursor-pointer !min-w-6 playground-popup flex flex-center gap-1 p-1.5 pr-2.5 text-sm">
+              <span className="bg-surface-main/5 rounded-full p-1">
+                <img src={chatBubble} alt="" />
+              </span>
+              {upperFirst(mode)}
+              <img src={accordionIcon} alt="" className="w-[7px] h-[4px]" />
+            </div>
           </PopoverTrigger>
           <PopoverContent>
-            <div className="playground-popup p-2 mt-1">
+            <div className="playground-popup-content p-2 mt-1">
               {["chat", "completions"].map((m) => (
-                <p
+                <div
                   key={m}
                   onClick={() => {
                     setMode(m as "chat" | "completions");
                     setShowModeSelector(false);
                   }}
                   className="rounded-[13px] p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10">
-                  {m}
-                </p>
+                  {upperFirst(m)}
+                </div>
               ))}
             </div>
           </PopoverContent>
@@ -104,22 +121,21 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 };
 
 function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
-  const { model, setModel } = usePlayground();
+  const { model, setModel, setSystemMessage, setMessages } = usePlayground();
   const [showModelSelector, setShowModelSelector] = useState(false);
 
   const runningModels = myModels.filter((model) => model.status === "RUNNING");
   if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>;
 
   return (
-    <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
+    <Popover open={showModelSelector} onOpenChange={setShowModelSelector} modal>
       <PopoverTrigger>
-        <div className="bg-white/5 w-40 h-10 p-2 rounded-[13px] cursor-pointer flex items-center justify-between playground-popup">
+        <div className="playground-popup">
           {model ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-start gap-2 p-1.5 pr-3">
               <img src={model.backgroundImage} className="w-7 h-7 rounded-full" />
-              <div>
-                <div>{model.title}</div>
-              </div>
+              <div>{model.title}</div>
+              <img src={accordionIcon} alt="" className="w-[7px] h-[4px]" />
             </div>
           ) : (
             "Select a model"
@@ -127,19 +143,22 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
         </div>
       </PopoverTrigger>
       <PopoverContent>
-        <div className="playground-popup p-2 mt-1">
-          {runningModels.map((model) => (
+        <div className="playground-popup-content p-2 mt-1">
+          {runningModels.map((m) => (
             <div
-              key={model.id}
-              className="p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10 rounded-[13px]"
+              key={m.id}
+              className="playground-popup-content-model"
               onClick={() => {
-                setModel(model);
                 setShowModelSelector(false);
+                if(model?.id === m.id) return
+                setModel(m);
+                setSystemMessage("");
+                setMessages([]);
               }}>
-              <img src={model.backgroundImage} className="w-16 h-12 rounded-sm" />
+              <img src={m.backgroundImage} className="w-16 h-12 rounded-sm" />
               <div className="flex flex-col gap-1 -mt-1">
-                <p className="text-surface-750 title-sm h-3.5 leading-tight">{model.name}</p>
-                <p className="text-surface-500 text-xs h-3.5 leading-normal">{`${model.author} • ${formatParams(model.size)}`}</p>
+                <p className="text-surface-750 title-sm  h-3.5 leading-tight">{m.name}</p>
+                <p className="text-surface-500 text-xs h-3.5 leading-normal">{`${m.author} • ${formatParams(m.size)}`}</p>
               </div>
             </div>
           ))}
@@ -155,7 +174,7 @@ function ChatSettings(model: TModel | null) {
   const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <Popover open={showSettings} onOpenChange={setShowSettings}>
+    <Popover open={showSettings} onOpenChange={setShowSettings} modal>
       <PopoverTrigger>
         <div className="bg-white/5 w-10 h-10 rounded-full cursor-pointer playground-popup flex items-center">
           <SettingsIcon height={18} width={18} className="mx-auto" />
@@ -178,7 +197,7 @@ function ChatSettings(model: TModel | null) {
               },
             },
           }}>
-          <div className="playground-popup  w-64 p-4  mt-1 right-0">
+          <div className="playground-popup-content  w-64 p-4  mt-1 right-0">
             <div className="mb-4">
               <label className="text-sm flex justify-between">
                 <span className="text-surface-500">Temperature:</span> <span className="text-white">{settings.temperature}</span>

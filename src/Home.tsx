@@ -19,8 +19,10 @@ import nightIcon from "./assets/icons/night.svg";
 // @ts-ignore
 import chatIcon from "./assets/icons/chat.svg";
 import Settings from "./component/Settings";
-import { useAppWrapper } from "./context/AppWrapperProvider";
 import Button from "./component/common/Button";
+import { Drawer, DrawerContent, DrawerTrigger } from "./pages/Playground/Drawer";
+import Playground from "./pages/Playground";
+import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 
 interface WelcomeInfo {
   icon: string;
@@ -32,7 +34,6 @@ export default function Home() {
   const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
   const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
   const navigate = useNavigate();
-  const { playgroundRef } = useAppWrapper();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
@@ -137,11 +138,19 @@ export default function Home() {
             </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
-        {playgroundRef && playgroundRef.current && (
-          <Button onClick={() => playgroundRef?.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })} className="absolute bottom-3 left-3 rounded-full p-2">
-            <img src={chatIcon} alt="" className="w-[18px] h-[18px]" />
-          </Button>
-        )}
+        <Drawer >
+          <DrawerTrigger>
+            <Button className="absolute bottom-3 left-3 rounded-full p-2">
+              <img src={chatIcon} alt="" className="w-[18px] h-[18px]" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <PlaygroundProvider>
+              <Playground />
+            </PlaygroundProvider>
+          </DrawerContent>
+        </Drawer>
+
       </div>
 
       <AnimateModal

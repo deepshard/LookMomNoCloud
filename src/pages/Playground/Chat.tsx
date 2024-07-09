@@ -175,7 +175,8 @@ const Chat = () => {
   };
 
   const onFinish = async (values: any) => {
-    if(loading) return;
+    if (loading) return;
+    values.userMessage = values?.userMessage?.trim();
 
     if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");
@@ -286,13 +287,15 @@ const Chat = () => {
   const getMessageContent = (message: ChatMessage) => {
     const isUser = message.role === "user";
     const containerClasses = `flex items-center w-full ${isUser ? "justify-end" : "justify-start"}`;
-    const messageClasses = `flex items-start gap-2 p-2 max-w-[300px] bg-white/5 mb-4 break-words ${isUser ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"}`;
+    const messageClasses = `flex items-start gap-2 p-2 max-w-[300px] bg-white/5 mt-1 break-words ${isUser ? "rounded-tl-sm rounded-tr-sm rounded-bl-sm" : "rounded-tl-sm rounded-tr-sm rounded-br-sm"}`;
 
     if (typeof message.content === "string") {
       return (
         <div className={containerClasses}>
           <div className={messageClasses}>
-            <p className="text-surface-750 text-[16px] break-words">{message.content}</p>
+            <p className="text-surface-750 text-[16px]" style={{ wordBreak: "break-word" }}>
+              {message.content}
+            </p>
           </div>
         </div>
       );
@@ -325,12 +328,13 @@ const Chat = () => {
         <Input
           className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
           placeholder="Enter system instructions..."
-          value={systemMessage} onChange={(e) => setSystemMessage(e.target.value)}
+          value={systemMessage}
+          onChange={(e) => setSystemMessage(e.target.value)}
         />
       </div>
 
       {/* Messages */}
-      <div ref={messagesContainerRef} className="flex flex-col items-start pb-5 w-full h-[68%] overflow-auto ">
+      <div ref={messagesContainerRef} className="flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
         {messages.map((message, index) => (
           <div key={index} className="w-full">
             {getMessageContent(message)}

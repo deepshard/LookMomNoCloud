@@ -78,7 +78,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
       {/* Configuration */}
       <div className="flex self-start mt-5 mb-5 gap-2">
         <ModelSwitcher myModels={Object.values(downloads)} />
-        <Popover open={showModeSelector} onOpenChange={setShowModeSelector}>
+        <Popover open={showModeSelector} onOpenChange={setShowModeSelector} modal>
           <PopoverTrigger>
             <div className="cursor-pointer !min-w-6 playground-popup p-1.5">{mode}</div>
           </PopoverTrigger>

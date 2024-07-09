@@ -112,7 +112,7 @@ textarea.completion::selection {
   }
 
   .playground-popup {
-    @apply flex justify-center rounded-full h-full w-[103px] bg-surface-main/5 hover:bg-surface-100;
+    @apply flex justify-center rounded-full h-full bg-surface-main/5 hover:bg-surface-100;
     box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05), 0px 20px 80px 0px rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(100px);
   }

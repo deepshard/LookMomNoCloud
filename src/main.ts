@@ -2,10 +2,9 @@ import { app, BrowserWindow, Menu, ipcMain } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
-import { spawn, ChildProcess } from "child_process";
+import { spawn, ChildProcess, exec } from "child_process";
 import { log, initializeLogger, endLogger } from "./log";
 import fs from "fs";
-import { exec } from 'child_process';
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;

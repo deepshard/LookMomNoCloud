@@ -138,7 +138,9 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
               <img src={accordionIcon} alt="" className="w-[7px] h-[4px]" />
             </div>
           ) : (
-            "Select a model"
+            <div className="flex items-center justify-center">
+              <p>Select model</p>
+            </div>
           )}
         </div>
       </PopoverTrigger>
@@ -168,7 +170,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   );
 }
 
-function ChatSettings(model: TModel | null) {
+function ChatSettings({ model }: { model: TModel | null }) {
   const maxTokens = model ? Math.trunc((0.9 * model.contextLength) / 2) : 0; // Provide buffer for template tokens
   const { settings, setSettings } = usePlayground();
   const [showSettings, setShowSettings] = useState(false);

@@ -43,12 +43,6 @@ export const PlaygroundProvider = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [images, setImages] = useState<Image[]>([]);
 
-  useEffect(() => {
-    if (Object.keys(downloads).length > 0) {
-      setModel(downloads[Object.keys(downloads)[0]]);
-    }
-  }, [downloads]);
-
   return (
     <PlaygroundContext.Provider
       value={{

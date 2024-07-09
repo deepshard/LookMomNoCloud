@@ -346,7 +346,7 @@ const Chat = () => {
       <div className="absolute bottom-[16px] left-0 right-0 w-full px-[145px]">
         {/* File Display */}
         <Dock images={images} deleteImage={deleteImage} />
-        <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm ">
+        <div className="flex items-center px-2 py-1 bg-white/10 w-full max-h-[150px] rounded-sm ">
           <span className="h-8 flex-center">{getAddFileButton()}</span>
           <Form.Item name="userMessage" noStyle>
             <TextArea

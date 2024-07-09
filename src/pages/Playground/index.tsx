@@ -19,6 +19,7 @@ import { formatParams } from "../../utils/sysUtils";
 import SettingsIcon from "../../icons/SettingsIcon";
 import { Popover, PopoverContent, PopoverTrigger } from "../../Popup";
 import { TModel } from "../../types/schemas";
+import { DrawerClose } from "./Drawer";
 
 type PlaygroundProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -68,6 +69,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
       <div className="flex items-center mb-[11px] w-full h-[16px]">
         <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
         <p className="text-md text-surface-500">LMNC™ Playground</p>
+        <DrawerClose className="ml-auto">Close</DrawerClose>
       </div>
 
       {/* Welcome Message */}
@@ -111,7 +113,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   if (runningModels.length === 0) return <div className="bg-white/5 w-40 p-2 px-5 rounded-full">No models running</div>;
 
   return (
-    <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
+    <Popover open={showModelSelector} onOpenChange={setShowModelSelector} modal>
       <PopoverTrigger>
         <div className="bg-white/5 w-40 h-10 p-2 rounded-[13px] cursor-pointer flex items-center justify-between playground-popup">
           {model ? (
@@ -154,7 +156,7 @@ function ChatSettings() {
   const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <Popover open={showSettings} onOpenChange={setShowSettings}>
+    <Popover open={showSettings} onOpenChange={setShowSettings} modal>
       <PopoverTrigger>
         <div className="bg-white/5 w-10 h-10 rounded-full cursor-pointer playground-popup flex items-center">
           <SettingsIcon height={18} width={18} className="mx-auto" />

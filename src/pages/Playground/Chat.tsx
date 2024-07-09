@@ -84,11 +84,44 @@ const Chat = () => {
       if (!model) {
         return;
       }
+
+      // Limit the total chat history
+      const maxPromptLength = Math.trunc((0.85 * model.contextLength) / 2);
+      const cleanedMessages: ChatMessage[] = [];
+      let totalLength = systemMessage.split(/\s+/).length * 1.5;
+      for (let i = messageSet.length - 1; i >= 0; i--) {
+        const message = messageSet[i];
+        let messageLength = 0;
+
+        // Treat words as approximately 1.5 tokens
+        if (typeof message.content === 'string') {
+          messageLength = message.content.split(/\s+/).length * 1.5;
+        } else {
+          for (const item of message.content) {
+            if (item.text) {
+              messageLength += item.text.split(/\s+/).length * 1.5;
+            }
+
+            // Treat each character in the image URL as 1 token
+            if (item.image_url) {
+              messageLength += item.image_url.url.length;
+            }
+          }
+        }
+
+        if (totalLength + messageLength <= maxPromptLength) {
+          cleanedMessages.unshift(message);
+          totalLength += messageLength;
+        } else {
+          break;
+        }
+      }
+
       const response = await fetch(`http://localhost:${model.port}/v1/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [{ role: "system", content: systemMessage }, ...messageSet],
+          messages: [{ role: "system", content: systemMessage }, ...cleanedMessages],
           stream: true,
           temperature: settings.temperature,
           max_tokens: settings.maxTokens,
@@ -114,7 +147,19 @@ const Chat = () => {
 
         const chunk = decoder.decode(value).substring(6).trim();
         // Check if the message is done, sometimes the message is not wrapped in JSON or flagged as done
-        if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) break;
+        if (chunk.includes("data: [DONE]") || chunk.includes("[DONE]")) {
+          // Strip the [DONE] flag from the message
+          const cleanedChunk = chunk.replace("data: ", "").replace("[DONE]", "");
+          const data = JSON.parse(cleanedChunk);
+
+          // Check if there is anything to append to the last message
+          if (data.choices[0].delta.content) {
+            updateAssistantMessage(data);
+          }
+
+          await reader.cancel();
+          break
+        }
 
         try {
           const data = JSON.parse(chunk);
@@ -130,14 +175,13 @@ const Chat = () => {
 
   const onFinish = async (values: any) => {
     if (loading) return;
-    values.userMessage = values?.userMessage?.trim();
 
     if (!model?.multimodal && images.length > 0) {
       setError("This model does not support multimodal inputs");
       return;
     }
 
-    const message = values.userMessage;
+    const message = values?.userMessage?.trim() || null;
     if (!message) return;
 
     setLoading(true);
@@ -300,7 +344,7 @@ const Chat = () => {
       <div className="absolute bottom-[16px] left-0 right-0 w-full px-[145px]">
         {/* File Display */}
         <Dock images={images} deleteImage={deleteImage} />
-        <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm ">
+        <div className="flex items-center px-2 py-1 bg-white/10 w-full max-h-[150px] rounded-sm ">
           <span className="h-8 flex-center">{getAddFileButton()}</span>
           <Form.Item name="userMessage" noStyle>
             <TextArea

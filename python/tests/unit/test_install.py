@@ -12,6 +12,7 @@ from endpoints.model.install.install import (
     download_file,
     get_file_size_hf,
     get_hf_repo_info,
+    get_conv_template,
 )
 from truffle_types import FileInfo
 from tests.unit.data import (
@@ -653,6 +654,12 @@ async def test_correctly_selects_proper_files_to_download_given_local_and_remote
             return_value=case["local"],
         )
         assert await get_files_to_download(case["remote"], case["local"]) == expected_outcome
+
+
+@pytest.mark.asyncio
+async def test_get_conv_template():
+    assert await get_conv_template("ead12fba-9e9b-43d8-8c26-6141318700cb") == "llama-3"
+    assert await get_conv_template("da05e829-9e9b-43d8-8c26-6141318700cb") == "LM"
 
 
 # TODO: Fix this test

@@ -15,13 +15,11 @@ import { usePlayground } from "./PlaygroundContext";
 import dragOverIcon from "../../assets/icons/drag-over.svg";
 
 import "./Playground.css";
-import { useAppWrapper } from "../../context/AppWrapperProvider";
 
 const { TextArea } = Input;
 
 const Chat = () => {
   const { model, settings, systemMessage, setSystemMessage, messages, setMessages, images, setImages } = usePlayground();
-  const { playgroundInView } = useAppWrapper();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -299,26 +297,24 @@ const Chat = () => {
       </div>
 
       {/* Chat Input */}
-      {playgroundInView && (
-        <div className="absolute bottom-[16px] left-0 right-0 w-full px-[145px]">
-          {/* File Display */}
-          <Dock images={images} deleteImage={deleteImage} />
-          <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm ">
-            <span className="h-8 flex-center">{getAddFileButton()}</span>
-            <Form.Item name="userMessage" noStyle>
-              <TextArea
-                autoFocus
-                autoSize={{ minRows: 1, maxRows: 5 }}
-                className="playground-chat-box max-h-[100px] align-middle"
-                placeholder={`Chat with ${model?.name}`}
-                value={form.getFieldValue("userMessage")}
-                onKeyDown={handleSubmit}
-              />
-            </Form.Item>
-            <span className="h-8 flex-center mr-1">{getSubmitButton()}</span>
-          </div>
+      <div className="absolute bottom-[16px] left-0 right-0 w-full px-[145px]">
+        {/* File Display */}
+        <Dock images={images} deleteImage={deleteImage} />
+        <div className="flex items-center px-3 py-2 bg-white/10 w-full min-h-[40px] max-h-[150px] rounded-sm ">
+          <span className="h-8 flex-center">{getAddFileButton()}</span>
+          <Form.Item name="userMessage" noStyle>
+            <TextArea
+              autoFocus
+              autoSize={{ minRows: 1, maxRows: 5 }}
+              className="playground-chat-box max-h-[100px] align-middle"
+              placeholder={`Chat with ${model?.name}`}
+              value={form.getFieldValue("userMessage")}
+              onKeyDown={handleSubmit}
+            />
+          </Form.Item>
+          <span className="h-8 flex-center mr-1">{getSubmitButton()}</span>
         </div>
-      )}
+      </div>
     </Form>
   );
 };

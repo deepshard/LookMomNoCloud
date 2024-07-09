@@ -3,6 +3,11 @@
 
 import { contextBridge, ipcRenderer, shell } from "electron";
 
+
+
+const appVersion = process.argv.find(arg => arg.startsWith('--app-version='))?.split('=')[1];
+const appVersionHash = process.argv.find(arg => arg.startsWith('--app-version-hash='))?.split('=')[1];
+
 contextBridge.exposeInMainWorld("ipc", {
   checkForUpdates: () => ipcRenderer.send("check-for-updates"),
   downloadUpdate: () => ipcRenderer.send("download-update"),
@@ -20,5 +25,7 @@ contextBridge.exposeInMainWorld('electronShell', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  isPackaged: () => ipcRenderer.invoke('is-app-packaged')
+  isPackaged: () => ipcRenderer.invoke('is-app-packaged'),
+  getAppVersion: () => appVersion,
+  getAppVersionHash: () => appVersionHash
 })

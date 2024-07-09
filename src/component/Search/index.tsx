@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { debounce } from "lodash";
 import {
   useSearchModels,
@@ -20,15 +20,14 @@ interface SearchProps {
 const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   const [search, setSearch] = useState<string>("");
   const [debouncedInput, setDebouncedInput] = useState<string>("");
-  const [isListView, setIsListView] = useState<boolean>(false);
+  const [isListView, setIsListView] = useState<boolean>(true);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
 
-  const { data: searchModels } =
-    useSearchModels(debouncedInput);
+  const { data: searchModels } = useSearchModels(debouncedInput);
   const { data: predictionData } = useGetPrediction(search);
   const { data: featuredData } = useGetFeatured();
 
-  const { setSearchQuery, showDiscover } = useHomePageContext();
+  const { setSearchQuery, searchQuery, showDiscover } = useHomePageContext();
 
   const discoverSectionRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +36,11 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   }, [featuredData]);
 
   useEffect(() => {
+    if (searchQuery) {
+      setSearch(searchQuery);
+      setSearchQuery("");
+    }
+
     const debouncer = debounce((value: string) => {
       setDebouncedInput(value);
     }, 500);
@@ -45,9 +49,11 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
     return () => debouncer.cancel();
   }, [search]);
 
+
+
   useEffect(() => {
     if (showDiscover && discoverSectionRef.current) {
-      discoverSectionRef.current.scrollIntoView({ behavior: 'smooth', });
+      discoverSectionRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [showDiscover]);
 

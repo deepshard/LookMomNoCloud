@@ -17,8 +17,8 @@ Analytics.init("a45767d32d620a6ba48640ccec2bf2f3");
 
 const AppWrapperProvider = ({ children }) => {
   const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
-  const { data: highlights } = useGetHighlights();
-  const { addUpdateInfo, addSysInfo, setDownloads, setHighlights } = useAppStore();
+  const { addUpdateInfo, addSysInfo, sysInfo, setDownloads, setHighlights } = useAppStore();
+  const { data: highlights } = useGetHighlights(sysInfo);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,10 +71,12 @@ const AppWrapperProvider = ({ children }) => {
   }, [myModels]);
 
   useEffect(() => {
-    if (highlights) {
-      setHighlights(highlights);
+    if (sysInfo) {
+      if (highlights) {
+        setHighlights(highlights);
+      }
     }
-  }, [highlights]);
+  }, [highlights, sysInfo]);
   return <AppWrapperContext.Provider value={{ isLoadingMyModels }}>{children}</AppWrapperContext.Provider>;
 };
 

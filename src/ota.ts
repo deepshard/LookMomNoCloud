@@ -64,22 +64,22 @@ export class OTAUpdater {
     if (osInfo.platform === "darwin") {
       const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2") || graphicsInfo.controllers[0].model.toLowerCase().includes("m3"));
       if (!isMetal) {
-        this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
         log("Unsupported GPU: Non-Metal GPU on macOS.");
+        this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
         return;
       }
       gpu = "metal";
     } else if (osInfo.platform === "linux") {
       const isCuda = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].vendor.toLowerCase().includes("nvidia"));
       if (!isCuda) {
-        this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
         log("Unsupported GPU: Non-Nvidia GPU on Linux.");
+        this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
         return;
       }
       gpu = "cuda";
     } else {
-      this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
       log("Unsupported OS: " + osInfo.platform);
+      this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
       return;
     }
 
@@ -102,6 +102,7 @@ export class OTAUpdater {
       const extractedContents = fs.readdirSync(tmpPath);
       const serverDir = extractedContents.find(dir => fs.statSync(path.join(tmpPath, dir)).isDirectory() && dir === 'server');
       if (!serverDir) {
+        log("Server directory not found in .zip");
         throw new Error("Server directory not found in .zip");
       }
 
@@ -112,6 +113,7 @@ export class OTAUpdater {
         return fs.statSync(filePath).isFile() && !path.extname(file);
       });
       if (!binaryFile) {
+        log("Binary file not found in server directory");
         throw new Error("Binary file not found in server directory");
       }
 
@@ -122,6 +124,7 @@ export class OTAUpdater {
       // Move server folder to output path
       fs.renameSync(path.join(tmpPath, serverDir), outputPath);
       if (!fs.existsSync(outputPath)) {
+        log("Failed to move server folder to output path");
         throw new Error("Failed to move server folder to output path");
       }
 
@@ -168,6 +171,7 @@ export class OTAUpdater {
   }
 
   checkForServerUpdate = async () => {
+    log("Checking for server update...");
     // Read hash from latest.txt
     const filePath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     let latestHash = "";
@@ -184,14 +188,16 @@ export class OTAUpdater {
     try {
       response = await axios.get(url);
     } catch (error) {
+      log(`Error checking for server update: ${error}`);
       return null;
     }
 
     // Compare hashes
     if (response && latestHash.trim() !== response.data.trim()) {
+      log(`Server update available: ${response.data.trim()}`);
       return response.data.trim();
     }
-
+    log("No server update available");
     return null;
   }
 
@@ -202,17 +208,20 @@ export class OTAUpdater {
 
 
   checkForAppUpdate = async () => {
+    log("Checking for app update...");
     try {
       const appUpdateInfo = await this.appUpdater.checkForUpdates();
       const appUpdateAvailable = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
 
       if (appUpdateAvailable) {
+        log(`App update available: ${appUpdateAvailable}`);
         return appUpdateInfo;
       }
     } catch (error) {
-      console.error(error);
+      log(`Error checking for app update: ${error}`);
     }
 
+    log("No app update available");
     return null;
   }
 
@@ -230,8 +239,7 @@ export class OTAUpdater {
   }
 
   checkForUpdates = async () => {
-    log("Checking for updates");
-
+    log("Checking for updates...");
     // If bin folder does not exist, create it
     const binPath = path.join(app.getPath("userData"), "bin");
     if (!fs.existsSync(binPath)) {
@@ -301,6 +309,7 @@ export class OTAUpdater {
   }
 
   downloadServer = async (url: string, output: string, unzip_output: string) => {
+    log(`Downloading server from: ${url}`);
     const response = await axios({
       method: "get",
       url: url,
@@ -318,7 +327,11 @@ export class OTAUpdater {
     // Wait for download to finish
     await new Promise((resolve, reject) => {
       writeStream.on("finish", resolve);
-      writeStream.on("error", reject);
+      writeStream.on("error", () => {
+        log("Error downloading server");
+        this.mainWindow.webContents.send("error", "Error downloading server");
+        reject();
+      });
     });
 
     // Unzip
@@ -338,6 +351,7 @@ export class OTAUpdater {
 
     // Download app updates if available
     if (this.updateApp.available) {
+      log("Downloading app update...");
       await this.appUpdater.downloadUpdate();
     }
   }
@@ -401,8 +415,8 @@ export class OTAUpdater {
     try {
       response = await axios.get(url);
     } catch (error) {
-      this.mainWindow.webContents.send("error", "Failed to retrieve latest hash from S3");
       log("Failed to retrieve latest hash from S3");
+      this.mainWindow.webContents.send("error", "Failed to retrieve latest hash from S3");
       return null;
     }
 
@@ -418,6 +432,5 @@ export class OTAUpdater {
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
     await this.downloadServer(serverUrl, "server.zip", "server");
     this.mainWindow.webContents.send("initialization-complete");
-    log("Downloaded server successfully.");
   }
 }

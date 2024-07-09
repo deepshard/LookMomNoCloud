@@ -3,7 +3,7 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import { TModel } from "../../types/schemas";
 import { motion } from "framer-motion";
 import { toUnitOfCount } from "../../utils/sysUtils";
-import Tooltip from "../common/Tooltip";
+import { Error } from "../common/Error";
 import "./index.css";
 import "react-circular-progressbar/dist/styles.css";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -71,42 +71,6 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
       default:
         break;
     }
-  };
-
-  const getErrorContent = (errorMessage: string) => {
-    return (
-      <div className='w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-2.5 gap-2 justify-start items-stretch'>
-        <div className='flex justify-start items-center gap-1.5 text-surface-main'>
-          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
-
-          <p>An Error Occurred</p>
-        </div>
-
-        {/* Divider */}
-        <div className='w-full h-[0.5px] bg-surface-100' />
-
-        <p className='body-xs text-surface-500 leading-snug'>{errorMessage}</p>
-      </div>
-    );
-  }
-
-  const getErrorButton = (errorMessage: string) => {
-    return (
-      <Tooltip
-        overlayClassName="bg-black/20 rounded-sm backdrop-blur-2xl min-w-[200px]"
-        overlayInnerStyle={{
-          color: 'surface-500',
-          padding: '5px',
-          fontSize: '12px',
-        }}
-        placement="bottom"
-        color="transparent"
-        title={getErrorContent(errorMessage)}
-        
-      >
-        <img src={errorIcon} alt="errorIcon" className="error-icon" />
-      </Tooltip>
-    );
   };
 
   const getWidgetButton = () => {
@@ -260,10 +224,10 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
           </div>
         </div>
       </div>
-      {model.error && getErrorButton(model.error)}
+      {model.error && <Error errorMessage={model.error} image={<img src={errorIcon} className="error-icon" />} />}
       {
         disabled &&
-        getErrorButton("This model cannot fit in either the total memory or the available storage")
+        <Error errorMessage="This model cannot fit in either the total memory or the available storage" image={<img src={errorIcon} className="error-icon" />} />
       }
       {getWidgetButton()}
     </div>

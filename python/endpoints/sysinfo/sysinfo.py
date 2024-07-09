@@ -130,10 +130,14 @@ async def get_models_data() -> List[ModelResourceDetails]:
     models = await RunningModel.get_all()
     final = []
     for model in models:
+        memory_usage = get_model_memory_usage(model.pid)
+        if not memory_usage or memory_usage == 0:
+            continue
+
         final.append(
             ModelResourceDetails(
                 id=model.id,
-                ram=get_model_memory_usage(model.pid),
+                ram=memory_usage,
                 disk=get_disk_usage(get_app_data_path() / "models" / model.id),
             )
         )

@@ -38,6 +38,8 @@ export const ModelSchema = z.object({
     progress: z.number().optional(),
     description: z.string(),
     params: z.number(),
+    multimodal: z.boolean(),
+    contextLength: z.number(),
     error: z.string().optional()
 })
 

@@ -12,6 +12,7 @@ from endpoints.model.install.install import (
     download_file,
     get_file_size_hf,
     get_hf_repo_info,
+    get_conv_template,
 )
 from truffle_types import FileInfo
 from tests.unit.data import (
@@ -43,7 +44,19 @@ def write_full_dir(path):
     with open(path / "pytorch_model.bin", "wb") as f:
         f.write(MOCK_FILE_ONE_DATA)
     with open(path / "config.json", "wb") as f:
-        f.write(MOCK_FILE_TWO_DATA)
+        padding = "a" * (
+            1024
+            - len(
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": ""}'
+            )
+        )
+        f.write(
+            (
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": "'
+                + padding
+                + '"}'
+            ).encode()
+        )
     onnx_dir = path / "onnx"
     onnx_dir.mkdir(parents=True, exist_ok=True)
     with open(path / "onnx/onnx_model.onnx", "wb") as f:
@@ -653,6 +666,12 @@ async def test_correctly_selects_proper_files_to_download_given_local_and_remote
             return_value=case["local"],
         )
         assert await get_files_to_download(case["remote"], case["local"]) == expected_outcome
+
+
+@pytest.mark.asyncio
+async def test_get_conv_template():
+    assert await get_conv_template("ead12fba-9e9b-43d8-8c26-6141318700cb") == "llama-3"
+    assert await get_conv_template("da05e829-9e9b-43d8-8c26-6141318700cb") == "LM"
 
 
 # TODO: Fix this test

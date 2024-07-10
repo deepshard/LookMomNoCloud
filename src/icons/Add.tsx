@@ -1,0 +1,14 @@
+export default ({ height, width, onClick, className="" }: { height: number, width: number, onClick?: () => void, className?: string }) => {
+    return (
+        <svg width={width} height={height} viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg" onClick={onClick} className={`...? ${className}`}>
+        <g clip-path="url(#clip0_2357_16512)">
+        <path d="M-0.00720215 6.99385C-0.00720215 7.35066 0.291353 7.64194 0.640881 7.64194H5.35223V12.3533C5.35223 12.7028 5.6435 13.0014 6.00031 13.0014C6.35712 13.0014 6.65567 12.7028 6.65567 12.3533V7.64194H11.3597C11.7092 7.64194 12.0078 7.35066 12.0078 6.99385C12.0078 6.63704 11.7092 6.33848 11.3597 6.33848H6.65567V1.63441C6.65567 1.28488 6.35712 0.986328 6.00031 0.986328C5.6435 0.986328 5.35223 1.28488 5.35223 1.63441V6.33848H0.640881C0.291353 6.33848 -0.00720215 6.63704 -0.00720215 6.99385Z"/>
+        </g>
+        <defs>
+        <clipPath id="clip0_2357_16512">
+        <rect width="12.015" height="12.0223" transform="translate(-0.00756836 0.988281)"/>
+        </clipPath>
+        </defs>
+        </svg>
+    )
+}

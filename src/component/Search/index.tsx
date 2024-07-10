@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { debounce } from "lodash";
 import {
   useSearchModels,
@@ -18,17 +18,17 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({ onModelClick }) => {
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [debouncedInput, setDebouncedInput] = useState<string>("");
-  const [isListView, setIsListView] = useState<boolean>(false);
+  const [isListView, setIsListView] = useState<boolean>(true);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
+  const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);
 
-  const { data: searchModels } =
-    useSearchModels(debouncedInput);
-  const { data: predictionData } = useGetPrediction(search);
+  const { data: predictionData, isLoading: isPredictionLoading } = useGetPrediction(search);
   const { data: featuredData } = useGetFeatured();
 
-  const { setSearchQuery, showDiscover } = useHomePageContext();
+  const { setSearchQuery, searchQuery, showDiscover } = useHomePageContext();
 
   const discoverSectionRef = useRef<HTMLDivElement>(null);
 
@@ -37,17 +37,30 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
   }, [featuredData]);
 
   useEffect(() => {
+    if (searchQuery) {
+      setSearch(searchQuery);
+      setSearchQuery("");
+    }
+
+    setIsTyping(true);
+
     const debouncer = debounce((value: string) => {
       setDebouncedInput(value);
-    }, 500);
+      setIsTyping(false);
+    }, 300);
     debouncer(search);
 
-    return () => debouncer.cancel();
+    return () => {
+      debouncer.cancel();
+      setIsTyping(false);
+    }
   }, [search]);
+
+
 
   useEffect(() => {
     if (showDiscover && discoverSectionRef.current) {
-      discoverSectionRef.current.scrollIntoView({ behavior: 'smooth', });
+      discoverSectionRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [showDiscover]);
 
@@ -74,10 +87,15 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
           </div>
         ) : (
           <SearchResults
-            searchModels={searchModels}
+            searchModels={
+              [...(predictionData ?? []), ...(searchModels ?? [])].filter(
+                (v, i, a) => a.findIndex((t) => t.id === v.id) === i
+              ) // concatenates prediction data and search models and removes duplicates
+            }
             isListView={isListView}
             setIsListView={setIsListView}
             handleModelClick={handleModelClick}
+            isLoading={!predictionData || !searchModels || isSearchLoading || isPredictionLoading || isTyping}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import json
 from models import RunningModel
 from state import global_state_manager
 from endpoints.model.install.install import get_files_to_download
@@ -80,10 +81,31 @@ async def get_model_details(model):
     """Helper function to fetch model details if downloaded."""
     async with global_state_manager.session.get(
         f"{TRUFFLE_API_URL}/models/{model['id']}",
-        headers={"Authorization": f"Bearer {os.getenv('API_TOKEN')}"},
     ) as response:
         assert response.status == 200, f"Failed to fetch model {model['id']}"
         model_data = await response.json()
+
+        multimodal = False
+        contextLength = 1024  # Start with a reasonable default, this may not hold in all cases, but most models can support it
+        model_config_path = get_app_data_path() / "models" / model["id"] / "base" / "config.json"
+        with open(model_config_path, "r") as f:
+            model_config = f.read()
+            model_config = json.loads(model_config)
+            architecture = model_config["architectures"][0]
+
+            for name in [
+                "max_position_embeddings",
+                "max_sequence_length",
+                "n_positions",
+                "seq_length",
+            ]:
+                if name in model_config:
+                    contextLength = model_config[name]
+                    break
+
+            if architecture == "LlavaLlamaForCausalLM":
+                multimodal = True
+
         return Model(
             id=model_data["id"],
             name=model_data["name"],
@@ -99,7 +121,10 @@ async def get_model_details(model):
             hfLink=model_data["hfLink"],
             status=await get_model_status(model["id"]),
             backgroundImage=model_data["backgroundImage"],
+            convTemplate=model_data["convTemplate"],
             instance=model["instance"] if model["instance"] is not None else 0,
             port=model["port"] if model["port"] is not None else None,
             progress=0,
+            multimodal=multimodal,
+            contextLength=contextLength,
         )

@@ -5,12 +5,13 @@ import { TModel } from "../../types/schemas";
 // @ts-ignore
 import llamaIcon from "../../assets/images/llama1.png";
 
-export const useGetHighlights = () => {
+export const useGetHighlights = (sysinfo?: any) => {
   return useQuery({
     queryKey: ["highlights"],
     queryFn: () => getHighlights(),
     retry: 500,
     retryOnMount: false,
+    enabled: !!sysinfo
   });
 };
 
@@ -32,7 +33,7 @@ export const useDeleteModel = () => {
 }
 
 export const useSearchModels = (query: string) => {
-  return  useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["searchModels", query],
     queryFn: () => {
       return searchModels(query)
@@ -40,6 +41,8 @@ export const useSearchModels = (query: string) => {
     retryOnMount: false,
     enabled: !!query
   })
+
+  return { data, isLoading }
 }
 
 export const useGetMyModels = () => {

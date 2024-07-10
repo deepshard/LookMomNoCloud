@@ -1,3 +1,5 @@
+export const MODEL_PRECISION = 2 // in bytes;
+
 export function bytesToHumanReadable(bytes?: number, withUnit = true, decimals = 2): string {
   if (!bytes) return ' - ';
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
@@ -47,7 +49,7 @@ export function roundTo(n: number, decimals: number): number {
 
 export function canFitOnMachine(params: number, totalMemory: number, availableDisk: number): boolean {
   const MAX_COMPRESSION = 0.23; // Constant from the backend at INT3 quantization
-  const uncompressedSize = 2 * params; // Approx 2 bytes per param
+  const uncompressedSize = MODEL_PRECISION * params; // Approx 2 bytes per param
   const compressedSize = MAX_COMPRESSION * uncompressedSize;
 
   const expectedDiskUsage = uncompressedSize + compressedSize; // Store base weights plus smallest quantization

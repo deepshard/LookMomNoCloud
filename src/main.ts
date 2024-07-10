@@ -2,7 +2,7 @@ import { app, BrowserWindow, Menu, ipcMain, globalShortcut } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
-import { spawn, ChildProcess } from "child_process";
+import { spawn, ChildProcess, exec } from "child_process";
 import { log, initializeLogger, endLogger } from "./log";
 import fs from "fs";
 
@@ -13,20 +13,62 @@ let serverProcess: ChildProcess;
 let forceQuit = false;
 let mainWindow;
 
+const killServerIfRunning = (port: number) => {
+  log(`Attempting to kill server process on port ${port}`);
+  const command = `lsof -i :${port} -t`;
+
+  exec(command, (error, stdout) => {
+    if (error) {
+      log(`Error finding process on port ${port}: ${error}`);
+      return;
+    }
+
+    const pid = stdout.trim();
+    if (pid) {
+      log(`Found process ${pid} running on port ${port}. Attempting to kill.`);
+      exec(`kill -9 ${pid}`, (error) => {
+        if (error) {
+          log(`Error killing process ${pid} on port ${port}: ${error}`);
+        } else {
+          log(`Successfully killed process ${pid} on port ${port}`);
+        }
+      });
+    } else {
+      log(`No process found running on port ${port}`);
+    }
+  })
+}
+
 const spawnServer = () => {
+  log("Attempting to spawn server");
+  killServerIfRunning(8899);
+
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
   if (!fs.existsSync(serverPath)) {
     log(`Server executable not found at ${serverPath}`);
     return;
   }
+  log(`Server executable found at ${serverPath}`);
+
   const logsPath = path.join(app.getPath("userData"), "bin", "server", "server.log");
+
   const f = fs.openSync(logsPath, "a+");
   serverProcess = spawn(serverPath, [], {
     detached: true,
     cwd: path.join(app.getPath("userData"), "bin", "server"),
     stdio: ["ignore", f, f],
   });
+  log(`Server process spawned with PID: ${serverProcess.pid}`);
   serverProcess.unref();
+}
+
+const getVersionHash = () => {
+  try {
+    const data = fs.readFileSync(path.join(app.getPath("userData"), "bin", "server", "version.txt"), 'utf8');
+    return data;
+  } catch (error) {
+    console.error('Error reading file:', error);
+  }
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -45,6 +87,10 @@ const createWindow = () => {
       devTools: !app.isPackaged,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
+      additionalArguments: [
+        `--app-version=${app.getVersion()}`,
+        `--app-version-hash=${getVersionHash()}`,
+      ]
     },
   });
 
@@ -56,14 +102,15 @@ const createWindow = () => {
         { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+I', click: () => mainWindow.webContents.toggleDevTools() },
         { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
         { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
+        { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' },
+        { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
+        { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
+        { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
       ]
     },
-    {
-      label: "Version",
-      submenu: [
-        { label: `${app.getVersion()}`, enabled: false },
-      ]
-    }
+
   ];
 
   setTimeout(() => {
@@ -117,6 +164,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
+  log("App is ready. Initializing...");
   initializeLogger()
   spawnServer();
 
@@ -144,14 +192,16 @@ app.on("ready", async function () {
   ipcMain.handle('is-app-packaged', () => app.isPackaged);
 
   window.on("ready-to-show", async () => {
-    log("Checking for initial server");
     const needInitialServer = otaUpdater.checkForInitialServer();
     if (needInitialServer) {
-      log("Downloading initial server");
+      log("Server not found. Downloading...");
       await otaUpdater.downloadInitialServer();
+      log("Initial server download complete");
 
-      log("Spawning server");
+      log("Spawning server...");
       spawnServer();
+    } else {
+      log("Initial server already exists");
     }
   });
 });
@@ -161,10 +211,12 @@ app.on("ready", async function () {
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
   if (serverProcess) {
+    log(`Killing server process with PID: ${serverProcess.pid}`);
     serverProcess.kill();
     log(`Server process killed at ${serverProcess.pid}`);
   }
-  log("Quitting");
+  log("Ending logger and quitting app");
+  log("----------------")
   endLogger();
   app.quit();
 });

@@ -199,7 +199,7 @@ function ModelDetailView() {
   const getNotDownloadedIcon = () => {
     if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
       return (
-        <Tooltip arrow={false} placement="bottom" overlay={<p>{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
+        <Tooltip arrow={false} placement="bottom" overlay={<p className="text-nowrap">{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
           <Icon
             src={downloadIcon}
             imgClassName="h-[11px] w-[11px]"

@@ -16,7 +16,7 @@ from endpoints import (
     stop_model_handler,
     get_highlights,
     get_downloaded_models,
-    stop_all_models
+    stop_all_models,
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
@@ -108,7 +108,10 @@ async def delete_model(model_id: str):
     await delete_model_handler(model_id)
     return {}
 
-@app.post("/quit",)
+
+@app.post(
+    "/quit",
+)
 async def quit_application(background_tasks: BackgroundTasks):
     await stop_all_models()  # Stop all running models
     background_tasks.add_task(os._exit, 0)

@@ -170,4 +170,8 @@ def needs_update(last_info: SystemInfo, current_info: SystemInfo) -> bool:
         current_info.resources.available.disk,
     )
 
-    return ram_change >= CHANGE_THRESHOLD or disk_change >= CHANGE_THRESHOLD
+    return (
+        ram_change >= CHANGE_THRESHOLD
+        or disk_change >= CHANGE_THRESHOLD
+        or last_info.resources.models != current_info.resources.models
+    )

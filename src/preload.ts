@@ -18,10 +18,13 @@ contextBridge.exposeInMainWorld("ipc", {
   onUpdateDownloaded: (callback) => ipcRenderer.on("update-downloaded", callback),
   onInitializationCheck: (callback) => ipcRenderer.on("initialization", (_event, value) => callback(value)),
   onInitializationComplete: (callback) => ipcRenderer.on("initialization-complete", callback),
+
+  updateRunningModels: (models) => ipcRenderer.send("update-running-models", models),
+  onTrayModelStopped: (callback) => ipcRenderer.on("tray-stop-model", (_event, value) => callback(value)),
 });
 
-contextBridge.exposeInMainWorld('electronShell', {
-  openExternal: (url) => shell.openExternal(url)
+contextBridge.exposeInMainWorld("electronShell", {
+  openExternal: (url) => shell.openExternal(url),
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {

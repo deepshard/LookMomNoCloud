@@ -1,9 +1,9 @@
-import { app, BrowserWindow, Menu, ipcMain, globalShortcut } from "electron";
+import { app, BrowserWindow, Menu, ipcMain, Tray } from "electron";
 import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
 import { spawn, ChildProcess, exec } from "child_process";
-import { log, initializeLogger, endLogger } from "./log";
+import { log, initializeLogger } from "./log";
 import fs from "fs";
 import { quitApp } from "./api/general";
 
@@ -77,6 +77,8 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+let tray;
+
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -110,14 +112,34 @@ const createWindow = () => {
         { label: "Quit", accelerator: "CmdOrCtrl+Q", role: "quit" },
       ],
     },
+    {
+      label: "Version",
+      submenu: [{ label: `${app.getVersion()}`, enabled: false }],
+    },
   ];
 
   setTimeout(() => {
     mainWindow.webContents.setZoomLevel(0);
   }, 100);
 
+  // @ts-ignore
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+
+  tray = new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
+
+  tray.setToolTip("LMNC (Truffle)");
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Quit",
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
 
   // Disable zoom shortcuts
   mainWindow.webContents.on("before-input-event", (event, input) => {
@@ -151,11 +173,6 @@ const createWindow = () => {
     return false;
   });
 
-  // if (process.env.NODE_ENV === "development") {
-  //   mainWindow.webContents.openDevTools();
-  //   mainWindow.setResizable(true);
-  // }
-
   return mainWindow;
 };
 
@@ -182,6 +199,32 @@ app.on("ready", async function () {
   autoUpdater.on("update-downloaded", () => window.webContents.send("update-downloaded"));
 
   ipcMain.handle("is-app-packaged", () => app.isPackaged);
+
+  ipcMain.on("update-running-models", async (_, models) => {
+    const modelsMenu = models.map((m) => ({
+      label: m.name,
+      submenu: [
+        {
+          label: "Stop",
+          click: () => {
+            window.webContents.send("tray-stop-model", m);
+          },
+        },
+      ],
+    }));
+    modelsMenu.length && modelsMenu.push({ type: "separator" });
+    const contextMenu = Menu.buildFromTemplate([
+      ...modelsMenu,
+      {
+        label: "Quit",
+        click: () => {
+          app.quit();
+        },
+      },
+    ]);
+
+    tray.setContextMenu(contextMenu);
+  });
 
   window.on("ready-to-show", async () => {
     const needInitialServer = otaUpdater.checkForInitialServer();

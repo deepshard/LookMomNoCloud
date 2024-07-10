@@ -38,13 +38,13 @@ const Sysinfo = ({ sysInfo }: SysInfoProps) => {
 
   useEffect(() => {
     setTimeout(() => {
-      const progressBar = document.getElementsByClassName("CircularProgressbar")[0];
-      // @ts-ignore
-      progressBar.style.transform = "rotate(-90deg)";
-      const percentText = progressBar.getElementsByTagName("text")[0];
-      percentText.style.transform = "rotate(89deg)";
-      percentText.setAttribute("x", "50");
-      percentText.setAttribute("y", "-50");
+      // const progressBar = document.getElementsByClassName("CircularProgressbar")[0];
+      // // @ts-ignore
+      // progressBar.style.transform = "rotate(-90deg)";
+      // const percentText = progressBar.getElementsByTagName("text")[0];
+      // percentText.style.transform = "rotate(89deg)";
+      // percentText.setAttribute("x", "50");
+      // percentText.setAttribute("y", "-50");
     }, 500);
   }, []);
 

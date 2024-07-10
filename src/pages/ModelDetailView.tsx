@@ -11,7 +11,7 @@ import { useAppWrapper } from "../context/AppWrapperProvider";
 import Icon from "../component/Icon";
 import Tag from "../component/Tag";
 import useModelActions from "../hooks/modelActions/useModelActions";
-import Tooltip from "../component/common/Tooltip";
+import { Error } from "../component/common/Error";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 // @ts-ignore
@@ -123,23 +123,6 @@ function ModelDetailView() {
     }
   };
 
-  const getErrorContent = (errorMessage: string) => {
-    return (
-      <div className="w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch">
-        <div className="flex justify-start items-center gap-1.5 text-surface-main">
-          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
-
-          <p>An Error Occurred</p>
-        </div>
-
-        {/* Divider */}
-        <div className="w-full h-[0.5px] bg-surface-100" />
-
-        <p className="body-xs text-surface-500 leading-tight">{errorMessage}</p>
-      </div>
-    );
-  };
-
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
@@ -234,20 +217,7 @@ function ModelDetailView() {
         </Tooltip>
       );
     } else {
-      return (
-        <Tooltip
-          overlayClassName="rounded-sm glass-3d"
-          overlayInnerStyle={{
-            color: "surface-500",
-            padding: "10px",
-            fontSize: "12px",
-          }}
-          placement="bottom"
-          color="transparent"
-          title={getErrorContent("This model cannot fit in either the total memory or the available storage")}>
-          <Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2"></Icon>
-        </Tooltip>
-      );
+      return <Error errorMessage="This model cannot fit in either the total memory or the available storage" image={<Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2" />} />;
     }
   };
 
@@ -288,7 +258,10 @@ function ModelDetailView() {
               />
             </>
           ) : (
-            <>{getNotDownloadedIcon()}</>
+            <>
+              {modelData?.error && <Error errorMessage={modelData.error} image={<Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2" />} />}
+              {getNotDownloadedIcon()}
+            </>
           )}
 
           <Icon src={closeIcon} imgClassName="h-[11px] w-[11px]" onClick={() => handleExit()} />

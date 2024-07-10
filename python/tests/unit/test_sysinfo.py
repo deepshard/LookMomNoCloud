@@ -5,7 +5,10 @@ import json
 import pytest
 import pytest
 from endpoints.sysinfo import sysinfo_generator, CHANGE_THRESHOLD
+from models import RunningModel
+from db import get_db_session
 from unittest.mock import MagicMock
+from tests.unit.data import ID
 
 
 # Fixtures
@@ -180,3 +183,62 @@ async def test_no_significant_disk_change_does_not_yield(set_os, mocker):
         except asyncio.TimeoutError:
             # Expected timeout since there should be no new data yielded
             assert True
+
+
+@pytest.mark.asyncio
+async def test_dont_return_model_if_null(set_os, mocker):
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            generator = sysinfo_generator()
+            await generator.__anext__()
+    else:
+        # Add running models
+        async with get_db_session() as session:
+            session.add(
+                RunningModel(
+                    **{
+                        "id": ID,
+                        "instance": 1,
+                        "name": "meta-llama/Meta-Llama-3-8B",
+                        "size": 8000000000,
+                        "pid": 1234,
+                        "port": 8899,
+                        "quantization": "INT4",
+                    }
+                )
+            )
+            session.add(
+                RunningModel(
+                    **{
+                        "id": ID,
+                        "instance": 1,
+                        "name": "meta-llama/Meta-Llama-3-8B",
+                        "size": 8000000000,
+                        "pid": 1235,
+                        "port": 8900,
+                        "quantization": "INT4",
+                    }
+                )
+            )
+            await session.commit()
+
+        # Mock
+        def mock_get_model_memory_usage(pid):
+            if pid == 1234:
+                return None
+            else:
+                return 8000000000
+
+        mocker.patch(
+            "endpoints.sysinfo.sysinfo.get_model_memory_usage",
+            side_effect=mock_get_model_memory_usage,
+        )
+        mocker.patch("endpoints.sysinfo.sysinfo.get_disk_usage", return_value=1000000)
+
+        # Start the sysinfo generator
+        generator = sysinfo_generator()
+        initial_data = await generator.__anext__()
+
+        # Assert that the first model is not returned
+        structured_data = json.loads(initial_data.split("data: ")[1].strip())
+        assert len(structured_data["resources"]["models"]) == 1, "Only one model should be returned"

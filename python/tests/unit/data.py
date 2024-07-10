@@ -30,6 +30,7 @@ MOCK_MODEL_1 = {
     "evalId": "test",
     "hfLink": HF_API_URL,
     "backgroundImage": "test",
+    "convTemplate": "LM",
 }
 MOCK_MODEL_2 = {
     "id": ID_2,
@@ -45,6 +46,7 @@ MOCK_MODEL_2 = {
     "evalId": "test",
     "hfLink": HF_API_URL,
     "backgroundImage": "test",
+    "convTemplate": "LM",
 }
 
 # Mock API responses
@@ -88,6 +90,7 @@ MODELS = [
         "evalId": "test",
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
+        "convTemplate": "LM",
     },
     {
         "id": "b438d015-ad45-4e9a-9aba-2e290348b078",
@@ -103,6 +106,7 @@ MODELS = [
         "evalId": "test",
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
+        "convTemplate": "LM",
     },
     {
         "id": "e1b7a151-ad5a-4929-b9a2-20e42f629c4c",
@@ -118,6 +122,7 @@ MODELS = [
         "evalId": "test",
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
+        "convTemplate": "LM",
     },
     {
         "id": "c081e038-a74c-4a7d-87d6-f36bbf7ff373",
@@ -133,6 +138,7 @@ MODELS = [
         "evalId": "test",
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
+        "convTemplate": "LM",
     },
     {
         "id": "da05e829-9e9b-43d8-8c26-6141318700cb",
@@ -148,6 +154,7 @@ MODELS = [
         "evalId": "test",
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
+        "convTemplate": "LM",
     },
     {
         "id": "ead12fba-9e9b-43d8-8c26-6141318700cb",
@@ -163,6 +170,7 @@ MODELS = [
         "evalId": "test",
         "hfLink": "openai-community/gpt2",
         "backgroundImage": "test",
+        "convTemplate": "llama-3",
     },
 ]
 

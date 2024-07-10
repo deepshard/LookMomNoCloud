@@ -7,6 +7,8 @@ import truffleHardwareLandscapeIcon from "../../assets/icons/truffle-hardware-la
 // @ts-ignore
 import errorIcon from "../../assets/icons/error.svg";
 
+const  UNKNOWN_DEVICE = "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.";
+
 const InitializationProgress = () => {
   const [percent, setPercent] = useState(0);
   const [initialized, setInitialized] = useState(false);
@@ -21,6 +23,10 @@ const InitializationProgress = () => {
     const handleInitializationComplete = () => {
       setInitialized(true);
 
+      // Check if there are any other updates to prompt the user about
+      //@ts-ignore
+      window.ipc.checkForUpdates();
+
       setTimeout(() => {
         navigate("/");
       }, 2500);
@@ -30,7 +36,13 @@ const InitializationProgress = () => {
     window.ipc.onDownloadUpdateProgress(handleProgress);
 
     //@ts-ignore
-    window.ipc.onError((error) => setError(error));
+    window.ipc.onError((error) => {
+      if (error === UNKNOWN_DEVICE) {
+        setError("Unsupported device: Only Metal and Ubuntu with CUDA");
+      } else {
+        setError("An error occurred. Please restart the app");
+      }
+  });
 
     //@ts-ignore
     window.ipc.onInitializationComplete(() => handleInitializationComplete());
@@ -72,9 +84,9 @@ const InitializationProgress = () => {
       <img src={truffleHardwareLandscapeIcon} alt="" className="w-[327px] h-[187px] blur-[0.4px] mb-[66px]" />
       {
         error ? (
-          <div className="flex justify-center items-center gap-2">
+          <div className="flex justify-center items-center gap-2 w-full">
             <img src={errorIcon} alt="" />
-            <p className="text-white text-center text-sm">An error occurred. Please restart the app</p>
+            <p className="text-white text-center text-sm">{error}</p>
           </div>
         ) : (
           <>

@@ -4,6 +4,7 @@ import { TModel } from "../../types/schemas";
 import { motion } from "framer-motion";
 import { MODEL_PRECISION, bytesToHumanReadable, toUnitOfCount } from "../../utils/sysUtils";
 import Tooltip from "../common/Tooltip";
+import { Error } from "../common/Error";
 import "./index.css";
 import "react-circular-progressbar/dist/styles.css";
 import { LazyLoadImage } from "react-lazy-load-image-component";

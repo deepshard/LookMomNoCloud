@@ -49,6 +49,7 @@ async def get_trending_models(num: int) -> list[Model]:
                 hfLink=model["hfLink"],
                 status=ModelStatus.NOT_DOWNLOADED,
                 backgroundImage=model["backgroundImage"],
+                convTemplate=model["convTemplate"],
                 instance=0,
                 port=None,
                 progress=0,

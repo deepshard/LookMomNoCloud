@@ -81,7 +81,9 @@ const createWindow = () => {
   });
 
   // and load the index.html of the app.
+  // @ts-ignore
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    // @ts-ignore
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(

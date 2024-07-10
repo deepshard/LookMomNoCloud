@@ -20,7 +20,7 @@ import nightIcon from "./assets/icons/night.svg";
 import chatIcon from "./assets/icons/chat.svg";
 import Settings from "./component/Settings";
 import Button from "./component/common/Button";
-import { Drawer, DrawerContent, DrawerTrigger } from "./pages/Playground/Drawer";
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger, } from "./pages/Playground/Drawer";
 import Playground from "./pages/Playground";
 import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 
@@ -160,11 +160,12 @@ export default function Home() {
         </div>
         <Drawer >
           <DrawerTrigger>
-            <Button className="absolute bottom-3 left-3 rounded-full p-2">
+            <div className="absolute bottom-3 left-3 rounded-full p-2 truffle-btn">
               <img src={chatIcon} alt="" className="w-[18px] h-[18px]" />
-            </Button>
+            </div>
           </DrawerTrigger>
-          <DrawerContent>
+          <DrawerContent aria-describedby={undefined}>
+            <DrawerTitle></DrawerTitle>
             <PlaygroundProvider>
               <Playground />
             </PlaygroundProvider>

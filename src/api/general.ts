@@ -14,7 +14,6 @@ export const getHighlights = async (): Promise<TModel[]> => {
   return response.data;
 };
 export const quitApp = async (): Promise<boolean> => {
-  console.log("Quitting app...");
   const response = await localClient.post("/quit");
   return response.status === 200;
 };

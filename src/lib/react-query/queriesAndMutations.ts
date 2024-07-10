@@ -11,7 +11,7 @@ export const useGetHighlights = (sysinfo?: any) => {
     queryFn: () => getHighlights(),
     retry: 500,
     retryOnMount: false,
-    enabled: !!sysinfo
+    enabled: !!sysinfo,
   });
 };
 

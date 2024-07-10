@@ -21,7 +21,7 @@ Analytics.init("a45767d32d620a6ba48640ccec2bf2f3");
 const AppWrapperProvider = ({ children }) => {
   const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
   const { addUpdateInfo, addSysInfo, sysInfo, setDownloads, setHighlights, updateModels } = useAppStore();
-  const { data: highlights } = useGetHighlights(sysInfo);
+  const { refetch: getNewHighlights,  } = useGetHighlights(sysInfo);
   const navigate = useNavigate();
   const { stopModel } = useModelActions();
 
@@ -86,11 +86,12 @@ const AppWrapperProvider = ({ children }) => {
 
   useEffect(() => {
     if (sysInfo) {
-      if (highlights) {
-        setHighlights(highlights);
-      }
+      getNewHighlights()
+      .then((res) => {
+        res.data && setHighlights(res.data);
+      })
     }
-  }, [highlights, sysInfo]);
+  }, [sysInfo]);
 
   useEffect(() => {
     // @ts-ignore

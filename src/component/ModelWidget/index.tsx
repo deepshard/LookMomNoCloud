@@ -176,7 +176,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
               />
             ) : (
               <Tooltip
-                overlay={<p>Installing</p>}
+                overlay={<p>Processing</p>}
               >
 
                 <img src={installIcon} alt="installIcon" className="animate-spin" />

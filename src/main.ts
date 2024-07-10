@@ -3,13 +3,16 @@ import { autoUpdater } from "electron-updater";
 import path from "path";
 import { OTAUpdater } from "./ota";
 import { spawn, ChildProcess, exec } from "child_process";
-import { log, initializeLogger, endLogger } from "./log";
+import { log, initializeLogger } from "./log";
 import fs from "fs";
+import { quitApp } from "./api/general";
 
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
 let serverProcess: ChildProcess;
+let forceQuit = false;
+let mainWindow;
 
 const killServerIfRunning = (port: number) => {
   log(`Attempting to kill server process on port ${port}`);
@@ -34,8 +37,8 @@ const killServerIfRunning = (port: number) => {
     } else {
       log(`No process found running on port ${port}`);
     }
-  })
-}
+  });
+};
 
 const spawnServer = () => {
   log("Attempting to spawn server");
@@ -62,12 +65,12 @@ const spawnServer = () => {
 
 const getVersionHash = () => {
   try {
-    const data = fs.readFileSync(path.join(app.getPath("userData"), "bin", "server", "version.txt"), 'utf8');
+    const data = fs.readFileSync(path.join(app.getPath("userData"), "bin", "server", "version.txt"), "utf8");
     return data;
   } catch (error) {
-    console.error('Error reading file:', error);
+    console.error("Error reading file:", error);
   }
-}
+};
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -78,7 +81,7 @@ let tray;
 
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1060,
     height: 800,
     titleBarStyle: "hidden",
@@ -87,10 +90,7 @@ const createWindow = () => {
       devTools: !app.isPackaged,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
-      additionalArguments: [
-        `--app-version=${app.getVersion()}`,
-        `--app-version-hash=${getVersionHash()}`,
-      ]
+      additionalArguments: [`--app-version=${app.getVersion()}`, `--app-version-hash=${getVersionHash()}`],
     },
   });
 
@@ -98,17 +98,19 @@ const createWindow = () => {
     {
       label: "View",
       submenu: [
-        { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
-        { label: 'Toggle Developer Tools', accelerator: 'CmdOrCtrl+I', click: () => mainWindow.webContents.toggleDevTools() },
-        { label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus', enabled: false },  // Disabled
-        { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', enabled: false },   // Disabled
-        { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' },
-        { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
-        { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
-        { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
-        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
-        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
-      ]
+        { label: "Reload", accelerator: "CmdOrCtrl+R", click: () => mainWindow.reload() },
+        { label: "Toggle Developer Tools", accelerator: "CmdOrCtrl+I", click: () => mainWindow.webContents.toggleDevTools() },
+        { label: "Zoom In", accelerator: "CmdOrCtrl+Plus", enabled: false }, // Disabled
+        { label: "Zoom Out", accelerator: "CmdOrCtrl+-", enabled: false }, // Disabled
+        { label: "Select All", accelerator: "CmdOrCtrl+A", role: "selectAll" },
+        { label: "Cut", accelerator: "CmdOrCtrl+X", role: "cut" },
+        { label: "Copy", accelerator: "CmdOrCtrl+C", role: "copy" },
+        { label: "Paste", accelerator: "CmdOrCtrl+V", role: "paste" },
+        { label: "Undo", accelerator: "CmdOrCtrl+Z", role: "undo" },
+        { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", role: "redo" },
+        { type: "separator" },
+        { label: "Quit", accelerator: "CmdOrCtrl+Q", role: "quit" },
+      ],
     },
     {
       label: "Version",
@@ -147,7 +149,9 @@ const createWindow = () => {
   });
 
   // and load the index.html of the app.
+  // @ts-ignore
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    // @ts-ignore
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(
@@ -160,6 +164,15 @@ const createWindow = () => {
   app.isPackaged && mainWindow.setResizable(false);
   mainWindow.webContents.closeDevTools();
 
+  // Prevent the window from being destroyed when it's closed
+  mainWindow.on("close", (event) => {
+    if (!forceQuit) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+    return false;
+  });
+
   return mainWindow;
 };
 
@@ -168,7 +181,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
   log("App is ready. Initializing...");
-  initializeLogger()
+  initializeLogger();
   spawnServer();
 
   const window = createWindow();
@@ -187,7 +200,7 @@ app.on("ready", async function () {
 
   ipcMain.handle("is-app-packaged", () => app.isPackaged);
 
-  ipcMain.on("update-running-models", async (event, models) => {
+  ipcMain.on("update-running-models", async (_, models) => {
     const modelsMenu = models.map((m) => ({
       label: m.name,
       submenu: [
@@ -228,19 +241,11 @@ app.on("ready", async function () {
   });
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (serverProcess) {
-    log(`Killing server process with PID: ${serverProcess.pid}`);
-    serverProcess.kill();
-    log(`Server process killed at ${serverProcess.pid}`);
-  }
-  log("Ending logger and quitting app");
-  log("----------------")
-  endLogger();
-  app.quit();
+
+// This intercepts the CMD+Q or Quit menu item
+app.on("before-quit", () => {
+  quitApp();
+  forceQuit = true;
 });
 
 app.on("activate", async () => {
@@ -248,11 +253,8 @@ app.on("activate", async () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
-    // const otaUpdater = new OTAUpdater(window, autoUpdater);
-    // ipcMain.on("download-update", otaUpdater.downloadUpdate);
-    // ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);
-    // autoUpdater.on("download-progress", (progress) => otaUpdater?.updateProgress(progress.delta));
-    // await otaUpdater.checkForUpdates();
+  } else {
+    mainWindow?.show();
   }
 });
 

@@ -5,7 +5,7 @@ import { TModel } from "../../types/schemas";
 // @ts-ignore
 import llamaIcon from "../../assets/images/llama1.png";
 
-export const useGetHighlights = (sysinfo: any) => {
+export const useGetHighlights = (sysinfo?: any) => {
   return useQuery({
     queryKey: ["highlights"],
     queryFn: () => getHighlights(),

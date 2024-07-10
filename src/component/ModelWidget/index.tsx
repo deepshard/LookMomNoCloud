@@ -2,14 +2,15 @@ import { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { TModel } from "../../types/schemas";
 import { motion } from "framer-motion";
-import { toUnitOfCount } from "../../utils/sysUtils";
+import { MODEL_PRECISION, bytesToHumanReadable, toUnitOfCount } from "../../utils/sysUtils";
+import Tooltip from "../common/Tooltip";
 import { Error } from "../common/Error";
 import "./index.css";
 import "react-circular-progressbar/dist/styles.css";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 // @ts-ignore
-import downloadIcon from '../../assets/icons/download.svg'
+import downloadIcon from "../../assets/icons/download.svg";
 //@ts-ignore
 import playIcon from "../../assets/icons/play.svg";
 //@ts-ignore
@@ -42,7 +43,7 @@ const OverlaySVG = ({ width = 140, height = 86 }) => (
 
 interface ModelWidgetProps extends React.HTMLAttributes<HTMLDivElement> {
   model: TModel;
-  disabled?: boolean
+  disabled?: boolean;
   onInstall?: () => void;
   onRun?: () => void;
   onStop?: () => void;
@@ -73,9 +74,52 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
     }
   };
 
+  const getModelSize = () => {
+    return MODEL_PRECISION * model.size;
+  };
+
+  const calculateDownloadedSize = () => {
+    const totalSize = getModelSize();
+    return totalSize * ((model.progress || 0) / 100);
+  };
+
+  const getErrorContent = (errorMessage: string) => {
+    return (
+      <div className="w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-2.5 gap-2 justify-start items-stretch">
+        <div className="flex justify-start items-center gap-1.5 text-surface-main">
+          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
+
+          <p>An Error Occurred</p>
+        </div>
+
+        {/* Divider */}
+        <div className="w-full h-[0.5px] bg-surface-100" />
+
+        <p className="body-xs text-surface-500 leading-snug">{errorMessage}</p>
+      </div>
+    );
+  };
+
+  const getErrorButton = (errorMessage: string) => {
+    return (
+      <Tooltip
+        overlayClassName="bg-black/20 rounded-sm backdrop-blur-2xl min-w-[200px]"
+        overlayInnerStyle={{
+          color: "surface-500",
+          padding: "5px",
+          fontSize: "12px",
+        }}
+        placement="bottom"
+        color="transparent"
+        title={getErrorContent(errorMessage)}>
+        <img src={errorIcon} alt="errorIcon" className="error-icon" />
+      </Tooltip>
+    );
+  };
+
   const getWidgetButton = () => {
     if (disabled) {
-      return null
+      return null;
     }
 
     switch (model.status) {
@@ -92,21 +136,30 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
             />
           </div>
         ) : (
-          <motion.div
-            className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.1, ease: "easeInOut" }}>
-            <CircularProgressbar
-              value={model.progress || 0}
-              text={`${model.progress}%`}
-              styles={{
-                path: { stroke: "rgba(255, 255, 255, 1)" },
-                trail: { stroke: "rgba(255, 255, 255, 0.4)" },
-                text: { fill: "rgba(255, 255, 255, 0.85)", fontSize: "34px" },
-              }}
-            />
-          </motion.div>
+          <Tooltip
+            arrow={false}
+            placement="bottom"
+            overlay={
+              <p>
+                {bytesToHumanReadable(calculateDownloadedSize(), true, 0)}/{bytesToHumanReadable(getModelSize(), true, 0)}
+              </p>
+            }>
+            <motion.div
+              className="h-[30px] w-[30px] absolute bottom-0 right-0 m-2 widget-3d rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.1, ease: "easeInOut" }}>
+              <CircularProgressbar
+                value={model.progress || 0}
+                text={`${model.progress}%`}
+                styles={{
+                  path: { stroke: "rgba(255, 255, 255, 1)" },
+                  trail: { stroke: "rgba(255, 255, 255, 0.4)" },
+                  text: { fill: "rgba(255, 255, 255, 0.85)", fontSize: "30px" },
+                }}
+              />
+            </motion.div>
+          </Tooltip>
         );
       case "ACKNOWLEDGED":
       case "INSTALLING":
@@ -123,7 +176,12 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
                 }}
               />
             ) : (
-              <img src={installIcon} alt="installIcon" className="animate-spin" />
+              <Tooltip
+                overlay={<p>Installing</p>}
+              >
+
+                <img src={installIcon} alt="installIcon" className="animate-spin" />
+              </Tooltip>
             )}
           </div>
         );
@@ -177,15 +235,24 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
                 />
               </div>
             ) : (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAction();
-                }}
-                className="install-button absolute">
-                <img src={downloadIcon} alt="" className="icon-small" />
-                <span className="text-xs nowrap relative capitalize">Install</span>
-              </div>
+              <Tooltip
+                arrow={false}
+                placement="bottom"
+                overlay={
+                  <p>
+                    {bytesToHumanReadable(getModelSize(), true, 0)}
+                  </p>
+                }>
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAction();
+                  }}
+                  className="install-button absolute">
+                  <img src={downloadIcon} alt="" className="icon-small" />
+                  <span className="text-xs nowrap relative capitalize">Install</span>
+                </div>
+              </Tooltip>
             )}
           </>
         );
@@ -193,7 +260,6 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
         return null;
     }
   };
-
   return (
     <div className="relative" {...props}>
       {model.status === "RUNNING" && (
@@ -202,7 +268,12 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
         </div>
       )}
       <div className={`model-widget base-regular ${className} relative`}>
-        <LazyLoadImage effect="blur" src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage} alt="" className={`w-full h-full object-cover scale-110 ${disabled && "blur-md"}`} />
+        <LazyLoadImage
+          effect="blur"
+          src={model.lowresBackgroundImage ? model.lowresBackgroundImage : model.backgroundImage}
+          alt=""
+          className={`w-full h-full object-cover scale-110 ${disabled && "blur-md"}`}
+        />
 
         <div
           className={`
@@ -224,11 +295,8 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
           </div>
         </div>
       </div>
-      {model.error && <Error errorMessage={model.error} image={<img src={errorIcon} className="error-icon" />} />}
-      {
-        disabled &&
-        <Error errorMessage="This model cannot fit in either the total memory or the available storage" image={<img src={errorIcon} className="error-icon" />} />
-      }
+      {model.error && getErrorButton(model.error)}
+      {disabled && getErrorButton("This model cannot fit in either the total memory or the available storage")}
       {getWidgetButton()}
     </div>
   );

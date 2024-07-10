@@ -1,6 +1,6 @@
 import { TModel } from "../types/schemas";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatDate, formatParams, canFitOnMachine } from "../utils/sysUtils";
+import { formatDate, formatParams, canFitOnMachine, bytesToHumanReadable, MODEL_PRECISION } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
@@ -40,6 +40,7 @@ import runningManIcon from "../assets/icons/running-man.svg";
 import authorIcon from "../assets/icons/author.svg";
 // @ts-ignore
 import modelSizeIcon from "../assets/icons/modelsize.svg";
+import Tooltip from "../component/common/Tooltip";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -53,7 +54,7 @@ function ModelDetailView() {
   const { refetch: getModel } = useGetModel(modelData);
   const { refetch: getMyModels } = useGetMyModels();
   const { refetch: getHighlights } = useGetHighlights();
-  
+
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const risksRef = useRef(null);
@@ -91,7 +92,7 @@ function ModelDetailView() {
   }, []);
 
   const handleExit = () => {
-    window.history.back()
+    window.history.back();
   };
 
   const scrollToSection = (sectionName) => {
@@ -146,7 +147,11 @@ function ModelDetailView() {
         );
 
       case "INSTALLING":
-        return <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />;
+        return (
+          <Tooltip overlay="Installing">
+            <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />
+          </Tooltip>
+        )
 
       case "RUNNING":
         return (
@@ -187,24 +192,30 @@ function ModelDetailView() {
     }
   };
 
+  const getModelSize = () => {
+    return MODEL_PRECISION * (modelData?.size || 0);
+  };
+
   const getNotDownloadedIcon = () => {
     if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
       return (
-        <Icon
-          src={downloadIcon}
-          imgClassName="h-[11px] w-[11px]"
-          className="w-auto flex-center gap-2 px-[24px] text-white"
-          onClick={() => {
-            modelData &&
-              installModel(modelData, undefined, (progress) => {
-                updateModels({
-                  ...modelData,
-                  ...progress,
+        <Tooltip arrow={false} placement="bottom" overlay={<p>{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
+          <Icon
+            src={downloadIcon}
+            imgClassName="h-[11px] w-[11px]"
+            className="w-auto flex-center gap-2 px-[24px] text-white"
+            onClick={() => {
+              modelData &&
+                installModel(modelData, undefined, (progress) => {
+                  updateModels({
+                    ...modelData,
+                    ...progress,
+                  });
                 });
-              });
-          }}>
-          <p className="text-sm">Install</p>
-        </Icon>
+            }}>
+            <p className="text-sm">Install</p>
+          </Icon>
+        </Tooltip>
       );
     } else {
       return <Error errorMessage="This model cannot fit in either the total memory or the available storage" image={<Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2" />} />;

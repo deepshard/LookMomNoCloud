@@ -13,6 +13,11 @@ export const getHighlights = async (): Promise<TModel[]> => {
   const response = await localClient.get("/highlights");
   return response.data;
 };
+export const quitApp = async (): Promise<boolean> => {
+  console.log("Quitting app...");
+  const response = await localClient.post("/quit");
+  return response.status === 200;
+};
 
 export const getNews = async (): Promise<TNews[]> => {
   const response = await client.get("/news");

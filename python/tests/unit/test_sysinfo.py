@@ -186,6 +186,56 @@ async def test_no_significant_disk_change_does_not_yield(set_os, mocker):
 
 
 @pytest.mark.asyncio
+async def test_model_change_detection(set_os, mocker):
+    if set_os == "Windows":
+        with pytest.raises(ValueError):
+            generator = sysinfo_generator()
+            await generator.__anext__()
+    else:
+        if set_os == "Linux":
+            mocker.patch("utils.get_devices", return_value=[{"type": "cuda", "id": 0}])
+
+        mocker.patch(
+            "endpoints.sysinfo.sysinfo.get_model_memory_usage",
+            return_value=8000000000,
+        )
+        mocker.patch("endpoints.sysinfo.sysinfo.get_disk_usage", return_value=1000000)
+
+        # Start the sysinfo generator
+        generator = sysinfo_generator()
+        initial_data = await generator.__anext__()  # Get initial data
+
+        initial_models = json.loads(initial_data.split("data: ")[1].strip())["resources"]["models"]
+        assert len(initial_models) == 0, "No models should be returned initially"
+
+        # Add a running model
+        async with get_db_session() as session:
+            session.add(
+                RunningModel(
+                    **{
+                        "id": ID,
+                        "instance": 1,
+                        "name": "meta-llama/Meta-Llama-3-8B",
+                        "size": 8000000000,
+                        "pid": 1234,
+                        "port": 8899,
+                        "quantization": "INT4",
+                    }
+                )
+            )
+            await session.commit()
+
+        # Get the updated data
+        updated_data = await generator.__anext__()
+
+        # Parse the JSON data from the generator output
+        updated_models = json.loads(updated_data.split("data: ")[1].strip())["resources"]["models"]
+
+        # Assert that the model is returned
+        assert len(updated_models) == 1, "One model should be returned"
+
+
+@pytest.mark.asyncio
 async def test_dont_return_model_if_null(set_os, mocker):
     if set_os == "Windows":
         with pytest.raises(ValueError):

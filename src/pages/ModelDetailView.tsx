@@ -1,6 +1,6 @@
 import { TModel } from "../types/schemas";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatDate, formatParams, canFitOnMachine } from "../utils/sysUtils";
+import { formatDate, formatParams, canFitOnMachine, bytesToHumanReadable, MODEL_PRECISION } from "../utils/sysUtils";
 import { NavBarOptions } from "../types/enums";
 import { useLocation } from "react-router-dom";
 import { useGetHighlights, useGetModel, useGetMyModels } from "../lib/react-query/queriesAndMutations";
@@ -11,7 +11,7 @@ import { useAppWrapper } from "../context/AppWrapperProvider";
 import Icon from "../component/Icon";
 import Tag from "../component/Tag";
 import useModelActions from "../hooks/modelActions/useModelActions";
-import Tooltip from "../component/common/Tooltip";
+import { Error } from "../component/common/Error";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 // @ts-ignore
@@ -40,6 +40,7 @@ import runningManIcon from "../assets/icons/running-man.svg";
 import authorIcon from "../assets/icons/author.svg";
 // @ts-ignore
 import modelSizeIcon from "../assets/icons/modelsize.svg";
+import Tooltip from "../component/common/Tooltip";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];
@@ -53,7 +54,7 @@ function ModelDetailView() {
   const { refetch: getModel } = useGetModel(modelData);
   const { refetch: getMyModels } = useGetMyModels();
   const { refetch: getHighlights } = useGetHighlights();
-  
+
   const introRef = useRef(null);
   const capabilitiesRef = useRef(null);
   const risksRef = useRef(null);
@@ -91,7 +92,7 @@ function ModelDetailView() {
   }, []);
 
   const handleExit = () => {
-    window.history.back()
+    window.history.back();
   };
 
   const scrollToSection = (sectionName) => {
@@ -123,23 +124,6 @@ function ModelDetailView() {
     }
   };
 
-  const getErrorContent = (errorMessage: string) => {
-    return (
-      <div className="w-full flex flex-col rounded-xs bg-white/20 backdrop-blur-3xl p-3 gap-2 justify-start items-stretch">
-        <div className="flex justify-start items-center gap-1.5 text-surface-main">
-          <img src={errorIcon} alt="errorIcon" className="h-3 text-error-regular" />
-
-          <p>An Error Occurred</p>
-        </div>
-
-        {/* Divider */}
-        <div className="w-full h-[0.5px] bg-surface-100" />
-
-        <p className="body-xs text-surface-500 leading-tight">{errorMessage}</p>
-      </div>
-    );
-  };
-
   const getModelStatusIcon = () => {
     switch (modelData?.status) {
       case "ACKNOWLEDGED":
@@ -163,7 +147,11 @@ function ModelDetailView() {
         );
 
       case "INSTALLING":
-        return <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />;
+        return (
+          <Tooltip overlay="Installing">
+            <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />
+          </Tooltip>
+        )
 
       case "RUNNING":
         return (
@@ -204,40 +192,33 @@ function ModelDetailView() {
     }
   };
 
+  const getModelSize = () => {
+    return MODEL_PRECISION * (modelData?.size || 0);
+  };
+
   const getNotDownloadedIcon = () => {
     if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
       return (
-        <Icon
-          src={downloadIcon}
-          imgClassName="h-[11px] w-[11px]"
-          className="w-auto flex-center gap-2 px-[24px] text-white"
-          onClick={() => {
-            modelData &&
-              installModel(modelData, undefined, (progress) => {
-                updateModels({
-                  ...modelData,
-                  ...progress,
+        <Tooltip arrow={false} placement="bottom" overlay={<p>{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
+          <Icon
+            src={downloadIcon}
+            imgClassName="h-[11px] w-[11px]"
+            className="w-auto flex-center gap-2 px-[24px] text-white"
+            onClick={() => {
+              modelData &&
+                installModel(modelData, undefined, (progress) => {
+                  updateModels({
+                    ...modelData,
+                    ...progress,
+                  });
                 });
-              });
-          }}>
-          <p className="text-sm">Install</p>
-        </Icon>
-      );
-    } else {
-      return (
-        <Tooltip
-          overlayClassName="rounded-sm glass-3d"
-          overlayInnerStyle={{
-            color: "surface-500",
-            padding: "10px",
-            fontSize: "12px",
-          }}
-          placement="bottom"
-          color="transparent"
-          title={getErrorContent("This model cannot fit in either the total memory or the available storage")}>
-          <Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2"></Icon>
+            }}>
+            <p className="text-sm">Install</p>
+          </Icon>
         </Tooltip>
       );
+    } else {
+      return <Error errorMessage="This model cannot fit in either the total memory or the available storage" image={<Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2" />} />;
     }
   };
 
@@ -278,7 +259,10 @@ function ModelDetailView() {
               />
             </>
           ) : (
-            <>{getNotDownloadedIcon()}</>
+            <>
+              {modelData?.error && <Error errorMessage={modelData.error} image={<Icon src={errorIcon} imgClassName="h-[11px] w-[11px]" className="gap-2" />} />}
+              {getNotDownloadedIcon()}
+            </>
           )}
 
           <Icon src={closeIcon} imgClassName="h-[11px] w-[11px]" onClick={() => handleExit()} />

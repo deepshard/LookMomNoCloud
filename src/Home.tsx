@@ -16,8 +16,13 @@ import AugmentationsView from "./component/AugmentationsView";
 import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
-import NavBar from "./component/NavBar";
+// @ts-ignore
+import chatIcon from "./assets/icons/chat.svg";
 import Settings from "./component/Settings";
+import Button from "./component/common/Button";
+import { Drawer, DrawerContent, DrawerTrigger } from "./pages/Playground/Drawer";
+import Playground from "./pages/Playground";
+import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 
 interface WelcomeInfo {
   icon: string;
@@ -25,16 +30,36 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, updateInfo, sysInfo, updateModels } = useAppStore();
-  const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
+  const {
+    highlights: storeHighlights,
+    updateInfo,
+    sysInfo,
+    updateModels,
+  } = useAppStore();
+  const { installModel, runModels, stopModel, cleanupInstall, retry } =
+    useModelActions();
+  const {
+    showSearch,
+    setShowSearch,
+    setSearchQuery,
+    setShowDiscover,
+    showAugmentations,
+    setShowAugmentations,
+    showSettings,
+    setShowSettings,
+  } = useHomePageContext();
+  // const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
 
-  const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
+  const handleUpdateModelsCallback = (
+    prevModel: TModel,
+    newModel: Partial<TModel>,
+    controller?: AbortController
+  ) => {
     updateModels({
       ...prevModel,
       ...newModel,
@@ -103,9 +128,7 @@ export default function Home() {
 
   return (
     <>
-      <NavBar />
-
-      <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
+      <div className="w-full h-full flex flex-col justify-center items-center relative">
         <div className="flex items-center gap-1.5 w-[740px] mb-[20px]">
           <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
           <p className="text-[18px] text-surface-750">{getWelcomeInfo().message}</p>
@@ -135,21 +158,49 @@ export default function Home() {
             </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
+        <Drawer >
+          <DrawerTrigger>
+            <Button className="absolute bottom-3 left-3 rounded-full p-2">
+              <img src={chatIcon} alt="" className="w-[18px] h-[18px]" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <PlaygroundProvider>
+              <Playground />
+            </PlaygroundProvider>
+          </DrawerContent>
+        </Drawer>
+
       </div>
 
       <AnimateModal
-        show={showSearch || showAugmentations}
+        show={showSearch}
         onClose={() => {
-          setShowAugmentations(false);
           setShowSearch(false);
-        }}>
+          setSearchQuery("");
+          setShowDiscover(false);
+        }}
+      >
         {showSearch && <Search onModelClick={handleNavigate} />}
-        {showAugmentations && <AugmentationsView />}
       </AnimateModal>
+
+      <AnimateModal
+        show={showAugmentations}
+        onClose={() => setShowAugmentations(false)}
+      >
+        <AugmentationsView />
+      </AnimateModal>
+
       <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
         <Settings />
       </AnimateModal>
-      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
+      
+      {updateInfo && (
+        <UpdateTruffle
+          className="fixed bottom-3 "
+          onClick={() => navigate(`/update`)}
+        />
+      )}
     </>
   );
 }

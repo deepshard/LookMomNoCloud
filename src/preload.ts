@@ -3,6 +3,11 @@
 
 import { contextBridge, ipcRenderer, shell } from "electron";
 
+
+
+const appVersion = process.argv.find(arg => arg.startsWith('--app-version='))?.split('=')[1];
+const appVersionHash = process.argv.find(arg => arg.startsWith('--app-version-hash='))?.split('=')[1];
+
 contextBridge.exposeInMainWorld("ipc", {
   checkForUpdates: () => ipcRenderer.send("check-for-updates"),
   downloadUpdate: () => ipcRenderer.send("download-update"),
@@ -11,7 +16,7 @@ contextBridge.exposeInMainWorld("ipc", {
   onUpdateAvailable: (callback) => ipcRenderer.on("update-available", (_event, value) => callback(value)),
   onError: (callback) => ipcRenderer.on("error", (_event, value) => callback(value)),
   onUpdateDownloaded: (callback) => ipcRenderer.on("update-downloaded", callback),
-  onInitializationRequired: (callback) => ipcRenderer.on("initialization-required", callback),
+  onInitializationCheck: (callback) => ipcRenderer.on("initialization", (_event, value) => callback(value)),
   onInitializationComplete: (callback) => ipcRenderer.on("initialization-complete", callback),
 
   updateRunningModels: (models) => ipcRenderer.send("update-running-models", models),
@@ -22,6 +27,8 @@ contextBridge.exposeInMainWorld("electronShell", {
   openExternal: (url) => shell.openExternal(url),
 });
 
-contextBridge.exposeInMainWorld("electronAPI", {
-  isPackaged: () => ipcRenderer.invoke("is-app-packaged"),
-});
+contextBridge.exposeInMainWorld('electronAPI', {
+  isPackaged: () => ipcRenderer.invoke('is-app-packaged'),
+  getAppVersion: () => appVersion,
+  getAppVersionHash: () => appVersionHash
+})

@@ -53,6 +53,39 @@ export class OTAUpdater {
     };
   }
 
+  getPlatformInfo = async () => {
+    const osInfo = await si.osInfo();
+    log(`OS Information: ${JSON.stringify(osInfo)}`);
+    const graphicsInfo = await si.graphics();
+    log(`Graphics Information: ${JSON.stringify(graphicsInfo)}`);
+
+    // Get GPU info
+    let gpu;
+    if (osInfo.platform === "darwin") {
+      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2") || graphicsInfo.controllers[0].model.toLowerCase().includes("m3"));
+      if (!isMetal) {
+        log("Unsupported GPU: Non-Metal GPU on macOS.");
+        this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
+        return;
+      }
+      gpu = "metal";
+    } else if (osInfo.platform === "linux") {
+      const isCuda = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].vendor.toLowerCase().includes("nvidia"));
+      if (!isCuda) {
+        log("Unsupported GPU: Non-Nvidia GPU on Linux.");
+        this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
+        return;
+      }
+      gpu = "cuda";
+    } else {
+      log("Unsupported OS: " + osInfo.platform);
+      this.mainWindow.webContents.send("error", "Unsupported device: Only M1/M2 Macs and Nvidia GPUs on Linux are supported for now.");
+      return;
+    }
+
+    return { platform: osInfo.platform, gpu: gpu, arch: osInfo.arch };
+  }
+
   unzipFile = async (inputPath: string, outputPath: string) => {
     try {
       // Create temp folder
@@ -69,6 +102,7 @@ export class OTAUpdater {
       const extractedContents = fs.readdirSync(tmpPath);
       const serverDir = extractedContents.find(dir => fs.statSync(path.join(tmpPath, dir)).isDirectory() && dir === 'server');
       if (!serverDir) {
+        log("Server directory not found in .zip");
         throw new Error("Server directory not found in .zip");
       }
 
@@ -78,23 +112,33 @@ export class OTAUpdater {
         const filePath = path.join(serverPath, file);
         return fs.statSync(filePath).isFile() && !path.extname(file);
       });
-
-      if (binaryFile) {
-        const binaryPath = path.join(serverPath, binaryFile);
-        // Set executable permissions (read and execute for owner, group, and others)
-        fs.chmodSync(binaryPath, '0755');
+      if (!binaryFile) {
+        log("Binary file not found in server directory");
+        throw new Error("Binary file not found in server directory");
       }
+
+      const binaryPath = path.join(serverPath, binaryFile);
+      // Set executable permissions (read and execute for owner, group, and others)
+      fs.chmodSync(binaryPath, '0755');
 
       // Move server folder to output path
       fs.renameSync(path.join(tmpPath, serverDir), outputPath);
-      fs.rmSync(tmpPath, { recursive: true, force: true });
+      if (!fs.existsSync(outputPath)) {
+        log("Failed to move server folder to output path");
+        throw new Error("Failed to move server folder to output path");
+      }
 
-
-      // Delete .zip
-      fs.unlinkSync(inputPath);
+      // Delete temp folder and .zip
+      if (fs.existsSync(tmpPath)) {
+        fs.rmSync(tmpPath, { recursive: true, force: true });
+      }
+      if (fs.existsSync(inputPath)) {
+        fs.unlinkSync(inputPath);
+      }
       return outputPath;
     } catch (error) {
-      console.error(error);
+      log(`Error unzipping file: ${error}`);
+      this.mainWindow.webContents.send("error", "Error unzipping file");
     }
   }
 
@@ -127,6 +171,7 @@ export class OTAUpdater {
   }
 
   checkForServerUpdate = async () => {
+    log("Checking for server update...");
     // Read hash from latest.txt
     const filePath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     let latestHash = "";
@@ -138,19 +183,21 @@ export class OTAUpdater {
     }
 
     // Get latest hash latest.txt on S3
-    const url = "https://truffle-binaries.s3.amazonaws.com/latest.txt";
+    const url = "https://truffle-server.s3.amazonaws.com/latest.txt";
     let response: any = null;
     try {
       response = await axios.get(url);
     } catch (error) {
+      log(`Error checking for server update: ${error}`);
       return null;
     }
 
     // Compare hashes
     if (response && latestHash.trim() !== response.data.trim()) {
+      log(`Server update available: ${response.data.trim()}`);
       return response.data.trim();
     }
-
+    log("No server update available");
     return null;
   }
 
@@ -161,17 +208,20 @@ export class OTAUpdater {
 
 
   checkForAppUpdate = async () => {
+    log("Checking for app update...");
     try {
       const appUpdateInfo = await this.appUpdater.checkForUpdates();
       const appUpdateAvailable = appUpdateInfo ? app.getVersion() !== appUpdateInfo.updateInfo.version : false;
 
       if (appUpdateAvailable) {
+        log(`App update available: ${appUpdateAvailable}`);
         return appUpdateInfo;
       }
     } catch (error) {
-      console.error(error);
+      log(`Error checking for app update: ${error}`);
     }
 
+    log("No app update available");
     return null;
   }
 
@@ -189,11 +239,30 @@ export class OTAUpdater {
   }
 
   checkForUpdates = async () => {
+    log("Checking for updates...");
     // If bin folder does not exist, create it
     const binPath = path.join(app.getPath("userData"), "bin");
     if (!fs.existsSync(binPath)) {
       fs.mkdirSync(binPath, { recursive: true });
     }
+
+    // Clean out any straggling .zip files, tmp folders, and server_new folders
+    fs.readdirSync(binPath).forEach(item => {
+      const itemPath = path.join(binPath, item);
+
+      // Delete .zip files
+      if (item.endsWith('.zip') && fs.statSync(itemPath).isFile()) {
+        fs.unlinkSync(itemPath);
+        console.log(`Deleted file: ${item}`);
+      }
+
+      // Delete 'tmp' and 'server_new' folders
+      else if (['tmp', 'server_new'].includes(item) && fs.statSync(itemPath).isDirectory()) {
+        fs.rmdirSync(itemPath, { recursive: true });
+        console.log(`Deleted folder: ${item}`);
+      }
+    });
+
 
     // Check for server and app updates
     const serverUpdateInfo = await this.checkForServerUpdate();
@@ -202,10 +271,11 @@ export class OTAUpdater {
     // Check if server update is available and track data if so
     if (serverUpdateInfo != null) {
       // Get platform information
-      const osInfo = await si.osInfo();
-      const graphicsInfo = await si.graphics();
-      const gpu = osInfo.platform === "darwin" ? "metal" : graphicsInfo.controllers[0].model;
-      const url = `https://truffle-binaries.s3.amazonaws.com/${serverUpdateInfo}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
+      const platformInfo = await this.getPlatformInfo();
+      if (!platformInfo) {
+        return;
+      }
+      const url = `https://truffle-server.s3.amazonaws.com/${serverUpdateInfo}/${platformInfo.platform}-${platformInfo.gpu}-${platformInfo.arch}.zip`;
       log(`Server update available at: ${url}`);
 
       this.updateServer = {
@@ -239,6 +309,7 @@ export class OTAUpdater {
   }
 
   downloadServer = async (url: string, output: string, unzip_output: string) => {
+    log(`Downloading server from: ${url}`);
     const response = await axios({
       method: "get",
       url: url,
@@ -256,10 +327,14 @@ export class OTAUpdater {
     // Wait for download to finish
     await new Promise((resolve, reject) => {
       writeStream.on("finish", resolve);
-      writeStream.on("error", reject);
+      writeStream.on("error", () => {
+        log("Error downloading server");
+        this.mainWindow.webContents.send("error", "Error downloading server");
+        reject();
+      });
     });
 
-    // Unzip tar.gz
+    // Unzip
     await this.unzipFile(filePath, path.join(app.getPath("userData"), "bin", unzip_output).toString());
   }
 
@@ -271,11 +346,12 @@ export class OTAUpdater {
 
     // Download server updates if available
     if (this.updateServer.available) {
-      await this.downloadServer(this.updateServer.url, "server_new.tar.gz", "server_new");
+      await this.downloadServer(this.updateServer.url, "server_new.zip", "server_new");
     }
 
     // Download app updates if available
     if (this.updateApp.available) {
+      log("Downloading app update...");
       await this.appUpdater.downloadUpdate();
     }
   }
@@ -315,52 +391,32 @@ export class OTAUpdater {
     const versionPath = path.join(app.getPath("userData"), "bin", "server", "version.txt");
     if (!fs.existsSync(serverPath) || !fs.existsSync(versionPath)) {
       log("Initialization required");
-      this.mainWindow.webContents.send("initialization-required");
+      this.mainWindow.webContents.send("initialization", { required: true });
       return true;
     }
 
+    log("Initialization not required");
+    this.mainWindow.webContents.send("initialization", { required: false });
     return false;
   }
 
   downloadInitialServer = async () => {
     log("Starting download of initial server.");
-    // Get platform information
-    const osInfo = await si.osInfo();
-    log(`OS Information: ${JSON.stringify(osInfo)}`);
-    const graphicsInfo = await si.graphics();
-    log(`Graphics Information: ${JSON.stringify(graphicsInfo)}`);
 
-    // Get GPU info
-    let gpu;
-    if (osInfo.platform === "darwin") {
-      const isMetal = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].model.toLowerCase().includes("m1") || graphicsInfo.controllers[0].model.toLowerCase().includes("m2") || graphicsInfo.controllers[0].model.toLowerCase().includes("m3"));
-      if (!isMetal) {
-        this.mainWindow.webContents.send("error", "Only M1/M2 macs are supported for now");
-        log("Unsupported GPU: Non-Metal GPU on macOS.");
-        return;
-      }
-      gpu = "metal";
-    } else if (osInfo.platform === "linux") {
-      const isCuda = graphicsInfo.controllers.length > 0 && (graphicsInfo.controllers[0].vendor.toLowerCase().includes("nvidia"));
-      if (!isCuda) {
-        this.mainWindow.webContents.send("error", "Only Nvidia GPUs are supported for now");
-        log("Unsupported GPU: Non-Nvidia GPU on Linux.");
-        return;
-      }
-      gpu = "cuda";
-    } else {
-      this.mainWindow.webContents.send("error", "Only MacOS and Linux are supported for now");
-      log("Unsupported OS: " + osInfo.platform);
+    // Get platform information
+    const platformInfo = await this.getPlatformInfo();
+    if (!platformInfo) {
       return;
     }
 
     // Get latest hash from S3
-    const url = `https://truffle-binaries.s3.amazonaws.com/latest.txt`;
+    const url = `https://truffle-server.s3.amazonaws.com/latest.txt`;
     let response: any = null;
     try {
       response = await axios.get(url);
     } catch (error) {
       log("Failed to retrieve latest hash from S3");
+      this.mainWindow.webContents.send("error", "Failed to retrieve latest hash from S3");
       return null;
     }
 
@@ -371,11 +427,10 @@ export class OTAUpdater {
     }
 
     // Download server
-    const serverUrl = `https://truffle-binaries.s3.amazonaws.com/${response.data.trim()}/${osInfo.platform}-${gpu}-${osInfo.arch}.zip`;
+    const serverUrl = `https://truffle-server.s3.amazonaws.com/${response.data.trim()}/${platformInfo.platform}-${platformInfo.gpu}-${platformInfo.arch}.zip`;
     log(`Downloading server from: ${serverUrl}`);
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
-    await this.downloadServer(serverUrl, "server.tar.gz", "server");
+    await this.downloadServer(serverUrl, "server.zip", "server");
     this.mainWindow.webContents.send("initialization-complete");
-    log("Downloaded server successfully.");
   }
 }

@@ -17,8 +17,6 @@ const NavBar = () => {
     <>
       {!(showSearch || showAugmentations || showSettings) && (
         <div className="navbar">
-          <div className="draggable-nav absolute top-0 left-0 right-0 h-[20px] bg-transparent z-10" />
-
           <div className="bg-transparent h-5 w-5 rounded-full" />
 
           <div className="flex w-full max-w-[740px] gap-3 justify-start items-center">

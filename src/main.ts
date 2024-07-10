@@ -120,6 +120,7 @@ const createWindow = () => {
     mainWindow.webContents.setZoomLevel(0);
   }, 100);
 
+  // @ts-ignore
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 

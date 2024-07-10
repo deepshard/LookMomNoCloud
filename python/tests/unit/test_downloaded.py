@@ -15,7 +15,19 @@ def create_model_dir(model_id: str):
     with open(model_dir / "pytorch_model.bin", "wb") as f:
         f.write(os.urandom(1024))
     with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
+        padding = "a" * (
+            1024
+            - len(
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": ""}'
+            )
+        )
+        f.write(
+            (
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": "'
+                + padding
+                + '"}'
+            ).encode()
+        )
     onnx_dir = model_dir / "onnx"
     onnx_dir.mkdir(parents=True, exist_ok=True)
     with open(onnx_dir / "onnx_model.onnx", "wb") as f:
@@ -32,7 +44,19 @@ def create_partial_model_dir(model_id: str):
     with open(model_dir / "pytorch_model.bin", "wb") as f:
         f.write(os.urandom(1024))
     with open(model_dir / "config.json", "wb") as f:
-        f.write(os.urandom(1024))
+        padding = "a" * (
+            1024
+            - len(
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": ""}'
+            )
+        )
+        f.write(
+            (
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": "'
+                + padding
+                + '"}'
+            ).encode()
+        )
     onnx_dir = model_dir / "onnx"
     onnx_dir.mkdir(parents=True, exist_ok=True)
     with open(onnx_dir / "onnx_model.onnx", "wb") as f:
@@ -131,6 +155,7 @@ async def test_downloaded_and_running(session_fixture):
         session.add(RunningModel(**mock_model))
         await session.commit()
 
+    create_model_dir(ID)
     create_model_dir(ID_2)
 
     # Test

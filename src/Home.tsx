@@ -16,8 +16,13 @@ import AugmentationsView from "./component/AugmentationsView";
 import dayIcon from "./assets/icons/day.svg";
 // @ts-ignore
 import nightIcon from "./assets/icons/night.svg";
-import NavBar from "./component/NavBar";
+// @ts-ignore
+import chatIcon from "./assets/icons/chat.svg";
 import Settings from "./component/Settings";
+import Button from "./component/common/Button";
+import { Drawer, DrawerContent, DrawerTrigger } from "./pages/Playground/Drawer";
+import Playground from "./pages/Playground";
+import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 
 interface WelcomeInfo {
   icon: string;
@@ -123,9 +128,7 @@ export default function Home() {
 
   return (
     <>
-      <NavBar />
-
-      <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center ">
+      <div className="w-full h-full flex flex-col justify-center items-center relative">
         <div className="flex items-center gap-1.5 w-[740px] mb-[20px]">
           <img src={getWelcomeInfo().icon} alt="day" className="w-5 h-5 text-surface-750" />
           <p className="text-[18px] text-surface-750">{getWelcomeInfo().message}</p>
@@ -155,6 +158,19 @@ export default function Home() {
             </SystemInfoHardwareCarouselProvider>
           </div>
         </div>
+        <Drawer >
+          <DrawerTrigger>
+            <Button className="absolute bottom-3 left-3 rounded-full p-2">
+              <img src={chatIcon} alt="" className="w-[18px] h-[18px]" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <PlaygroundProvider>
+              <Playground />
+            </PlaygroundProvider>
+          </DrawerContent>
+        </Drawer>
+
       </div>
 
       <AnimateModal

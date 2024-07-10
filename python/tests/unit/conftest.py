@@ -150,6 +150,10 @@ def request_mocks(request, mocker):
 @pytest.fixture
 def mock_process():
     set_start_method("spawn", force=True)
-    proc = Process(target=fake_process)
-    proc.start()
-    yield proc
+
+    def create_process():
+        proc = Process(target=fake_process)
+        proc.start()
+        return proc
+
+    yield create_process

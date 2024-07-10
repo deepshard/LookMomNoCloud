@@ -75,9 +75,12 @@ class Model:
     hfLink: str
     status: ModelStatus
     backgroundImage: str
+    convTemplate: str
     instance: int
     port: int
     progress: int
+    multimodal: bool
+    contextLength: int
 
 
 # Request Schemas

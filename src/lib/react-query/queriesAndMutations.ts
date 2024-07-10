@@ -33,7 +33,7 @@ export const useDeleteModel = () => {
 }
 
 export const useSearchModels = (query: string) => {
-  return  useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["searchModels", query],
     queryFn: () => {
       return searchModels(query)
@@ -41,6 +41,8 @@ export const useSearchModels = (query: string) => {
     retryOnMount: false,
     enabled: !!query
   })
+
+  return { data, isLoading }
 }
 
 export const useGetMyModels = () => {

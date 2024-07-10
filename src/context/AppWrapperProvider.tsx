@@ -84,7 +84,8 @@ const AppWrapperProvider = ({ children }) => {
   }, [highlights]);
 
   useEffect(() => {
-    window.ipc.updateRunningModels(sysInfo?.resources.models, () => console.log("running models updated"));
+    // @ts-ignore
+    window.ipc.updateRunningModels(sysInfo?.resources.models, () => {});
   }, [sysInfo?.resources.models]);
   return <AppWrapperContext.Provider value={{ isLoadingMyModels }}>{children}</AppWrapperContext.Provider>;
 };

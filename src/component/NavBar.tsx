@@ -9,12 +9,10 @@ import { useAppStore } from "../store/store";
 import RunningModelsPill from "./RunningModelsPill";
 import Tooltip from "./common/Tooltip";
 import RunningModelsDropDown from "./RunningModelsPill/RunningModelsDropDown";
-import { useState } from "react";
 
 const NavBar = () => {
   const { setShowSearch, showSearch, showAugmentations, setShowDiscover, showSettings, setShowSettings } = useHomePageContext();
   const { sysInfo } = useAppStore();
-  const [showRunningModelDropDown, setShowRunningModelDropDown] = useState(false);
   return (
     <>
       {!(showSearch || showAugmentations || showSettings) && (

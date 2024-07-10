@@ -18,13 +18,14 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({ onModelClick }) => {
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [debouncedInput, setDebouncedInput] = useState<string>("");
   const [isListView, setIsListView] = useState<boolean>(true);
   const [featuredModels, setFeaturedModels] = useState<TModel[] | null>([]);
-  const { data: searchModels, isLoading: isLoading} = useSearchModels(debouncedInput);
+  const { data: searchModels, isLoading: isSearchLoading } = useSearchModels(debouncedInput);
 
-  const { data: predictionData } = useGetPrediction(search);
+  const { data: predictionData, isLoading: isPredictionLoading } = useGetPrediction(search);
   const { data: featuredData } = useGetFeatured();
 
   const { setSearchQuery, searchQuery, showDiscover } = useHomePageContext();
@@ -41,12 +42,18 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
       setSearchQuery("");
     }
 
+    setIsTyping(true);
+
     const debouncer = debounce((value: string) => {
       setDebouncedInput(value);
+      setIsTyping(false);
     }, 300);
     debouncer(search);
 
-    return () => debouncer.cancel();
+    return () => {
+      debouncer.cancel();
+      setIsTyping(false);
+    }
   }, [search]);
 
 
@@ -88,7 +95,7 @@ const Search: React.FC<SearchProps> = ({ onModelClick }) => {
             isListView={isListView}
             setIsListView={setIsListView}
             handleModelClick={handleModelClick}
-            isLoading={isLoading}
+            isLoading={!predictionData || !searchModels || isSearchLoading || isPredictionLoading || isTyping}
           />
         )}
       </div>

@@ -5,7 +5,6 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import { formatParams } from "../../utils/sysUtils";
 import { TModel } from "../../types/schemas";
 import { GridIcon, ListIcon, ErrorIcon } from "../SVGIcons";
-import { useState, useEffect } from "react";
 
 interface SearchResultsProps {
   searchModels?: TModel[];
@@ -22,26 +21,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   handleModelClick,
   isLoading,
 }) => {
-  const [showNoResults, setShowNoResults] = useState(false);
-
-  useEffect(() => { // This is for preventing the glitch where the "No results found" message is shown for a split second before the loading skeleton is shown (debouncer)
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-
-    if (!isLoading && !searchModels?.length) {
-      timeout = setTimeout(() => {
-        setShowNoResults(true);
-      }, 300);
-    } else {
-      setShowNoResults(false);
-    }
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    };
-  }, [isLoading, searchModels]);
-
-  if (!searchModels?.length && showNoResults) {
+  if (!isLoading && searchModels?.length === 0) {
     return (
       <>
         <div className="w-full py-3 mt-11 mb-5 flex justify-between gap-8">
@@ -85,7 +65,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       {isListView ? (
         <ListView searchModels={searchModels} handleModelClick={handleModelClick} isLoading={isLoading} />
       ) : (
-        <GridView searchModels={searchModels} handleModelClick={handleModelClick}isLoading={isLoading}  />
+        <GridView searchModels={searchModels} handleModelClick={handleModelClick} isLoading={isLoading}  />
       )}
     </>
   );

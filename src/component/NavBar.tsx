@@ -5,15 +5,17 @@ import discoverVid from "../assets/videos/discover-vid.mp4";
 import searchIcon from "../assets/icons/search-icon.svg";
 // @ts-ignore
 import gearIcon from "../assets/icons/gear.svg";
-
-
+import { useAppStore } from "../store/store";
+import RunningModelsPill from "./RunningModelsPill";
+import Tooltip from "./common/Tooltip";
+import RunningModelsDropDown from "./RunningModelsPill/RunningModelsDropDown";
 
 const NavBar = () => {
   const { setShowSearch, showSearch, showAugmentations, setShowDiscover, showSettings, setShowSettings } = useHomePageContext();
-
+  const { sysInfo } = useAppStore();
   return (
     <>
-      {(!(showSearch || showAugmentations || showSettings)) && (
+      {!(showSearch || showAugmentations || showSettings) && (
         <div className="navbar">
           <div className="bg-transparent h-5 w-5 rounded-full" />
 
@@ -41,8 +43,18 @@ const NavBar = () => {
             </div>
           </div>
 
-          <div className="h-5 w-5 rounded-full cursor-pointer" onClick={() => setShowSettings(true)}>
-            <img src={gearIcon} className="opacity-50 w-5 h-5" />
+          <div className="flex-center gap-4">
+            {(sysInfo?.resources.models && sysInfo?.resources.models.length > 0 && sysInfo?.resources.models.every((model) => model.title)) && (
+              <Tooltip
+                // open={showRunningModelDropDown}
+                placement="bottomRight"
+                arrow={false}
+                title={<RunningModelsDropDown models={sysInfo?.resources.models || []}/>}
+              >
+                <RunningModelsPill className="absolute right-[50px]" models={sysInfo?.resources.models || []} />
+              </Tooltip>
+            )}
+            <img src={gearIcon} className="w-5 h-5 rounded-full cursor-pointer" onClick={() => setShowSettings(true)} />
           </div>
         </div>
       )}

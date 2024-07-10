@@ -7,7 +7,7 @@ import Analytics from "../types/Analytics";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { TruffleUpdateInfo } from "../ota";
-
+import useModelActions from "../hooks/modelActions/useModelActions";
 interface AppWrapperContextType {
   isLoadingMyModels: boolean;
 }
@@ -20,9 +20,10 @@ Analytics.init("a45767d32d620a6ba48640ccec2bf2f3");
 
 const AppWrapperProvider = ({ children }) => {
   const { data: myModels, isLoading: isLoadingMyModels } = useGetMyModels();
-  const { addUpdateInfo, addSysInfo, sysInfo, setDownloads, setHighlights } = useAppStore();
+  const { addUpdateInfo, addSysInfo, sysInfo, setDownloads, setHighlights, updateModels } = useAppStore();
   const { data: highlights } = useGetHighlights(sysInfo);
   const navigate = useNavigate();
+  const { stopModel } = useModelActions();
 
   useEffect(() => {
     let deviceId = localStorage.getItem("deviceId");
@@ -53,6 +54,16 @@ const AppWrapperProvider = ({ children }) => {
     //@ts-ignore
     window.ipc.onInitializationCheck(handleInitializationCheck);
 
+    //@ts-ignore
+    window.ipc.onTrayModelStopped((model) => {
+      stopModel(model).then(() => {
+        updateModels({
+          ...model,
+          status: "STOPPED",
+        });
+      });
+    });
+
     return () => {
       //@ts-ignore
       window.ipc.onUpdateAvailable(() => {});
@@ -80,6 +91,12 @@ const AppWrapperProvider = ({ children }) => {
       }
     }
   }, [highlights, sysInfo]);
+
+  useEffect(() => {
+    // @ts-ignore
+    window.ipc.updateRunningModels(sysInfo?.resources.models, () => {});
+  }, [sysInfo?.resources.models]);
+
   return <AppWrapperContext.Provider value={{ isLoadingMyModels }}>{children}</AppWrapperContext.Provider>;
 };
 

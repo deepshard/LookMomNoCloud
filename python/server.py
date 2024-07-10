@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -16,6 +16,7 @@ from endpoints import (
     stop_model_handler,
     get_highlights,
     get_downloaded_models,
+    stop_all_models
 )
 from truffle_types import InstallRequest, RunRequest, StopRequest
 from utils import get_app_data_path
@@ -105,6 +106,12 @@ async def stop_model(request: StopRequest):
 @app.delete("/model/{model_id}")
 async def delete_model(model_id: str):
     await delete_model_handler(model_id)
+    return {}
+
+@app.post("/quit",)
+async def quit_application(background_tasks: BackgroundTasks):
+    await stop_all_models()  # Stop all running models
+    background_tasks.add_task(os._exit, 0)
     return {}
 
 

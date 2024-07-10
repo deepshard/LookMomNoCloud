@@ -33,3 +33,10 @@ async def stop_model_handler(model_id: str, instance: int):
         # Remove the model instance from the database
         await session.delete(model_db_info)
         await session.commit()
+
+
+async def stop_all_models():
+    running_models = await RunningModel.get_all()
+    for model in running_models:
+        await stop_model_handler(model.id, model.instance)
+    logger.info("All models stopped")

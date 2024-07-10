@@ -87,7 +87,7 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
-      devTools: !app.isPackaged,
+      devTools: true, // !app.isPackaged,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
       additionalArguments: [`--app-version=${app.getVersion()}`, `--app-version-hash=${getVersionHash()}`],
@@ -162,7 +162,8 @@ const createWindow = () => {
 
   // Open the DevTools.
   app.isPackaged && mainWindow.setResizable(false);
-  mainWindow.webContents.closeDevTools();
+  // mainWindow.webContents.closeDevTools();
+  mainWindow.webContents.toggleDevTools();
 
   // Prevent the window from being destroyed when it's closed
   mainWindow.on("close", (event) => {

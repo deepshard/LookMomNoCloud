@@ -14,35 +14,40 @@ let serverProcess: ChildProcess;
 let forceQuit = false;
 let mainWindow;
 
-const killServerIfRunning = (port: number) => {
-  log(`Attempting to kill server process on port ${port}`);
-  const command = `lsof -i :${port} -t`;
+const killServerIfRunning = (port: number): Promise<void> => {
+  return new Promise((resolve) => {
+    log(`Attempting to kill server process on port ${port}`);
+    const command = `lsof -i :${port} -t`;
 
-  exec(command, (error, stdout) => {
-    if (error) {
-      log(`Error finding process on port ${port}: ${error}`);
-      return;
-    }
+    exec(command, (error, stdout) => {
+      if (error) {
+        log(`Error finding process on port ${port}: ${error}`);
+        resolve();
+        return;
+      }
 
-    const pid = stdout.trim();
-    if (pid) {
-      log(`Found process ${pid} running on port ${port}. Attempting to kill.`);
-      exec(`kill -9 ${pid}`, (error) => {
-        if (error) {
-          log(`Error killing process ${pid} on port ${port}: ${error}`);
-        } else {
-          log(`Successfully killed process ${pid} on port ${port}`);
-        }
-      });
-    } else {
-      log(`No process found running on port ${port}`);
-    }
+      const pid = stdout.trim();
+      if (pid) {
+        log(`Found process ${pid} running on port ${port}. Attempting to kill.`);
+        exec(`kill -9 ${pid}`, (error) => {
+          if (error) {
+            log(`Error killing process ${pid} on port ${port}: ${error}`);
+          } else {
+            log(`Successfully killed process ${pid} on port ${port}`);
+          }
+          resolve();
+        });
+      } else {
+        log(`No process found running on port ${port}`);
+        resolve();
+      }
+    });
   });
 };
 
-const spawnServer = () => {
+const spawnServer = async () => {
   log("Attempting to spawn server");
-  killServerIfRunning(8899);
+  await killServerIfRunning(8899);
 
   const serverPath = path.join(app.getPath("userData"), "bin", "server", "server");
   if (!fs.existsSync(serverPath)) {
@@ -81,6 +86,7 @@ let tray;
 
 const createWindow = () => {
   // Create the browser window.
+  log("Creating browser window");
   mainWindow = new BrowserWindow({
     width: 1060,
     height: 800,
@@ -126,9 +132,10 @@ const createWindow = () => {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  tray = new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
+  log("Creating tray");
+  // tray = new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
 
-  tray.setToolTip("LMNC (Truffle)");
+  // tray.setToolTip("LMNC (Truffle)");
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -139,15 +146,17 @@ const createWindow = () => {
     },
   ]);
 
-  tray.setContextMenu(contextMenu);
+  // tray.setContextMenu(contextMenu);
 
   // Disable zoom shortcuts
+  log("Disabling zoom shortcuts");
   mainWindow.webContents.on("before-input-event", (event, input) => {
     if ((input.control || input.meta) && (input.key === "+" || input.key === "-" || input.key === "=" || input.key === "0")) {
       event.preventDefault();
     }
   });
 
+  log("Loading index.html");
   // and load the index.html of the app.
   // @ts-ignore
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -167,6 +176,7 @@ const createWindow = () => {
 
   // Prevent the window from being destroyed when it's closed
   mainWindow.on("close", (event) => {
+    log("Closing window..");
     if (!forceQuit) {
       event.preventDefault();
       mainWindow.hide();
@@ -181,11 +191,12 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async function () {
-  log("App is ready. Initializing...");
   initializeLogger();
-  spawnServer();
+  log("App is ready. Initializing...");
+  await spawnServer();
 
   const window = createWindow();
+  log("Window created");
   const otaUpdater = new OTAUpdater(window, autoUpdater);
   ipcMain.on("check-for-updates", otaUpdater.checkForUpdates);
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
@@ -225,7 +236,7 @@ app.on("ready", async function () {
         },
       ]);
 
-      tray.setContextMenu(contextMenu);
+      // tray.setContextMenu(contextMenu);
     }
   });
 
@@ -237,7 +248,7 @@ app.on("ready", async function () {
       log("Initial server download complete");
 
       log("Spawning server...");
-      spawnServer();
+      await spawnServer();
     } else {
       log("Initial server already exists");
     }

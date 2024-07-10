@@ -19,8 +19,8 @@ jobs:
         include:
           - os: macos-latest
             filename: darwin-metal-arm64.zip
-          - os: ubuntu-1x-4090
-            filename: linux-cuda-x64.zip
+          # - os: ubuntu-1x-4090
+            # filename: linux-cuda-x64.zip
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

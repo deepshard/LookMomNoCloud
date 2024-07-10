@@ -67,7 +67,7 @@ export const useStore = create<State>()(
           return {
             ...state,
             downloads: { ...state.downloads, [model.id]: { ...state.downloads[model.id], ...model } },
-            highlights,
+            highlights: [...highlights],
           };
         }),
       onDeleteModel: (model) =>

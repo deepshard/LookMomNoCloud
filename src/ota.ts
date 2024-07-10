@@ -183,7 +183,7 @@ export class OTAUpdater {
     }
 
     // Get latest hash latest.txt on S3
-    const url = "https://truffle-binaries.s3.amazonaws.com/latest.txt";
+    const url = "https://truffle-server.s3.amazonaws.com/latest.txt";
     let response: any = null;
     try {
       response = await axios.get(url);
@@ -249,17 +249,17 @@ export class OTAUpdater {
     // Clean out any straggling .zip files, tmp folders, and server_new folders
     fs.readdirSync(binPath).forEach(item => {
       const itemPath = path.join(binPath, item);
-      
+
       // Delete .zip files
       if (item.endsWith('.zip') && fs.statSync(itemPath).isFile()) {
-          fs.unlinkSync(itemPath);
-          console.log(`Deleted file: ${item}`);
+        fs.unlinkSync(itemPath);
+        console.log(`Deleted file: ${item}`);
       }
-      
+
       // Delete 'tmp' and 'server_new' folders
       else if (['tmp', 'server_new'].includes(item) && fs.statSync(itemPath).isDirectory()) {
-          fs.rmdirSync(itemPath, { recursive: true });
-          console.log(`Deleted folder: ${item}`);
+        fs.rmdirSync(itemPath, { recursive: true });
+        console.log(`Deleted folder: ${item}`);
       }
     });
 
@@ -275,7 +275,7 @@ export class OTAUpdater {
       if (!platformInfo) {
         return;
       }
-      const url = `https://truffle-binaries.s3.amazonaws.com/${serverUpdateInfo}/${platformInfo.platform}-${platformInfo.gpu}-${platformInfo.arch}.zip`;
+      const url = `https://truffle-server.s3.amazonaws.com/${serverUpdateInfo}/${platformInfo.platform}-${platformInfo.gpu}-${platformInfo.arch}.zip`;
       log(`Server update available at: ${url}`);
 
       this.updateServer = {
@@ -402,7 +402,7 @@ export class OTAUpdater {
 
   downloadInitialServer = async () => {
     log("Starting download of initial server.");
-    
+
     // Get platform information
     const platformInfo = await this.getPlatformInfo();
     if (!platformInfo) {
@@ -410,7 +410,7 @@ export class OTAUpdater {
     }
 
     // Get latest hash from S3
-    const url = `https://truffle-binaries.s3.amazonaws.com/latest.txt`;
+    const url = `https://truffle-server.s3.amazonaws.com/latest.txt`;
     let response: any = null;
     try {
       response = await axios.get(url);
@@ -427,7 +427,7 @@ export class OTAUpdater {
     }
 
     // Download server
-    const serverUrl = `https://truffle-binaries.s3.amazonaws.com/${response.data.trim()}/${platformInfo.platform}-${platformInfo.gpu}-${platformInfo.arch}.zip`;
+    const serverUrl = `https://truffle-server.s3.amazonaws.com/${response.data.trim()}/${platformInfo.platform}-${platformInfo.gpu}-${platformInfo.arch}.zip`;
     log(`Downloading server from: ${serverUrl}`);
     this.addBytesToDownload(await this.getServerUpdateSize(serverUrl));
     await this.downloadServer(serverUrl, "server.zip", "server");

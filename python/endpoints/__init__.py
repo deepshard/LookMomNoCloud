@@ -4,6 +4,7 @@ from .model import (
     run_models_generator,
     stop_model_handler,
     get_downloaded_models,
+    stop_all_models,
 )
 from .sysinfo import sysinfo_generator
 from .highlights import get_highlights

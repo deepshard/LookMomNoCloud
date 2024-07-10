@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
-      S3_BUCKET: ${{ github.ref_name == 'main' && 's3://truffle-binaries' || 's3://truffle-binaries-dev' }}
+      S3_BUCKET: ${{ github.ref_name == 'main' && 's3://truffle-server' || 's3://truffle-server-dev' }}
 
     strategy:
       fail-fast: false
@@ -151,7 +151,7 @@ jobs:
   update-latest:
     needs: release
     env:
-      S3_BUCKET: ${{ github.ref_name == 'main' && 's3://truffle-binaries' || 's3://truffle-binaries-dev' }}
+      S3_BUCKET: ${{ github.ref_name == 'main' && 's3://truffle-server' || 's3://truffle-server-dev' }}
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials

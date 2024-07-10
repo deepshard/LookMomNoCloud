@@ -79,6 +79,8 @@ class Model:
     instance: int
     port: int
     progress: int
+    multimodal: bool
+    contextLength: int
 
 
 # Request Schemas

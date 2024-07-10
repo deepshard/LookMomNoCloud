@@ -44,7 +44,19 @@ def write_full_dir(path):
     with open(path / "pytorch_model.bin", "wb") as f:
         f.write(MOCK_FILE_ONE_DATA)
     with open(path / "config.json", "wb") as f:
-        f.write(MOCK_FILE_TWO_DATA)
+        padding = "a" * (
+            1024
+            - len(
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": ""}'
+            )
+        )
+        f.write(
+            (
+                '{"architectures": ["Phi3ForCausalLM"], "max_position_embeddings": 8192, "empty": "'
+                + padding
+                + '"}'
+            ).encode()
+        )
     onnx_dir = path / "onnx"
     onnx_dir.mkdir(parents=True, exist_ok=True)
     with open(path / "onnx/onnx_model.onnx", "wb") as f:

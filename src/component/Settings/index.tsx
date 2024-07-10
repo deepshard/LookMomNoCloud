@@ -2,10 +2,9 @@
 import gearIcon from "../../assets/icons/gear.svg";
 // @ts-ignore
 import dataCollectionIcon from "../../assets/icons/data-collection.svg";
-import { Switch } from "antd";
-import "./Settings.css";
 import { useState } from "react";
 import { useAppStore } from "../../store/store";
+import Switch from "../Switch";
 
 const Settings = () => {
   const { setSetting, settings } = useAppStore();

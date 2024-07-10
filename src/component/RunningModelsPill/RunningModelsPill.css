@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.ant-tooltip .ant-tooltip-content {
+    position: absolute;
+    right: -35px;
+}
+
+.models {
+    display: flex;
+}
+
+@layer utilities {
+    .model-pill {
+        @apply w-4 h-4 rounded-full ml-[-6px];
+    }
+
+    .model-pill:nth-child(1) {
+        @apply z-[3] ml-0;
+    }
+
+    .model-pill:nth-child(2) {
+        @apply z-[2];
+    }
+}

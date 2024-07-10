@@ -75,7 +75,9 @@ async def model_installed(model_downloaded):
     model_id = models[0]["id"]
     base_weights_path = get_app_data_path() / "models" / model_id / "base"
     quant_weights_path = get_app_data_path() / "models" / model_id / "q0f16"
-    await convert_quantize_compile(model_id, base_weights_path, quant_weights_path, Quantization.Q0F16)
+    await convert_quantize_compile(
+        model_id, base_weights_path, quant_weights_path, Quantization.Q0F16
+    )
 
 
 # @pytest_asyncio.fixture

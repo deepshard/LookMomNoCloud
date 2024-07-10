@@ -42,7 +42,7 @@ const RunningModelsDropDown = ({ models }: RunningModelsDropDownProps) => {
       <thead>
         <tr>
           <th className="text-left">Model</th>
-          <th className="text-right text-nowrap">Remote Access</th>
+          {/* <th className="text-right text-nowrap">Remote Access</th> */}
         </tr>
       </thead>
       <tbody>
@@ -62,9 +62,9 @@ const RunningModelsDropDown = ({ models }: RunningModelsDropDownProps) => {
                 </span>
               </div>
             </td>
-            <td className="text-right">
+            {/* <td className="text-right">
               <Switch checked={model.isRemote} onChange={() => toggleRemoteAccess(model)} />
-            </td>
+            </td> */}
           </tr>
         ))}
       </tbody>

@@ -238,7 +238,7 @@ const ModelWidget = ({ model, disabled = false, className = "", onInstall, onRun
                 arrow={false}
                 placement="bottom"
                 overlay={
-                  <p>
+                  <p className="text-nowrap"> 
                     {bytesToHumanReadable(getModelSize(), true, 0)}
                   </p>
                 }>

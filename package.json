@@ -23,7 +23,7 @@
   },
   "build": {
     "appId": "com.truffle.app",
-    "productName": "Truffle",
+    "productName": "Look Mom No Cloud™",
     "files": [
       ".vite/**/*",
       "node_modules/**/*"
@@ -35,7 +35,7 @@
       }
     ],
     "mac": {
-      "icon": "src/assets/icons/truffle-logo.png",
+      "icon": "src/assets/icons/truffle-logo.icns",
       "target": [
         "dmg",
         "zip"

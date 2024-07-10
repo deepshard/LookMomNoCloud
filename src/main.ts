@@ -125,7 +125,7 @@ const createWindow = () => {
 
   tray = new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
 
-  tray.setToolTip("Truffle Desktop");
+  tray.setToolTip("LMNC (Truffle)");
 
   const contextMenu = Menu.buildFromTemplate([
     {

@@ -7,6 +7,7 @@ import { log, initializeLogger } from "./log";
 import fs from "fs";
 import { quitApp } from "./api/general";
 
+
 autoUpdater.autoDownload = false;
 autoUpdater.forceDevUpdateConfig = true;
 
@@ -93,7 +94,7 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 21, y: 21 },
     webPreferences: {
-      devTools: true, // !app.isPackaged,
+      devTools: !app.isPackaged,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
       additionalArguments: [`--app-version=${app.getVersion()}`, `--app-version-hash=${getVersionHash()}`],
@@ -133,9 +134,9 @@ const createWindow = () => {
   Menu.setApplicationMenu(menu);
 
   log("Creating tray");
-  // tray = new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
+  tray = new Tray(path.join(process.resourcesPath, "assets", "icons", "truffle-logoTemplate.png"));
 
-  // tray.setToolTip("LMNC (Truffle)");
+  tray.setToolTip("LMNC (Truffle)");
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -146,7 +147,7 @@ const createWindow = () => {
     },
   ]);
 
-  // tray.setContextMenu(contextMenu);
+  tray.setContextMenu(contextMenu);
 
   // Disable zoom shortcuts
   log("Disabling zoom shortcuts");
@@ -171,8 +172,7 @@ const createWindow = () => {
 
   // Open the DevTools.
   app.isPackaged && mainWindow.setResizable(false);
-  // mainWindow.webContents.closeDevTools();
-  mainWindow.webContents.toggleDevTools();
+  mainWindow.webContents.closeDevTools();
 
   // Prevent the window from being destroyed when it's closed
   mainWindow.on("close", (event) => {
@@ -236,7 +236,7 @@ app.on("ready", async function () {
         },
       ]);
 
-      // tray.setContextMenu(contextMenu);
+      tray.setContextMenu(contextMenu);
     }
   });
 

@@ -19,8 +19,7 @@ import nightIcon from "./assets/icons/night.svg";
 // @ts-ignore
 import chatIcon from "./assets/icons/chat.svg";
 import Settings from "./component/Settings";
-import Button from "./component/common/Button";
-import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger, } from "./pages/Playground/Drawer";
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "./pages/Playground/Drawer";
 import Playground from "./pages/Playground";
 import { PlaygroundProvider } from "./pages/Playground/PlaygroundContext";
 

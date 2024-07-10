@@ -201,29 +201,31 @@ app.on("ready", async function () {
   ipcMain.handle("is-app-packaged", () => app.isPackaged);
 
   ipcMain.on("update-running-models", async (_, models) => {
-    const modelsMenu = models.map((m) => ({
-      label: m.name,
-      submenu: [
+    if (models) {
+      const modelsMenu = models.map((m) => ({
+        label: m.name,
+        submenu: [
+          {
+            label: "Stop",
+            click: () => {
+              window.webContents.send("tray-stop-model", m);
+            },
+          },
+        ],
+      }));
+      modelsMenu.length && modelsMenu.push({ type: "separator" });
+      const contextMenu = Menu.buildFromTemplate([
+        ...modelsMenu,
         {
-          label: "Stop",
+          label: "Quit",
           click: () => {
-            window.webContents.send("tray-stop-model", m);
+            app.quit();
           },
         },
-      ],
-    }));
-    modelsMenu.length && modelsMenu.push({ type: "separator" });
-    const contextMenu = Menu.buildFromTemplate([
-      ...modelsMenu,
-      {
-        label: "Quit",
-        click: () => {
-          app.quit();
-        },
-      },
-    ]);
+      ]);
 
-    tray.setContextMenu(contextMenu);
+      tray.setContextMenu(contextMenu);
+    }
   });
 
   window.on("ready-to-show", async () => {
@@ -240,7 +242,6 @@ app.on("ready", async function () {
     }
   });
 });
-
 
 // This intercepts the CMD+Q or Quit menu item
 app.on("before-quit", () => {

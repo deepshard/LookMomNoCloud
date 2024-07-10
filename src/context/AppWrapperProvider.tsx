@@ -66,7 +66,6 @@ const AppWrapperProvider = ({ children }) => {
   }, [myModels]);
 
   useEffect(() => {
-    console.log('sysInfo', sysInfo, highlights);
     if (sysInfo) {
       if (highlights) {
         setHighlights(highlights);

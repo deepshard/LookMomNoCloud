@@ -23,7 +23,7 @@
   },
   "build": {
     "appId": "com.truffle.app",
-    "productName": "Truffle",
+    "productName": "Look Mom No Cloud™",
     "files": [
       ".vite/**/*",
       "node_modules/**/*"

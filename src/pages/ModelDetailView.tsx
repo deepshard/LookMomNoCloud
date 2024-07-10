@@ -40,6 +40,7 @@ import runningManIcon from "../assets/icons/running-man.svg";
 import authorIcon from "../assets/icons/author.svg";
 // @ts-ignore
 import modelSizeIcon from "../assets/icons/modelsize.svg";
+import Tooltip from "../component/common/Tooltip";
 
 function ModelDetailView() {
   const navBarOptions: NavBarOptions[] = ["intro", "capabilities", "risks", "evals"];

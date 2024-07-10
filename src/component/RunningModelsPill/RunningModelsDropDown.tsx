@@ -14,7 +14,7 @@ interface RunningModelsDropDownProps {
 
 const RunningModelsDropDown = ({ models }: RunningModelsDropDownProps) => {
   const [localModels, setLocalModels] = useState([...models].map((model) => ({ ...model, isRemote: false })));
-  const [showCheck, setShowCheck] = useState(false);
+  const [showCheck, setShowCheck] = useState({});
 
   const {sysInfo} = useAppStore();
 
@@ -24,15 +24,15 @@ const RunningModelsDropDown = ({ models }: RunningModelsDropDownProps) => {
     }
   }, [sysInfo?.resources.models]);
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (model_id: string, text: string) => {
     navigator.clipboard
       .writeText(text)
       .then(() => {
         // Optional: Notify the user that the text was copied
         // alert("Copied to clipboard!");
-        setShowCheck(true);
+        setShowCheck((prevShowCheck) => ({...prevShowCheck, [model_id]: true}));
         setTimeout(() => {
-          setShowCheck(false);
+          setShowCheck((prevShowCheck) => ({...prevShowCheck, [model_id]: false}));
         }, 2000);
       })
       .catch((err) => {
@@ -46,16 +46,17 @@ const RunningModelsDropDown = ({ models }: RunningModelsDropDownProps) => {
           <th className="text-left">Model</th>
         </tr>
       </thead>
+      <div className='w-full h-[0.5px] my-2.5 bg-surface-100' />
       <tbody>
-        {localModels.map((model) => (
-          <tr key={model.id}>
-            <td className="flex items-center gap-2">
+        {localModels.map((model, index) => (
+          <tr className="" key={model.id}>
+            <td className={`flex items-center gap-2 ${index !== localModels.length - 1 ? "mb-2" : ""}`}>
               <img src={model.backgroundImage} alt={model.name} className="min-w-[46px] min-h-[31px] w-[46px] h-[31px] rounded-[5px]" />
               <div className="flex flex-col items-start">
                 <div className="text-sm font-normal text-nowrap overflow-hidden text-ellipsis">{model.name}</div>
-                <span className="flex-center line-clamp-1 text-xs gap-[3px] cursor-pointer" onClick={() => copyToClipboard(`http://localhost:${model.port}`)}>
+                <span className="flex-center line-clamp-1 text-xs gap-[3px] cursor-pointer" onClick={() => copyToClipboard(model.id, `http://localhost:${model.port}`)}>
                   <p className="w-[130px] text-nowrap overflow-hidden text-ellipsis">{model.isRemote ? model.remoteUrl : `http://localhost:${model.port}`}</p> 
-                  {showCheck ? (
+                  {showCheck[model.id] ? (
                     <img src={checkIcon} alt="copy" className="invert w-[12px] h-[12px]"/>
                   ):(
                     <img src={copyIcon} alt="copy"/>

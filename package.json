@@ -77,7 +77,7 @@
     },
     "publish": {
       "provider": "s3",
-      "bucket": "truffle-fe"
+      "bucket": "truffle-desktop"
     }
   },
   "devDependencies": {

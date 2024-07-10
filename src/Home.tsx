@@ -30,16 +30,36 @@ interface WelcomeInfo {
 }
 
 export default function Home() {
-  const { highlights: storeHighlights, updateInfo, sysInfo, updateModels } = useAppStore();
-  const { installModel, runModels, stopModel, cleanupInstall, retry } = useModelActions();
-  const { showSearch, setShowSearch, showAugmentations, setShowAugmentations, showSettings, setShowSettings } = useHomePageContext();
+  const {
+    highlights: storeHighlights,
+    updateInfo,
+    sysInfo,
+    updateModels,
+  } = useAppStore();
+  const { installModel, runModels, stopModel, cleanupInstall, retry } =
+    useModelActions();
+  const {
+    showSearch,
+    setShowSearch,
+    setSearchQuery,
+    setShowDiscover,
+    showAugmentations,
+    setShowAugmentations,
+    showSettings,
+    setShowSettings,
+  } = useHomePageContext();
+  // const [updateInfo, setUpdateInfo] = useState<TruffleUpdateInfo | null>(null);
   const navigate = useNavigate();
 
   const handleNavigate = (model: TModel) => {
     navigate(`/model/${model.id}`, { state: { model } });
   };
 
-  const handleUpdateModelsCallback = (prevModel: TModel, newModel: Partial<TModel>, controller?: AbortController) => {
+  const handleUpdateModelsCallback = (
+    prevModel: TModel,
+    newModel: Partial<TModel>,
+    controller?: AbortController
+  ) => {
     updateModels({
       ...prevModel,
       ...newModel,
@@ -154,18 +174,33 @@ export default function Home() {
       </div>
 
       <AnimateModal
-        show={showSearch || showAugmentations}
+        show={showSearch}
         onClose={() => {
-          setShowAugmentations(false);
           setShowSearch(false);
-        }}>
+          setSearchQuery("");
+          setShowDiscover(false);
+        }}
+      >
         {showSearch && <Search onModelClick={handleNavigate} />}
-        {showAugmentations && <AugmentationsView />}
       </AnimateModal>
+
+      <AnimateModal
+        show={showAugmentations}
+        onClose={() => setShowAugmentations(false)}
+      >
+        <AugmentationsView />
+      </AnimateModal>
+
       <AnimateModal show={showSettings} onClose={() => setShowSettings(false)}>
         <Settings />
       </AnimateModal>
-      {updateInfo && <UpdateTruffle className="fixed bottom-3 " onClick={() => navigate(`/update`)} />}
+      
+      {updateInfo && (
+        <UpdateTruffle
+          className="fixed bottom-3 "
+          onClick={() => navigate(`/update`)}
+        />
+      )}
     </>
   );
 }

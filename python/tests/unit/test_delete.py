@@ -89,12 +89,13 @@ async def test_delete_model_running(session_fixture, mock_process):
     create_files(quant_path)
 
     # Add the model to the database
+    proc = mock_process()
     mock_model = {
         "id": "TEST_model_1",
         "instance": 1,
         "name": "Test Model 1",
         "size": 8000000000,
-        "pid": mock_process.pid,
+        "pid": proc.pid,
         "port": 8899,
         "quantization": "INT4",
     }
@@ -103,9 +104,9 @@ async def test_delete_model_running(session_fixture, mock_process):
         await session.commit()
 
     # Test
-    assert mock_process.is_alive(), "Mock process should be running"
+    assert proc.is_alive(), "Mock process should be running"
     await delete_model_handler(ID)
-    assert not mock_process.is_alive(), "Mock process should be stopped"
+    assert not proc.is_alive(), "Mock process should be stopped"
 
     # Assert that the model directory is deleted
     assert not base_path.exists(), "Model base directory should be deleted"

@@ -15,6 +15,10 @@ let serverProcess: ChildProcess;
 let forceQuit = false;
 let mainWindow;
 
+const setForceQuit = (value: boolean) => {
+  forceQuit = value;
+}
+
 const killServerIfRunning = (port: number): Promise<void> => {
   return new Promise((resolve) => {
     log(`Attempting to kill server process on port ${port}`);
@@ -199,7 +203,7 @@ app.on("ready", async function () {
 
   const window = createWindow();
   log("Window created");
-  const otaUpdater = new OTAUpdater(window, autoUpdater);
+  const otaUpdater = new OTAUpdater(window, autoUpdater, setForceQuit);
   ipcMain.on("check-for-updates", otaUpdater.checkForUpdates);
   ipcMain.on("download-update", otaUpdater.downloadUpdate);
   ipcMain.on("restart-and-update", otaUpdater.restartAndInstall);

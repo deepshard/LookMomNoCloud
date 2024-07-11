@@ -17,8 +17,6 @@ import sendIcon from "../../assets/icons/send-fill.svg";
 // @ts-ignore
 import accordionIcon from "../../assets/icons/accordion.svg";
 // @ts-ignore
-import chatBubble from "../../assets/icons/chat-bubble.svg";
-// @ts-ignore
 import closeIcon from "../../assets/icons/close.svg";
 // @ts-ignore
 import checkmark from "../../assets/icons/checkmark-circle-fill.svg";

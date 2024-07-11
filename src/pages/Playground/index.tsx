@@ -155,7 +155,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
                 setSystemMessage("");
                 setMessages([]);
               }}>
-              <img src={m.backgroundImage} className="w-16 h-12 rounded-sm" />
+              <img src={m.backgroundImage} className="w-[72px] h-12 rounded-[6px]" />
               <div className="flex flex-col gap-1 -mt-1">
                 <p className="text-surface-750 title-sm  h-3.5 leading-tight">{m.name}</p>
                 <p className="text-surface-500 text-xs h-3.5 leading-normal">{`${m.author} • ${formatParams(m.size)}`}</p>

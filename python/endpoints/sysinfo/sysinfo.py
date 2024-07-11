@@ -58,10 +58,10 @@ def get_model_memory_usage(pid: int) -> int:
                 text=True,
                 check=True,
             )
-            match = re.search(r'Physical footprint:\s+(\d+\.\d+[BKMG])', result.stdout)
+            match = re.search(r"Physical footprint:\s+(\d+\.\d+[BKMG])", result.stdout)
             if match:
                 size, unit = match.group(1)[:-1], match.group(1)[-1]
-                multiplier = {'B': 1, 'K': 1024, 'M': 1024**2, 'G': 1024**3}
+                multiplier = {"B": 1, "K": 1024, "M": 1024**2, "G": 1024**3}
                 return int(float(size) * multiplier[unit])
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to get vmmap summary for pid {pid}: {e}")

@@ -47,37 +47,25 @@ async def get_sysinfo() -> SystemInfo:
     )
 
 
-def mem_string_to_bytes(value: float, unit: str) -> int:
-    if unit == "G":
-        return int(value * 1024**3)
-    elif unit == "M":
-        return int(value * 1024**2)
-    elif unit == "K":
-        return int(value * 1024)
-    else:
-        return 0
-
-
 def get_model_memory_usage(pid: int) -> int:
     system = platform.system()
 
     if system == "Darwin":
-        result = subprocess.run(["vmmap", str(pid)], capture_output=True, text=True)
-        output = result.stdout
-        match = re.search(
-            r"TOTAL\s+([\d\.]+)([MG])\s+([\d\.]+)([MG])\s+([\d\.]+)([MG])\s+([\d\.]+)([MG])", output
-        )
-        if match:
-            # Get resident memory size
-            res_memory_value = float(match.group(3))
-            res_memory_unit = match.group(4)
-            swap_memory_value = float(match.group(7))
-            swap_memory_unit = match.group(8)
-
-            # Convert to bytes
-            res_mem = mem_string_to_bytes(res_memory_value, res_memory_unit)
-            swap_mem = mem_string_to_bytes(swap_memory_value, swap_memory_unit)
-            return res_mem + swap_mem
+        try:
+            result = subprocess.run(
+                ["vmmap", "-summary", str(pid)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            match = re.search(r'Physical footprint:\s+(\d+\.\d+[BKMG])', result.stdout)
+            if match:
+                size, unit = match.group(1)[:-1], match.group(1)[-1]
+                multiplier = {'B': 1, 'K': 1024, 'M': 1024**2, 'G': 1024**3}
+                return int(float(size) * multiplier[unit])
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to get vmmap summary for pid {pid}: {e}")
+            return 0
     elif system == "Linux":
         devices = get_devices()
 

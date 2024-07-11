@@ -134,7 +134,9 @@ const createWindow = () => {
   Menu.setApplicationMenu(menu);
 
   log("Creating tray");
-  tray = new Tray(path.join(process.resourcesPath, "assets", "icons", "truffle-logoTemplate.png"));
+  tray = app.isPackaged ? 
+    new Tray(path.join(process.resourcesPath, "assets", "icons", "truffle-logoTemplate.png")) : 
+    new Tray(path.join(app.getAppPath(), "src", "assets", "icons", "truffle-logoTemplate.png"));
 
   tray.setToolTip("LMNC (Truffle)");
 

@@ -108,6 +108,11 @@ function ModelDetailView() {
     }
   };
 
+  const calculateDownloadedSize = () => {
+    const totalSize = getModelSize();
+    return totalSize * ((modelData?.progress || 0) / 100);
+  };
+
   const getModelInfoHeader = () => {
     switch (modelData?.status) {
       case "RUNNING":
@@ -131,27 +136,36 @@ function ModelDetailView() {
 
       case "DOWNLOADING":
         return (
-          <Icon>
-            <div className="w-full h-full rounded-full">
-              <CircularProgressbar
-                value={modelData.progress || 0}
-                text={`${modelData.progress}%`}
-                styles={{
-                  path: { stroke: "rgba(255, 255, 255, 1)" },
-                  trail: { stroke: "rgba(255, 255, 255, 0.4)" },
-                  text: { fill: "rgba(255, 255, 255, 0.75)", fontSize: "25px" },
-                }}
-              />
-            </div>
-          </Icon>
+          <Tooltip
+            arrow={false}
+            placement="bottom"
+            overlay={
+              <p className="text-nowrap">
+                {bytesToHumanReadable(calculateDownloadedSize(), true, 0)}/{bytesToHumanReadable(getModelSize(), true, 0)}
+              </p>
+            }>
+            <Icon>
+              <div className="w-full h-full rounded-full">
+                <CircularProgressbar
+                  value={modelData.progress || 0}
+                  text={`${modelData.progress}%`}
+                  styles={{
+                    path: { stroke: "rgba(255, 255, 255, 1)" },
+                    trail: { stroke: "rgba(255, 255, 255, 0.4)" },
+                    text: { fill: "rgba(255, 255, 255, 0.75)", fontSize: "25px" },
+                  }}
+                />
+              </div>
+            </Icon>
+          </Tooltip>
         );
 
       case "INSTALLING":
         return (
-          <Tooltip overlay="Installing">
+          <Tooltip overlay={<p>Processing</p>}>
             <Icon src={installIcon} imgClassName="h-full w-full animate-spin" />
           </Tooltip>
-        )
+        );
 
       case "RUNNING":
         return (
@@ -199,7 +213,7 @@ function ModelDetailView() {
   const getNotDownloadedIcon = () => {
     if (canFitOnMachine(modelData?.size || 0, sysInfo?.resources.total.ram || 0, sysInfo?.resources.available.disk || 0)) {
       return (
-        <Tooltip arrow={false} placement="bottom" overlay={<p>{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
+        <Tooltip arrow={false} placement="bottom" overlay={<p className="text-nowrap">{bytesToHumanReadable(getModelSize(), true, 0)}</p>}>
           <Icon
             src={downloadIcon}
             imgClassName="h-[11px] w-[11px]"
@@ -224,7 +238,7 @@ function ModelDetailView() {
 
   return (
     <div className="absolute top-0 left-0 w-full h-full bg-bg-wdget-active">
-      <div className="fixed model-detail-navbar">
+      <div className="fixed model-detail-navbar bg-gradient-to-b from-[#666666] to-transparent from-30% backdrop-blur-sm">
         <div className="w-1/4"></div>
 
         <div className="flex items-center gap-3 text-surface-500 z-[1200] transition-colors duration-200">
@@ -270,9 +284,9 @@ function ModelDetailView() {
       </div>
 
       <div className="model-detail-view hide-scrollbar">
-        <section className={" "}>
+        <section className="">
           <div className="w-full h-[100vh] max-w-[740px] p-5 flex flex-col justify-between items-center">
-            <div className="h-[70px]"/>
+            <div className="h-[70px]" />
 
             <div className="relative flex flex-col justify-start items-center">
               <div className="w-[740px] h-[408px] rounded-2xl overflow-hidden glass-3d-no-blur">

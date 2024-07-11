@@ -332,7 +332,7 @@ const Chat = () => {
       </div>
 
       {/* Messages */}
-      <div ref={messagesContainerRef} className="flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
+      <div ref={messagesContainerRef} className="playground-chat-messages flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
         {messages.map((message, index) => (
           <div key={index} className="w-full">
             {getMessageContent(message)}

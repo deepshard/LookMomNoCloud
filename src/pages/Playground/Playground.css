@@ -82,6 +82,22 @@ textarea.completion::selection {
   padding-right: 4px !important;
   padding-top: 0px !important;
   padding-bottom: 0px !important;
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.playground-chat-box::-webkit-scrollbar {
+  display: none;
+}
+
+.playground-chat-messages {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.playground-chat-messages::-webkit-scrollbar {
+  display: none;
 }
 
 .ant-slider-tooltip {

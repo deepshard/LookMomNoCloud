@@ -33,6 +33,7 @@ export interface TruffleUpdateInfo {
 export class OTAUpdater {
   private mainWindow: BrowserWindow;
   private appUpdater: AppUpdater;
+  private setForceQuit: (value: boolean) => void;
   private downloadProgress: DownloadProgress;
   private updateServer: ServerUpdateInformation = {
     available: false,
@@ -43,9 +44,10 @@ export class OTAUpdater {
     updateInfo: null,
   };
 
-  constructor(mainWindow: BrowserWindow, appUpdater: AppUpdater) {
+  constructor(mainWindow: BrowserWindow, appUpdater: AppUpdater, setForceQuit: (value: boolean) => void) {
     this.mainWindow = mainWindow;
     this.appUpdater = appUpdater;
+    this.setForceQuit = setForceQuit;
     this.downloadProgress = {
       downloadedBytes: 0,
       totalBytes: 0,
@@ -371,10 +373,13 @@ export class OTAUpdater {
       fs.renameSync(newServerPath, serverPath);
     }
 
+    this.setForceQuit(true);
+
     // If there is an app update, quit and install
     if (this.updateApp.available) {
       log("Quitting and installing for app update.")
       autoUpdater.quitAndInstall();
+      return;
     }
 
     // If there is a server update but no app update, relaunch the app
@@ -382,6 +387,7 @@ export class OTAUpdater {
       log("Relaunching app for server update.")
       app.relaunch();
       app.quit();
+      return;
     }
   }
 

@@ -114,7 +114,7 @@ textarea.completion::selection {
   }
 
   .playground {
-    @apply w-full h-full flex items-center flex-col px-[145px] pb-[17px] pt-[100px];
+    @apply w-full h-full flex items-center flex-col px-[145px] pb-[17px] pt-[100px] bg-black/20;
   }
 
   .playground::before {

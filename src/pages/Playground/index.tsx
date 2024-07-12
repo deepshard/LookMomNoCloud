@@ -147,7 +147,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
       </PopoverTrigger>
       <PopoverContent>
         <div className="playground-popup-content mt-1">
-          {[...runningModels, ...runningModels].map((m) => (
+          {[...runningModels].map((m) => (
             <div
               key={m.id}
               className="playground-popup-content-model"

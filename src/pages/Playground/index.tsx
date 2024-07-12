@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "../../store/store";
 import { useHomePageContext } from "../../context/HomePageProvider";
 import ModelCarousel from "../../component/ModelCarousel";
@@ -69,53 +69,49 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   }
 
   return (
-    <div className={`playground overflow-hidden  ${className}`} {...props}>
-      {/* Header */}
-      <div className="flex items-center mb-[11px] w-full h-[16px]">
-        <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
-        <p className="text-md text-surface-500">LMNC™ Playground</p>
-        <DrawerClose className="ml-auto">
-        <div className='flex absolute cursor-pointer h-[30px] w-[30px] bg-surface-main/5 rounded-full top-[20px] right-[20px] z-[9999] justify-center items-center text-surface-750'>
-          <img src={closeIcon} alt="" className="h-3 fill-surface-500" />
+    <div className={`playground  ${className}`} {...props}>
+      <div className="w-full h-full overflow-y-scroll px-[145px] pt-[100px] pb-[16px] hide-scrollbar flex flex-col">
+        <div className="flex items-center mb-[11px] w-full">
+          <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
+          <p className="text-md text-surface-500">LMNC™ Playground</p>
+          <DrawerClose className="ml-auto">
+            <div className="flex absolute cursor-pointer h-[30px] w-[30px] bg-surface-main/5 rounded-full top-[20px] right-[20px] z-[9999] justify-center items-center text-surface-750">
+              <img src={closeIcon} alt="" className="h-3 fill-surface-500" />
+            </div>
+          </DrawerClose>
         </div>
-        </DrawerClose>
+        <div className="flex self-start mt-5 mb-5 gap-2">
+          <ModelSwitcher myModels={Object.values(downloads)} />
+          <Popover open={showModeSelector} onOpenChange={setShowModeSelector} modal>
+            <PopoverTrigger>
+              <div className="cursor-pointer !min-w-6 playground-popup flex flex-center gap-1 p-1.5 pr-2.5 text-sm">
+                <span className="bg-surface-main/5 rounded-full p-1">
+                  <img src={chatBubble} alt="" />
+                </span>
+                {upperFirst(mode)}
+                <img src={accordionIcon} alt="" className="w-[7px] h-[4px]" />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className="playground-popup-content p-2 mt-1">
+                {["chat", "completions"].map((m) => (
+                  <div
+                    key={m}
+                    onClick={() => {
+                      setMode(m as "chat" | "completions");
+                      setShowModeSelector(false);
+                    }}
+                    className="rounded-[13px] p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10">
+                    {upperFirst(m)}
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <ChatSettings model={model} />
+        </div>
+        {mode === "chat" ? <Chat /> : <Completion model={model} settings={settings} />}
       </div>
-
-      {/* Welcome Message */}
-      <p className="text-[32px] text-white w-full">Hey, there! What’s new today?</p>
-
-      {/* Configuration */}
-      <div className="flex self-start mt-5 mb-5 gap-2">
-        <ModelSwitcher myModels={Object.values(downloads)} />
-        <Popover open={showModeSelector} onOpenChange={setShowModeSelector} modal>
-          <PopoverTrigger>
-            <div className="cursor-pointer !min-w-6 playground-popup flex flex-center gap-1 p-1.5 pr-2.5 text-sm">
-              <span className="bg-surface-main/5 rounded-full p-1">
-                <img src={chatBubble} alt="" />
-              </span>
-              {upperFirst(mode)}
-              <img src={accordionIcon} alt="" className="w-[7px] h-[4px]" />
-            </div>
-          </PopoverTrigger>
-          <PopoverContent>
-            <div className="playground-popup-content p-2 mt-1">
-              {["chat", "completions"].map((m) => (
-                <div
-                  key={m}
-                  onClick={() => {
-                    setMode(m as "chat" | "completions");
-                    setShowModeSelector(false);
-                  }}
-                  className="rounded-[13px] p-2 cursor-pointer flex items-center gap-2 hover:bg-white/10">
-                  {upperFirst(m)}
-                </div>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <ChatSettings model={model} />
-      </div>
-      {mode === "chat" ? <Chat /> : <Completion model={model} settings={settings} />}
     </div>
   );
 };
@@ -150,7 +146,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
               className="playground-popup-content-model"
               onClick={() => {
                 setShowModelSelector(false);
-                if(model?.id === m.id) return
+                if (model?.id === m.id) return;
                 setModel(m);
                 setSystemMessage("");
                 setMessages([]);
@@ -168,7 +164,7 @@ function ModelSwitcher({ myModels }: { myModels: TModel[] }) {
   );
 }
 
-function ChatSettings({ model }: { model: TModel | null}) {
+function ChatSettings({ model }: { model: TModel | null }) {
   const maxTokens = model ? Math.trunc((0.85 * model?.contextLength) / 2) : 0; // 0.85 provides a buffer for template tokens
   const { settings, setSettings } = usePlayground();
   const [showSettings, setShowSettings] = useState(false);

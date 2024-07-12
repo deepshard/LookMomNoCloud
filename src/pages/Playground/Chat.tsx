@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Form, Input } from "antd";
 import Tooltip from "../../component/common/Tooltip";
 import Dock from "./Dock";
@@ -27,24 +27,6 @@ const Chat = () => {
   const [isDragging, setIsDragging] = useState(false);
 
   const [form] = Form.useForm();
-
-  const inputStickyRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLDivElement>(null);
-  const fixedInputContainerRef = useRef<HTMLDivElement>(null);
-
-  const userMessage = Form.useWatch('userMessage', form);
-
-  useEffect(() => {
-    if (inputRef.current) {
-      setTimeout(() => {
-        // console.log(inputRef.current.clientHeight);
-        // @ts-ignore
-        inputStickyRef.current.style.height = `${inputRef.current.clientHeight}px`;
-        // @ts-ignore
-        fixedInputContainerRef.current.style.height = `${inputRef.current.clientHeight + 16}px`;
-      }, );
-    }
-  }, [inputRef, userMessage]);
 
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -112,7 +94,7 @@ const Chat = () => {
         let messageLength = 0;
 
         // Treat words as approximately 1.5 tokens
-        if (typeof message.content === "string") {
+        if (typeof message.content === 'string') {
           messageLength = message.content.split(/\s+/).length * 1.5;
         } else {
           for (const item of message.content) {
@@ -176,7 +158,7 @@ const Chat = () => {
           }
 
           await reader.cancel();
-          break;
+          break
         }
 
         try {
@@ -294,7 +276,7 @@ const Chat = () => {
     }
 
     if (loading) {
-      return <img src={installIcon} alt="generating" className="w-[24px] h-[24px] animate-spin" />;
+      return <img src={installIcon} alt="generating" className="animate-spin" />;
     }
 
     return <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => onFinish(form.getFieldsValue())} />;
@@ -328,7 +310,7 @@ const Chat = () => {
   };
 
   return (
-    <Form form={form} onFinish={onFinish} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className="w-full">
+    <Form form={form} onFinish={onFinish} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className="w-full h-full">
       {isDragging && (
         <div className="drag-over-container">
           <div className="drag-over-dash">
@@ -338,46 +320,43 @@ const Chat = () => {
         </div>
       )}
 
-      <div className="bg-red-300/0 w-full  ">
-        {/* System Prompt */}
-        <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
-          <p className="text-surface-750 text-[16px] mb-1">System</p>
-          <Input
-            className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
-            placeholder="Enter system instructions..."
-            value={systemMessage}
-            onChange={(e) => setSystemMessage(e.target.value)}
-          />
-        </div>
+      {/* System Prompt */}
+      <div className="flex flex-col items-start p-5 mb-3 w-[400px] h-[100px] bg-white/5 rounded-tr-sm rounded-bl-sm rounded-br-sm">
+        <p className="text-surface-750 text-[16px] mb-1">System</p>
+        <Input
+          className="p-0 w-full h-[40px] bg-transparent border-none text-[16px] text-surface-750"
+          placeholder="Enter system instructions..."
+          value={systemMessage}
+          onChange={(e) => setSystemMessage(e.target.value)}
+        />
+      </div>
 
-        {/* Messages */}
-        <div ref={messagesContainerRef} className="flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
-          {messages.map((message, index) => (
-            <div key={index} className="w-full">
-              {getMessageContent(message)}
-            </div>
-          ))}
-        </div>
+      {/* Messages */}
+      <div ref={messagesContainerRef} className="playground-chat-messages flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
+        {messages.map((message, index) => (
+          <div key={index} className="w-full">
+            {getMessageContent(message)}
+          </div>
+        ))}
       </div>
 
       {/* Chat Input */}
-      <div ref={inputStickyRef} className={`bg-blue-300/0 w-full max-h-[150px] sticky bottom-0 mt-2`} >
-        <div ref={fixedInputContainerRef} className="bg-pink-300/0 backdrop-blur-lg fixed bottom-0 right-0 max-h-[150px] w-full px-[145px]">
-          <Dock images={images} deleteImage={deleteImage} />
-          <div ref={inputRef} className="flex items-center px-2 py-1 bg-white/10 w-full max-h-[150px] rounded-sm ">
-            <span className="h-8 flex-center">{getAddFileButton()}</span>
-            <Form.Item name="userMessage" noStyle>
-              <TextArea
-                autoFocus
-                autoSize={{ minRows: 1, maxRows: 5 }}
-                className="playground-chat-box max-h-[100px] "
-                placeholder={`Chat${model ? ` with ${model?.name}...` : "..."}`}
-                value={form.getFieldValue("userMessage")}
-                onKeyDown={handleSubmit}
-              />
-            </Form.Item>
-            <span className="h-8 flex-center mr-1">{getSubmitButton()}</span>
-          </div>
+      <div className="absolute bottom-[16px] left-0 right-0 w-full px-[145px]">
+        {/* File Display */}
+        <Dock images={images} deleteImage={deleteImage} />
+        <div className="flex items-center px-2 py-1 bg-white/10 w-full max-h-[150px] rounded-sm ">
+          <span className="h-8 flex-center">{getAddFileButton()}</span>
+          <Form.Item name="userMessage" noStyle>
+            <TextArea
+              autoFocus
+              autoSize={{ minRows: 1, maxRows: 5 }}
+              className="playground-chat-box max-h-[100px] "
+              placeholder={`Chat${model ? ` with ${model?.name}...` : "..."}`}
+              value={form.getFieldValue("userMessage")}
+              onKeyDown={handleSubmit}
+            />
+          </Form.Item>
+          <span className="h-8 flex-center mr-1">{getSubmitButton()}</span>
         </div>
       </div>
     </Form>

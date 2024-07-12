@@ -294,7 +294,7 @@ const Chat = () => {
     }
 
     if (loading) {
-      return <img src={installIcon} alt="generating" className="animate-spin" />;
+      return <img src={installIcon} alt="generating" className="w-[24px] h-[24px] animate-spin" />;
     }
 
     return <ArrowUp height={24} width={24} className="fill-surface-750 hover:fill-surface-500 hover:cursor-pointer" onClick={() => onFinish(form.getFieldsValue())} />;

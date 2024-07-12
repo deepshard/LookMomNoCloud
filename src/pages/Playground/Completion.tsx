@@ -57,13 +57,13 @@ const Completion = ({ model, settings }: CompletionProps) => {
     setTimeout(() => {
       if (textAreaRef.current) {
         textAreaRef.current.focus();
-        textAreaRef.current.setSelectionRange(textIndex.endIndex + 1, form.getFieldValue("prompt").length);
+        textAreaRef.current.setSelectionRange(textIndex.endIndex + 1, form.getFieldValue("prompt")?.length);
       }
     }, 500);
   }, [textIndex]);
 
   return (
-    <Form form={form} className="w-full h-full flex flex-col" onFinish={onFinish}>
+    <Form form={form} className="w-full flex-grow flex flex-col" onFinish={onFinish}>
       <div className="w-full rounded-md overflow-hidden bg-surface-100 p-2 flex h-full">
         <Form.Item name="prompt" noStyle>
           <textarea ref={textAreaRef} onKeyDown={handleSubmit} className="completion !h-full !w-full" placeholder="Write a tagline for an ice cream..." />

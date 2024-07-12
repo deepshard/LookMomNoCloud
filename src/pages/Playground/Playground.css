@@ -130,16 +130,16 @@ textarea.completion::selection {
   }
 
   .playground-popup {
-    @apply rounded-full h-full bg-surface-main/5 hover:bg-surface-100;
+    @apply rounded-full h-[36px] bg-surface-main/5 hover:bg-surface-100;
     box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05), 0px 20px 80px 0px rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(100px);
   }
   .playground-popup-content {
-    @apply bg-surface-main/5 rounded-sm min-w-[400px] p-3 flex flex-col;
+    @apply bg-surface-main/5 rounded-sm min-w-[400px] p-3 flex flex-col gap-3;
     backdrop-filter: blur(100px);
     box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05), 0px 20px 80px 0px rgba(0, 0, 0, 0.05);
   }
   .playground-popup-content-model {
-    @apply cursor-pointer flex gap-2 items-center hover:bg-white/10 rounded-sm p-1;
+    @apply cursor-pointer flex gap-2 items-center hover:bg-white/10 rounded-[8px] ;
   }
 }

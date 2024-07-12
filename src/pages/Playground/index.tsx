@@ -90,7 +90,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             </div>
           </DrawerClose>
         </div>
-        <div className="flex self-start mt-5 mb-5 gap-2 sticky top-[10px]">
+        <div className="flex self-start mt-5 mb-5 gap-2 sticky top-[10px] backdrop-blur-md w-full">
           <ModelSwitcher myModels={Object.values(downloads)} />
           <Popover open={showModeSelector} onOpenChange={setShowModeSelector} modal>
             <PopoverTrigger>

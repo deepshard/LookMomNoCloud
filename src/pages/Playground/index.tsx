@@ -35,8 +35,17 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
   const { highlights, downloads } = useAppStore();
   const { setShowSearch, setShowDiscover } = useHomePageContext();
   const [mode, setMode] = useState<"chat" | "completions">("chat");
-  const { model, settings } = usePlayground();
+  const { model, settings, messages, images } = usePlayground();
   const [showModeSelector, setShowModeSelector] = useState(false);
+
+  const scrollViewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      const { scrollHeight, clientHeight } = scrollViewRef.current;
+      scrollViewRef.current.scrollTop = scrollHeight - clientHeight;
+    }
+  }, [messages, images]);
 
   if (Object.keys(downloads).length === 0) {
     return (
@@ -71,8 +80,8 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
 
   return (
     <div className={`playground  ${className}`} {...props}>
-      <div className="w-full h-full overflow-y-scroll px-[145px] pt-[100px] pb-[16px] hide-scrollbar flex flex-col">
-        <div className="flex items-center mb-[11px] w-full">
+      <div ref={scrollViewRef} className="w-full h-full overflow-y-scroll px-[145px] pb-[16px] hide-scrollbar flex flex-col">
+        <div className="flex items-center mt-[100px] mb-[11px] w-full">
           <img src={truffleHardwareLandscapeIcon} alt="" className="w-[16px] h-[16px] mr-2" />
           <p className="text-md text-surface-500">LMNC™ Playground</p>
           <DrawerClose className="ml-auto">
@@ -81,7 +90,7 @@ const Playground = ({ className = "", ...props }: PlaygroundProps) => {
             </div>
           </DrawerClose>
         </div>
-        <div className="flex self-start mt-5 mb-5 gap-2">
+        <div className="flex self-start mt-5 mb-5 gap-2 sticky top-[10px]">
           <ModelSwitcher myModels={Object.values(downloads)} />
           <Popover open={showModeSelector} onOpenChange={setShowModeSelector} modal>
             <PopoverTrigger>

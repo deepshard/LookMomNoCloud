@@ -350,15 +350,6 @@ const Chat = () => {
           />
         </div>
 
-<<<<<<< HEAD
-      {/* Messages */}
-      <div ref={messagesContainerRef} className="playground-chat-messages flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
-        {messages.map((message, index) => (
-          <div key={index} className="w-full">
-            {getMessageContent(message)}
-          </div>
-        ))}
-=======
         {/* Messages */}
         <div ref={messagesContainerRef} className="flex flex-col items-start pb-0 w-full h-[50%] overflow-auto ">
           {messages.map((message, index) => (
@@ -367,7 +358,6 @@ const Chat = () => {
             </div>
           ))}
         </div>
->>>>>>> 54d1c40 (done scrolling of playground)
       </div>
 
       {/* Chat Input */}

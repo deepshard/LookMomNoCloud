@@ -1,5 +1,6 @@
 import pytest
 import json
+import asyncio
 from utils import get_devices
 from tests.integration.data import models
 from models import RunningModel
@@ -110,3 +111,47 @@ async def test_run_multiple_models(test_fixture, model_installed):
             assert running_models[1].id == models[0]["id"]
             assert running_models[1].instance == 2
             assert running_models[1].port == 8901
+
+
+@pytest.mark.asyncio
+async def test_run_sequential_requests(test_fixture, models_installed):
+    async def run_model(model):
+        responses = []
+        async with test_fixture.stream(
+            "POST",
+            "/model/run",
+            json={
+                "ids": [model["id"]],
+            },
+        ) as response:
+            assert response.status_code == 200
+            async for line in response.aiter_lines():
+                if line:
+                    event_data = json.loads(line.split("data: ", 1)[1])
+                    responses.append(event_data)
+        return responses
+
+    tasks = [run_model(model) for model in models]
+    results = await asyncio.gather(*tasks)
+    responses = [response for task_result in results for response in task_result]
+
+    if len(get_devices()) == 0:
+        assert responses[-1]["error"] == "No usable configurations found"
+    else:
+        assert responses[0]["status"] == "ACKNOWLEDGED"
+        assert responses[1]["status"] == "ACKNOWLEDGED"
+        assert responses[-2]["status"] == "RUNNING"
+        assert responses[-1]["status"] == "RUNNING"
+        assert responses[-2]["instance"] == 1
+        assert responses[-2]["port"] == 8900
+        assert responses[-1]["instance"] == 1
+        assert responses[-1]["port"] == 8901
+
+        running_models = await RunningModel.get_all()
+        assert len(running_models) == 2
+        assert running_models[0].id == models[0]["id"]
+        assert running_models[0].instance == 1
+        assert running_models[0].port == 8900
+        assert running_models[1].id == models[1]["id"]
+        assert running_models[1].instance == 1
+        assert running_models[1].port == 8901

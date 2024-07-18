@@ -17,6 +17,7 @@ from endpoints.model.install.install import (
 from truffle_types import FileInfo
 from tests.unit.data import (
     ID,
+    ID_2,
     MODEL_URL,
     MOCK_FILE_ONE_DATA,
     MOCK_FILE_TWO_DATA,
@@ -198,6 +199,40 @@ async def test_install_single_model_from_scratch(session_fixture, mock_mlc, mock
     # Assert that functions were called with the correct arguments
     mock_get_file_sizes.assert_called_with(MODEL_URL, mock.ANY)
     mock_get_hf_repo_info.assert_called_with("openai-community/gpt2")
+
+
+@pytest.mark.asyncio
+async def test_sequential_installation_requests(session_fixture, mocker):
+    # Mocks
+    session_fixture("endpoints.model.install.install")
+
+    # Test
+    async def install_model(model_id, url):
+        progress_stream = install_generator(model_id, url)
+
+        # Collect all progress updates
+        progress_updates = []
+        async for progress in progress_stream:
+            progress_updates.append(json.loads(progress[5:]))
+
+        return progress_updates
+
+    tasks = [install_model(ID, MODEL_URL), install_model(ID_2, MODEL_URL)]
+    await asyncio.gather(*tasks)
+
+    # Check that the files were downloaded
+    download_path = Path("/tmp") / "models" / ID
+    assert (download_path / "base" / "pytorch_model.bin").exists()
+    assert (download_path / "base" / "config.json").exists()
+    assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
+
+    download_path = Path("/tmp") / "models" / ID_2
+    assert (download_path / "base" / "pytorch_model.bin").exists()
+    assert (download_path / "base" / "config.json").exists()
+    assert (download_path / "base" / "tf_model" / "tf_model.pb").exists()
+
+    # Check that queue is empty
+    assert len(global_state_manager.model_manager.conversion_queue) == 0
 
 
 @pytest.mark.asyncio

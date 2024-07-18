@@ -1,7 +1,21 @@
-from utils import get_devices, get_usable_memory
+from utils import get_app_data_path, get_devices, get_usable_memory
 import platform
 import psutil
 import tvm
+from pathlib import Path
+import os
+
+
+def test_get_app_data_path():
+    system = platform.system()
+
+    if system == "Darwin":
+        assert (
+            get_app_data_path()
+            == Path(os.path.expanduser("~/Library/Application Support")) / "truffle-app"
+        )
+    elif system == "Linux":
+        assert get_app_data_path() == Path(os.path.expanduser("~/.config")) / "truffle-app"
 
 
 def test_get_usable_memory():

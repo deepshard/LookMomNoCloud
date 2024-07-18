@@ -71,6 +71,27 @@ async def model_downloaded():
 
 
 @pytest_asyncio.fixture
+async def models_downloaded():
+    for model in models:
+        model_id = model["id"]
+        model_url = model["url"]
+
+        model_path = get_app_data_path() / "models" / model_id / "base"
+        files_to_download = await get_files_to_download(model_url, model_path)
+        progress_tracker = {"downloaded_bytes": 0}
+        tasks = [
+            download_file(
+                get_file_download_url(model_url, file.file),
+                model_path,
+                file,
+                progress_tracker,
+            )
+            for file in files_to_download
+        ]
+        await asyncio.gather(*tasks)
+
+
+@pytest_asyncio.fixture
 async def model_installed(model_downloaded):
     model_id = models[0]["id"]
     base_weights_path = get_app_data_path() / "models" / model_id / "base"
@@ -78,6 +99,15 @@ async def model_installed(model_downloaded):
     await convert_quantize_compile(
         model_id, base_weights_path, quant_weights_path, Quantization.Q0F16
     )
+
+
+@pytest_asyncio.fixture
+async def models_installed(models_downloaded):
+    for model in models:
+        model_id = model["id"]
+        base_weights_path = get_app_data_path() / "models" / model_id / "base"
+        quant_weights_path = get_app_data_path() / "models" / model_id / "q0f16"
+        convert_quantize_compile(base_weights_path, quant_weights_path, Quantization.Q0F16)
 
 
 # @pytest_asyncio.fixture

@@ -304,7 +304,7 @@ async def queue_conversion(
     while not global_state_manager.model_manager.is_models_conversion_turn(model_dir, quantization):
         logger.info(
             f"""Waiting for {model_dir} to be converted.\nCurrent conversion queue: {
-                global_state_manager.model_manager.conversion_queue()}\nCurrent conversion in progress: {global_state_manager.model_manager.current_conversion}"""
+                global_state_manager.model_manager.conversion_queue}\nCurrent conversion in progress: {global_state_manager.model_manager.current_conversion}"""
         )
         await asyncio.sleep(5)
 

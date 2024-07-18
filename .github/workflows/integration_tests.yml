@@ -1,0 +1,72 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  integration_tests:
+    runs-on: ${{ matrix.os }}
+    env:
+      DATABASE_URL: "sqlite+aiosqlite:///${{ github.workspace }}/truffle.test.db"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-13-xlarge, ubuntu-cuda12.1-x86_64-1x-4090]
+        python-version: ["3.10", "3.12"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: truffle
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge,spyder-ide
+
+      - run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: |
+            **/requirements*.txt
+
+      - name: Install dependencies
+        run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+          if [ "${{ matrix.os }}" != "onprem-ubuntu-1x-4060" ]; then
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly mlc-ai-nightly
+          elif [ "${{ matrix.os }}" == "onprem-ubuntu-1x-4060" ]; then
+            pip install --pre -U -f https://mlc.ai/wheels mlc-llm-nightly-cu121 mlc-ai-nightly-cu121
+          fi
+          pip install -r python/requirements.txt
+
+      - name: Get server from S3
+        run: |
+          latest_version=$(curl -s https://truffle-binaries-dev.s3.amazonaws.com/latest.txt)
+          echo "** Downloading server version $latest_version **"
+          curl -L https://truffle-binaries-dev.s3.amazonaws.com/$latest_version/darwin-metal-arm64.zip -o server.zip
+          unzip server.zip
+          chmod 0755 server/server
+          cp -r ./server/alembic ./alembic
+          ./server/server > server_output.log 2>&1 &
+          sleep 5
+          curl --retry 5 --retry-connrefused http://localhost:8899
+
+      - name: Run tests
+        run: |
+          source $CONDA/etc/profile.d/conda.sh
+          conda activate truffle
+          tail -f server_output.log &
+          PYTHONPATH="." pytest --maxfail=1 -vvv python/tests/integration
+
+      - name: Cleanup
+        run: killall server || true
